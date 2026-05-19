@@ -100,6 +100,26 @@ TEST_F(DrawPrimitiveTest, PanelItemViewItem_Hover) {
   style_.drawPrimitive(QStyle::PE_PanelItemViewItem, &opt, &painter_);
 }
 
+TEST_F(DrawPrimitiveTest, PanelItemViewRow_Selected) {
+  auto opt = makeOpt(QStyle::State_Enabled | QStyle::State_Selected);
+  style_.drawPrimitive(QStyle::PE_PanelItemViewRow, &opt, &painter_);
+}
+
+TEST_F(DrawPrimitiveTest, PanelToolBar_NoAssertViolation) {
+  auto opt = makeOpt(QStyle::State_Enabled);
+  style_.drawPrimitive(QStyle::PE_PanelToolBar, &opt, &painter_);
+}
+
+TEST_F(DrawPrimitiveTest, Widget_NoAssertViolation) {
+  auto opt = makeOpt(QStyle::State_Enabled);
+  style_.drawPrimitive(QStyle::PE_Widget, &opt, &painter_);
+}
+
+TEST_F(DrawPrimitiveTest, FrameWindow_NoAssertViolation) {
+  auto opt = makeOpt(QStyle::State_Enabled);
+  style_.drawPrimitive(QStyle::PE_FrameWindow, &opt, &painter_);
+}
+
 TEST_F(DrawPrimitiveTest, PanelLineEdit_Normal) {
   auto opt = makeOpt(QStyle::State_Enabled);
   style_.drawPrimitive(QStyle::PE_PanelLineEdit, &opt, &painter_);

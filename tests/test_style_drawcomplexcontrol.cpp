@@ -12,6 +12,7 @@
 #include <QStyleOptionSlider>
 #include <QStyleOptionSpinBox>
 #include <QStyleOptionToolButton>
+#include <QStyleOptionViewItem>
 
 #include <gtest/gtest.h>
 
@@ -64,6 +65,48 @@ TEST_F(DrawComplexTest, Slider_Vertical) {
   style_.drawComplexControl(QStyle::CC_Slider, &opt, &vPainter);
 }
 
+TEST_F(DrawComplexTest, ScrollBar_Vertical) {
+  QPixmap vPixmap{16, 120};
+  QPainter vPainter{&vPixmap};
+  QStyleOptionSlider opt;
+  opt.rect = vPixmap.rect();
+  opt.state = QStyle::State_Enabled;
+  opt.orientation = Qt::Vertical;
+  opt.minimum = 0;
+  opt.maximum = 100;
+  opt.pageStep = 20;
+  opt.sliderPosition = 40;
+  opt.subControls = QStyle::SC_All;
+  style_.drawComplexControl(QStyle::CC_ScrollBar, &opt, &vPainter);
+}
+
+TEST_F(DrawComplexTest, ScrollBar_Horizontal) {
+  QStyleOptionSlider opt;
+  opt.rect = pixmap_.rect();
+  opt.state = QStyle::State_Enabled | QStyle::State_MouseOver;
+  opt.orientation = Qt::Horizontal;
+  opt.minimum = 0;
+  opt.maximum = 100;
+  opt.pageStep = 20;
+  opt.sliderPosition = 40;
+  opt.subControls = QStyle::SC_All;
+  style_.drawComplexControl(QStyle::CC_ScrollBar, &opt, &painter_);
+}
+
+TEST_F(DrawComplexTest, ScrollBar_SubControlRectHasNoLineButtons) {
+  QStyleOptionSlider opt;
+  opt.rect = QRect{0, 0, 16, 120};
+  opt.state = QStyle::State_Enabled;
+  opt.orientation = Qt::Vertical;
+  opt.minimum = 0;
+  opt.maximum = 100;
+  opt.pageStep = 20;
+  opt.sliderPosition = 40;
+  EXPECT_TRUE(style_.subControlRect(QStyle::CC_ScrollBar, &opt, QStyle::SC_ScrollBarAddLine).isEmpty());
+  EXPECT_TRUE(style_.subControlRect(QStyle::CC_ScrollBar, &opt, QStyle::SC_ScrollBarSubLine).isEmpty());
+  EXPECT_FALSE(style_.subControlRect(QStyle::CC_ScrollBar, &opt, QStyle::SC_ScrollBarSlider).isEmpty());
+}
+
 TEST_F(DrawComplexTest, SpinBox_Normal) {
   QStyleOptionSpinBox opt;
   opt.rect = pixmap_.rect();
@@ -105,6 +148,23 @@ TEST_F(DrawComplexTest, GroupBox_Normal) {
   opt.text = "Group";
   opt.subControls = QStyle::SC_GroupBoxFrame | QStyle::SC_GroupBoxLabel;
   style_.drawComplexControl(QStyle::CC_GroupBox, &opt, &painter_);
+}
+
+TEST_F(DrawComplexTest, ItemViewItem_Selected) {
+  QStyleOptionViewItem opt;
+  opt.rect = pixmap_.rect();
+  opt.state = QStyle::State_Enabled | QStyle::State_Selected;
+  opt.text = "Item";
+  opt.palette = style_.standardPalette();
+  style_.drawControl(QStyle::CE_ItemViewItem, &opt, &painter_);
+}
+
+TEST_F(DrawComplexTest, ToolBar_NoAssertViolation) {
+  QStyleOption opt;
+  opt.rect = pixmap_.rect();
+  opt.state = QStyle::State_Enabled;
+  opt.palette = style_.standardPalette();
+  style_.drawControl(QStyle::CE_ToolBar, &opt, &painter_);
 }
 
 TEST_F(DrawComplexTest, SizeFromContents_ComboBox_MinHeight32) {
