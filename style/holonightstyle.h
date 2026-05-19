@@ -12,6 +12,9 @@ class HoloniightStyle : public QProxyStyle {
  public:
   explicit HoloniightStyle();
 
+  void polish(QPalette& palette) override;
+  void polish(QWidget* widget) override;
+
   void drawControl(ControlElement element, const QStyleOption* option, QPainter* painter,
                    const QWidget* widget = nullptr) const override;
 
@@ -20,6 +23,9 @@ class HoloniightStyle : public QProxyStyle {
 
   void drawComplexControl(ComplexControl control, const QStyleOptionComplex* option, QPainter* painter,
                           const QWidget* widget = nullptr) const override;
+
+  [[nodiscard]] QRect subControlRect(ComplexControl control, const QStyleOptionComplex* option, SubControl subControl,
+                                     const QWidget* widget = nullptr) const override;
 
   [[nodiscard]] QSize sizeFromContents(ContentsType type, const QStyleOption* option, const QSize& size,
                                        const QWidget* widget = nullptr) const override;
@@ -39,12 +45,14 @@ class HoloniightStyle : public QProxyStyle {
   [[nodiscard]] static Holonight::ColorTokens tokens();
 
   static void drawPushButtonBevelImpl(const QStyleOption* option, QPainter* painter);
+  void drawItemViewItemImpl(const QStyleOption* option, QPainter* painter, const QWidget* widget) const;
   void drawCheckBoxImpl(const QStyleOption* option, QPainter* painter, const QWidget* widget) const;
   void drawRadioButtonImpl(const QStyleOption* option, QPainter* painter, const QWidget* widget) const;
   void drawTabBarTabImpl(const QStyleOption* option, QPainter* painter, const QWidget* widget) const;
   void drawHeaderImpl(const QStyleOption* option, QPainter* painter, const QWidget* widget) const;
   static void drawPanelButtonImpl(const QStyleOption* option, QPainter* painter);
   static void drawPanelItemViewImpl(const QStyleOption* option, QPainter* painter);
+  void drawScrollBarImpl(const QStyleOptionComplex* option, QPainter* painter, const QWidget* widget) const;
   void drawSliderImpl(const QStyleOption* option, QPainter* painter, const QWidget* widget) const;
   void drawSpinBoxImpl(const QStyleOption* option, QPainter* painter, const QWidget* widget) const;
   void drawToolButtonImpl(const QStyleOption* option, QPainter* painter, const QWidget* widget) const;
