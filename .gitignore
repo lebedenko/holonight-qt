@@ -19,7 +19,7 @@ secrets.json
 *.o
 *.out
 *.so
-build/
+build*/
 cmake-build-*/
 
 # Build
