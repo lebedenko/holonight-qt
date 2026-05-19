@@ -2,6 +2,16 @@
 
 A dark Qt6 theme designed for tiling window managers (Hyprland, sway, niri).
 
+## Screenshots
+
+| Input | Navigation | Containers |
+|:---:|:---:|:---:|
+| ![Input controls](assets/images/input.png) | ![Navigation](assets/images/navigation.png) | ![Containers](assets/images/containers.png) |
+
+| Text | Feedback |
+|:---:|:---:|
+| ![Text](assets/images/text.png) | ![Feedback](assets/images/feedback.png) |
+
 ## Layers
 
 | Layer | Output | Activation |
