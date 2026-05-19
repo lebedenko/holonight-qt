@@ -26,6 +26,7 @@ add_subdirectory(palette)
 add_subdirectory(style)
 add_subdirectory(qml)
 add_subdirectory(platformtheme)
+add_subdirectory(tools)
 
 if(BUILD_TESTS)
   add_subdirectory(tests)
