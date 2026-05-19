@@ -69,11 +69,19 @@ tasks:
       - sudo cmake --install {{.BUILD_DIR}} --prefix /usr
 
   demo:
-    desc: Build and run the visual demo app
+    desc: Build and run the visual demo app (from build tree, no platform theme)
     cmds:
       - cmake -B {{.BUILD_DIR}} -G Ninja -DCMAKE_BUILD_TYPE=Debug -DBUILD_DEMO=ON
       - cmake --build {{.BUILD_DIR}} -j{{.NPROC}} --target holonight_demo
       - QT_QPA_PLATFORMTHEME=holonight ./{{.BUILD_DIR}}/demo/holonight_demo
+
+  demo:install:
+    desc: Build, install demo + theme to ~/.local, then run with full platform theme
+    cmds:
+      - cmake -B {{.BUILD_DIR}} -G Ninja -DCMAKE_BUILD_TYPE=Debug -DBUILD_DEMO=ON
+      - cmake --build {{.BUILD_DIR}} -j{{.NPROC}}
+      - cmake --install {{.BUILD_DIR}} --prefix ~/.local
+      - QT_QPA_PLATFORMTHEME=holonight ~/.local/bin/holonight_demo
 
   clean:
     desc: Remove build directory

@@ -22,3 +22,5 @@ target_link_libraries(holonight_demo PRIVATE
 )
 
 add_dependencies(holonight_demo holonight_qml)
+
+install(TARGETS holonight_demo RUNTIME DESTINATION bin)
