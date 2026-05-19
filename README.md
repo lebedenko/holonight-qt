@@ -1,6 +1,8 @@
-# holonight
+# HoloNight
 
-A dark Qt6 theme designed for tiling window managers (Hyprland, sway, niri).
+HoloNight Qt Theme is the Qt/Qt Quick Controls theme component of the broader HoloNight desktop visual system.
+
+This repository contains only the Qt theme implementation. The shell, icon theme, and GTK theme are planned as separate repositories.
 
 ## Screenshots
 
