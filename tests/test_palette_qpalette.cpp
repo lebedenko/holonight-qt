@@ -1,0 +1,72 @@
+// SPDX-License-Identifier: GPL-3.0-or-later
+// SPDX-FileCopyrightText: 2026 Andrii L <lebeden@gmail.com>
+
+#include "holonight/palette.h"
+
+#include <gtest/gtest.h>
+
+class PaletteTest : public ::testing::Test {
+ protected:
+  QPalette palette_{Holonight::buildPalette(Holonight::darkTokens())};
+  QPalette defaultPalette_;
+};
+
+TEST_F(PaletteTest, ActiveGroupPopulated) {
+  const QList<QPalette::ColorRole> roles = {
+      QPalette::Window,     QPalette::WindowText,  QPalette::Base,        QPalette::Text,
+      QPalette::Button,     QPalette::ButtonText,  QPalette::Highlight,   QPalette::HighlightedText,
+      QPalette::Link,       QPalette::Mid,         QPalette::Dark,        QPalette::Shadow,
+      QPalette::BrightText, QPalette::ToolTipBase, QPalette::ToolTipText,
+  };
+
+  for (const auto role : roles) {
+    EXPECT_NE(palette_.color(QPalette::Active, role), defaultPalette_.color(QPalette::Active, role))
+        << "Role " << static_cast<int>(role) << " not set in Active group";
+  }
+}
+
+TEST_F(PaletteTest, InactiveGroupMatchesActive) {
+  const QList<QPalette::ColorRole> roles = {
+      QPalette::Window, QPalette::WindowText, QPalette::Base, QPalette::Text,
+      QPalette::Button, QPalette::Highlight,  QPalette::Mid,  QPalette::Shadow,
+  };
+
+  for (const auto role : roles) {
+    EXPECT_EQ(palette_.color(QPalette::Inactive, role), palette_.color(QPalette::Active, role))
+        << "Inactive role " << static_cast<int>(role) << " differs from Active unexpectedly";
+  }
+}
+
+TEST_F(PaletteTest, DisabledGroupDimmed) {
+  const QList<QPalette::ColorRole> dimmedRoles = {
+      QPalette::WindowText,
+      QPalette::Text,
+      QPalette::ButtonText,
+      QPalette::BrightText,
+  };
+
+  for (const auto role : dimmedRoles) {
+    const QColor activeColor = palette_.color(QPalette::Active, role);
+    const QColor disabledColor = palette_.color(QPalette::Disabled, role);
+    EXPECT_NE(activeColor, disabledColor)
+        << "Disabled role " << static_cast<int>(role) << " is identical to Active — dimming not applied";
+  }
+}
+
+TEST_F(PaletteTest, DisabledFillRolesUnchanged) {
+  const QList<QPalette::ColorRole> fillRoles = {
+      QPalette::Window,
+      QPalette::Base,
+      QPalette::Button,
+  };
+
+  for (const auto role : fillRoles) {
+    EXPECT_EQ(palette_.color(QPalette::Disabled, role), palette_.color(QPalette::Active, role))
+        << "Disabled fill role " << static_cast<int>(role) << " should match Active";
+  }
+}
+
+TEST_F(PaletteTest, HighlightIsHolonightPrimary) {
+  const Holonight::ColorTokens tok = Holonight::darkTokens();
+  EXPECT_EQ(palette_.color(QPalette::Active, QPalette::Highlight), tok.primary);
+}

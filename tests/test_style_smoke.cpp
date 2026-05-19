@@ -1,0 +1,29 @@
+// SPDX-License-Identifier: GPL-3.0-or-later
+// SPDX-FileCopyrightText: 2026 Andrii L <lebeden@gmail.com>
+
+#include "../style/holonightstyle.h"
+#include "holonight/palette.h"
+
+#include <gtest/gtest.h>
+
+TEST(StyleSmoke, InstantiatesWithoutCrash) {
+  HoloniightStyle style;
+  SUCCEED();
+}
+
+TEST(StyleSmoke, StandardPaletteNonDefault) {
+  HoloniightStyle style;
+  const QPalette pal = style.standardPalette();
+  const QPalette defaultPal;
+  EXPECT_NE(pal.color(QPalette::Active, QPalette::Window), defaultPal.color(QPalette::Active, QPalette::Window));
+}
+
+TEST(StyleSmoke, ScrollBarExtentIsEight) {
+  HoloniightStyle style;
+  EXPECT_EQ(style.pixelMetric(QStyle::PM_ScrollBarExtent), 8);
+}
+
+TEST(StyleSmoke, ButtonMarginIsSix) {
+  HoloniightStyle style;
+  EXPECT_EQ(style.pixelMetric(QStyle::PM_ButtonMargin), 6);
+}

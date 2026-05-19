@@ -1,0 +1,81 @@
+version: "3"
+
+vars:
+  BUILD_DIR: build
+  NPROC:
+    sh: nproc
+
+tasks:
+  configure:
+    desc: Configure (Debug + tests)
+    cmds:
+      - cmake -B {{.BUILD_DIR}} -G Ninja -DCMAKE_BUILD_TYPE=Debug -DBUILD_TESTS=ON
+    sources:
+      - CMakeLists.txt
+      - "*/CMakeLists.txt"
+    generates:
+      - "{{.BUILD_DIR}}/build.ninja"
+
+  configure:release:
+    desc: Configure (Release)
+    cmds:
+      - cmake -B {{.BUILD_DIR}} -G Ninja -DCMAKE_BUILD_TYPE=Release -DBUILD_TESTS=ON
+
+  configure:demo:
+    desc: Configure (Debug + demo app)
+    cmds:
+      - cmake -B {{.BUILD_DIR}} -G Ninja -DCMAKE_BUILD_TYPE=Debug -DBUILD_DEMO=ON
+
+  build:
+    desc: Build
+    deps: [configure]
+    cmds:
+      - cmake --build {{.BUILD_DIR}} -j{{.NPROC}}
+
+  build:release:
+    desc: Build (Release)
+    deps: [configure:release]
+    cmds:
+      - cmake --build {{.BUILD_DIR}} -j{{.NPROC}}
+
+  test:
+    desc: Run tests (headless)
+    deps: [build]
+    cmds:
+      - QT_QPA_PLATFORM=offscreen ctest --test-dir {{.BUILD_DIR}} --output-on-failure
+
+  lint:
+    desc: Run clang-tidy
+    cmds:
+      - run-clang-tidy -p {{.BUILD_DIR}}
+
+  verify:
+    desc: Build + lint + test (pre-commit checklist)
+    cmds:
+      - task: build
+      - task: lint
+      - task: test
+
+  install:local:
+    desc: Install to ~/.local (no sudo)
+    deps: [build]
+    cmds:
+      - cmake --install {{.BUILD_DIR}} --prefix ~/.local
+
+  install:system:
+    desc: Install to /usr (requires sudo)
+    deps: [build:release]
+    cmds:
+      - sudo cmake --install {{.BUILD_DIR}} --prefix /usr
+
+  demo:
+    desc: Build and run the visual demo app
+    cmds:
+      - cmake -B {{.BUILD_DIR}} -G Ninja -DCMAKE_BUILD_TYPE=Debug -DBUILD_DEMO=ON
+      - cmake --build {{.BUILD_DIR}} -j{{.NPROC}} --target holonight_demo
+      - QT_QPA_PLATFORMTHEME=holonight ./{{.BUILD_DIR}}/demo/holonight_demo
+
+  clean:
+    desc: Remove build directory
+    cmds:
+      - rm -rf {{.BUILD_DIR}}
