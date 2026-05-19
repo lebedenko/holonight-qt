@@ -27,8 +27,17 @@ struct ColorTokens {
   QColor onSecondary;  // #dcdce8  Text/icon on secondary background
 
   // Outline / border
-  QColor outline;         // #4a4a5e  Default border, separator
-  QColor outlineVariant;  // #34344a  Subtle divider, inactive border
+  // DEPRECATED: use borderPassive, borderHover, borderFocus, borderActive, or borderUrgent instead
+  QColor outline;         // #00a0c8  Default border, separator
+  // DEPRECATED: use borderPassive, borderHover, borderFocus, borderActive, or borderUrgent instead
+  QColor outlineVariant;  // #565f89  Subtle divider, inactive border
+
+  // Semantic borders — surface luminance ordering: surface < surfaceVariant < surfaceContainer < secondary
+  QColor borderPassive;  // #565f89  Passive frame border — inactive controls, list views, separators
+  QColor borderHover;    // #7dcfff ~30% alpha  Semi-transparent hover-state border overlay
+  QColor borderFocus;    // #00e0ff  Keyboard focus ring border (== focusRing by design)
+  QColor borderActive;   // #7aa2f7  Selected / active state border
+  QColor borderUrgent;   // #f7768e  Critical / destructive / error state border
 
   // State overlays
   QColor hover;      // #ffffff1a  12% white overlay for hover

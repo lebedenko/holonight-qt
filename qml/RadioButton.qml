@@ -32,7 +32,7 @@ T.RadioButton {
         border.color: {
             if (!control.enabled)   return HoloniightPalette.onSurfaceDisabled
             if (control.checked)    return color
-            return control.hovered ? HoloniightPalette.primary : HoloniightPalette.outline
+            return control.hovered ? HoloniightPalette.borderActive : HoloniightPalette.borderPassive
         }
         border.width: 1
 

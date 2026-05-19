@@ -106,6 +106,55 @@ TEST_F(ContrastTest, OutlineVsSurfaceHover) {
       << "outline on surfaceHover fails WCAG 1.4.11";
 }
 
+// ── Semantic border tokens: WCAG 1.4.11 requires ≥3:1 for UI components ─────
+
+TEST_F(ContrastTest, BorderFocusVsSurface) {
+  EXPECT_GE(contrastRatio(tok_.borderFocus, tok_.surface), 3.0)
+      << "borderFocus on surface fails WCAG 1.4.11";
+}
+
+TEST_F(ContrastTest, BorderFocusVsSecondary) {
+  EXPECT_GE(contrastRatio(tok_.borderFocus, tok_.secondary), 3.0)
+      << "borderFocus on panel fails WCAG 1.4.11";
+}
+
+TEST_F(ContrastTest, BorderActiveVsSurface) {
+  EXPECT_GE(contrastRatio(tok_.borderActive, tok_.surface), 3.0)
+      << "borderActive on surface fails WCAG 1.4.11";
+}
+
+TEST_F(ContrastTest, BorderActiveVsSecondary) {
+  EXPECT_GE(contrastRatio(tok_.borderActive, tok_.secondary), 3.0)
+      << "borderActive on panel fails WCAG 1.4.11";
+}
+
+TEST_F(ContrastTest, BorderUrgentVsSurface) {
+  EXPECT_GE(contrastRatio(tok_.borderUrgent, tok_.surface), 3.0)
+      << "borderUrgent on surface fails WCAG 1.4.11";
+}
+
+TEST_F(ContrastTest, BorderUrgentVsSecondary) {
+  EXPECT_GE(contrastRatio(tok_.borderUrgent, tok_.secondary), 3.0)
+      << "borderUrgent on panel fails WCAG 1.4.11";
+}
+
+// ── Updated surface tokens: text contrast ────────────────────────────────────
+
+TEST_F(ContrastTest, OnSurfaceVsNewSurface) {
+  EXPECT_GE(contrastRatio(tok_.onSurface, tok_.surface), 4.5)
+      << "onSurface on new surface (#10131f) fails WCAG AA";
+}
+
+TEST_F(ContrastTest, OnSurfaceVsNewSurfaceVariant) {
+  EXPECT_GE(contrastRatio(tok_.onSurface, tok_.surfaceVariant), 4.5)
+      << "onSurface on new surfaceVariant (#161925) fails WCAG AA";
+}
+
+TEST_F(ContrastTest, OnSurfaceVsNewSurfaceContainer) {
+  EXPECT_GE(contrastRatio(tok_.onSurface, tok_.surfaceContainer), 4.5)
+      << "onSurface on new surfaceContainer (#1a1b26) fails WCAG AA";
+}
+
 // ── Intentionally untested pairs (WCAG exemptions) ──────────────────────────
 //
 // onSurfaceVariant (#565f89) achieves ~2.35–2.90:1 against all surfaces.
@@ -119,3 +168,13 @@ TEST_F(ContrastTest, OutlineVsSurfaceHover) {
 // onSurfaceDisabled (#3b3f58) achieves ~1.6:1 against surface.
 // Used exclusively for disabled/inactive UI elements.
 // WCAG 2.1 SC 1.4.3 explicitly exempts disabled components from contrast requirements.
+//
+// borderPassive (#565f89) achieves ~2.35–2.99:1 on all surfaces.
+// Same hex as outlineVariant; same exemption applies: passive/inactive borders are
+// exempt from WCAG 1.4.11 (which applies to interactive-state components only).
+// See docs/holonight-design-deviations.md.
+//
+// borderHover (#7dcfff at ~30% alpha) composited onto any surface achieves ~2.03–2.06:1.
+// Hover is a transient state overlay; its contrast is supplemented by the hover fill
+// (surfaceHover background brightens the surface before the border is drawn).
+// See docs/holonight-design-deviations.md.

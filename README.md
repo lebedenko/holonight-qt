@@ -31,26 +31,42 @@ A KDE color scheme (`data/holonight.colors`) is also installed to `share/color-s
 
 Colors are based on the [HoloNight](https://github.com/topics/kde-color-scheme) KDE color scheme — a futuristic cyan/violet dark palette. All tokens are defined in `palette/holonight/palette.h` and originate from `darkTokens()`.
 
+**Surface elevation** (ordered darkest to lightest):
+
 | Role | Value | Usage |
 |---|---|---|
-| `surface` | `#121626` | Main background |
-| `surfaceVariant` | `#1a1b26` | View / content background |
-| `surfaceContainer` | `#1f2335` | Cards, grouped containers |
-| `surfaceHover` | `#1e2233` | Hover-state filled surface |
+| `surface` | `#10131f` | Main background |
+| `surfaceVariant` | `#161925` | View / content background |
+| `surfaceContainer` | `#1a1b26` | Cards, grouped containers |
+| `secondary` | `#24283b` | Panel / menu / popup surface |
+| `surfaceHover` | `#1e2233` | Hover-state filled surface overlay |
 | `surfaceInverse` | `#0d1117` | ToolTip / pop-out surface |
+
+**Content and text:**
+
+| Role | Value | Usage |
+|---|---|---|
 | `onSurface` | `#c0caf5` | Primary text and icons |
-| `onSurfaceVariant` | `#565f89` | Disabled / placeholder text (WCAG exempt) |
+| `onSurfaceVariant` | `#565f89` | Disabled / placeholder text (WCAG 1.4.3 exempt) |
 | `onSurfaceDisabled` | `#3b3f58` | Inactive UI elements (WCAG 1.4.3 exempt) |
 | `onSurfaceInverse` | `#c0caf5` | Text on inverse surface |
 | `primary` | `#00a0dc` | Selection highlight fill |
-| `focusRing` | `#00e0ff` | Keyboard focus indicator (pure cyan) |
-| `outline` | `#00a0c8` | Borders, separators |
 | `error` | `#f7768e` | Destructive / error |
 | `warning` | `#ff9e64` | Caution |
 | `success` | `#9ece6a` | Confirmation |
 | `shadow` | `#000000` | Drop-shadow base (alpha applied at paint time) |
 
-WCAG AA contrast (4.5:1) is enforced by the test suite for all text and selection pairs. Non-text UI components (borders, focus rings) are tested at the WCAG 1.4.11 threshold of 3:1.
+**Semantic border tokens:**
+
+| Role | Value | Usage |
+|---|---|---|
+| `borderPassive` | `#565f89` | Passive / inactive control frames and separators (WCAG 1.4.11 exempt — not interactive) |
+| `borderHover` | `#7dcfff` ~30% α | Transient hover-state border overlay (semi-transparent by design) |
+| `borderFocus` | `#00e0ff` | Keyboard focus ring border |
+| `borderActive` | `#7aa2f7` | Selected / active state border |
+| `borderUrgent` | `#f7768e` | Error / destructive state border |
+
+WCAG AA contrast (4.5:1) is enforced by the test suite for all text and selection pairs. Non-text UI components (borders, focus rings) are tested at the WCAG 1.4.11 threshold of 3:1. Known intentional deviations are documented in [`docs/holonight-design-deviations.md`](docs/holonight-design-deviations.md).
 
 ## Requirements
 

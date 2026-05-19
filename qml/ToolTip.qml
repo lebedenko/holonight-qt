@@ -31,7 +31,7 @@ T.ToolTip {
 
     background: Rectangle {
         color: HoloniightPalette.surfaceInverse
-        border.color: HoloniightPalette.outline
+        border.color: HoloniightPalette.borderPassive
         border.width: 1
         radius: 4
     }

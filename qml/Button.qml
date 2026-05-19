@@ -41,7 +41,7 @@ T.Button {
             return HoloniightPalette.secondary
         }
 
-        border.color: control.visualFocus ? HoloniightPalette.focusRing : HoloniightPalette.outline
+        border.color: control.visualFocus ? HoloniightPalette.borderFocus : HoloniightPalette.borderPassive
         border.width: control.visualFocus ? 2 : 1
 
         opacity: control.enabled ? 1.0 : 0.5

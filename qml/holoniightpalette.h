@@ -35,9 +35,16 @@ class HoloniightPalette : public QObject {
   Q_PROPERTY(QColor secondary READ secondary CONSTANT)
   Q_PROPERTY(QColor onSecondary READ onSecondary CONSTANT)
 
-  // Outline / border
+  // Outline / border (deprecated — kept for backward compatibility)
   Q_PROPERTY(QColor outline READ outline CONSTANT)
   Q_PROPERTY(QColor outlineVariant READ outlineVariant CONSTANT)
+
+  // Semantic borders
+  Q_PROPERTY(QColor borderPassive READ borderPassive CONSTANT)
+  Q_PROPERTY(QColor borderHover READ borderHover CONSTANT)
+  Q_PROPERTY(QColor borderFocus READ borderFocus CONSTANT)
+  Q_PROPERTY(QColor borderActive READ borderActive CONSTANT)
+  Q_PROPERTY(QColor borderUrgent READ borderUrgent CONSTANT)
 
   // State overlays
   Q_PROPERTY(QColor hover READ hover CONSTANT)
@@ -73,6 +80,11 @@ class HoloniightPalette : public QObject {
   [[nodiscard]] QColor onSecondary() const { return tok_.onSecondary; }
   [[nodiscard]] QColor outline() const { return tok_.outline; }
   [[nodiscard]] QColor outlineVariant() const { return tok_.outlineVariant; }
+  [[nodiscard]] QColor borderPassive() const { return tok_.borderPassive; }
+  [[nodiscard]] QColor borderHover() const { return tok_.borderHover; }
+  [[nodiscard]] QColor borderFocus() const { return tok_.borderFocus; }
+  [[nodiscard]] QColor borderActive() const { return tok_.borderActive; }
+  [[nodiscard]] QColor borderUrgent() const { return tok_.borderUrgent; }
   [[nodiscard]] QColor hover() const { return tok_.hover; }
   [[nodiscard]] QColor pressed() const { return tok_.pressed; }
   [[nodiscard]] QColor focusRing() const { return tok_.focusRing; }

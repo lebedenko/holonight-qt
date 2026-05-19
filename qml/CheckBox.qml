@@ -33,7 +33,7 @@ T.CheckBox {
         border.color: {
             if (!control.enabled)                     return HoloniightPalette.onSurfaceDisabled
             if (control.checkState !== Qt.Unchecked)  return color
-            return control.hovered ? HoloniightPalette.primary : HoloniightPalette.outline
+            return control.hovered ? HoloniightPalette.borderActive : HoloniightPalette.borderPassive
         }
         border.width: 1
 

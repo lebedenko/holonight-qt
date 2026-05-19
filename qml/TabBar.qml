@@ -37,7 +37,7 @@ T.TabBar {
             anchors.bottom: parent.bottom
             width: parent.width
             height: 1
-            color: HoloniightPalette.outline
+            color: HoloniightPalette.borderPassive
         }
     }
 }

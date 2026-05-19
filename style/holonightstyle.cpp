@@ -152,7 +152,7 @@ void HoloniightStyle::drawControl(ControlElement element, const QStyleOption* op
       painter->setRenderHint(QPainter::Antialiasing);
       painter->setPen(Qt::NoPen);
       const bool hovered = (option->state & State_MouseOver) != 0U;
-      painter->setBrush(hovered ? tok.primary : tok.outlineVariant);
+      painter->setBrush(hovered ? tok.primary : tok.borderPassive);
       painter->drawRoundedRect(option->rect.adjusted(1, 1, -1, -1), 6.0, 6.0);
       painter->restore();
       return;
@@ -179,7 +179,7 @@ void HoloniightStyle::drawControl(ControlElement element, const QStyleOption* op
       painter->setPen(Qt::NoPen);
       painter->setBrush(tok.surface);
       painter->drawRect(option->rect);
-      painter->setPen(QPen{tok.outline, 1});
+      painter->setPen(QPen{tok.borderPassive, 1});
       if ((option->state & State_Horizontal) != 0U) {
         const int centerX = option->rect.center().x();
         painter->drawLine(centerX, option->rect.top() + 4, centerX, option->rect.bottom() - 4);
@@ -212,7 +212,7 @@ void HoloniightStyle::drawPushButtonBevelImpl(const QStyleOption* option, QPaint
     fill = fill.lighter(108);
   }
   const int borderWidth = focused ? 2 : 1;
-  painter->setPen(QPen{focused ? tok.focusRing : tok.outline, static_cast<qreal>(borderWidth)});
+  painter->setPen(QPen{focused ? tok.borderFocus : tok.borderPassive, static_cast<qreal>(borderWidth)});
   painter->setBrush(fill);
   painter->drawRoundedRect(option->rect.adjusted(borderWidth, borderWidth, -borderWidth, -borderWidth), 4.0, 4.0);
   painter->restore();
@@ -296,7 +296,7 @@ void HoloniightStyle::drawTabBarTabImpl(const QStyleOption* option, QPainter* pa
   painter->setBrush(bgColor);
   painter->drawRect(option->rect);
   if (selected) {
-    painter->setPen(QPen{tok.primary, 2});
+    painter->setPen(QPen{tok.borderActive, 2});
     const QRect tabRect = option->rect;
     painter->drawLine(tabRect.left() + 2, tabRect.bottom(), tabRect.right() - 2, tabRect.bottom());
   }
@@ -315,7 +315,7 @@ void HoloniightStyle::drawHeaderImpl(const QStyleOption* option, QPainter* paint
   painter->setPen(Qt::NoPen);
   painter->setBrush(hovered ? tok.surfaceHover : tok.surfaceVariant);
   painter->drawRect(opt->rect);
-  painter->setPen(QPen{tok.outline, 1});
+  painter->setPen(QPen{tok.borderPassive, 1});
   painter->drawLine(opt->rect.bottomLeft(), opt->rect.bottomRight());
   painter->drawLine(opt->rect.topRight(), opt->rect.bottomRight());
   if (opt->sortIndicator != QStyleOptionHeader::None) {
@@ -375,7 +375,7 @@ void HoloniightStyle::drawPanelButtonImpl(const QStyleOption* option, QPainter* 
     fill = fill.lighter(108);
   }
   const int borderWidth = focused ? 2 : 1;
-  painter->setPen(QPen{focused ? tok.focusRing : tok.outline, static_cast<qreal>(borderWidth)});
+  painter->setPen(QPen{focused ? tok.borderFocus : tok.borderPassive, static_cast<qreal>(borderWidth)});
   painter->setBrush(fill);
   painter->drawRoundedRect(option->rect.adjusted(borderWidth, borderWidth, -borderWidth, -borderWidth), 4.0, 4.0);
   painter->restore();
@@ -432,7 +432,7 @@ void HoloniightStyle::drawPrimitive(PrimitiveElement element, const QStyleOption
     case PE_Frame:
     case PE_FrameTabWidget: {
       painter->save();
-      painter->setPen(tok.outline);
+      painter->setPen(tok.borderPassive);
       painter->setBrush(Qt::NoBrush);
       painter->drawRect(option->rect.adjusted(0, 0, -1, -1));
       painter->restore();
@@ -450,7 +450,7 @@ void HoloniightStyle::drawPrimitive(PrimitiveElement element, const QStyleOption
 
     case PE_FrameMenu: {
       painter->save();
-      painter->setPen(QPen{tok.outline, 1});
+      painter->setPen(QPen{tok.borderPassive, 1});
       painter->setBrush(Qt::NoBrush);
       painter->drawRect(option->rect.adjusted(0, 0, -1, -1));
       painter->restore();
@@ -460,7 +460,7 @@ void HoloniightStyle::drawPrimitive(PrimitiveElement element, const QStyleOption
     case PE_PanelMenu: {
       painter->save();
       painter->setPen(Qt::NoPen);
-      painter->setBrush(tok.surfaceVariant);
+      painter->setBrush(tok.secondary);
       painter->drawRect(option->rect);
       painter->restore();
       return;
@@ -468,7 +468,7 @@ void HoloniightStyle::drawPrimitive(PrimitiveElement element, const QStyleOption
 
     case PE_PanelTipLabel: {
       painter->save();
-      painter->setPen(QPen{tok.outline, 1});
+      painter->setPen(QPen{tok.borderPassive, 1});
       painter->setBrush(tok.surfaceInverse);
       painter->drawRect(option->rect.adjusted(0, 0, -1, -1));
       painter->restore();
@@ -524,7 +524,7 @@ void HoloniightStyle::drawPrimitive(PrimitiveElement element, const QStyleOption
 
     case PE_IndicatorToolBarSeparator: {
       painter->save();
-      painter->setPen(tok.outline);
+      painter->setPen(tok.borderPassive);
       const int centerX = option->rect.center().x();
       painter->drawLine(centerX, option->rect.top() + 4, centerX, option->rect.bottom() - 4);
       painter->restore();
@@ -542,11 +542,11 @@ void HoloniightStyle::drawPrimitive(PrimitiveElement element, const QStyleOption
       const bool enabled = (option->state & State_Enabled) != 0U;
       painter->setBrush(tok.surface);
       const int borderWidth = focused ? 2 : 1;
-      QColor border = tok.outline;
+      QColor border = tok.borderPassive;
       if (focused) {
-        border = tok.focusRing;
+        border = tok.borderFocus;
       } else if (!enabled) {
-        border = tok.outlineVariant;
+        border = tok.borderPassive;  // TODO(borderUrgent): if error state added, use tok.borderUrgent here
       }
       painter->setPen(QPen{border, static_cast<qreal>(borderWidth)});
       painter->drawRoundedRect(option->rect.adjusted(borderWidth, borderWidth, -borderWidth, -borderWidth), 4.0, 4.0);
@@ -557,7 +557,7 @@ void HoloniightStyle::drawPrimitive(PrimitiveElement element, const QStyleOption
     case PE_FrameGroupBox: {
       painter->save();
       painter->setRenderHint(QPainter::Antialiasing);
-      painter->setPen(QPen{tok.outline, 1});
+      painter->setPen(QPen{tok.borderPassive, 1});
       painter->setBrush(Qt::NoBrush);
       painter->drawRoundedRect(option->rect.adjusted(0, 0, -1, -1), 4.0, 4.0);
       painter->restore();
@@ -569,7 +569,7 @@ void HoloniightStyle::drawPrimitive(PrimitiveElement element, const QStyleOption
       painter->setPen(Qt::NoPen);
       painter->setBrush(tok.surface);
       painter->drawRect(option->rect);
-      painter->setPen(QPen{tok.outline, 1});
+      painter->setPen(QPen{tok.borderPassive, 1});
       painter->drawLine(option->rect.topLeft(), option->rect.topRight());
       painter->restore();
       return;
@@ -600,11 +600,11 @@ void HoloniightStyle::drawComplexControl(ComplexControl control, const QStyleOpt
       const bool enabled = (opt->state & State_Enabled) != 0U;
       const int borderWidth = focused ? 2 : 1;
       const QColor fill = hovered ? tok.surfaceHover : tok.surface;
-      QColor border = tok.outline;
+      QColor border = tok.borderPassive;
       if (focused) {
-        border = tok.focusRing;
+        border = tok.borderFocus;
       } else if (!enabled) {
-        border = tok.outlineVariant;
+        border = tok.borderPassive;  // TODO(borderUrgent): if error state added, use tok.borderUrgent here
       }
       painter->setBrush(fill);
       painter->setPen(QPen{border, static_cast<qreal>(borderWidth)});
@@ -646,7 +646,7 @@ void HoloniightStyle::drawSliderImpl(const QStyleOption* option, QPainter* paint
   const QRect handleRect = subControlRect(CC_Slider, opt, SC_SliderHandle, widget);
 
   painter->setPen(Qt::NoPen);
-  painter->setBrush(tok.outline);
+  painter->setBrush(tok.borderPassive);
   if (horizontal) {
     const QRect fullGroove{grooveRect.left(), grooveRect.center().y() - 2, grooveRect.width(), 4};
     painter->drawRoundedRect(fullGroove, 2.0, 2.0);
@@ -676,7 +676,7 @@ void HoloniightStyle::drawSliderImpl(const QStyleOption* option, QPainter* paint
     handleColor = tok.primaryHover;
   }
   painter->setBrush(handleColor);
-  painter->setPen(QPen{tok.outline, 1});
+  painter->setPen(QPen{tok.borderPassive, 1});
   painter->drawRoundedRect(handleRect.adjusted(1, 1, -1, -1), 2.0, 2.0);
   painter->restore();
 }
@@ -692,18 +692,18 @@ void HoloniightStyle::drawSpinBoxImpl(const QStyleOption* option, QPainter* pain
   const bool focused = (opt->state & State_HasFocus) != 0U;
   const bool enabled = (opt->state & State_Enabled) != 0U;
   const int borderWidth = focused ? 2 : 1;
-  QColor border = tok.outline;
+  QColor border = tok.borderPassive;
   if (focused) {
-    border = tok.focusRing;
+    border = tok.borderFocus;
   } else if (!enabled) {
-    border = tok.outlineVariant;
+    border = tok.borderPassive;  // TODO(borderUrgent): if error state added, use tok.borderUrgent here
   }
   painter->setBrush(tok.surface);
   painter->setPen(QPen{border, static_cast<qreal>(borderWidth)});
   painter->drawRoundedRect(opt->rect.adjusted(borderWidth, borderWidth, -borderWidth, -borderWidth), 4.0, 4.0);
 
   const QRect upRect = subControlRect(CC_SpinBox, opt, SC_SpinBoxUp, widget);
-  painter->setPen(QPen{tok.outline, 1});
+  painter->setPen(QPen{tok.borderPassive, 1});
   painter->drawLine(upRect.left(), opt->rect.top() + 2, upRect.left(), opt->rect.bottom() - 2);
 
   const bool upHovered = (opt->activeSubControls & SC_SpinBoxUp) != 0U;
@@ -753,7 +753,7 @@ void HoloniightStyle::drawToolButtonImpl(const QStyleOption* option, QPainter* p
 
   if ((opt->features & QStyleOptionToolButton::MenuButtonPopup) != 0U) {
     const QRect menuRect = subControlRect(CC_ToolButton, opt, SC_ToolButtonMenu, widget);
-    painter->setPen(QPen{tok.outlineVariant, 1});
+    painter->setPen(QPen{tok.borderPassive, 1});
     painter->drawLine(menuRect.left(), opt->rect.top() + 3, menuRect.left(), opt->rect.bottom() - 3);
     paintArrow(painter, menuRect, 0, tok.onSurface);
   }
@@ -770,7 +770,7 @@ void HoloniightStyle::drawGroupBoxImpl(const QStyleOption* option, QPainter* pai
   painter->save();
   painter->setRenderHint(QPainter::Antialiasing);
   const QRect frameRect = subControlRect(CC_GroupBox, opt, SC_GroupBoxFrame, widget);
-  painter->setPen(QPen{tok.outline, 1});
+  painter->setPen(QPen{tok.borderPassive, 1});
   painter->setBrush(Qt::NoBrush);
   painter->drawRoundedRect(frameRect.adjusted(0, 0, -1, -1), 4.0, 4.0);
 

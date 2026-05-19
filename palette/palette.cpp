@@ -8,12 +8,12 @@ namespace Holonight {
 ColorTokens darkTokens() {
   ColorTokens tok;
 
-  // HoloNight Colors:Complementary — deepest background
-  tok.surface = QColor{0x12, 0x16, 0x26};          // #121626
-  // HoloNight Colors:View — view/content background
-  tok.surfaceVariant = QColor{0x1a, 0x1b, 0x26};   // #1a1b26
-  // HoloNight Colors:View:BackgroundAlternate — card/container background
-  tok.surfaceContainer = QColor{0x1f, 0x23, 0x35}; // #1f2335
+  // HoloNight Colors:Complementary — deepest background (design system: Background #10131f)
+  tok.surface = QColor{0x10, 0x13, 0x1f};          // #10131f
+  // HoloNight Colors:View — intermediate surface tier (design system: Surface #161925)
+  tok.surfaceVariant = QColor{0x16, 0x19, 0x25};   // #161925
+  // HoloNight Colors:View:BackgroundAlternate — card/container (design system: SurfaceElevated #1a1b26)
+  tok.surfaceContainer = QColor{0x1a, 0x1b, 0x26}; // #1a1b26
   // HoloNight ForegroundNormal — contrast ≥9:1 on all surfaces (WCAG AAA)
   tok.onSurface = QColor{0xc0, 0xca, 0xf5};        // #c0caf5
   // HoloNight ForegroundInactive — disabled/placeholder text only; WCAG 1.4.3 exempt
@@ -30,10 +30,19 @@ ColorTokens darkTokens() {
   tok.secondary = QColor{0x24, 0x28, 0x3b};        // #24283b
   tok.onSecondary = QColor{0xc0, 0xca, 0xf5};      // #c0caf5  contrast 9.02:1 (WCAG AAA)
 
-  // Muted cyan border — subordinate to focusRing; contrast ≥4.76:1 on all surfaces
+  // Muted cyan border — DEPRECATED: use semantic border tokens
   tok.outline = QColor{0x00, 0xa0, 0xc8};          // #00a0c8
-  // HoloNight ForegroundInactive — decorative separators only (non-interactive)
+  // HoloNight ForegroundInactive — DEPRECATED: use semantic border tokens
   tok.outlineVariant = QColor{0x56, 0x5f, 0x89};   // #565f89
+
+  // Semantic borders — matches outlineVariant; value may diverge in a future revision
+  tok.borderPassive = QColor{0x56, 0x5f, 0x89};      // #565f89  passive frame border
+  // Semi-transparent overlay; alpha 0x4d = 77 ≈ 30% — intentional (see deviation log)
+  tok.borderHover = QColor{0x7d, 0xcf, 0xff, 0x4d};  // #7dcfff ~30%  hover-state border
+  // Same as focusRing by design — see palette.h comment
+  tok.borderFocus = QColor{0x00, 0xe0, 0xff};         // #00e0ff  keyboard focus ring
+  tok.borderActive = QColor{0x7a, 0xa2, 0xf7};        // #7aa2f7  selected/active border
+  tok.borderUrgent = QColor{0xf7, 0x76, 0x8e};        // #f7768e  critical/error border
 
   // Semi-transparent cyan overlays — alpha < 255 is intentional
   tok.hover = QColor{0x00, 0xe0, 0xff, 0x1a};      // rgba(0,224,255, 10%)

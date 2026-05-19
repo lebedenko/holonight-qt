@@ -52,9 +52,9 @@ T.TextField {
 
         border.width: (control.activeFocus || control.hasError) ? 2 : 1
         border.color: {
-            if (control.hasError)       return HoloniightPalette.error
-            if (control.activeFocus)    return HoloniightPalette.focusRing
-            return HoloniightPalette.outline
+            if (control.hasError)       return HoloniightPalette.borderUrgent
+            if (control.activeFocus)    return HoloniightPalette.borderFocus
+            return HoloniightPalette.borderPassive
         }
 
         opacity: control.enabled ? 1.0 : 0.5

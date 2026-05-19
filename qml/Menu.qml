@@ -29,7 +29,7 @@ T.Menu {
     background: Rectangle {
         implicitWidth: 180
         color: HoloniightPalette.surface
-        border.color: HoloniightPalette.outline
+        border.color: HoloniightPalette.borderPassive
         border.width: 1
         radius: 4
     }

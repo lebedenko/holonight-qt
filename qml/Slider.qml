@@ -30,7 +30,7 @@ T.Slider {
             return HoloniightPalette.primary
         }
 
-        border.color: HoloniightPalette.outline
+        border.color: HoloniightPalette.borderPassive
         border.width: 1
 
         Rectangle {
@@ -59,7 +59,7 @@ T.Slider {
             width: control.horizontal ? parent.width : 4
             height: control.horizontal ? 4 : parent.height
             radius: 2
-            color: HoloniightPalette.outline
+            color: HoloniightPalette.borderPassive
         }
 
         // Filled portion

@@ -80,7 +80,7 @@ T.ComboBox {
         implicitHeight: 32
         radius: 4
         color: control.hovered ? HoloniightPalette.surfaceHover : HoloniightPalette.surface
-        border.color: control.visualFocus || control.popup.visible ? HoloniightPalette.focusRing : (control.enabled ? HoloniightPalette.outline : HoloniightPalette.outlineVariant)
+        border.color: control.visualFocus || control.popup.visible ? HoloniightPalette.borderFocus : (control.enabled ? HoloniightPalette.borderPassive : HoloniightPalette.borderPassive)
         border.width: (control.visualFocus || control.popup.visible) ? 2 : 1
     }
 
@@ -100,7 +100,7 @@ T.ComboBox {
 
         background: Rectangle {
             color: HoloniightPalette.surface
-            border.color: HoloniightPalette.outline
+            border.color: HoloniightPalette.borderPassive
             border.width: 1
             radius: 4
         }

@@ -29,7 +29,7 @@ T.Switch {
             color: {
                 if (!control.enabled)  return HoloniightPalette.surfaceVariant
                 if (control.checked)   return control.hovered ? HoloniightPalette.primaryHover : HoloniightPalette.primary
-                return control.hovered ? HoloniightPalette.onSurfaceVariant : HoloniightPalette.outline
+                return control.hovered ? HoloniightPalette.onSurfaceVariant : HoloniightPalette.borderPassive
             }
 
             Behavior on color { ColorAnimation { duration: 150 } }
