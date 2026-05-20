@@ -12,6 +12,12 @@
 #include <QWidget>
 #include <algorithm>
 
+namespace {
+constexpr qreal kRadiusControl = 6.0;  // unified control corner radius
+constexpr qreal kRadiusTight   = 2.0;  // tight radius for item-view selection/focus rings
+constexpr qreal kRadiusGroove  = 3.0;  // progress-bar groove (not a control shape)
+}  // namespace
+
 HoloniightStyle::HoloniightStyle() : QProxyStyle(QStringLiteral("fusion")) {}
 
 QPalette HoloniightStyle::standardPalette() const { return Holonight::buildPalette(Holonight::darkTokens()); }
@@ -31,7 +37,7 @@ void HoloniightStyle::polish(QWidget* widget) {
   QPalette palette = widget->palette();
   palette.setColor(QPalette::Window, tok.surface);
   palette.setColor(QPalette::WindowText, tok.onSurface);
-  palette.setColor(QPalette::Base, tok.surface);
+  palette.setColor(QPalette::Base, tok.surfaceVariant);
   palette.setColor(QPalette::AlternateBase, tok.surfaceVariant);
   palette.setColor(QPalette::Text, tok.onSurface);
   palette.setColor(QPalette::Button, tok.surfaceVariant);
@@ -147,7 +153,7 @@ void HoloniightStyle::drawControl(ControlElement element, const QStyleOption* op
         painter->setRenderHint(QPainter::Antialiasing);
         painter->setPen(Qt::NoPen);
         painter->setBrush(option->palette.color(QPalette::Highlight));
-        painter->drawRoundedRect(option->rect.adjusted(2, 1, -2, -1), 4.0, 4.0);
+        painter->drawRoundedRect(option->rect.adjusted(2, 1, -2, -1), kRadiusControl, kRadiusControl);
         painter->restore();
       }
       QProxyStyle::drawControl(element, option, painter, widget);
@@ -159,7 +165,7 @@ void HoloniightStyle::drawControl(ControlElement element, const QStyleOption* op
         painter->setRenderHint(QPainter::Antialiasing);
         painter->setPen(Qt::NoPen);
         painter->setBrush(option->palette.color(QPalette::Highlight));
-        painter->drawRoundedRect(option->rect.adjusted(1, 1, -1, -1), 4.0, 4.0);
+        painter->drawRoundedRect(option->rect.adjusted(1, 1, -1, -1), kRadiusControl, kRadiusControl);
         painter->restore();
       }
       QProxyStyle::drawControl(element, option, painter, widget);
@@ -175,7 +181,7 @@ void HoloniightStyle::drawControl(ControlElement element, const QStyleOption* op
       painter->setRenderHint(QPainter::Antialiasing);
       painter->setPen(Qt::NoPen);
       painter->setBrush(option->palette.color(QPalette::Base));
-      painter->drawRoundedRect(option->rect, 3.0, 3.0);
+      painter->drawRoundedRect(option->rect, kRadiusGroove, kRadiusGroove);
       painter->restore();
       return;
     }
@@ -192,7 +198,7 @@ void HoloniightStyle::drawControl(ControlElement element, const QStyleOption* op
           static_cast<double>(opt->progress - opt->minimum) / static_cast<double>(opt->maximum - opt->minimum);
       QRect fill = option->rect;
       fill.setWidth(static_cast<int>(fill.width() * ratio));
-      painter->drawRoundedRect(fill, 3.0, 3.0);
+      painter->drawRoundedRect(fill, kRadiusGroove, kRadiusGroove);
       painter->restore();
       return;
     }
@@ -206,7 +212,7 @@ void HoloniightStyle::drawControl(ControlElement element, const QStyleOption* op
       painter->setPen(Qt::NoPen);
       const bool hovered = (option->state & State_MouseOver) != 0U;
       painter->setBrush(hovered ? tok.primary : tok.borderPassive);
-      painter->drawRoundedRect(option->rect.adjusted(1, 1, -1, -1), 6.0, 6.0);
+      painter->drawRoundedRect(option->rect.adjusted(1, 1, -1, -1), kRadiusControl, kRadiusControl);
       painter->restore();
       return;
     }
@@ -280,7 +286,7 @@ void HoloniightStyle::drawPushButtonBevelImpl(const QStyleOption* option, QPaint
   const int borderWidth = focused ? 2 : 1;
   painter->setPen(QPen{focused ? tok.borderFocus : tok.borderPassive, static_cast<qreal>(borderWidth)});
   painter->setBrush(fill);
-  painter->drawRoundedRect(option->rect.adjusted(borderWidth, borderWidth, -borderWidth, -borderWidth), 4.0, 4.0);
+  painter->drawRoundedRect(option->rect.adjusted(borderWidth, borderWidth, -borderWidth, -borderWidth), kRadiusControl, kRadiusControl);
   painter->restore();
 }
 
@@ -291,22 +297,24 @@ void HoloniightStyle::drawCheckBoxImpl(const QStyleOption* option, QPainter* pai
   }
   const auto& pal = option->palette;
   const bool checked = (opt->state & State_On) != 0U;
-  const int top = option->rect.top() + ((option->rect.height() - 14) / 2);
-  const QRect indicator{option->rect.left(), top, 14, 14};
+  const int side = pixelMetric(PM_IndicatorWidth, option, widget);
+  const int top = option->rect.top() + ((option->rect.height() - side) / 2);
+  const QRect indicator{option->rect.left(), top, side, side};
+  const QRectF borderRect = QRectF(indicator).adjusted(0.5, 0.5, -0.5, -0.5);
 
   painter->save();
   painter->setRenderHint(QPainter::Antialiasing);
   if (checked) {
     painter->setPen(Qt::NoPen);
     painter->setBrush(pal.color(QPalette::Highlight));
-    painter->drawRoundedRect(indicator, 3.0, 3.0);
+    painter->drawRoundedRect(borderRect, kRadiusControl, kRadiusControl);
     painter->setPen(QPen{pal.color(QPalette::HighlightedText), 2.0});
-    painter->drawLine(indicator.left() + 3, indicator.top() + 7, indicator.left() + 6, indicator.top() + 10);
-    painter->drawLine(indicator.left() + 6, indicator.top() + 10, indicator.left() + 11, indicator.top() + 4);
+    painter->drawLine(indicator.left() + 4, indicator.top() + 8, indicator.left() + 7, indicator.top() + 11);
+    painter->drawLine(indicator.left() + 7, indicator.top() + 11, indicator.left() + 12, indicator.top() + 5);
   } else {
-    painter->setPen(pal.color(QPalette::Mid));
+    painter->setPen(QPen{pal.color(QPalette::Mid), 1.0});
     painter->setBrush(pal.color(QPalette::Base));
-    painter->drawRoundedRect(indicator, 3.0, 3.0);
+    painter->drawRoundedRect(borderRect, kRadiusControl, kRadiusControl);
   }
   painter->restore();
 
@@ -322,18 +330,20 @@ void HoloniightStyle::drawRadioButtonImpl(const QStyleOption* option, QPainter* 
   }
   const auto& pal = option->palette;
   const bool checked = (opt->state & State_On) != 0U;
-  const int top = option->rect.top() + ((option->rect.height() - 16) / 2);
-  const QRect indicator{option->rect.left(), top, 16, 16};
+  const int side = pixelMetric(PM_ExclusiveIndicatorWidth, option, widget);
+  const int top = option->rect.top() + ((option->rect.height() - side) / 2);
+  const QRect indicator{option->rect.left(), top, side, side};
+  const QRectF borderRect = QRectF(indicator).adjusted(0.5, 0.5, -0.5, -0.5);
 
   painter->save();
   painter->setRenderHint(QPainter::Antialiasing);
-  painter->setPen(pal.color(QPalette::Mid));
+  painter->setPen(QPen{pal.color(QPalette::Mid), 1.0});
   painter->setBrush(checked ? pal.color(QPalette::Highlight) : pal.color(QPalette::Base));
-  painter->drawEllipse(indicator);
+  painter->drawEllipse(borderRect);
   if (checked) {
     painter->setPen(Qt::NoPen);
     painter->setBrush(pal.color(QPalette::HighlightedText));
-    painter->drawEllipse(indicator.adjusted(4, 4, -4, -4));
+    painter->drawEllipse(QRectF(indicator).adjusted(4.5, 4.5, -4.5, -4.5));
   }
   painter->restore();
 
@@ -443,7 +453,7 @@ void HoloniightStyle::drawPanelButtonImpl(const QStyleOption* option, QPainter* 
   const int borderWidth = focused ? 2 : 1;
   painter->setPen(QPen{focused ? tok.borderFocus : tok.borderPassive, static_cast<qreal>(borderWidth)});
   painter->setBrush(fill);
-  painter->drawRoundedRect(option->rect.adjusted(borderWidth, borderWidth, -borderWidth, -borderWidth), 4.0, 4.0);
+  painter->drawRoundedRect(option->rect.adjusted(borderWidth, borderWidth, -borderWidth, -borderWidth), kRadiusControl, kRadiusControl);
   painter->restore();
 }
 
@@ -461,15 +471,15 @@ void HoloniightStyle::drawPanelItemViewImpl(const QStyleOption* option, QPainter
   const bool focused = (opt->state & State_HasFocus) != 0U;
   if (selected) {
     painter->setBrush(tok.primary);
-    painter->drawRoundedRect(option->rect.adjusted(1, 1, -1, -1), 2.0, 2.0);
+    painter->drawRoundedRect(option->rect.adjusted(1, 1, -1, -1), kRadiusTight, kRadiusTight);
   } else if (hovered) {
     painter->setBrush(tok.surfaceHover);
-    painter->drawRoundedRect(option->rect.adjusted(1, 1, -1, -1), 2.0, 2.0);
+    painter->drawRoundedRect(option->rect.adjusted(1, 1, -1, -1), kRadiusTight, kRadiusTight);
   }
   if (focused && !selected) {
     painter->setBrush(Qt::NoBrush);
     painter->setPen(QPen{tok.focusRing, 1});
-    painter->drawRoundedRect(option->rect.adjusted(1, 1, -1, -1), 2.0, 2.0);
+    painter->drawRoundedRect(option->rect.adjusted(1, 1, -1, -1), kRadiusTight, kRadiusTight);
   }
   painter->restore();
 }
@@ -492,10 +502,10 @@ void HoloniightStyle::drawItemViewItemImpl(const QStyleOption* option, QPainter*
 
   if (selected) {
     painter->setBrush(tok.primary);
-    painter->drawRoundedRect(opt->rect.adjusted(1, 1, -1, -1), 3.0, 3.0);
+    painter->drawRoundedRect(opt->rect.adjusted(1, 1, -1, -1), kRadiusControl, kRadiusControl);
   } else if (hovered) {
     painter->setBrush(tok.surfaceHover);
-    painter->drawRoundedRect(opt->rect.adjusted(1, 1, -1, -1), 3.0, 3.0);
+    painter->drawRoundedRect(opt->rect.adjusted(1, 1, -1, -1), kRadiusControl, kRadiusControl);
   } else if ((opt->features & QStyleOptionViewItem::Alternate) != 0U) {
     painter->setBrush(tok.surfaceVariant);
     painter->drawRect(opt->rect);
@@ -554,7 +564,7 @@ void HoloniightStyle::drawItemViewItemImpl(const QStyleOption* option, QPainter*
   if (focused && !selected) {
     painter->setBrush(Qt::NoBrush);
     painter->setPen(QPen{tok.focusRing, 1});
-    painter->drawRoundedRect(opt->rect.adjusted(1, 1, -1, -1), 3.0, 3.0);
+    painter->drawRoundedRect(opt->rect.adjusted(1, 1, -1, -1), kRadiusTight, kRadiusTight);
   }
 
   painter->restore();
@@ -576,7 +586,7 @@ void HoloniightStyle::drawPrimitive(PrimitiveElement element, const QStyleOption
       painter->setRenderHint(QPainter::Antialiasing);
       painter->setPen(QPen{tok.focusRing, 2});
       painter->setBrush(Qt::NoBrush);
-      painter->drawRoundedRect(option->rect.adjusted(-1, -1, 1, 1), 5.0, 5.0);
+      painter->drawRoundedRect(option->rect.adjusted(-1, -1, 1, 1), kRadiusControl, kRadiusControl);
       painter->restore();
       return;
     }
@@ -718,7 +728,7 @@ void HoloniightStyle::drawPrimitive(PrimitiveElement element, const QStyleOption
       } else if (hovered) {
         painter->setBrush(tok.surfaceHover);
       } else {
-        painter->setBrush(tok.surface);
+        painter->setBrush(tok.surfaceVariant);
       }
       painter->drawRect(option->rect);
       painter->restore();
@@ -730,7 +740,7 @@ void HoloniightStyle::drawPrimitive(PrimitiveElement element, const QStyleOption
       painter->setRenderHint(QPainter::Antialiasing);
       const bool focused = (option->state & State_HasFocus) != 0U;
       const bool enabled = (option->state & State_Enabled) != 0U;
-      painter->setBrush(tok.surface);
+      painter->setBrush(tok.surfaceVariant);
       const int borderWidth = focused ? 2 : 1;
       QColor border = tok.borderPassive;
       if (focused) {
@@ -739,7 +749,7 @@ void HoloniightStyle::drawPrimitive(PrimitiveElement element, const QStyleOption
         border = tok.borderPassive;  // TODO(borderUrgent): if error state added, use tok.borderUrgent here
       }
       painter->setPen(QPen{border, static_cast<qreal>(borderWidth)});
-      painter->drawRoundedRect(option->rect.adjusted(borderWidth, borderWidth, -borderWidth, -borderWidth), 4.0, 4.0);
+      painter->drawRoundedRect(option->rect.adjusted(borderWidth, borderWidth, -borderWidth, -borderWidth), kRadiusControl, kRadiusControl);
       painter->restore();
       return;
     }
@@ -749,7 +759,7 @@ void HoloniightStyle::drawPrimitive(PrimitiveElement element, const QStyleOption
       painter->setRenderHint(QPainter::Antialiasing);
       painter->setPen(QPen{tok.borderPassive, 1});
       painter->setBrush(Qt::NoBrush);
-      painter->drawRoundedRect(option->rect.adjusted(0, 0, -1, -1), 4.0, 4.0);
+      painter->drawRoundedRect(option->rect.adjusted(0, 0, -1, -1), kRadiusControl, kRadiusControl);
       painter->restore();
       return;
     }
@@ -801,7 +811,7 @@ void HoloniightStyle::drawComplexControl(ComplexControl control, const QStyleOpt
       }
       painter->setBrush(fill);
       painter->setPen(QPen{border, static_cast<qreal>(borderWidth)});
-      painter->drawRoundedRect(opt->rect.adjusted(borderWidth, borderWidth, -borderWidth, -borderWidth), 4.0, 4.0);
+      painter->drawRoundedRect(opt->rect.adjusted(borderWidth, borderWidth, -borderWidth, -borderWidth), kRadiusControl, kRadiusControl);
       const QRect arrowRect = subControlRect(CC_ComboBox, opt, SC_ComboBoxArrow, widget);
       paintArrow(painter, arrowRect, 0, tok.onSurface);
       painter->restore();
@@ -897,7 +907,7 @@ void HoloniightStyle::drawScrollBarImpl(const QStyleOptionComplex* option, QPain
     trackRect.moveCenter({grooveRect.center().x(), grooveRect.center().y()});
   }
   painter->setBrush(tok.surfaceVariant);
-  painter->drawRoundedRect(trackRect, 2.0, 2.0);
+  painter->drawRoundedRect(trackRect, kRadiusTight, kRadiusTight);
 
   const QRect handleRect = subControlRect(CC_ScrollBar, opt, SC_ScrollBarSlider, widget);
 
@@ -908,7 +918,7 @@ void HoloniightStyle::drawScrollBarImpl(const QStyleOptionComplex* option, QPain
     handleColor = tok.primaryHover;
   }
   painter->setBrush(handleColor);
-  painter->drawRoundedRect(handleRect, 4.0, 4.0);
+  painter->drawRoundedRect(handleRect, kRadiusControl, kRadiusControl);
   painter->restore();
 }
 
@@ -928,21 +938,21 @@ void HoloniightStyle::drawSliderImpl(const QStyleOption* option, QPainter* paint
   painter->setBrush(tok.borderPassive);
   if (horizontal) {
     const QRect fullGroove{grooveRect.left(), grooveRect.center().y() - 2, grooveRect.width(), 4};
-    painter->drawRoundedRect(fullGroove, 2.0, 2.0);
+    painter->drawRoundedRect(fullGroove, kRadiusTight, kRadiusTight);
     painter->setBrush(tok.primary);
     const QRect filledGroove{grooveRect.left(), grooveRect.center().y() - 2,
                              handleRect.center().x() - grooveRect.left(), 4};
     if (filledGroove.width() > 0) {
-      painter->drawRoundedRect(filledGroove, 2.0, 2.0);
+      painter->drawRoundedRect(filledGroove, kRadiusTight, kRadiusTight);
     }
   } else {
     const QRect fullGroove{grooveRect.center().x() - 2, grooveRect.top(), 4, grooveRect.height()};
-    painter->drawRoundedRect(fullGroove, 2.0, 2.0);
+    painter->drawRoundedRect(fullGroove, kRadiusTight, kRadiusTight);
     painter->setBrush(tok.primary);
     const int filledTop = handleRect.center().y();
     const QRect filledGroove{grooveRect.center().x() - 2, filledTop, 4, grooveRect.bottom() - filledTop};
     if (filledGroove.height() > 0) {
-      painter->drawRoundedRect(filledGroove, 2.0, 2.0);
+      painter->drawRoundedRect(filledGroove, kRadiusTight, kRadiusTight);
     }
   }
 
@@ -956,7 +966,7 @@ void HoloniightStyle::drawSliderImpl(const QStyleOption* option, QPainter* paint
   }
   painter->setBrush(handleColor);
   painter->setPen(QPen{tok.borderPassive, 1});
-  painter->drawRoundedRect(handleRect.adjusted(1, 1, -1, -1), 2.0, 2.0);
+  painter->drawRoundedRect(handleRect.adjusted(1, 1, -1, -1), kRadiusTight, kRadiusTight);
   painter->restore();
 }
 
@@ -979,7 +989,7 @@ void HoloniightStyle::drawSpinBoxImpl(const QStyleOption* option, QPainter* pain
   }
   painter->setBrush(tok.surface);
   painter->setPen(QPen{border, static_cast<qreal>(borderWidth)});
-  painter->drawRoundedRect(opt->rect.adjusted(borderWidth, borderWidth, -borderWidth, -borderWidth), 4.0, 4.0);
+  painter->drawRoundedRect(opt->rect.adjusted(borderWidth, borderWidth, -borderWidth, -borderWidth), kRadiusControl, kRadiusControl);
 
   const QRect upRect = subControlRect(CC_SpinBox, opt, SC_SpinBoxUp, widget);
   painter->setPen(QPen{tok.borderPassive, 1});
@@ -1022,12 +1032,12 @@ void HoloniightStyle::drawToolButtonImpl(const QStyleOption* option, QPainter* p
   }
   painter->setPen(Qt::NoPen);
   painter->setBrush(bgColor);
-  painter->drawRoundedRect(opt->rect.adjusted(1, 1, -1, -1), 4.0, 4.0);
+  painter->drawRoundedRect(opt->rect.adjusted(1, 1, -1, -1), kRadiusControl, kRadiusControl);
 
   if (focused) {
     painter->setPen(QPen{tok.focusRing, 1, Qt::DashLine});
     painter->setBrush(Qt::NoBrush);
-    painter->drawRoundedRect(opt->rect.adjusted(1, 1, -1, -1), 4.0, 4.0);
+    painter->drawRoundedRect(opt->rect.adjusted(1, 1, -1, -1), kRadiusControl, kRadiusControl);
   }
 
   if ((opt->features & QStyleOptionToolButton::MenuButtonPopup) != 0U) {
@@ -1051,7 +1061,7 @@ void HoloniightStyle::drawGroupBoxImpl(const QStyleOption* option, QPainter* pai
   const QRect frameRect = subControlRect(CC_GroupBox, opt, SC_GroupBoxFrame, widget);
   painter->setPen(QPen{tok.borderPassive, 1});
   painter->setBrush(Qt::NoBrush);
-  painter->drawRoundedRect(frameRect.adjusted(0, 0, -1, -1), 4.0, 4.0);
+  painter->drawRoundedRect(frameRect.adjusted(0, 0, -1, -1), kRadiusControl, kRadiusControl);
 
   const QRect labelRect = subControlRect(CC_GroupBox, opt, SC_GroupBoxLabel, widget);
   painter->setPen(Qt::NoPen);
