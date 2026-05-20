@@ -37,3 +37,30 @@ if(BUILD_DEMO)
 endif()
 
 install(FILES data/holonight.colors DESTINATION share/color-schemes)
+
+# --- Tidy target ---
+find_program(CLANG_TIDY clang-tidy)
+
+file(GLOB_RECURSE ALL_CXX_IMPL_FILES
+    LIST_DIRECTORIES false
+    CONFIGURE_DEPENDS
+    platformtheme/*.cpp style/*.cpp palette/*.cpp tools/*.cpp tests/*.cpp
+)
+
+if(CLANG_TIDY)
+  # Strip -mno-direct-extern-access (injected by Qt6) so clang-tidy doesn't choke on it.
+  # The filtered DB lives in build/tidy/ so clang-tidy resolves it first.
+  set(TIDY_DB_DIR ${CMAKE_BINARY_DIR}/tidy)
+  set(STRIP_TIDY_FLAGS_SCRIPT ${CMAKE_BINARY_DIR}/strip_tidy_flags.cmake)
+  file(MAKE_DIRECTORY ${TIDY_DB_DIR})
+  file(WRITE ${STRIP_TIDY_FLAGS_SCRIPT}
+        "file(READ \"${CMAKE_BINARY_DIR}/compile_commands.json\" db)\n"
+        "string(REPLACE \"-mno-direct-extern-access\" \"\" db \"\${db}\")\n"
+        "file(WRITE \"${TIDY_DB_DIR}/compile_commands.json\" \"\${db}\")\n"
+    )
+  add_custom_target(tidy
+        COMMAND ${CMAKE_COMMAND} -P ${STRIP_TIDY_FLAGS_SCRIPT}
+        COMMAND ${CLANG_TIDY} --quiet -p ${TIDY_DB_DIR} ${ALL_CXX_IMPL_FILES}
+        COMMENT "Running clang-tidy"
+    )
+endif()
