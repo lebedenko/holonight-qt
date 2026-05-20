@@ -86,7 +86,7 @@ QPalette buildPalette(const ColorTokens& tok) {
   // Active group
   pal.setColor(QPalette::Active, QPalette::Window, tok.surface);
   pal.setColor(QPalette::Active, QPalette::WindowText, tok.onSurface);
-  pal.setColor(QPalette::Active, QPalette::Base, tok.surface);
+  pal.setColor(QPalette::Active, QPalette::Base, tok.surfaceVariant);
   pal.setColor(QPalette::Active, QPalette::AlternateBase, tok.surfaceVariant);
   pal.setColor(QPalette::Active, QPalette::Text, tok.onSurface);
   pal.setColor(QPalette::Active, QPalette::Button, tok.surfaceVariant);
@@ -95,10 +95,10 @@ QPalette buildPalette(const ColorTokens& tok) {
   pal.setColor(QPalette::Active, QPalette::HighlightedText, tok.onPrimary);
   pal.setColor(QPalette::Active, QPalette::Link, tok.primary);
   pal.setColor(QPalette::Active, QPalette::LinkVisited, tok.error);
-  pal.setColor(QPalette::Active, QPalette::Mid, tok.outline);
-  pal.setColor(QPalette::Active, QPalette::Dark, tok.outline);
+  pal.setColor(QPalette::Active, QPalette::Mid, tok.borderPassive);
+  pal.setColor(QPalette::Active, QPalette::Dark, tok.borderPassive);
   pal.setColor(QPalette::Active, QPalette::Midlight, tok.secondary);
-  pal.setColor(QPalette::Active, QPalette::Shadow, tok.outlineVariant);
+  pal.setColor(QPalette::Active, QPalette::Shadow, tok.borderPassive);
   pal.setColor(QPalette::Active, QPalette::BrightText, tok.onSurface);
   pal.setColor(QPalette::Active, QPalette::ToolTipBase, tok.surfaceContainer);
   pal.setColor(QPalette::Active, QPalette::ToolTipText, tok.onSurface);
@@ -112,14 +112,14 @@ QPalette buildPalette(const ColorTokens& tok) {
 
   // Disabled group — text/accent roles dimmed, fill roles unchanged
   pal.setColor(QPalette::Disabled, QPalette::Window, tok.surface);
-  pal.setColor(QPalette::Disabled, QPalette::Base, tok.surface);
+  pal.setColor(QPalette::Disabled, QPalette::Base, tok.surfaceVariant);
   pal.setColor(QPalette::Disabled, QPalette::AlternateBase, tok.surfaceVariant);
   pal.setColor(QPalette::Disabled, QPalette::Button, tok.surfaceVariant);
   pal.setColor(QPalette::Disabled, QPalette::ToolTipBase, tok.surfaceContainer);
-  pal.setColor(QPalette::Disabled, QPalette::Mid, tok.outline);
-  pal.setColor(QPalette::Disabled, QPalette::Dark, tok.outline);
+  pal.setColor(QPalette::Disabled, QPalette::Mid, tok.borderPassive);
+  pal.setColor(QPalette::Disabled, QPalette::Dark, tok.borderPassive);
   pal.setColor(QPalette::Disabled, QPalette::Midlight, tok.secondary);
-  pal.setColor(QPalette::Disabled, QPalette::Shadow, tok.outlineVariant);
+  pal.setColor(QPalette::Disabled, QPalette::Shadow, tok.borderPassive);
   pal.setColor(QPalette::Disabled, QPalette::WindowText, dim(tok.onSurface));
   pal.setColor(QPalette::Disabled, QPalette::Text, dim(tok.onSurface));
   pal.setColor(QPalette::Disabled, QPalette::ButtonText, dim(tok.onSurface));

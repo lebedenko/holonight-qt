@@ -70,3 +70,28 @@ TEST_F(PaletteTest, HighlightIsHolonightPrimary) {
   const Holonight::ColorTokens tok = Holonight::darkTokens();
   EXPECT_EQ(palette_.color(QPalette::Active, QPalette::Highlight), tok.primary);
 }
+
+TEST_F(PaletteTest, BorderRolesAreBorderPassive) {
+  const Holonight::ColorTokens tok = Holonight::darkTokens();
+  EXPECT_EQ(palette_.color(QPalette::Active, QPalette::Mid),    tok.borderPassive)
+      << "Mid should be borderPassive (#565f89), not cyan outline";
+  EXPECT_EQ(palette_.color(QPalette::Active, QPalette::Dark),   tok.borderPassive)
+      << "Dark should be borderPassive (#565f89)";
+  EXPECT_EQ(palette_.color(QPalette::Active, QPalette::Shadow), tok.borderPassive)
+      << "Shadow should be borderPassive (#565f89)";
+  EXPECT_EQ(palette_.color(QPalette::Inactive, QPalette::Mid),    tok.borderPassive);
+  EXPECT_EQ(palette_.color(QPalette::Inactive, QPalette::Dark),   tok.borderPassive);
+  EXPECT_EQ(palette_.color(QPalette::Inactive, QPalette::Shadow), tok.borderPassive);
+  EXPECT_EQ(palette_.color(QPalette::Disabled, QPalette::Mid),    tok.borderPassive);
+  EXPECT_EQ(palette_.color(QPalette::Disabled, QPalette::Dark),   tok.borderPassive);
+  EXPECT_EQ(palette_.color(QPalette::Disabled, QPalette::Shadow), tok.borderPassive);
+}
+
+TEST_F(PaletteTest, BaseIsSurfaceVariant) {
+  const Holonight::ColorTokens tok = Holonight::darkTokens();
+  EXPECT_EQ(palette_.color(QPalette::Active,   QPalette::Base), tok.surfaceVariant)
+      << "Base should be surfaceVariant (#161925) to elevate list views and text fields";
+  EXPECT_EQ(palette_.color(QPalette::Disabled, QPalette::Base), tok.surfaceVariant)
+      << "Disabled Base should also be surfaceVariant";
+  EXPECT_EQ(palette_.color(QPalette::Inactive, QPalette::Base), tok.surfaceVariant);
+}
