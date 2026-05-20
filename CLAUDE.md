@@ -75,6 +75,19 @@ QT_QPA_PLATFORM=offscreen ctest --test-dir build --output-on-failure
 - WCAG AA contrast (4.5:1) is enforced by `tests/test_palette_contrast.cpp` — if you add color tokens or modify existing ones, update the contrast test.
 - Semi-transparent overlay tokens (`hover`, `pressed`, `focusRing`) are intentionally alpha < 255.
 - Disabled-state colors are derived by blending with surface, not hardcoded.
+- **5-site surface elevation rule** — `QPalette::Base` maps to `tok.surfaceVariant`. All five sites must change together or `polish(QWidget*)` silently reverts `Base` on every polished widget: (1) `buildPalette()` Active Base, (2) `buildPalette()` Disabled Base, (3) `polish(QWidget*)` line ~34, (4) `PE_PanelLineEdit` fill brush, (5) `PE_PanelItemViewRow` default branch.
+- **Direct-fill controls** — `PE_PanelLineEdit` and `CC_ComboBox` set their fill brush directly from a token (not from `QPalette::Base`). Changing the palette alone does not update their rendered background.
+- **File-scoped constants** — put in an anonymous namespace (`namespace { constexpr qreal kFoo = ...; } // namespace`), not `static constexpr` at file scope and not in headers. Use the `k` prefix per naming convention.
+- **`drawRoundedRect` invariant** — all calls in `style/holonightstyle.cpp` must use a `kRadius*` constant. Verify with: `grep -n "drawRoundedRect" style/holonightstyle.cpp | grep -v "kRadius"` (must return zero matches).
+
+## Known Pre-existing clang-tidy Warnings
+
+`cmake --build build --target tidy` reports these on unmodified code — they are **not regressions**, do not chase them:
+- `readability-identifier-naming` on test fixture members (`palette_`, `style_`, `painter_`, `tok_`, `engine_`) — trailing-underscore naming conflicts with the tidy config for test files
+- `readability-identifier-length` for `fm` in `drawItemViewItemImpl`
+- `cppcoreguidelines-narrowing-conversions` (×2) in `drawItemViewItemImpl` for `Qt::Alignment | Qt::TextWordWrap`
+- `readability-function-cognitive-complexity` on `subControlRect` (score 31, threshold 25)
+- `readability-convert-member-functions-to-static` on `drawItemViewItemImpl`
 
 ## Commits
 
