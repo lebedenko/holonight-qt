@@ -6,6 +6,7 @@
 #include "holonight/palette.h"
 
 #include <QIcon>
+#include <QStandardPaths>
 #include <QVariant>
 
 HoloniightTheme::HoloniightTheme()
@@ -15,7 +16,7 @@ HoloniightTheme::HoloniightTheme()
       font_small_{QStringLiteral("Inter"), 10},
       font_mini_{QStringLiteral("Inter"), 8} {
   QIcon::setThemeName(QStringLiteral("HoloNight"));
-  QIcon::setFallbackThemeName(QStringLiteral("Papirus-Dark"));
+  QIcon::setFallbackThemeName(QStringLiteral("Papirus"));
 }
 
 const QPalette* HoloniightTheme::palette(Palette /*type*/) const {
@@ -30,7 +31,15 @@ QVariant HoloniightTheme::themeHint(ThemeHint hint) const {
     case SystemIconThemeName:
       return QStringLiteral("HoloNight");
     case SystemIconFallbackThemeName:
-      return QStringLiteral("Papirus-Dark");
+      return QStringLiteral("Papirus");
+    case IconThemeSearchPaths: {
+      QStringList paths;
+      const auto dataDirs = QStandardPaths::standardLocations(QStandardPaths::GenericDataLocation);
+      for (const QString& dir : dataDirs)
+        paths << dir + QStringLiteral("/icons");
+      paths << QStringLiteral(":/icons");
+      return paths;
+    }
     default:
       return QPlatformTheme::themeHint(hint);
   }
