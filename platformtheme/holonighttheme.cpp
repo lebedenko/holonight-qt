@@ -14,8 +14,8 @@ HoloniightTheme::HoloniightTheme()
       font_fixed_{QStringLiteral("JetBrainsMono Nerd Font"), 12},
       font_small_{QStringLiteral("Inter"), 10},
       font_mini_{QStringLiteral("Inter"), 8} {
-  QIcon::setThemeName(QStringLiteral("Papirus-Dark"));
-  QIcon::setFallbackThemeName(QStringLiteral("breeze-dark"));
+  QIcon::setThemeName(QStringLiteral("HoloNight"));
+  QIcon::setFallbackThemeName(QStringLiteral("Papirus-Dark"));
 }
 
 const QPalette* HoloniightTheme::palette(Palette /*type*/) const {

@@ -7,12 +7,12 @@
 
 #include <gtest/gtest.h>
 
-TEST(PlatformThemeIcons, ThemeNameIsPapirus) {
+TEST(PlatformThemeIcons, ThemeNameIsHoloNight) {
   HoloniightTheme theme;
-  EXPECT_EQ(QIcon::themeName(), QStringLiteral("Papirus-Dark"));
+  EXPECT_EQ(QIcon::themeName(), QStringLiteral("HoloNight"));
 }
 
-TEST(PlatformThemeIcons, FallbackThemeNameIsBreezeDark) {
+TEST(PlatformThemeIcons, FallbackThemeNameIsPapirus) {
   HoloniightTheme theme;
-  EXPECT_EQ(QIcon::fallbackThemeName(), QStringLiteral("breeze-dark"));
+  EXPECT_EQ(QIcon::fallbackThemeName(), QStringLiteral("Papirus-Dark"));
 }
