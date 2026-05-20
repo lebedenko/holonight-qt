@@ -26,6 +26,10 @@ TEST_F(QmlSmoke, Button_LoadsWithoutError) {
   checkComponent(engine_, R"(import Holonight; Button { text: "test" })");
 }
 
+TEST_F(QmlSmoke, LowercaseCompatibilityModule_LoadsWithoutError) {
+  checkComponent(engine_, R"(import holonight; Button { text: "test" })");
+}
+
 TEST_F(QmlSmoke, ScrollBar_LoadsWithoutError) {
   checkComponent(engine_, R"(import Holonight; ScrollBar {})");
 }

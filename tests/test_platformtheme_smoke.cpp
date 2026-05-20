@@ -32,13 +32,8 @@ TEST(PlatformThemeSmoke, StyleNamesContainsHolonight) {
   const QVariant hint = theme.themeHint(QPlatformTheme::StyleNames);
   ASSERT_TRUE(hint.isValid());
   const QStringList names = hint.toStringList();
-  EXPECT_TRUE(names.contains(QStringLiteral("holonight")));
-}
-
-TEST(PlatformThemeSmoke, IconThemeIsPapirus) {
-  HoloniightTheme theme;
-  const QVariant iconTheme = theme.themeHint(QPlatformTheme::SystemIconThemeName);
-  EXPECT_EQ(iconTheme.toString(), QStringLiteral("papirus"));
+  ASSERT_FALSE(names.isEmpty());
+  EXPECT_EQ(names.front(), QStringLiteral("Holonight"));
 }
 
 TEST(PlatformThemeSmoke, ColorSchemeIsDark) {
@@ -46,10 +41,10 @@ TEST(PlatformThemeSmoke, ColorSchemeIsDark) {
   EXPECT_EQ(theme.colorScheme(), Qt::ColorScheme::Dark);
 }
 
-TEST(PlatformThemeSmoke, FontIsInterTenPt) {
+TEST(PlatformThemeSmoke, FontIsInterTwelvePt) {
   HoloniightTheme theme;
   const QFont* fnt = theme.font(QPlatformTheme::SystemFont);
   ASSERT_NE(fnt, nullptr);
   EXPECT_EQ(fnt->family(), QStringLiteral("Inter"));
-  EXPECT_EQ(fnt->pointSize(), 10);
+  EXPECT_EQ(fnt->pointSize(), 12);
 }

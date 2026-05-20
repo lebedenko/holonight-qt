@@ -15,6 +15,8 @@ add_executable(holonight_tests
     # Platform theme smoke test: compile holonighttheme.cpp directly
     ${CMAKE_SOURCE_DIR}/platformtheme/holonighttheme.cpp
     test_platformtheme_smoke.cpp
+    test_platformtheme_fonts.cpp
+    test_platformtheme_icons.cpp
 )
 
 set_target_properties(holonight_tests PROPERTIES AUTOMOC ON)
