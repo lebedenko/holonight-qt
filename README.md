@@ -133,8 +133,8 @@ QT_QPA_PLATFORM=offscreen ctest --test-dir build --output-on-failure
 ## Architecture
 
 - **All colors** originate in `palette/holonight/palette.h` (`darkTokens()` → `buildPalette()`). Change colors there, nowhere else.
-- **QML module URI** is `Holonight` (capital N). Use `import Holonight` in QML files to access all components and the `HoloniightPalette` singleton.
-- **Platform theme** sets Inter 10pt as the system font hint and Papirus as the icon theme hint (both by name only — no bundled assets).
+- **QML module URI** is `Holonight` (capital N). Use `import Holonight` in QML files to access all components and the `HoloniightPalette` singleton. A lowercase alias (`import holonight`) is also installed for compatibility.
+- **Platform theme** sets Inter 12pt (system/title), JetBrainsMono Nerd Font 12pt (fixed), Inter 10pt (small), Inter 8pt (mini), and Papirus-Dark as the icon theme (no bundled assets).
 - **Tests** compile plugin sources directly into the test binary — no installed plugins required, `QT_QPA_PLATFORM=offscreen` is sufficient.
 - **Naming**: class names carry three i's (`HoloniightStyle`, `HoloniightTheme`) — intentional.
 

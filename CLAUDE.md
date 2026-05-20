@@ -58,6 +58,10 @@ QT_QPA_PLATFORM=offscreen ctest --test-dir build --output-on-failure
 - **QQC2 style name** — use `QQuickStyle::setStyle("Holonight")` (capital N, matching the `qt_add_qml_module` URI). Lowercase `"holonight"` hits a legacy system-installed module at `~/.local/lib/qt6/qml/holonight/` with stale QML. The build-tree module at `build/qml/Holonight/` is found first via `addImportPath` when the style name matches.
 - **Qt diagnostic output** — on this system Qt routes `qWarning`/QML errors to systemd journal, not stderr. To see QML load errors: `journalctl -n 20 --no-pager | grep <appname>`.
 - **ctest isolation** — If the platform theme is installed system-wide, the `QPalette{}` default constructor returns the holonight palette and breaks palette/style tests. Add `QT_QPA_PLATFORMTHEME=;QT_STYLE_OVERRIDE=` to the ctest `ENVIRONMENT` property for any test target that compares palette colors.
+- **clang-tidy `-mno-direct-extern-access`** — Qt6 injects this flag into compile commands; clang-tidy logs it as an unknown argument. It is NOT a code issue — ignore it.
+- **`../wshell` as tooling reference** — sibling Qt6 project; check it for prior art on CMake/clang-tidy patterns before solving from scratch.
+- **Font role test coverage** — Font point sizes are asserted in both `test_platformtheme_fonts.cpp` and `test_platformtheme_smoke.cpp`. When changing font sizes, update both files and `holonighttheme.cpp`.
+- **QML lowercase alias** — The `holonight` (lowercase) alias module is generated from `qml/holonight-alias.qmldir`. When adding a new QML component, add the filename to `HOLONIGHT_QML_FILES` in `qml/CMakeLists.txt` AND to `qml/holonight-alias.qmldir`.
 - **QML `PlaceholderText`** is a private Qt type from `QtQuick.Controls.impl` — `qmlcachegen` cannot resolve it at build time. Use a plain `Text` element instead (set `color`, `elide`, `visible`, `renderType` manually); behavior is identical.
 - **QML singleton registration** — Use `QML_SINGLETON + QML_ELEMENT` macros (Qt 6.2+) with AUTOMOC ON; URI must be `"Holonight"` (capital N) to match the `qt_add_qml_module` URI exactly.
 
@@ -79,7 +83,7 @@ Follow **Conventional Commits**: `feat:`, `fix:`, `refactor:`, `test:`, `chore:`
 ## Pre-Commit Checklist
 
 1. `cmake --build build -j$(nproc)` — must compile cleanly
-2. `run-clang-tidy -p build` (or `cmake --build build --target clang-tidy` if configured) — zero warnings
+2. `cmake --build build --target tidy` — zero warnings (strips Qt6's `-mno-direct-extern-access` before running clang-tidy)
 3. `QT_QPA_PLATFORM=offscreen ctest --test-dir build --output-on-failure` — all tests pass
 
 Run `/verify` to do all three in sequence.
