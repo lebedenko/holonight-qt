@@ -27,6 +27,10 @@ QVariant HoloniightTheme::themeHint(ThemeHint hint) const {
   switch (hint) {
     case StyleNames:
       return QStringList{QStringLiteral("Holonight"), QStringLiteral("Fusion")};
+    case SystemIconThemeName:
+      return QStringLiteral("HoloNight");
+    case SystemIconFallbackThemeName:
+      return QStringLiteral("Papirus-Dark");
     default:
       return QPlatformTheme::themeHint(hint);
   }
