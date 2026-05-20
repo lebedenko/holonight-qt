@@ -16,5 +16,9 @@ class HoloniightTheme : public QPlatformTheme {
   [[nodiscard]] const QFont* font(Font type = SystemFont) const override;
 
  private:
-  QFont font_;
+  QFont font_system_;
+  QFont font_title_;
+  QFont font_fixed_;
+  QFont font_small_;
+  QFont font_mini_;
 };
