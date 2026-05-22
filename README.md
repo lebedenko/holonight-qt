@@ -22,6 +22,7 @@ This repository contains only the Qt theme implementation. The shell, icon theme
 | `platformtheme/` | `libqholonight.so` — QPlatformTheme plugin | `QT_QPA_PLATFORMTHEME=holonight` |
 | `qml/` | QQC2 components (Button, CheckBox, RadioButton, ComboBox, Slider, Switch, ProgressBar, TabBar, TabButton, Menu, MenuItem, ToolTip, ScrollBar, TextField) | `import Holonight` |
 | `palette/` | `libholonight_palette.a` — shared color tokens | static dependency |
+| `config/` | `libholonight_config.a` — shared theme configuration loader | consumed by platform theme, style, and QML |
 
 Using `QT_QPA_PLATFORMTHEME=holonight` is the recommended activation method — it loads the style and QML layers automatically.
 
@@ -124,6 +125,66 @@ QT_STYLE_OVERRIDE=holonight your-qt-app
 
 To make this permanent, export `QT_QPA_PLATFORMTHEME=holonight` in your compositor environment (e.g. `~/.config/hypr/hyprland.conf`, `~/.config/sway/config`, or `/etc/environment`).
 
+## Configuration
+
+HoloNight loads user-facing theme configuration from:
+
+```text
+~/.config/holonight/theme.json
+```
+
+If `theme.json` does not exist, it falls back to:
+
+```text
+~/.config/holonight/theme.conf
+```
+
+`HOLONIGHT_CONFIG_FILE` can point at another file for testing. Environment variables override file values and are intended for development/debugging.
+
+Default JSON:
+
+```json
+{
+  "icons": {
+    "theme": "HoloNight",
+    "fallback": "Papirus"
+  },
+  "fonts": {
+    "ui": "Inter",
+    "fixed": "JetBrains Mono",
+    "baseSize": 10
+  },
+  "scaleFactor": 1.0
+}
+```
+
+`baseSize` is the body font size. Derived sizes are `caption = baseSize - 1`, `title = baseSize + 3`, and `heading = baseSize + 6`.
+
+Supported environment overrides:
+
+```bash
+HOLONIGHT_CONFIG_FILE=/path/to/theme.json
+HOLONIGHT_ICON_THEME=Papirus-Dark
+HOLONIGHT_FALLBACK_ICON_THEME=Papirus
+HOLONIGHT_FONT="Noto Sans"
+HOLONIGHT_FIXED_FONT="JetBrains Mono"
+HOLONIGHT_FONT_SIZE=10
+HOLONIGHT_SCALE_FACTOR=1.0
+```
+
+The same loaded values are exposed to QML through the `HolonightTheme` singleton:
+
+```qml
+import Holonight
+
+Item {
+    property string iconTheme: HolonightTheme.iconTheme
+    property string uiFont: HolonightTheme.uiFont
+    property int bodySize: HolonightTheme.bodySize
+    property int captionSize: HolonightTheme.captionSize
+}
+```
+
 ## Development
 
 ```bash
@@ -149,8 +210,9 @@ QT_QPA_PLATFORM=offscreen ctest --test-dir build --output-on-failure
 ## Architecture
 
 - **All colors** originate in `palette/holonight/palette.h` (`darkTokens()` → `buildPalette()`). Change colors there, nowhere else.
-- **QML module URI** is `Holonight` (capital N). Use `import Holonight` in QML files to access all components and the `HoloniightPalette` singleton. A lowercase alias (`import holonight`) is also installed for compatibility.
-- **Platform theme** sets Inter 12pt (system/title), JetBrainsMono Nerd Font 12pt (fixed), Inter 10pt (small), Inter 8pt (mini), and Papirus-Dark as the icon theme (no bundled assets).
+- **Configuration** is loaded once per consumer through `holonight_config`: defaults, config file, then environment overrides.
+- **QML module URI** is `Holonight` (capital N). Use `import Holonight` in QML files to access all components plus the `HoloniightPalette` and `HolonightTheme` singletons. A lowercase alias (`import holonight`) is also installed for compatibility.
+- **Platform theme** reads configured icon theme, fallback icon theme, UI font, fixed font, and base font size. Defaults are HoloNight/Papirus icons, Inter UI font, JetBrains Mono fixed font, and 10pt body size.
 - **Tests** compile plugin sources directly into the test binary — no installed plugins required, `QT_QPA_PLATFORM=offscreen` is sufficient.
 - **Naming**: class names carry three i's (`HoloniightStyle`, `HoloniightTheme`) — intentional.
 

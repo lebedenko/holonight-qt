@@ -3,6 +3,8 @@
 
 #pragma once
 
+#include "holonight/config.h"
+
 #include <QFont>
 #include <qpa/qplatformtheme.h>
 
@@ -16,6 +18,7 @@ class HoloniightTheme : public QPlatformTheme {
   [[nodiscard]] const QFont* font(Font type = SystemFont) const override;
 
  private:
+  Holonight::ThemeConfig config_;
   QFont font_system_;
   QFont font_title_;
   QFont font_fixed_;

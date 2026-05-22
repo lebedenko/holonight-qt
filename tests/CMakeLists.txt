@@ -4,8 +4,25 @@ set_source_files_properties(
     PROPERTIES SKIP_AUTOMOC OFF
 )
 
+set(HOLONIGHT_TEST_ENV
+    "QT_QPA_PLATFORM=offscreen"
+    "QT_QPA_PLATFORMTHEME="
+    "QT_STYLE_OVERRIDE="
+    "HOLONIGHT_CONFIG_FILE=/tmp/holonight-tests-missing-theme.json"
+    "HOLONIGHT_ICON_THEME="
+    "HOLONIGHT_FALLBACK_ICON_THEME="
+    "HOLONIGHT_ICON_FALLBACK_THEME="
+    "HOLONIGHT_FONT="
+    "HOLONIGHT_UI_FONT="
+    "HOLONIGHT_FIXED_FONT="
+    "HOLONIGHT_FONT_SIZE="
+    "HOLONIGHT_BASE_FONT_SIZE="
+    "HOLONIGHT_SCALE_FACTOR="
+)
+
 add_executable(holonight_tests
     main.cpp
+    test_config.cpp
     test_palette_tokens.cpp
     test_palette_qpalette.cpp
     test_palette_contrast.cpp
@@ -27,6 +44,7 @@ target_include_directories(holonight_tests PRIVATE
 )
 
 target_link_libraries(holonight_tests PRIVATE
+    holonight_config
     holonight_palette
     Qt6::Gui
     Qt6::GuiPrivate
@@ -40,7 +58,7 @@ add_test(NAME holonight_tests COMMAND holonight_tests
 )
 
 set_property(TEST holonight_tests PROPERTY
-    ENVIRONMENT "QT_QPA_PLATFORM=offscreen;QT_QPA_PLATFORMTHEME=;QT_STYLE_OVERRIDE="
+    ENVIRONMENT "${HOLONIGHT_TEST_ENV}"
 )
 
 # ── Style drawPrimitive tests ─────────────────────────────────────────────────
@@ -58,6 +76,7 @@ target_include_directories(holonight_style_primitive_tests PRIVATE
 )
 
 target_link_libraries(holonight_style_primitive_tests PRIVATE
+    holonight_config
     holonight_palette
     Qt6::Gui
     Qt6::Widgets
@@ -69,7 +88,7 @@ add_test(NAME holonight_style_primitive_tests COMMAND holonight_style_primitive_
 )
 
 set_property(TEST holonight_style_primitive_tests PROPERTY
-    ENVIRONMENT "QT_QPA_PLATFORM=offscreen;QT_QPA_PLATFORMTHEME=;QT_STYLE_OVERRIDE="
+    ENVIRONMENT "${HOLONIGHT_TEST_ENV}"
 )
 
 # ── Style drawComplexControl tests ────────────────────────────────────────────
@@ -87,6 +106,7 @@ target_include_directories(holonight_style_complex_tests PRIVATE
 )
 
 target_link_libraries(holonight_style_complex_tests PRIVATE
+    holonight_config
     holonight_palette
     Qt6::Gui
     Qt6::Widgets
@@ -98,7 +118,7 @@ add_test(NAME holonight_style_complex_tests COMMAND holonight_style_complex_test
 )
 
 set_property(TEST holonight_style_complex_tests PROPERTY
-    ENVIRONMENT "QT_QPA_PLATFORM=offscreen;QT_QPA_PLATFORMTHEME=;QT_STYLE_OVERRIDE="
+    ENVIRONMENT "${HOLONIGHT_TEST_ENV}"
 )
 
 # ── QML smoke tests ───────────────────────────────────────────────────────────
@@ -128,5 +148,5 @@ add_test(NAME holonight_qml_smoke_tests COMMAND holonight_qml_smoke_tests
 )
 
 set_property(TEST holonight_qml_smoke_tests PROPERTY
-    ENVIRONMENT "QT_QPA_PLATFORM=offscreen;QT_QPA_PLATFORMTHEME=;QT_STYLE_OVERRIDE=;QML_IMPORT_PATH=${CMAKE_BINARY_DIR}/qml"
+    ENVIRONMENT "${HOLONIGHT_TEST_ENV};QML_IMPORT_PATH=${CMAKE_BINARY_DIR}/qml"
 )

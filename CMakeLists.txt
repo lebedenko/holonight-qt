@@ -23,6 +23,7 @@ if(BUILD_TESTS)
 endif()
 
 add_subdirectory(palette)
+add_subdirectory(config)
 add_subdirectory(style)
 add_subdirectory(qml)
 add_subdirectory(platformtheme)

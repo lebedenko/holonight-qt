@@ -96,3 +96,19 @@ TEST_F(QmlSmoke, HoloniightPalette_DesignSystemAccentsAreValid) {
                QUrl{});
   ASSERT_EQ(comp.status(), QQmlComponent::Ready) << comp.errorString().toStdString();
 }
+
+TEST_F(QmlSmoke, HolonightTheme_ConfigPropertiesAreValid) {
+  QQmlComponent comp{&engine_};
+  comp.setData(R"(
+    import QtQuick
+    import Holonight
+    Item {
+      property string iconTheme: HolonightTheme.iconTheme
+      property string uiFont: HolonightTheme.uiFont
+      property int bodySize: HolonightTheme.bodySize
+      property int captionSize: HolonightTheme.captionSize
+    }
+  )",
+               QUrl{});
+  ASSERT_EQ(comp.status(), QQmlComponent::Ready) << comp.errorString().toStdString();
+}

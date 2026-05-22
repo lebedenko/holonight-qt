@@ -3,6 +3,7 @@
 
 #pragma once
 
+#include "holonight/config.h"
 #include "holonight/palette.h"
 
 #include <QProxyStyle>
@@ -39,6 +40,8 @@ class HoloniightStyle : public QProxyStyle {
   [[nodiscard]] QPalette standardPalette() const override;
 
  private:
+  [[nodiscard]] int scaledMetric(int value) const;
+
   // Paints a solid-colored triangle arrow. dir: 0=down, 1=up, 2=left, 3=right.
   static void paintArrow(QPainter* painter, const QRect& rect, int dir, const QColor& color);
 
@@ -57,4 +60,6 @@ class HoloniightStyle : public QProxyStyle {
   void drawSpinBoxImpl(const QStyleOption* option, QPainter* painter, const QWidget* widget) const;
   void drawToolButtonImpl(const QStyleOption* option, QPainter* painter, const QWidget* widget) const;
   void drawGroupBoxImpl(const QStyleOption* option, QPainter* painter, const QWidget* widget) const;
+
+  Holonight::ThemeConfig config_;
 };

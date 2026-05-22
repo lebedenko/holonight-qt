@@ -10,15 +10,17 @@
 #include <QStyleOptionComplex>
 #include <QStyleOptionHeader>
 #include <QWidget>
+
 #include <algorithm>
+#include <cmath>
 
 namespace {
 constexpr qreal kRadiusControl = 6.0;  // unified control corner radius
-constexpr qreal kRadiusTight   = 2.0;  // tight radius for item-view selection/focus rings
-constexpr qreal kRadiusGroove  = 3.0;  // progress-bar groove (not a control shape)
+constexpr qreal kRadiusTight = 2.0;    // tight radius for item-view selection/focus rings
+constexpr qreal kRadiusGroove = 3.0;   // progress-bar groove (not a control shape)
 }  // namespace
 
-HoloniightStyle::HoloniightStyle() : QProxyStyle(QStringLiteral("fusion")) {}
+HoloniightStyle::HoloniightStyle() : QProxyStyle(QStringLiteral("fusion")), config_{Holonight::ThemeConfig::load()} {}
 
 QPalette HoloniightStyle::standardPalette() const { return Holonight::buildPalette(Holonight::darkTokens()); }
 
@@ -77,50 +79,54 @@ int HoloniightStyle::pixelMetric(PixelMetric metric, const QStyleOption* option,
     case PM_DefaultFrameWidth:
       return 1;
     case PM_ButtonMargin:
-      return 6;
+      return scaledMetric(6);
     case PM_ButtonDefaultIndicator:
       return 0;
     case PM_MenuBarHMargin:
-      return 4;
+      return scaledMetric(4);
     case PM_MenuBarVMargin:
-      return 2;
+      return scaledMetric(2);
     case PM_MenuBarItemSpacing:
-      return 6;
+      return scaledMetric(6);
     case PM_MenuBarPanelWidth:
       return 0;
     case PM_ToolBarIconSize:
-      return 16;
+      return scaledMetric(16);
     case PM_SmallIconSize:
-      return 16;
+      return scaledMetric(16);
     case PM_LargeIconSize:
-      return 32;
+      return scaledMetric(32);
     case PM_ScrollBarExtent:
-      return 8;
+      return scaledMetric(8);
     case PM_ScrollBarSliderMin:
-      return 20;
+      return scaledMetric(20);
     case PM_SliderThickness:
-      return 14;
+      return scaledMetric(14);
     case PM_SliderLength:
-      return 14;
+      return scaledMetric(14);
     case PM_TabBarTabHSpace:
-      return 16;
+      return scaledMetric(16);
     case PM_TabBarTabVSpace:
-      return 6;
+      return scaledMetric(6);
     case PM_IndicatorWidth:
-      return 16;
+      return scaledMetric(16);
     case PM_IndicatorHeight:
-      return 16;
+      return scaledMetric(16);
     case PM_ExclusiveIndicatorWidth:
-      return 16;
+      return scaledMetric(16);
     case PM_ExclusiveIndicatorHeight:
-      return 16;
+      return scaledMetric(16);
     default:
       return QProxyStyle::pixelMetric(metric, option, widget);
   }
 }
 
+int HoloniightStyle::scaledMetric(int value) const {
+  return std::max(1, static_cast<int>(std::lround(static_cast<qreal>(value) * config_.scale_factor)));
+}
+
 void HoloniightStyle::drawControl(ControlElement element, const QStyleOption* option, QPainter* painter,
-                                 const QWidget* widget) const {
+                                  const QWidget* widget) const {
   switch (element) {
     case CE_PushButton:
       drawControl(CE_PushButtonBevel, option, painter, widget);
@@ -286,7 +292,8 @@ void HoloniightStyle::drawPushButtonBevelImpl(const QStyleOption* option, QPaint
   const int borderWidth = focused ? 2 : 1;
   painter->setPen(QPen{focused ? tok.borderFocus : tok.borderPassive, static_cast<qreal>(borderWidth)});
   painter->setBrush(fill);
-  painter->drawRoundedRect(option->rect.adjusted(borderWidth, borderWidth, -borderWidth, -borderWidth), kRadiusControl, kRadiusControl);
+  painter->drawRoundedRect(option->rect.adjusted(borderWidth, borderWidth, -borderWidth, -borderWidth), kRadiusControl,
+                           kRadiusControl);
   painter->restore();
 }
 
@@ -453,7 +460,8 @@ void HoloniightStyle::drawPanelButtonImpl(const QStyleOption* option, QPainter* 
   const int borderWidth = focused ? 2 : 1;
   painter->setPen(QPen{focused ? tok.borderFocus : tok.borderPassive, static_cast<qreal>(borderWidth)});
   painter->setBrush(fill);
-  painter->drawRoundedRect(option->rect.adjusted(borderWidth, borderWidth, -borderWidth, -borderWidth), kRadiusControl, kRadiusControl);
+  painter->drawRoundedRect(option->rect.adjusted(borderWidth, borderWidth, -borderWidth, -borderWidth), kRadiusControl,
+                           kRadiusControl);
   painter->restore();
 }
 
@@ -552,8 +560,8 @@ void HoloniightStyle::drawItemViewItemImpl(const QStyleOption* option, QPainter*
     painter->setFont(opt->font);
   }
   const QFontMetrics fm{painter->font()};
-  const Qt::Alignment alignment = decorationOnTop ? Qt::AlignHCenter | Qt::AlignTop
-                                                  : (opt->displayAlignment | Qt::AlignVCenter);
+  const Qt::Alignment alignment =
+      decorationOnTop ? Qt::AlignHCenter | Qt::AlignTop : (opt->displayAlignment | Qt::AlignVCenter);
   if ((opt->features & QStyleOptionViewItem::WrapText) != 0U) {
     painter->drawText(textRect, alignment | Qt::TextWordWrap, opt->text);
   } else {
@@ -573,7 +581,7 @@ void HoloniightStyle::drawItemViewItemImpl(const QStyleOption* option, QPainter*
 // ── drawPrimitive ─────────────────────────────────────────────────────────────
 
 void HoloniightStyle::drawPrimitive(PrimitiveElement element, const QStyleOption* option, QPainter* painter,
-                                   const QWidget* widget) const {
+                                    const QWidget* widget) const {
   const auto tok = tokens();
 
   switch (element) {
@@ -749,7 +757,8 @@ void HoloniightStyle::drawPrimitive(PrimitiveElement element, const QStyleOption
         border = tok.borderPassive;  // TODO(borderUrgent): if error state added, use tok.borderUrgent here
       }
       painter->setPen(QPen{border, static_cast<qreal>(borderWidth)});
-      painter->drawRoundedRect(option->rect.adjusted(borderWidth, borderWidth, -borderWidth, -borderWidth), kRadiusControl, kRadiusControl);
+      painter->drawRoundedRect(option->rect.adjusted(borderWidth, borderWidth, -borderWidth, -borderWidth),
+                               kRadiusControl, kRadiusControl);
       painter->restore();
       return;
     }
@@ -785,7 +794,7 @@ void HoloniightStyle::drawPrimitive(PrimitiveElement element, const QStyleOption
 // ── drawComplexControl ────────────────────────────────────────────────────────
 
 void HoloniightStyle::drawComplexControl(ComplexControl control, const QStyleOptionComplex* option, QPainter* painter,
-                                        const QWidget* widget) const {
+                                         const QWidget* widget) const {
   switch (control) {
     case CC_ScrollBar:
       drawScrollBarImpl(option, painter, widget);
@@ -811,7 +820,8 @@ void HoloniightStyle::drawComplexControl(ComplexControl control, const QStyleOpt
       }
       painter->setBrush(fill);
       painter->setPen(QPen{border, static_cast<qreal>(borderWidth)});
-      painter->drawRoundedRect(opt->rect.adjusted(borderWidth, borderWidth, -borderWidth, -borderWidth), kRadiusControl, kRadiusControl);
+      painter->drawRoundedRect(opt->rect.adjusted(borderWidth, borderWidth, -borderWidth, -borderWidth), kRadiusControl,
+                               kRadiusControl);
       const QRect arrowRect = subControlRect(CC_ComboBox, opt, SC_ComboBoxArrow, widget);
       paintArrow(painter, arrowRect, 0, tok.onSurface);
       painter->restore();
@@ -836,22 +846,21 @@ void HoloniightStyle::drawComplexControl(ComplexControl control, const QStyleOpt
   QProxyStyle::drawComplexControl(control, option, painter, widget);
 }
 
-QRect HoloniightStyle::subControlRect(ComplexControl control, const QStyleOptionComplex* option,
-                                      SubControl subControl, const QWidget* widget) const {
+QRect HoloniightStyle::subControlRect(ComplexControl control, const QStyleOptionComplex* option, SubControl subControl,
+                                      const QWidget* widget) const {
   if (control == CC_ScrollBar) {
     const auto* opt = qstyleoption_cast<const QStyleOptionSlider*>(option);
     if (opt == nullptr) {
       return {};
     }
     const bool horizontal = opt->orientation == Qt::Horizontal;
-    const QRect grooveRect = option->rect.adjusted(horizontal ? 2 : 1, horizontal ? 1 : 2,
-                                                   horizontal ? -2 : -1, horizontal ? -1 : -2);
-    if (subControl == SC_ScrollBarGroove || subControl == SC_ScrollBarAddPage ||
-        subControl == SC_ScrollBarSubPage) {
+    const QRect grooveRect =
+        option->rect.adjusted(horizontal ? 2 : 1, horizontal ? 1 : 2, horizontal ? -2 : -1, horizontal ? -1 : -2);
+    if (subControl == SC_ScrollBarGroove || subControl == SC_ScrollBarAddPage || subControl == SC_ScrollBarSubPage) {
       return grooveRect;
     }
-    if (subControl == SC_ScrollBarAddLine || subControl == SC_ScrollBarSubLine ||
-        subControl == SC_ScrollBarFirst || subControl == SC_ScrollBarLast) {
+    if (subControl == SC_ScrollBarAddLine || subControl == SC_ScrollBarSubLine || subControl == SC_ScrollBarFirst ||
+        subControl == SC_ScrollBarLast) {
       return {};
     }
     if (subControl == SC_ScrollBarSlider) {
@@ -879,15 +888,15 @@ QRect HoloniightStyle::subControlRect(ComplexControl control, const QStyleOption
 }
 
 void HoloniightStyle::drawScrollBarImpl(const QStyleOptionComplex* option, QPainter* painter,
-                                       const QWidget* widget) const {
+                                        const QWidget* widget) const {
   const auto* opt = qstyleoption_cast<const QStyleOptionSlider*>(option);
   if (opt == nullptr) {
     return;
   }
   const auto tok = tokens();
   const bool horizontal = opt->orientation == Qt::Horizontal;
-  const QRect grooveRect = option->rect.adjusted(horizontal ? 2 : 1, horizontal ? 1 : 2,
-                                                 horizontal ? -2 : -1, horizontal ? -1 : -2);
+  const QRect grooveRect =
+      option->rect.adjusted(horizontal ? 2 : 1, horizontal ? 1 : 2, horizontal ? -2 : -1, horizontal ? -1 : -2);
   if (!grooveRect.isValid()) {
     return;
   }
@@ -989,7 +998,8 @@ void HoloniightStyle::drawSpinBoxImpl(const QStyleOption* option, QPainter* pain
   }
   painter->setBrush(tok.surface);
   painter->setPen(QPen{border, static_cast<qreal>(borderWidth)});
-  painter->drawRoundedRect(opt->rect.adjusted(borderWidth, borderWidth, -borderWidth, -borderWidth), kRadiusControl, kRadiusControl);
+  painter->drawRoundedRect(opt->rect.adjusted(borderWidth, borderWidth, -borderWidth, -borderWidth), kRadiusControl,
+                           kRadiusControl);
 
   const QRect upRect = subControlRect(CC_SpinBox, opt, SC_SpinBoxUp, widget);
   painter->setPen(QPen{tok.borderPassive, 1});
@@ -1083,7 +1093,7 @@ void HoloniightStyle::drawGroupBoxImpl(const QStyleOption* option, QPainter* pai
 // ── sizeFromContents ──────────────────────────────────────────────────────────
 
 QSize HoloniightStyle::sizeFromContents(ContentsType type, const QStyleOption* option, const QSize& size,
-                                       const QWidget* widget) const {
+                                        const QWidget* widget) const {
   switch (type) {
     case CT_ComboBox: {
       constexpr int arrowWidth = 20;

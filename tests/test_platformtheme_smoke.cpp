@@ -46,5 +46,5 @@ TEST(PlatformThemeSmoke, FontIsInterTwelvePt) {
   const QFont* fnt = theme.font(QPlatformTheme::SystemFont);
   ASSERT_NE(fnt, nullptr);
   EXPECT_EQ(fnt->family(), QStringLiteral("Inter"));
-  EXPECT_EQ(fnt->pointSize(), 12);
+  EXPECT_EQ(fnt->pointSize(), 10);
 }

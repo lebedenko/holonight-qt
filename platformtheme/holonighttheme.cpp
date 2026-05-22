@@ -10,13 +10,14 @@
 #include <QVariant>
 
 HoloniightTheme::HoloniightTheme()
-    : font_system_{QStringLiteral("Inter"), 12},
-      font_title_{QStringLiteral("Inter"), 12},
-      font_fixed_{QStringLiteral("JetBrainsMono Nerd Font"), 12},
-      font_small_{QStringLiteral("Inter"), 10},
-      font_mini_{QStringLiteral("Inter"), 8} {
-  QIcon::setThemeName(QStringLiteral("HoloNight"));
-  QIcon::setFallbackThemeName(QStringLiteral("Papirus"));
+    : config_{Holonight::ThemeConfig::load()},
+      font_system_{config_.ui_font, config_.bodySize()},
+      font_title_{config_.ui_font, config_.titleSize()},
+      font_fixed_{config_.fixed_font, config_.bodySize()},
+      font_small_{config_.ui_font, config_.captionSize()},
+      font_mini_{config_.ui_font, config_.captionSize()} {
+  QIcon::setThemeName(config_.icon_theme);
+  QIcon::setFallbackThemeName(config_.fallback_icon_theme);
 }
 
 const QPalette* HoloniightTheme::palette(Palette /*type*/) const {
@@ -29,14 +30,13 @@ QVariant HoloniightTheme::themeHint(ThemeHint hint) const {
     case StyleNames:
       return QStringList{QStringLiteral("Holonight"), QStringLiteral("Fusion")};
     case SystemIconThemeName:
-      return QStringLiteral("HoloNight");
+      return config_.icon_theme;
     case SystemIconFallbackThemeName:
-      return QStringLiteral("Papirus");
+      return config_.fallback_icon_theme;
     case IconThemeSearchPaths: {
       QStringList paths;
       const auto dataDirs = QStandardPaths::standardLocations(QStandardPaths::GenericDataLocation);
-      for (const QString& dir : dataDirs)
-        paths << dir + QStringLiteral("/icons");
+      for (const QString& dir : dataDirs) paths << dir + QStringLiteral("/icons");
       paths << QStringLiteral(":/icons");
       return paths;
     }

@@ -11,6 +11,7 @@ target_sources(holonight PRIVATE
 )
 
 target_link_libraries(holonight PRIVATE
+    holonight_config
     holonight_palette
     Qt6::Widgets
 )

@@ -11,6 +11,7 @@ target_sources(qholonight PRIVATE
 )
 
 target_link_libraries(qholonight PRIVATE
+    holonight_config
     holonight_palette
     Qt6::Gui
     Qt6::GuiPrivate

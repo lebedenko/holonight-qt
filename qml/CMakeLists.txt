@@ -6,6 +6,8 @@ qt_add_qml_module(holonight_qml
     SOURCES
         holoniightpalette.h
         holoniightpalette.cpp
+        holonighttheme.h
+        holonighttheme.cpp
     QML_FILES
         Button.qml
         CheckBox.qml
@@ -46,6 +48,7 @@ foreach(HOLONIGHT_QML_FILE IN LISTS HOLONIGHT_QML_FILES)
 endforeach()
 
 target_link_libraries(holonight_qml PRIVATE
+    holonight_config
     holonight_palette
     Qt6::Quick
     Qt6::QuickControls2
