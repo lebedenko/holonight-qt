@@ -9,66 +9,72 @@ ColorTokens darkTokens() {
   ColorTokens tok;
 
   // HoloNight Colors:Complementary — deepest background (design system: Background #10131f)
-  tok.surface = QColor{0x10, 0x13, 0x1f};          // #10131f
+  tok.surface = QColor{0x10, 0x13, 0x1f};  // #10131f
   // HoloNight Colors:View — intermediate surface tier (design system: Surface #161925)
-  tok.surfaceVariant = QColor{0x16, 0x19, 0x25};   // #161925
+  tok.surfaceVariant = QColor{0x16, 0x19, 0x25};  // #161925
   // HoloNight Colors:View:BackgroundAlternate — card/container (design system: SurfaceElevated #1a1b26)
-  tok.surfaceContainer = QColor{0x1a, 0x1b, 0x26}; // #1a1b26
+  tok.surfaceContainer = QColor{0x1a, 0x1b, 0x26};  // #1a1b26
   // HoloNight ForegroundNormal — contrast ≥9:1 on all surfaces (WCAG AAA)
-  tok.onSurface = QColor{0xc0, 0xca, 0xf5};        // #c0caf5
+  tok.onSurface = QColor{0xc0, 0xca, 0xf5};  // #c0caf5
   // HoloNight ForegroundInactive — disabled/placeholder text only; WCAG 1.4.3 exempt
-  tok.onSurfaceVariant = QColor{0x56, 0x5f, 0x89}; // #565f89
+  tok.onSurfaceVariant = QColor{0x56, 0x5f, 0x89};  // #565f89
 
   // HoloNight Colors:Selection:BackgroundNormal — selection fill (QPalette::Highlight)
-  tok.primary = QColor{0x00, 0xa0, 0xdc};          // #00a0dc  contrast 5.75:1 with onPrimary (WCAG AA)
+  tok.primary = QColor{0x00, 0xa0, 0xdc};  // #00a0dc  contrast 5.75:1 with onPrimary (WCAG AA)
   // Derived: HSL ±15% lightness from focusRing (#00e0ff, H=187°, S=100%, L=50%)
-  tok.primaryHover = QColor{0x4d, 0xe9, 0xff};     // #4de9ff  L=65%
-  tok.primaryPressed = QColor{0x00, 0x9d, 0xb2};   // #009db2  L=35%
-  tok.onPrimary = QColor{0x1a, 0x1b, 0x26};        // #1a1b26  dark text on selection fill
+  tok.primaryHover = QColor{0x4d, 0xe9, 0xff};    // #4de9ff  L=65%
+  tok.primaryPressed = QColor{0x00, 0x9d, 0xb2};  // #009db2  L=35%
+  tok.onPrimary = QColor{0x1a, 0x1b, 0x26};       // #1a1b26  dark text on selection fill
 
   // HoloNight Colors:Button:BackgroundNormal — raised surface for buttons/panels
-  tok.secondary = QColor{0x24, 0x28, 0x3b};        // #24283b
-  tok.onSecondary = QColor{0xc0, 0xca, 0xf5};      // #c0caf5  contrast 9.02:1 (WCAG AAA)
+  tok.secondary = QColor{0x24, 0x28, 0x3b};    // #24283b
+  tok.onSecondary = QColor{0xc0, 0xca, 0xf5};  // #c0caf5  contrast 9.02:1 (WCAG AAA)
 
   // Muted cyan border — DEPRECATED: use semantic border tokens
-  tok.outline = QColor{0x00, 0xa0, 0xc8};          // #00a0c8
+  tok.outline = QColor{0x00, 0xa0, 0xc8};  // #00a0c8
   // HoloNight ForegroundInactive — DEPRECATED: use semantic border tokens
-  tok.outlineVariant = QColor{0x56, 0x5f, 0x89};   // #565f89
+  tok.outlineVariant = QColor{0x56, 0x5f, 0x89};  // #565f89
 
   // Semantic borders — matches outlineVariant; value may diverge in a future revision
-  tok.borderPassive = QColor{0x56, 0x5f, 0x89};      // #565f89  passive frame border
+  tok.borderPassive = QColor{0x56, 0x5f, 0x89};  // #565f89  passive frame border
   // Semi-transparent overlay; alpha 0x4d = 77 ≈ 30% — intentional (see deviation log)
   tok.borderHover = QColor{0x7d, 0xcf, 0xff, 0x4d};  // #7dcfff ~30%  hover-state border
   // Same as focusRing by design — see palette.h comment
-  tok.borderFocus = QColor{0x00, 0xe0, 0xff};         // #00e0ff  keyboard focus ring
-  tok.borderActive = QColor{0x7a, 0xa2, 0xf7};        // #7aa2f7  selected/active border
-  tok.borderUrgent = QColor{0xf7, 0x76, 0x8e};        // #f7768e  critical/error border
+  tok.borderFocus = QColor{0x00, 0xe0, 0xff};   // #00e0ff  keyboard focus ring
+  tok.borderActive = QColor{0x7a, 0xa2, 0xf7};  // #7aa2f7  selected/active border
+  tok.borderUrgent = QColor{0xf7, 0x76, 0x8e};  // #f7768e  critical/error border
 
   // Semi-transparent cyan overlays — alpha < 255 is intentional
-  tok.hover = QColor{0x00, 0xe0, 0xff, 0x1a};      // rgba(0,224,255, 10%)
-  tok.pressed = QColor{0x00, 0xe0, 0xff, 0x26};    // rgba(0,224,255, 15%)
+  tok.hover = QColor{0x00, 0xe0, 0xff, 0x1a};    // rgba(0,224,255, 10%)
+  tok.pressed = QColor{0x00, 0xe0, 0xff, 0x26};  // rgba(0,224,255, 15%)
   // HoloNight DecorationFocus — pure cyan; full brightness for keyboard focus
-  tok.focusRing = QColor{0x00, 0xe0, 0xff};        // #00e0ff
+  tok.focusRing = QColor{0x00, 0xe0, 0xff};  // #00e0ff
 
   // HoloNight ForegroundNegative — contrast 6.79:1 on surface (WCAG AA)
-  tok.error = QColor{0xf7, 0x76, 0x8e};            // #f7768e
+  tok.error = QColor{0xf7, 0x76, 0x8e};  // #f7768e
   // HoloNight ForegroundNeutral — contrast 8.84:1 on surface (WCAG AA)
-  tok.warning = QColor{0xff, 0x9e, 0x64};          // #ff9e64
+  tok.warning = QColor{0xff, 0x9e, 0x64};  // #ff9e64
   // HoloNight ForegroundPositive — contrast 9.83:1 on surface (WCAG AA)
-  tok.success = QColor{0x9e, 0xce, 0x6a};          // #9ece6a
+  tok.success = QColor{0x9e, 0xce, 0x6a};  // #9ece6a
   // Dark text on error-colored fills — contrast 6.79:1 against error (WCAG AA)
-  tok.onError = QColor{0x12, 0x16, 0x26};          // #121626
+  tok.onError = QColor{0x12, 0x16, 0x26};  // #121626
 
   // HoloNight Colors:View with +5L elevation — fills hover cells and ToolButton hover bg
-  tok.surfaceHover = QColor{0x1e, 0x22, 0x33};      // #1e2233
+  tok.surfaceHover = QColor{0x1e, 0x22, 0x33};  // #1e2233
   // 50% blend of onSurfaceVariant (#565f89) and surface (#121626) — WCAG 1.4.3 exempt
-  tok.onSurfaceDisabled = QColor{0x3b, 0x3f, 0x58}; // #3b3f58
+  tok.onSurfaceDisabled = QColor{0x3b, 0x3f, 0x58};  // #3b3f58
   // Near-black inverse surface — ToolTip bg (pops out from every other surface)
-  tok.surfaceInverse = QColor{0x0d, 0x11, 0x17};    // #0d1117
+  tok.surfaceInverse = QColor{0x0d, 0x11, 0x17};  // #0d1117
   // Same as onSurface — AAA contrast (11.6:1) on surfaceInverse
   tok.onSurfaceInverse = QColor{0xc0, 0xca, 0xf5};  // #c0caf5
   // Pure black; actual alpha applied by painter, not stored in token
-  tok.shadow = QColor{0x00, 0x00, 0x00};             // #000000
+  tok.shadow = QColor{0x00, 0x00, 0x00};  // #000000
+
+  // Workspace indicator fills and accents
+  tok.workspaceOccupied = QColor{0x1f, 0x23, 0x35};  // #1f2335  occupied/urgent pill fill
+  tok.workspaceActive = QColor{0x20, 0x26, 0x3a};    // #20263a  active pill fill
+  tok.accentCyan = QColor{0x7d, 0xcf, 0xff};         // #7dcfff  neon-cyan active border
+  tok.textSubtle = QColor{0xa9, 0xb1, 0xd6};         // #a9b1d6  occupied pill text
 
   return tok;
 }

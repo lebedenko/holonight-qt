@@ -56,6 +56,12 @@ struct ColorTokens {
   QColor surfaceInverse;      // #0d1117  ToolTip background — pops out from all surfaces
   QColor onSurfaceInverse;    // #c0caf5  Text on inverse surface (11.6:1 on #0d1117)
   QColor shadow;              // #000000  Drop-shadow base; alpha applied at paint time
+
+  // Workspace indicator fills and accents (topbar workspace pills)
+  QColor workspaceOccupied;  // #1f2335  Occupied / urgent workspace pill fill
+  QColor workspaceActive;    // #20263a  Active workspace pill fill (slightly elevated)
+  QColor accentCyan;         // #7dcfff  Active workspace border / neon-cyan accent
+  QColor textSubtle;         // #a9b1d6  Occupied workspace label — mid-brightness text
 };
 
 [[nodiscard]] ColorTokens darkTokens();
