@@ -60,11 +60,15 @@ class HoloniightPalette : public QObject {
   // Shadow
   Q_PROPERTY(QColor shadow READ shadow CONSTANT)
 
-  // Workspace indicator fills and accents
+  // Design-system accents and secondary text
+  Q_PROPERTY(QColor accentCyan READ accentCyan CONSTANT)
+  Q_PROPERTY(QColor accentBlue READ accentBlue CONSTANT)
+  Q_PROPERTY(QColor accentViolet READ accentViolet CONSTANT)
+  Q_PROPERTY(QColor textSubtle READ textSubtle CONSTANT)
+
+  // Workspace indicator fills
   Q_PROPERTY(QColor workspaceOccupied READ workspaceOccupied CONSTANT)
   Q_PROPERTY(QColor workspaceActive READ workspaceActive CONSTANT)
-  Q_PROPERTY(QColor accentCyan READ accentCyan CONSTANT)
-  Q_PROPERTY(QColor textSubtle READ textSubtle CONSTANT)
 
  public:
   explicit HoloniightPalette(QObject* parent = nullptr);
@@ -99,10 +103,12 @@ class HoloniightPalette : public QObject {
   [[nodiscard]] QColor success() const { return tok_.success; }
   [[nodiscard]] QColor onError() const { return tok_.onError; }
   [[nodiscard]] QColor shadow() const { return tok_.shadow; }
+  [[nodiscard]] QColor accentCyan() const { return tok_.accentCyan; }
+  [[nodiscard]] QColor accentBlue() const { return tok_.accentBlue; }
+  [[nodiscard]] QColor accentViolet() const { return tok_.accentViolet; }
+  [[nodiscard]] QColor textSubtle() const { return tok_.textSubtle; }
   [[nodiscard]] QColor workspaceOccupied() const { return tok_.workspaceOccupied; }
   [[nodiscard]] QColor workspaceActive() const { return tok_.workspaceActive; }
-  [[nodiscard]] QColor accentCyan() const { return tok_.accentCyan; }
-  [[nodiscard]] QColor textSubtle() const { return tok_.textSubtle; }
 
  private:
   Holonight::ColorTokens tok_;

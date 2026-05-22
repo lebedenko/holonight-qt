@@ -37,6 +37,12 @@ TEST(DarkTokens, AllColorsValid) {
   EXPECT_TRUE(tok.borderFocus.isValid());
   EXPECT_TRUE(tok.borderActive.isValid());
   EXPECT_TRUE(tok.borderUrgent.isValid());
+  EXPECT_TRUE(tok.accentCyan.isValid());
+  EXPECT_TRUE(tok.accentBlue.isValid());
+  EXPECT_TRUE(tok.accentViolet.isValid());
+  EXPECT_TRUE(tok.textSubtle.isValid());
+  EXPECT_TRUE(tok.workspaceOccupied.isValid());
+  EXPECT_TRUE(tok.workspaceActive.isValid());
 }
 
 // hover, pressed, and borderHover are intentionally semi-transparent; shadow alpha is set at paint time
@@ -70,6 +76,12 @@ TEST(DarkTokens, OpaqueColorsAreOpaque) {
   EXPECT_EQ(tok.borderFocus.alpha(), 255);
   EXPECT_EQ(tok.borderActive.alpha(), 255);
   EXPECT_EQ(tok.borderUrgent.alpha(), 255);
+  EXPECT_EQ(tok.accentCyan.alpha(), 255);
+  EXPECT_EQ(tok.accentBlue.alpha(), 255);
+  EXPECT_EQ(tok.accentViolet.alpha(), 255);
+  EXPECT_EQ(tok.textSubtle.alpha(), 255);
+  EXPECT_EQ(tok.workspaceOccupied.alpha(), 255);
+  EXPECT_EQ(tok.workspaceActive.alpha(), 255);
 }
 
 TEST(DarkTokens, NoTransparentColors) {
@@ -103,26 +115,39 @@ TEST(DarkTokens, BorderTokenValues) {
   EXPECT_EQ(tok.borderUrgent.rgb(), QColor(0xf7, 0x76, 0x8e).rgb());
 }
 
+TEST(DarkTokens, DesignSystemColorValues) {
+  const Holonight::ColorTokens tok = Holonight::darkTokens();
+  EXPECT_EQ(tok.surface.rgb(), QColor(0x10, 0x13, 0x1f).rgb());
+  EXPECT_EQ(tok.surfaceVariant.rgb(), QColor(0x16, 0x19, 0x25).rgb());
+  EXPECT_EQ(tok.surfaceContainer.rgb(), QColor(0x1a, 0x1b, 0x26).rgb());
+  EXPECT_EQ(tok.secondary.rgb(), QColor(0x24, 0x28, 0x3b).rgb());
+  EXPECT_EQ(tok.borderPassive.rgb(), QColor(0x56, 0x5f, 0x89).rgb());
+  EXPECT_EQ(tok.onSurface.rgb(), QColor(0xc0, 0xca, 0xf5).rgb());
+  EXPECT_EQ(tok.textSubtle.rgb(), QColor(0xa9, 0xb1, 0xd6).rgb());
+  EXPECT_EQ(tok.accentCyan.rgb(), QColor(0x7d, 0xcf, 0xff).rgb());
+  EXPECT_EQ(tok.accentBlue.rgb(), QColor(0x7a, 0xa2, 0xf7).rgb());
+  EXPECT_EQ(tok.accentViolet.rgb(), QColor(0xbb, 0x9a, 0xf7).rgb());
+  EXPECT_EQ(tok.success.rgb(), QColor(0x9e, 0xce, 0x6a).rgb());
+  EXPECT_EQ(tok.warning.rgb(), QColor(0xff, 0x9e, 0x64).rgb());
+  EXPECT_EQ(tok.error.rgb(), QColor(0xf7, 0x76, 0x8e).rgb());
+}
+
 TEST(DarkTokens, SurfaceValues) {
   const Holonight::ColorTokens tok = Holonight::darkTokens();
-  EXPECT_EQ(tok.surface.rgb(),          QColor(0x10, 0x13, 0x1f).rgb());
-  EXPECT_EQ(tok.surfaceVariant.rgb(),   QColor(0x16, 0x19, 0x25).rgb());
+  EXPECT_EQ(tok.surface.rgb(), QColor(0x10, 0x13, 0x1f).rgb());
+  EXPECT_EQ(tok.surfaceVariant.rgb(), QColor(0x16, 0x19, 0x25).rgb());
   EXPECT_EQ(tok.surfaceContainer.rgb(), QColor(0x1a, 0x1b, 0x26).rgb());
-  EXPECT_EQ(tok.secondary.rgb(),        QColor(0x24, 0x28, 0x3b).rgb());
+  EXPECT_EQ(tok.secondary.rgb(), QColor(0x24, 0x28, 0x3b).rgb());
 }
 
 TEST(DarkTokens, SurfaceLuminanceOrdering) {
   const Holonight::ColorTokens tok = Holonight::darkTokens();
   auto lum = [](const QColor& c) -> double {
-    auto lin = [](double v) {
-      return v <= 0.04045 ? v / 12.92 : std::pow((v + 0.055) / 1.055, 2.4);
-    };
+    auto lin = [](double v) { return v <= 0.04045 ? v / 12.92 : std::pow((v + 0.055) / 1.055, 2.4); };
     return 0.2126 * lin(c.redF()) + 0.7152 * lin(c.greenF()) + 0.0722 * lin(c.blueF());
   };
-  EXPECT_LT(lum(tok.surface), lum(tok.surfaceVariant))
-      << "surface must be darker than surfaceVariant";
+  EXPECT_LT(lum(tok.surface), lum(tok.surfaceVariant)) << "surface must be darker than surfaceVariant";
   EXPECT_LT(lum(tok.surfaceVariant), lum(tok.surfaceContainer))
       << "surfaceVariant must be darker than surfaceContainer";
-  EXPECT_LT(lum(tok.surfaceContainer), lum(tok.secondary))
-      << "surfaceContainer must be darker than secondary";
+  EXPECT_LT(lum(tok.surfaceContainer), lum(tok.secondary)) << "surfaceContainer must be darker than secondary";
 }

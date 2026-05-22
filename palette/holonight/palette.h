@@ -10,25 +10,25 @@ namespace Holonight {
 
 struct ColorTokens {
   // Surface roles
-  QColor surface;           // #1c1c23  Main background
-  QColor surfaceVariant;    // #26262f  Elevated surface (panels, buttons)
-  QColor surfaceContainer;  // #2e2e38  Card / grouped container background
-  QColor onSurface;         // #dcdce8  Primary text and icons
-  QColor onSurfaceVariant;  // #9090a8  Secondary / subdued text
+  QColor surface;           // #10131f  Main background
+  QColor surfaceVariant;    // #161925  Base panels and tray containers
+  QColor surfaceContainer;  // #1a1b26  Raised cards and popovers
+  QColor onSurface;         // #c0caf5  Primary text and icons
+  QColor onSurfaceVariant;  // #565f89  Disabled / placeholder text
 
   // Primary accent
-  QColor primary;         // #5e81f4  Accent, active highlight, link
-  QColor primaryHover;    // #7090f6  Primary at hover state
-  QColor primaryPressed;  // #4a68d4  Primary at pressed state
-  QColor onPrimary;       // #ffffff  Text/icon on primary background
+  QColor primary;         // #00a0dc  Selection highlight fill
+  QColor primaryHover;    // #4de9ff  Primary at hover state
+  QColor primaryPressed;  // #009db2  Primary at pressed state
+  QColor onPrimary;       // #1a1b26  Text/icon on primary background
 
   // Secondary / neutral
-  QColor secondary;    // #44445a  Secondary action background
-  QColor onSecondary;  // #dcdce8  Text/icon on secondary background
+  QColor secondary;    // #24283b  Panel / menu / popup surface
+  QColor onSecondary;  // #c0caf5  Text/icon on secondary background
 
   // Outline / border
   // DEPRECATED: use borderPassive, borderHover, borderFocus, borderActive, or borderUrgent instead
-  QColor outline;         // #00a0c8  Default border, separator
+  QColor outline;  // #00a0c8  Default border, separator
   // DEPRECATED: use borderPassive, borderHover, borderFocus, borderActive, or borderUrgent instead
   QColor outlineVariant;  // #565f89  Subtle divider, inactive border
 
@@ -40,9 +40,9 @@ struct ColorTokens {
   QColor borderUrgent;   // #f7768e  Critical / destructive / error state border
 
   // State overlays
-  QColor hover;      // #ffffff1a  12% white overlay for hover
-  QColor pressed;    // #ffffff26  15% white overlay for press
-  QColor focusRing;  // #5e81f4  Same as primary; 2px border on focus
+  QColor hover;      // #00e0ff1a  10% cyan overlay for hover
+  QColor pressed;    // #00e0ff26  15% cyan overlay for press
+  QColor focusRing;  // #00e0ff  Keyboard focus ring
 
   // Semantic status
   QColor error;    // #f7768e  Destructive / error
@@ -51,17 +51,21 @@ struct ColorTokens {
   QColor onError;  // #121626  Text/icon on error background
 
   // Extended surface / state tokens
-  QColor surfaceHover;        // #1e2233  Hover-state filled surface (view +5L)
-  QColor onSurfaceDisabled;   // #3b3f58  Disabled text/border (WCAG 1.4.3 exempt)
-  QColor surfaceInverse;      // #0d1117  ToolTip background — pops out from all surfaces
-  QColor onSurfaceInverse;    // #c0caf5  Text on inverse surface (11.6:1 on #0d1117)
-  QColor shadow;              // #000000  Drop-shadow base; alpha applied at paint time
+  QColor surfaceHover;       // #1e2233  Hover-state filled surface (view +5L)
+  QColor onSurfaceDisabled;  // #3b3f58  Disabled text/border (WCAG 1.4.3 exempt)
+  QColor surfaceInverse;     // #0d1117  ToolTip background — pops out from all surfaces
+  QColor onSurfaceInverse;   // #c0caf5  Text on inverse surface (11.6:1 on #0d1117)
+  QColor shadow;             // #000000  Drop-shadow base; alpha applied at paint time
 
-  // Workspace indicator fills and accents (topbar workspace pills)
+  // Design-system accent tokens
+  QColor accentCyan;    // #7dcfff  Primary neon accent
+  QColor accentBlue;    // #7aa2f7  Secondary accent
+  QColor accentViolet;  // #bb9af7  Tertiary accent / special workspace outline
+  QColor textSubtle;    // #a9b1d6  Secondary text
+
+  // Workspace indicator fills (topbar workspace pills)
   QColor workspaceOccupied;  // #1f2335  Occupied / urgent workspace pill fill
   QColor workspaceActive;    // #20263a  Active workspace pill fill (slightly elevated)
-  QColor accentCyan;         // #7dcfff  Active workspace border / neon-cyan accent
-  QColor textSubtle;         // #a9b1d6  Occupied workspace label — mid-brightness text
 };
 
 [[nodiscard]] ColorTokens darkTokens();

@@ -70,11 +70,15 @@ ColorTokens darkTokens() {
   // Pure black; actual alpha applied by painter, not stored in token
   tok.shadow = QColor{0x00, 0x00, 0x00};  // #000000
 
-  // Workspace indicator fills and accents
+  // HoloNight design-system accents and secondary text
+  tok.accentCyan = QColor{0x7d, 0xcf, 0xff};    // #7dcfff  primary neon accent
+  tok.accentBlue = QColor{0x7a, 0xa2, 0xf7};    // #7aa2f7  secondary accent
+  tok.accentViolet = QColor{0xbb, 0x9a, 0xf7};  // #bb9af7  tertiary accent/glow
+  tok.textSubtle = QColor{0xa9, 0xb1, 0xd6};    // #a9b1d6  secondary text
+
+  // Workspace indicator fills
   tok.workspaceOccupied = QColor{0x1f, 0x23, 0x35};  // #1f2335  occupied/urgent pill fill
   tok.workspaceActive = QColor{0x20, 0x26, 0x3a};    // #20263a  active pill fill
-  tok.accentCyan = QColor{0x7d, 0xcf, 0xff};         // #7dcfff  neon-cyan active border
-  tok.textSubtle = QColor{0xa9, 0xb1, 0xd6};         // #a9b1d6  occupied pill text
 
   return tok;
 }

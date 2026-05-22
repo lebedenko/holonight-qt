@@ -1,6 +1,6 @@
 # HoloNight Design Deviations
 
-This file records color values that deliberately differ from the [HoloNight Design System](../wshell/assets/holonight-assets/design-guid/HoloNight-Design-System.md) due to technical or accessibility constraints.
+This file records color values that deliberately differ from the [HoloNight Design System](../holonight-shell/assets/dont-commit/HoloNight-Design-System.md) due to technical or accessibility constraints.
 
 ## Format
 
@@ -9,6 +9,33 @@ Each entry: token name, design system target, actual value, reason, and WCAG rat
 ---
 
 ## Active Deviations
+
+### `onSurfaceVariant`
+
+| Field | Value |
+|---|---|
+| Design system target | Text Muted `#a9b1d6` |
+| Actual value | `#565f89` |
+| Reason | `onSurfaceVariant` is retained as the disabled/placeholder text role and is WCAG 1.4.3 exempt. Use `textSubtle` for design-system secondary text (`#a9b1d6`). |
+| WCAG ratio (worst case) | 2.35:1 on panel (`#24283b`) |
+
+### `primary`
+
+| Field | Value |
+|---|---|
+| Design system target | Cyan `#7dcfff` for the primary neon accent |
+| Actual value | `#00a0dc` |
+| Reason | `primary` is mapped to `QPalette::Highlight` and selection/link fill roles, not the general design-system accent. It is kept darker so `onPrimary` (`#1a1b26`) remains a readable selection text color and existing Qt highlight behavior stays stable. Use `accentCyan` for the design-system cyan accent. |
+| WCAG ratio | 5.75:1 with `onPrimary` |
+
+### `focusRing` / `borderFocus`
+
+| Field | Value |
+|---|---|
+| Design system target | Cyan `#7dcfff` |
+| Actual value | `#00e0ff` |
+| Reason | Keyboard focus uses a brighter pure-cyan indicator than the decorative accent so focus remains unmistakable on every dark surface. `borderFocus == focusRing` is intentional and documented by the semantic border token design notes. Use `accentCyan` for non-focus cyan accent work. |
+| WCAG ratio (worst case) | 9.09:1 on panel (`#24283b`) |
 
 ### `borderPassive`
 

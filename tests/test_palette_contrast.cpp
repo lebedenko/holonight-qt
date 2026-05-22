@@ -66,6 +66,10 @@ TEST_F(ContrastTest, SuccessVsSurface) {
   EXPECT_GE(contrastRatio(tok_.success, tok_.surface), 4.5) << "success text on surface fails WCAG AA";
 }
 
+TEST_F(ContrastTest, TextSubtleVsSurface) {
+  EXPECT_GE(contrastRatio(tok_.textSubtle, tok_.surface), 4.5) << "textSubtle on surface fails WCAG AA";
+}
+
 // ── Non-text contrast: WCAG 1.4.11 requires ≥3:1 for UI components ─────────
 
 TEST_F(ContrastTest, FocusRingVsSurface) {
@@ -97,52 +101,55 @@ TEST_F(ContrastTest, OnSurfaceInverseVsSurfaceInverse) {
 }
 
 TEST_F(ContrastTest, FocusRingVsSurfaceHover) {
-  EXPECT_GE(contrastRatio(tok_.focusRing, tok_.surfaceHover), 3.0)
-      << "focusRing on surfaceHover fails WCAG 1.4.11";
+  EXPECT_GE(contrastRatio(tok_.focusRing, tok_.surfaceHover), 3.0) << "focusRing on surfaceHover fails WCAG 1.4.11";
 }
 
 TEST_F(ContrastTest, OutlineVsSurfaceHover) {
-  EXPECT_GE(contrastRatio(tok_.outline, tok_.surfaceHover), 3.0)
-      << "outline on surfaceHover fails WCAG 1.4.11";
+  EXPECT_GE(contrastRatio(tok_.outline, tok_.surfaceHover), 3.0) << "outline on surfaceHover fails WCAG 1.4.11";
 }
 
 // ── Semantic border tokens: WCAG 1.4.11 requires ≥3:1 for UI components ─────
 
 TEST_F(ContrastTest, BorderFocusVsSurface) {
-  EXPECT_GE(contrastRatio(tok_.borderFocus, tok_.surface), 3.0)
-      << "borderFocus on surface fails WCAG 1.4.11";
+  EXPECT_GE(contrastRatio(tok_.borderFocus, tok_.surface), 3.0) << "borderFocus on surface fails WCAG 1.4.11";
 }
 
 TEST_F(ContrastTest, BorderFocusVsSecondary) {
-  EXPECT_GE(contrastRatio(tok_.borderFocus, tok_.secondary), 3.0)
-      << "borderFocus on panel fails WCAG 1.4.11";
+  EXPECT_GE(contrastRatio(tok_.borderFocus, tok_.secondary), 3.0) << "borderFocus on panel fails WCAG 1.4.11";
 }
 
 TEST_F(ContrastTest, BorderActiveVsSurface) {
-  EXPECT_GE(contrastRatio(tok_.borderActive, tok_.surface), 3.0)
-      << "borderActive on surface fails WCAG 1.4.11";
+  EXPECT_GE(contrastRatio(tok_.borderActive, tok_.surface), 3.0) << "borderActive on surface fails WCAG 1.4.11";
 }
 
 TEST_F(ContrastTest, BorderActiveVsSecondary) {
-  EXPECT_GE(contrastRatio(tok_.borderActive, tok_.secondary), 3.0)
-      << "borderActive on panel fails WCAG 1.4.11";
+  EXPECT_GE(contrastRatio(tok_.borderActive, tok_.secondary), 3.0) << "borderActive on panel fails WCAG 1.4.11";
 }
 
 TEST_F(ContrastTest, BorderUrgentVsSurface) {
-  EXPECT_GE(contrastRatio(tok_.borderUrgent, tok_.surface), 3.0)
-      << "borderUrgent on surface fails WCAG 1.4.11";
+  EXPECT_GE(contrastRatio(tok_.borderUrgent, tok_.surface), 3.0) << "borderUrgent on surface fails WCAG 1.4.11";
 }
 
 TEST_F(ContrastTest, BorderUrgentVsSecondary) {
-  EXPECT_GE(contrastRatio(tok_.borderUrgent, tok_.secondary), 3.0)
-      << "borderUrgent on panel fails WCAG 1.4.11";
+  EXPECT_GE(contrastRatio(tok_.borderUrgent, tok_.secondary), 3.0) << "borderUrgent on panel fails WCAG 1.4.11";
+}
+
+TEST_F(ContrastTest, AccentCyanVsSurface) {
+  EXPECT_GE(contrastRatio(tok_.accentCyan, tok_.surface), 3.0) << "accentCyan on surface fails WCAG 1.4.11";
+}
+
+TEST_F(ContrastTest, AccentBlueVsSurface) {
+  EXPECT_GE(contrastRatio(tok_.accentBlue, tok_.surface), 3.0) << "accentBlue on surface fails WCAG 1.4.11";
+}
+
+TEST_F(ContrastTest, AccentVioletVsSurface) {
+  EXPECT_GE(contrastRatio(tok_.accentViolet, tok_.surface), 3.0) << "accentViolet on surface fails WCAG 1.4.11";
 }
 
 // ── Updated surface tokens: text contrast ────────────────────────────────────
 
 TEST_F(ContrastTest, OnSurfaceVsNewSurface) {
-  EXPECT_GE(contrastRatio(tok_.onSurface, tok_.surface), 4.5)
-      << "onSurface on new surface (#10131f) fails WCAG AA";
+  EXPECT_GE(contrastRatio(tok_.onSurface, tok_.surface), 4.5) << "onSurface on new surface (#10131f) fails WCAG AA";
 }
 
 TEST_F(ContrastTest, OnSurfaceVsNewSurfaceVariant) {

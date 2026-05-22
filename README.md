@@ -47,6 +47,7 @@ Colors are based on the [HoloNight](https://github.com/topics/kde-color-scheme) 
 | Role | Value | Usage |
 |---|---|---|
 | `onSurface` | `#c0caf5` | Primary text and icons |
+| `textSubtle` | `#a9b1d6` | Secondary text |
 | `onSurfaceVariant` | `#565f89` | Disabled / placeholder text (WCAG 1.4.3 exempt) |
 | `onSurfaceDisabled` | `#3b3f58` | Inactive UI elements (WCAG 1.4.3 exempt) |
 | `onSurfaceInverse` | `#c0caf5` | Text on inverse surface |
@@ -55,6 +56,14 @@ Colors are based on the [HoloNight](https://github.com/topics/kde-color-scheme) 
 | `warning` | `#ff9e64` | Caution |
 | `success` | `#9ece6a` | Confirmation |
 | `shadow` | `#000000` | Drop-shadow base (alpha applied at paint time) |
+
+**Design-system accents:**
+
+| Role | Value | Usage |
+|---|---|---|
+| `accentCyan` | `#7dcfff` | Primary neon accent |
+| `accentBlue` | `#7aa2f7` | Secondary accent |
+| `accentViolet` | `#bb9af7` | Tertiary accent / special workspace outline |
 
 **Semantic border tokens:**
 
@@ -72,10 +81,8 @@ Colors are based on the [HoloNight](https://github.com/topics/kde-color-scheme) 
 |---|---|---|
 | `workspaceOccupied` | `#1f2335` | Occupied / urgent workspace pill fill |
 | `workspaceActive` | `#20263a` | Active workspace pill fill |
-| `accentCyan` | `#7dcfff` | Active workspace border / neon-cyan accent |
-| `textSubtle` | `#a9b1d6` | Occupied workspace label text |
 
-WCAG AA contrast (4.5:1) is enforced by the test suite for all text and selection pairs. Non-text UI components (borders, focus rings) are tested at the WCAG 1.4.11 threshold of 3:1. Known intentional deviations are documented in [`docs/holonight-design-deviations.md`](docs/holonight-design-deviations.md).
+WCAG AA contrast (4.5:1) is enforced by the test suite for all text and selection pairs. Non-text UI components (borders, focus rings) are tested at the WCAG 1.4.11 threshold of 3:1. Known intentional deviations from the design-system color table are documented in [`docs/holonight-design-deviations.md`](docs/holonight-design-deviations.md).
 
 ## Requirements
 
