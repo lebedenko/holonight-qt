@@ -66,6 +66,15 @@ Colors are based on the [HoloNight](https://github.com/topics/kde-color-scheme) 
 | `borderActive` | `#7aa2f7` | Selected / active state border |
 | `borderUrgent` | `#f7768e` | Error / destructive state border |
 
+**Workspace indicator tokens:**
+
+| Role | Value | Usage |
+|---|---|---|
+| `workspaceOccupied` | `#1f2335` | Occupied / urgent workspace pill fill |
+| `workspaceActive` | `#20263a` | Active workspace pill fill |
+| `accentCyan` | `#7dcfff` | Active workspace border / neon-cyan accent |
+| `textSubtle` | `#a9b1d6` | Occupied workspace label text |
+
 WCAG AA contrast (4.5:1) is enforced by the test suite for all text and selection pairs. Non-text UI components (borders, focus rings) are tested at the WCAG 1.4.11 threshold of 3:1. Known intentional deviations are documented in [`docs/holonight-design-deviations.md`](docs/holonight-design-deviations.md).
 
 ## Requirements
