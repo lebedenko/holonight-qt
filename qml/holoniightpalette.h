@@ -64,6 +64,7 @@ class HoloniightPalette : public QObject {
   Q_PROPERTY(QColor accentCyan READ accentCyan CONSTANT)
   Q_PROPERTY(QColor accentBlue READ accentBlue CONSTANT)
   Q_PROPERTY(QColor accentViolet READ accentViolet CONSTANT)
+  Q_PROPERTY(QColor accentYellow READ accentYellow CONSTANT)
   Q_PROPERTY(QColor textSubtle READ textSubtle CONSTANT)
 
   // Workspace indicator fills
@@ -106,6 +107,7 @@ class HoloniightPalette : public QObject {
   [[nodiscard]] QColor accentCyan() const { return tok_.accentCyan; }
   [[nodiscard]] QColor accentBlue() const { return tok_.accentBlue; }
   [[nodiscard]] QColor accentViolet() const { return tok_.accentViolet; }
+  [[nodiscard]] QColor accentYellow() const { return tok_.accentYellow; }
   [[nodiscard]] QColor textSubtle() const { return tok_.textSubtle; }
   [[nodiscard]] QColor workspaceOccupied() const { return tok_.workspaceOccupied; }
   [[nodiscard]] QColor workspaceActive() const { return tok_.workspaceActive; }

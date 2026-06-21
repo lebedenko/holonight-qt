@@ -60,11 +60,14 @@ Colors are based on the [HoloNight](https://github.com/topics/kde-color-scheme) 
 
 **Design-system accents:**
 
+Yellow is exposed as an accent token, not a warning state; `warning` remains orange for caution/status UI.
+
 | Role | Value | Usage |
 |---|---|---|
 | `accentCyan` | `#7dcfff` | Primary neon accent |
 | `accentBlue` | `#7aa2f7` | Secondary accent |
 | `accentViolet` | `#bb9af7` | Tertiary accent / special workspace outline |
+| `accentYellow` | `#e0af68` | Warm accent / attention highlight |
 
 **Semantic border tokens:**
 

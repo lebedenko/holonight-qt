@@ -146,6 +146,10 @@ TEST_F(ContrastTest, AccentVioletVsSurface) {
   EXPECT_GE(contrastRatio(tok_.accentViolet, tok_.surface), 3.0) << "accentViolet on surface fails WCAG 1.4.11";
 }
 
+TEST_F(ContrastTest, AccentYellowVsSurface) {
+  EXPECT_GE(contrastRatio(tok_.accentYellow, tok_.surface), 3.0) << "accentYellow on surface fails WCAG 1.4.11";
+}
+
 // ── Updated surface tokens: text contrast ────────────────────────────────────
 
 TEST_F(ContrastTest, OnSurfaceVsNewSurface) {

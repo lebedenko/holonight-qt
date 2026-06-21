@@ -40,6 +40,7 @@ TEST(DarkTokens, AllColorsValid) {
   EXPECT_TRUE(tok.accentCyan.isValid());
   EXPECT_TRUE(tok.accentBlue.isValid());
   EXPECT_TRUE(tok.accentViolet.isValid());
+  EXPECT_TRUE(tok.accentYellow.isValid());
   EXPECT_TRUE(tok.textSubtle.isValid());
   EXPECT_TRUE(tok.workspaceOccupied.isValid());
   EXPECT_TRUE(tok.workspaceActive.isValid());
@@ -79,6 +80,7 @@ TEST(DarkTokens, OpaqueColorsAreOpaque) {
   EXPECT_EQ(tok.accentCyan.alpha(), 255);
   EXPECT_EQ(tok.accentBlue.alpha(), 255);
   EXPECT_EQ(tok.accentViolet.alpha(), 255);
+  EXPECT_EQ(tok.accentYellow.alpha(), 255);
   EXPECT_EQ(tok.textSubtle.alpha(), 255);
   EXPECT_EQ(tok.workspaceOccupied.alpha(), 255);
   EXPECT_EQ(tok.workspaceActive.alpha(), 255);
@@ -127,6 +129,7 @@ TEST(DarkTokens, DesignSystemColorValues) {
   EXPECT_EQ(tok.accentCyan.rgb(), QColor(0x7d, 0xcf, 0xff).rgb());
   EXPECT_EQ(tok.accentBlue.rgb(), QColor(0x7a, 0xa2, 0xf7).rgb());
   EXPECT_EQ(tok.accentViolet.rgb(), QColor(0xbb, 0x9a, 0xf7).rgb());
+  EXPECT_EQ(tok.accentYellow.rgb(), QColor(0xe0, 0xaf, 0x68).rgb());
   EXPECT_EQ(tok.success.rgb(), QColor(0x9e, 0xce, 0x6a).rgb());
   EXPECT_EQ(tok.warning.rgb(), QColor(0xff, 0x9e, 0x64).rgb());
   EXPECT_EQ(tok.error.rgb(), QColor(0xf7, 0x76, 0x8e).rgb());

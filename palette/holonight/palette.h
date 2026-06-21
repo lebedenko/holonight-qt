@@ -61,6 +61,7 @@ struct ColorTokens {
   QColor accentCyan;    // #7dcfff  Primary neon accent
   QColor accentBlue;    // #7aa2f7  Secondary accent
   QColor accentViolet;  // #bb9af7  Tertiary accent / special workspace outline
+  QColor accentYellow;  // #e0af68  Warm accent / attention highlight
   QColor textSubtle;    // #a9b1d6  Secondary text
 
   // Workspace indicator fills (topbar workspace pills)

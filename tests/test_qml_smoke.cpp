@@ -90,6 +90,7 @@ TEST_F(QmlSmoke, HoloniightPalette_DesignSystemAccentsAreValid) {
       property color cyan: HoloniightPalette.accentCyan
       property color blue: HoloniightPalette.accentBlue
       property color violet: HoloniightPalette.accentViolet
+      property color yellow: HoloniightPalette.accentYellow
       property color subtle: HoloniightPalette.textSubtle
     }
   )",

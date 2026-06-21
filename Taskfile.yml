@@ -20,7 +20,12 @@ tasks:
   configure:release:
     desc: Configure (Release)
     cmds:
-      - cmake -B {{.RELEASE_BUILD_DIR}} -G Ninja -DCMAKE_BUILD_TYPE=Release -DBUILD_TESTS=ON
+      - |
+        if [ -f "{{.RELEASE_BUILD_DIR}}/CMakeCache.txt" ] && ! grep -Fxq "CMAKE_HOME_DIRECTORY:INTERNAL={{.TASKFILE_DIR}}" "{{.RELEASE_BUILD_DIR}}/CMakeCache.txt"; then
+          cmake -E echo "Removing stale {{.RELEASE_BUILD_DIR}} CMake cache from another source directory"
+          cmake -E rm -rf "{{.RELEASE_BUILD_DIR}}"
+        fi
+      - cmake -S . -B {{.RELEASE_BUILD_DIR}} -G Ninja -DCMAKE_BUILD_TYPE=Release -DBUILD_TESTS=ON
 
   configure:demo:
     desc: Configure (Debug + demo app)

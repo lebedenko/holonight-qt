@@ -74,6 +74,7 @@ ColorTokens darkTokens() {
   tok.accentCyan = QColor{0x7d, 0xcf, 0xff};    // #7dcfff  primary neon accent
   tok.accentBlue = QColor{0x7a, 0xa2, 0xf7};    // #7aa2f7  secondary accent
   tok.accentViolet = QColor{0xbb, 0x9a, 0xf7};  // #bb9af7  tertiary accent/glow
+  tok.accentYellow = QColor{0xe0, 0xaf, 0x68};  // #e0af68  warm accent/attention
   tok.textSubtle = QColor{0xa9, 0xb1, 0xd6};    // #a9b1d6  secondary text
 
   // Workspace indicator fills
