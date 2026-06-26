@@ -4,7 +4,9 @@
 #include "holonightstyle.h"
 
 #include <QAbstractItemView>
+#include <QFrame>
 #include <QPainter>
+#include <QSplitter>
 #include <QStatusBar>
 #include <QStyleOption>
 #include <QStyleOptionComplex>
@@ -18,6 +20,29 @@ namespace {
 constexpr qreal kRadiusControl = 6.0;  // unified control corner radius
 constexpr qreal kRadiusTight = 2.0;    // tight radius for item-view selection/focus rings
 constexpr qreal kRadiusGroove = 3.0;   // progress-bar groove (not a control shape)
+
+bool isPlacesWidget(const QWidget* widget) {
+  if (widget == nullptr) {
+    return false;
+  }
+  const QString className = QString::fromLatin1(widget->metaObject()->className());
+  const QString objectName = widget->objectName();
+  return className.contains(QLatin1String("Places"), Qt::CaseInsensitive) ||
+         objectName.contains(QLatin1String("places"), Qt::CaseInsensitive);
+}
+
+QColor getWidgetBackground(const QWidget* widget, const Holonight::ColorTokens& tok) {
+  if (widget == nullptr) {
+    return tok.surface;
+  }
+  if (widget->property("isPlacesContainer").toBool()) {
+    return tok.surfaceVariant;
+  }
+  if (widget->inherits("QAbstractItemView")) {
+    return tok.surface;
+  }
+  return widget->palette().color(widget->backgroundRole());
+}
 }  // namespace
 
 HoloniightStyle::HoloniightStyle() : QProxyStyle(QStringLiteral("fusion")), config_{Holonight::ThemeConfig::load()} {}
@@ -49,16 +74,13 @@ void HoloniightStyle::polish(QWidget* widget) {
   palette.setColor(QPalette::Mid, tok.borderPassive);
   palette.setColor(QPalette::Shadow, tok.borderPassive);
 
-  const QString className = QString::fromLatin1(widget->metaObject()->className());
-  const QString objectName = widget->objectName();
-  const bool isPlacesWidget = className.contains(QLatin1String("Places"), Qt::CaseInsensitive) ||
-                              objectName.contains(QLatin1String("places"), Qt::CaseInsensitive);
+  if (isPlacesWidget(widget)) {
+    widget->setProperty("isPlacesContainer", true);
+    palette.setColor(QPalette::Window, tok.surfaceVariant);
+    palette.setColor(QPalette::Base, tok.surfaceVariant);
+  }
 
   if (auto* view = qobject_cast<QAbstractItemView*>(widget); view != nullptr) {
-    if (isPlacesWidget) {
-      palette.setColor(QPalette::Base, tok.surfaceVariant);
-      palette.setColor(QPalette::Window, tok.surfaceVariant);
-    }
     view->setPalette(palette);
     view->viewport()->setPalette(palette);
     view->viewport()->setAutoFillBackground(true);
@@ -77,6 +99,8 @@ void HoloniightStyle::polish(QWidget* widget) {
 int HoloniightStyle::pixelMetric(PixelMetric metric, const QStyleOption* option, const QWidget* widget) const {
   switch (metric) {
     case PM_DefaultFrameWidth:
+      return 1;
+    case PM_SplitterWidth:
       return 1;
     case PM_ButtonMargin:
       return scaledMetric(6);
@@ -128,6 +152,32 @@ int HoloniightStyle::scaledMetric(int value) const {
 void HoloniightStyle::drawControl(ControlElement element, const QStyleOption* option, QPainter* painter,
                                   const QWidget* widget) const {
   switch (element) {
+    case CE_ShapedFrame: {
+      const auto* frameOpt = qstyleoption_cast<const QStyleOptionFrame*>(option);
+      if (frameOpt != nullptr) {
+        const int frameShape = frameOpt->frameShape;
+        if (frameShape == QFrame::HLine || frameShape == QFrame::VLine) {
+          const auto tok = tokens();
+          painter->save();
+          if (frameShape == QFrame::HLine) {
+            const int centerY = option->rect.center().y();
+            QRect lineRect = option->rect;
+            lineRect.setTop(centerY);
+            lineRect.setHeight(1);
+            painter->fillRect(lineRect, tok.borderPassive);
+          } else {
+            const int centerX = option->rect.center().x();
+            QRect lineRect = option->rect;
+            lineRect.setLeft(centerX);
+            lineRect.setWidth(1);
+            painter->fillRect(lineRect, tok.borderPassive);
+          }
+          painter->restore();
+          return;
+        }
+      }
+      break;
+    }
     case CE_PushButton:
       drawControl(CE_PushButtonBevel, option, painter, widget);
       drawControl(CE_PushButtonLabel, option, painter, widget);
@@ -241,26 +291,54 @@ void HoloniightStyle::drawControl(ControlElement element, const QStyleOption* op
     case CE_Splitter: {
       const auto tok = tokens();
       painter->save();
-      painter->setPen(Qt::NoPen);
-      painter->setBrush(tok.surface);
-      painter->drawRect(option->rect);
-      painter->setPen(QPen{tok.borderPassive, 1});
+      painter->setRenderHint(QPainter::Antialiasing, false);
+
+      QColor leftColor = tok.surface;
+      QColor rightColor = tok.surface;
+
+      const auto* handle = qobject_cast<const QSplitterHandle*>(widget);
+      if (handle != nullptr) {
+        auto* splitter = handle->splitter();
+        if (splitter != nullptr) {
+          int idx = splitter->indexOf(const_cast<QSplitterHandle*>(handle));
+          if (idx > 0) {
+            leftColor = getWidgetBackground(splitter->widget(idx - 1), tok);
+            rightColor = getWidgetBackground(splitter->widget(idx), tok);
+          }
+        }
+      }
+
       if ((option->state & State_Horizontal) != 0U) {
         const int centerX = option->rect.center().x();
-        painter->drawLine(centerX, option->rect.top() + 4, centerX, option->rect.bottom() - 4);
+
+        QRect leftRect = option->rect;
+        leftRect.setRight(centerX - 1);
+        painter->fillRect(leftRect, leftColor);
+
+        QRect rightRect = option->rect;
+        rightRect.setLeft(centerX + 1);
+        painter->fillRect(rightRect, rightColor);
+
+        QRect lineRect = option->rect;
+        lineRect.setLeft(centerX);
+        lineRect.setWidth(1);
+        painter->fillRect(lineRect, tok.borderPassive);
       } else {
         const int centerY = option->rect.center().y();
-        painter->drawLine(option->rect.left() + 4, centerY, option->rect.right() - 4, centerY);
+
+        QRect topRect = option->rect;
+        topRect.setBottom(centerY - 1);
+        painter->fillRect(topRect, leftColor);
+
+        QRect bottomRect = option->rect;
+        bottomRect.setTop(centerY + 1);
+        painter->fillRect(bottomRect, rightColor);
+
+        QRect lineRect = option->rect;
+        lineRect.setTop(centerY);
+        lineRect.setHeight(1);
+        painter->fillRect(lineRect, tok.borderPassive);
       }
-      painter->restore();
-      return;
-    }
-    case CE_ToolBar: {
-      const auto tok = tokens();
-      painter->save();
-      painter->setPen(Qt::NoPen);
-      painter->setBrush(tok.surface);
-      painter->drawRect(option->rect);
       painter->restore();
       return;
     }
@@ -599,7 +677,18 @@ void HoloniightStyle::drawPrimitive(PrimitiveElement element, const QStyleOption
       return;
     }
 
-    case PE_Frame:
+    case PE_Frame: {
+      if (widget && widget->inherits("QAbstractScrollArea")) {
+        return;
+      }
+      painter->save();
+      painter->setPen(tok.borderPassive);
+      painter->setBrush(Qt::NoBrush);
+      painter->drawRect(option->rect.adjusted(0, 0, -1, -1));
+      painter->restore();
+      return;
+    }
+
     case PE_FrameTabWidget: {
       painter->save();
       painter->setPen(tok.borderPassive);
@@ -633,8 +722,13 @@ void HoloniightStyle::drawPrimitive(PrimitiveElement element, const QStyleOption
       painter->setPen(Qt::NoPen);
       painter->setBrush(tok.surface);
       painter->drawRect(option->rect);
-      painter->setPen(QPen{tok.borderPassive, 1});
-      painter->drawLine(option->rect.bottomLeft(), option->rect.bottomRight());
+      
+      // Draw bottom separator line using fillRect to prevent clipping and ensure consistent thickness
+      QRect borderRect = option->rect;
+      borderRect.setTop(option->rect.bottom());
+      borderRect.setHeight(1);
+      painter->fillRect(borderRect, tok.borderPassive);
+      
       painter->restore();
       return;
     }
