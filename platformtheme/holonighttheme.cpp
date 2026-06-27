@@ -34,11 +34,16 @@ QVariant HoloniightTheme::themeHint(ThemeHint hint) const {
     case SystemIconFallbackThemeName:
       return config_.fallback_icon_theme;
     case IconThemeSearchPaths: {
-      QStringList paths;
-      const auto dataDirs = QStandardPaths::standardLocations(QStandardPaths::GenericDataLocation);
-      for (const QString& dir : dataDirs) paths << dir + QStringLiteral("/icons");
-      paths << QStringLiteral(":/icons");
-      return paths;
+      static const QStringList kIconThemeSearchPaths = [] {
+        QStringList paths;
+        const auto dataDirs = QStandardPaths::standardLocations(QStandardPaths::GenericDataLocation);
+        for (const QString& dir : dataDirs) {
+          paths << dir + QStringLiteral("/icons");
+        }
+        paths << QStringLiteral(":/icons");
+        return paths;
+      }();
+      return kIconThemeSearchPaths;
     }
     default:
       return QPlatformTheme::themeHint(hint);

@@ -3,6 +3,7 @@
 
 #include "holonight/config.h"
 
+#include <QDebug>
 #include <QFile>
 #include <QJsonDocument>
 #include <QJsonObject>
@@ -81,7 +82,7 @@ void readJsonObject(Holonight::ThemeConfig* config, const QJsonObject& root) {
 }
 
 void readIniFile(Holonight::ThemeConfig* config, const QString& path) {
-  QSettings settings{path, QSettings::IniFormat};
+  QSettings settings = QSettings{path, QSettings::IniFormat};
   setStringIfPresent(&config->icon_theme, settings.value(QStringLiteral("icons/theme")).toString());
   setStringIfPresent(&config->fallback_icon_theme, settings.value(QStringLiteral("icons/fallback")).toString());
   setStringIfPresent(&config->ui_font, settings.value(QStringLiteral("fonts/ui")).toString());
@@ -97,16 +98,25 @@ void readIniFile(Holonight::ThemeConfig* config, const QString& path) {
   if (ok) {
     setScaleIfValid(&config->scale_factor, scaleFactor);
   }
+
+  if (settings.status() != QSettings::NoError) {
+    qWarning() << "Failed to read Holonight config" << path;
+  }
 }
 
 void readConfigFile(Holonight::ThemeConfig* config, const QString& path) {
-  QFile file{path};
+  QFile file = QFile{path};
   if (!file.exists() || !file.open(QIODevice::ReadOnly | QIODevice::Text)) {
     return;
   }
 
   const QByteArray bytes = file.readAll();
-  QJsonParseError error{};
+  if (file.error() != QFileDevice::NoError) {
+    qWarning() << "Failed to read Holonight config" << path << file.errorString();
+    return;
+  }
+
+  QJsonParseError error = QJsonParseError{};
   const QJsonDocument document = QJsonDocument::fromJson(bytes, &error);
   if (error.error == QJsonParseError::NoError && document.isObject()) {
     readJsonObject(config, document.object());
@@ -139,13 +149,13 @@ void applyEnvironment(Holonight::ThemeConfig* config) {
 
 namespace Holonight {
 
-int ThemeConfig::captionSize() const { return std::max(kMinFontSize, base_font_size - 1); }
+int ThemeConfig::captionSize() const { return (std::max)(kMinFontSize, base_font_size - 1); }
 
 int ThemeConfig::bodySize() const { return base_font_size; }
 
-int ThemeConfig::titleSize() const { return std::min(kMaxFontSize, base_font_size + 3); }
+int ThemeConfig::titleSize() const { return (std::min)(kMaxFontSize, base_font_size + 3); }
 
-int ThemeConfig::headingSize() const { return std::min(kMaxFontSize, base_font_size + 6); }
+int ThemeConfig::headingSize() const { return (std::min)(kMaxFontSize, base_font_size + 6); }
 
 ThemeConfig ThemeConfig::defaults() {
   return ThemeConfig{.icon_theme = QStringLiteral("HoloNight"),

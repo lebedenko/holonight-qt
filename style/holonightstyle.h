@@ -8,10 +8,13 @@
 
 #include <QProxyStyle>
 
+#include <cstdint>
+
 class HoloniightStyle : public QProxyStyle {
   Q_OBJECT
  public:
   explicit HoloniightStyle();
+  Q_DISABLE_COPY_MOVE(HoloniightStyle)
 
   void polish(QPalette& palette) override;
   void polish(QWidget* widget) override;
@@ -42,10 +45,16 @@ class HoloniightStyle : public QProxyStyle {
  private:
   [[nodiscard]] int scaledMetric(int value) const;
 
-  // Paints a solid-colored triangle arrow. dir: 0=down, 1=up, 2=left, 3=right.
-  static void paintArrow(QPainter* painter, const QRect& rect, int dir, const QColor& color);
+  enum class ArrowDirection : uint8_t {
+    Down,
+    Up,
+    Left,
+    Right,
+  };
 
-  [[nodiscard]] static Holonight::ColorTokens tokens();
+  static void paintArrow(QPainter* painter, const QRect& rect, ArrowDirection direction, const QColor& color);
+
+  [[nodiscard]] static const Holonight::ColorTokens& tokens();
 
   static void drawPushButtonBevelImpl(const QStyleOption* option, QPainter* painter);
   void drawItemViewItemImpl(const QStyleOption* option, QPainter* painter, const QWidget* widget) const;

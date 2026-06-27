@@ -16,12 +16,12 @@ static double relativeLuminance(const QColor& col) {
 static double contrastRatio(const QColor& fgColor, const QColor& bgColor) {
   const double lum1 = relativeLuminance(fgColor);
   const double lum2 = relativeLuminance(bgColor);
-  return (std::max(lum1, lum2) + 0.05) / (std::min(lum1, lum2) + 0.05);
+  return ((std::max)(lum1, lum2) + 0.05) / ((std::min)(lum1, lum2) + 0.05);
 }
 
 class ContrastTest : public ::testing::Test {
  protected:
-  Holonight::ColorTokens tok_{Holonight::darkTokens()};
+  Holonight::ColorTokens tok_ = Holonight::ColorTokens{Holonight::darkTokens()};
 };
 
 // ── Text contrast: WCAG 1.4.3 requires ≥4.5:1 for normal text ──────────────
@@ -148,13 +148,11 @@ TEST_F(ContrastTest, AccentBlueVsSurface) {
 }
 
 TEST_F(ContrastTest, AccentVioletVsSurface) {
-  EXPECT_GE(contrastRatio(tok_.accentViolet, tok_.background), 3.0)
-      << "accentViolet on background fails WCAG 1.4.11";
+  EXPECT_GE(contrastRatio(tok_.accentViolet, tok_.background), 3.0) << "accentViolet on background fails WCAG 1.4.11";
 }
 
 TEST_F(ContrastTest, AccentYellowVsSurface) {
-  EXPECT_GE(contrastRatio(tok_.accentYellow, tok_.background), 3.0)
-      << "accentYellow on background fails WCAG 1.4.11";
+  EXPECT_GE(contrastRatio(tok_.accentYellow, tok_.background), 3.0) << "accentYellow on background fails WCAG 1.4.11";
 }
 
 // ── Updated surface tokens: text contrast ────────────────────────────────────
@@ -165,8 +163,7 @@ TEST_F(ContrastTest, OnSurfaceVsNewSurface) {
 }
 
 TEST_F(ContrastTest, OnSurfaceVsNewSurfaceVariant) {
-  EXPECT_GE(contrastRatio(tok_.textPrimary, tok_.surface), 4.5)
-      << "textPrimary on surface (#161925) fails WCAG AA";
+  EXPECT_GE(contrastRatio(tok_.textPrimary, tok_.surface), 4.5) << "textPrimary on surface (#161925) fails WCAG AA";
 }
 
 TEST_F(ContrastTest, OnSurfaceVsNewSurfaceContainer) {

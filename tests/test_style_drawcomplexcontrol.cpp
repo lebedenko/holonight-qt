@@ -23,14 +23,14 @@
 class DrawComplexTest : public ::testing::Test {
  protected:
   HoloniightStyle style_;
-  QPixmap pixmap_{120, 40};
-  QPainter painter_{&pixmap_};
+  QPixmap pixmap_ = QPixmap{120, 40};
+  QPainter painter_ = QPainter{&pixmap_};
 };
 
 QColor pixelColorAfterDrawControl(HoloniightStyle* style, QStyle::ControlElement element, const QStyleOption* opt) {
-  QImage image{opt->rect.size(), QImage::Format_ARGB32_Premultiplied};
+  QImage image = QImage{opt->rect.size(), QImage::Format_ARGB32_Premultiplied};
   image.fill(Qt::transparent);
-  QPainter painter{&image};
+  QPainter painter = QPainter{&image};
   style->drawControl(element, opt, &painter);
   painter.end();
   return image.pixelColor(opt->rect.center());
@@ -64,8 +64,8 @@ TEST_F(DrawComplexTest, Slider_Horizontal) {
 }
 
 TEST_F(DrawComplexTest, Slider_Vertical) {
-  QPixmap vPixmap{40, 120};
-  QPainter vPainter{&vPixmap};
+  QPixmap vPixmap = QPixmap{40, 120};
+  QPainter vPainter = QPainter{&vPixmap};
   QStyleOptionSlider opt;
   opt.rect = vPixmap.rect();
   opt.state = QStyle::State_Enabled;
@@ -79,8 +79,8 @@ TEST_F(DrawComplexTest, Slider_Vertical) {
 }
 
 TEST_F(DrawComplexTest, ScrollBar_Vertical) {
-  QPixmap vPixmap{16, 120};
-  QPainter vPainter{&vPixmap};
+  QPixmap vPixmap = QPixmap{16, 120};
+  QPainter vPainter = QPainter{&vPixmap};
   QStyleOptionSlider opt;
   opt.rect = vPixmap.rect();
   opt.state = QStyle::State_Enabled;
@@ -149,9 +149,9 @@ TEST_F(DrawComplexTest, ToolButton_Normal) {
 
 TEST_F(DrawComplexTest, FlatFocusedPushButtonBevelIsTransparent) {
   constexpr QRgb background = qRgb(12, 34, 56);
-  QImage image{40, 24, QImage::Format_ARGB32_Premultiplied};
+  QImage image = QImage{40, 24, QImage::Format_ARGB32_Premultiplied};
   image.fill(background);
-  QPainter painter{&image};
+  QPainter painter = QPainter{&image};
 
   QStyleOptionButton opt;
   opt.rect = image.rect();
@@ -185,9 +185,9 @@ TEST_F(DrawComplexTest, ShapedFrameSeparatorsUseSameColor) {
 
 TEST_F(DrawComplexTest, SplitterPaintsOnlyCenteredSeparatorLine) {
   constexpr QRgb background = qRgb(12, 34, 56);
-  QImage image{7, 40, QImage::Format_ARGB32_Premultiplied};
+  QImage image = QImage{7, 40, QImage::Format_ARGB32_Premultiplied};
   image.fill(background);
-  QPainter painter{&image};
+  QPainter painter = QPainter{&image};
 
   QStyleOption splitterOpt;
   splitterOpt.rect = image.rect();
@@ -235,9 +235,9 @@ TEST_F(DrawComplexTest, RenderedSplitterUsesOnePixelHandleBetweenDifferentSurfac
   const QRect handleRect = handle->geometry();
   EXPECT_EQ(splitter.handleWidth(), 1);
 
-  QImage image{splitter.size(), QImage::Format_ARGB32_Premultiplied};
+  QImage image = QImage{splitter.size(), QImage::Format_ARGB32_Premultiplied};
   image.fill(qRgb(12, 34, 56));
-  QPainter painter{&image};
+  QPainter painter = QPainter{&image};
   splitter.render(&painter);
   painter.end();
 
@@ -275,9 +275,9 @@ TEST_F(DrawComplexTest, MainWindowDockSeparatorIsOnePixelWide) {
   window.show();
   QApplication::processEvents();
 
-  QImage image{window.size(), QImage::Format_ARGB32_Premultiplied};
+  QImage image = QImage{window.size(), QImage::Format_ARGB32_Premultiplied};
   image.fill(qRgb(12, 34, 56));
-  QPainter painter{&image};
+  QPainter painter = QPainter{&image};
   window.render(&painter);
   painter.end();
 
@@ -294,9 +294,9 @@ TEST_F(DrawComplexTest, MainWindowDockSeparatorIsOnePixelWide) {
 
 TEST_F(DrawComplexTest, FlatIdleToolButtonDoesNotPaintBorder) {
   constexpr QRgb background = qRgb(12, 34, 56);
-  QImage image{40, 24, QImage::Format_ARGB32_Premultiplied};
+  QImage image = QImage{40, 24, QImage::Format_ARGB32_Premultiplied};
   image.fill(background);
-  QPainter painter{&image};
+  QPainter painter = QPainter{&image};
 
   QStyleOptionToolButton opt;
   opt.rect = image.rect();
@@ -316,9 +316,9 @@ TEST_F(DrawComplexTest, FlatIdleToolButtonDoesNotPaintBorder) {
 
 TEST_F(DrawComplexTest, FlatFocusedAutoRaiseToolButtonDoesNotPaintBorder) {
   constexpr QRgb background = qRgb(12, 34, 56);
-  QImage image{40, 24, QImage::Format_ARGB32_Premultiplied};
+  QImage image = QImage{40, 24, QImage::Format_ARGB32_Premultiplied};
   image.fill(background);
-  QPainter painter{&image};
+  QPainter painter = QPainter{&image};
 
   QStyleOptionToolButton opt;
   opt.rect = image.rect();
@@ -336,9 +336,9 @@ TEST_F(DrawComplexTest, FlatFocusedAutoRaiseToolButtonDoesNotPaintBorder) {
 
 TEST_F(DrawComplexTest, FocusedNonFlatToolButtonKeepsFocusBorder) {
   constexpr QRgb background = qRgb(12, 34, 56);
-  QImage image{40, 24, QImage::Format_ARGB32_Premultiplied};
+  QImage image = QImage{40, 24, QImage::Format_ARGB32_Premultiplied};
   image.fill(background);
-  QPainter painter{&image};
+  QPainter painter = QPainter{&image};
 
   QStyleOptionToolButton opt;
   opt.rect = image.rect();

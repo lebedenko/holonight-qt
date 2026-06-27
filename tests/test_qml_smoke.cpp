@@ -3,11 +3,11 @@
 
 #include <QQmlComponent>
 #include <QQmlEngine>
-#include <QScopedPointer>
 #include <QString>
 #include <QVariant>
 
 #include <gtest/gtest.h>
+#include <memory>
 
 class QmlSmoke : public ::testing::Test {
  protected:
@@ -17,7 +17,7 @@ class QmlSmoke : public ::testing::Test {
 };
 
 static void checkComponent(QQmlEngine& engine, const char* qml) {
-  QQmlComponent comp{&engine};
+  QQmlComponent comp = QQmlComponent{&engine};
   comp.setData(qml, QUrl{});
   ASSERT_EQ(comp.status(), QQmlComponent::Ready) << comp.errorString().toStdString();
 }
@@ -73,7 +73,7 @@ TEST_F(QmlSmoke, ToolTip_LoadsWithoutError) {
 }
 
 TEST_F(QmlSmoke, HoloniightPalette_PrimaryIsValid) {
-  QQmlComponent comp{&engine_};
+  QQmlComponent comp = QQmlComponent{&engine_};
   comp.setData(R"(
     import QtQuick
     import Holonight
@@ -84,7 +84,7 @@ TEST_F(QmlSmoke, HoloniightPalette_PrimaryIsValid) {
 }
 
 TEST_F(QmlSmoke, HoloniightPalette_DesignSystemAccentsAreValid) {
-  QQmlComponent comp{&engine_};
+  QQmlComponent comp = QQmlComponent{&engine_};
   comp.setData(R"(
     import QtQuick
     import Holonight
@@ -101,7 +101,7 @@ TEST_F(QmlSmoke, HoloniightPalette_DesignSystemAccentsAreValid) {
 }
 
 TEST_F(QmlSmoke, HoloniightPalette_CanonicalPropertiesAreValid) {
-  QQmlComponent comp{&engine_};
+  QQmlComponent comp = QQmlComponent{&engine_};
   comp.setData(R"(
     import QtQuick
     import Holonight
@@ -127,7 +127,7 @@ TEST_F(QmlSmoke, HoloniightPalette_CanonicalPropertiesAreValid) {
 }
 
 TEST_F(QmlSmoke, HoloniightPalette_DeprecatedAliasesRemainAvailable) {
-  QQmlComponent comp{&engine_};
+  QQmlComponent comp = QQmlComponent{&engine_};
   comp.setData(R"(
     import QtQuick
     import Holonight
@@ -140,7 +140,7 @@ TEST_F(QmlSmoke, HoloniightPalette_DeprecatedAliasesRemainAvailable) {
   )",
                QUrl{});
   ASSERT_EQ(comp.status(), QQmlComponent::Ready) << comp.errorString().toStdString();
-  QScopedPointer<QObject> object{comp.create()};
+  std::unique_ptr<QObject> object{comp.create()};
   ASSERT_NE(object, nullptr);
   EXPECT_TRUE(object->property("surfaceAlias").toBool());
   EXPECT_TRUE(object->property("textAlias").toBool());
@@ -149,7 +149,7 @@ TEST_F(QmlSmoke, HoloniightPalette_DeprecatedAliasesRemainAvailable) {
 }
 
 TEST_F(QmlSmoke, HoloniightPalette_ReloadEmitsNotification) {
-  QQmlComponent comp{&engine_};
+  QQmlComponent comp = QQmlComponent{&engine_};
   comp.setData(R"(
     import QtQuick
     import Holonight
@@ -164,13 +164,13 @@ TEST_F(QmlSmoke, HoloniightPalette_ReloadEmitsNotification) {
   )",
                QUrl{});
   ASSERT_EQ(comp.status(), QQmlComponent::Ready) << comp.errorString().toStdString();
-  QScopedPointer<QObject> object{comp.create()};
+  std::unique_ptr<QObject> object{comp.create()};
   ASSERT_NE(object, nullptr);
   EXPECT_GE(object->property("changedCount").toInt(), 1);
 }
 
 TEST_F(QmlSmoke, HolonightTheme_ConfigPropertiesAreValid) {
-  QQmlComponent comp{&engine_};
+  QQmlComponent comp = QQmlComponent{&engine_};
   comp.setData(R"(
     import QtQuick
     import Holonight

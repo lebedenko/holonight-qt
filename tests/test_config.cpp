@@ -33,8 +33,9 @@ class EnvGuard {
 };
 
 void writeFile(const QString& path, const QByteArray& contents) {
-  QFile file{path};
-  ASSERT_TRUE(file.open(QIODevice::WriteOnly | QIODevice::Truncate | QIODevice::Text));
+  QFile file = QFile{path};
+  const bool opened = file.open(QIODevice::WriteOnly | QIODevice::Truncate | QIODevice::Text);
+  ASSERT_TRUE(opened);
   ASSERT_EQ(file.write(contents), contents.size());
 }
 
@@ -54,13 +55,13 @@ TEST(ThemeConfig, DefaultsMatchDocumentedValues) {
 }
 
 TEST(ThemeConfig, LoadsJsonConfigFile) {
-  EnvGuard configFileGuard{"HOLONIGHT_CONFIG_FILE"};
-  EnvGuard iconGuard{"HOLONIGHT_ICON_THEME"};
-  EnvGuard fallbackGuard{"HOLONIGHT_FALLBACK_ICON_THEME"};
-  EnvGuard fontGuard{"HOLONIGHT_FONT"};
-  EnvGuard fixedFontGuard{"HOLONIGHT_FIXED_FONT"};
-  EnvGuard sizeGuard{"HOLONIGHT_FONT_SIZE"};
-  EnvGuard scaleGuard{"HOLONIGHT_SCALE_FACTOR"};
+  EnvGuard configFileGuard = EnvGuard{"HOLONIGHT_CONFIG_FILE"};
+  EnvGuard iconGuard = EnvGuard{"HOLONIGHT_ICON_THEME"};
+  EnvGuard fallbackGuard = EnvGuard{"HOLONIGHT_FALLBACK_ICON_THEME"};
+  EnvGuard fontGuard = EnvGuard{"HOLONIGHT_FONT"};
+  EnvGuard fixedFontGuard = EnvGuard{"HOLONIGHT_FIXED_FONT"};
+  EnvGuard sizeGuard = EnvGuard{"HOLONIGHT_FONT_SIZE"};
+  EnvGuard scaleGuard = EnvGuard{"HOLONIGHT_SCALE_FACTOR"};
 
   qunsetenv("HOLONIGHT_ICON_THEME");
   qunsetenv("HOLONIGHT_FALLBACK_ICON_THEME");
@@ -89,13 +90,13 @@ TEST(ThemeConfig, LoadsJsonConfigFile) {
 }
 
 TEST(ThemeConfig, EnvironmentOverridesConfigFile) {
-  EnvGuard configFileGuard{"HOLONIGHT_CONFIG_FILE"};
-  EnvGuard iconGuard{"HOLONIGHT_ICON_THEME"};
-  EnvGuard fallbackGuard{"HOLONIGHT_ICON_FALLBACK_THEME"};
-  EnvGuard fontGuard{"HOLONIGHT_FONT"};
-  EnvGuard fixedFontGuard{"HOLONIGHT_FIXED_FONT"};
-  EnvGuard sizeGuard{"HOLONIGHT_FONT_SIZE"};
-  EnvGuard scaleGuard{"HOLONIGHT_SCALE_FACTOR"};
+  EnvGuard configFileGuard = EnvGuard{"HOLONIGHT_CONFIG_FILE"};
+  EnvGuard iconGuard = EnvGuard{"HOLONIGHT_ICON_THEME"};
+  EnvGuard fallbackGuard = EnvGuard{"HOLONIGHT_ICON_FALLBACK_THEME"};
+  EnvGuard fontGuard = EnvGuard{"HOLONIGHT_FONT"};
+  EnvGuard fixedFontGuard = EnvGuard{"HOLONIGHT_FIXED_FONT"};
+  EnvGuard sizeGuard = EnvGuard{"HOLONIGHT_FONT_SIZE"};
+  EnvGuard scaleGuard = EnvGuard{"HOLONIGHT_SCALE_FACTOR"};
 
   QTemporaryDir dir;
   ASSERT_TRUE(dir.isValid());

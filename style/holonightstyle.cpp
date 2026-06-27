@@ -31,7 +31,6 @@ enum class SurfaceRole : uint8_t {
   View,
   SidePanel,
   Container,
-  Popup,
 };
 
 bool nameContains(const QString& name, QLatin1StringView needle) { return name.contains(needle, Qt::CaseInsensitive); }
@@ -87,8 +86,6 @@ QColor surfaceColor(SurfaceRole role, const Holonight::ColorTokens& tok) {
     case SurfaceRole::SidePanel:
     case SurfaceRole::Container:
       return tok.surfaceElevated;
-    case SurfaceRole::Popup:
-      return tok.surfaceRaised;
     case SurfaceRole::Window:
       return tok.background;
   }
@@ -246,7 +243,7 @@ void HoloniightStyle::polish(QWidget* widget) {
     return;
   }
 
-  const auto tok = tokens();
+  const auto& tok = tokens();
   QPalette palette = widget->palette();
   SurfaceRole surfaceRole = classifyWidgetSurface(widget);
   QColor windowSurface = widgetSurfaceColor(widget, tok);
@@ -362,7 +359,7 @@ int HoloniightStyle::pixelMetric(PixelMetric metric, const QStyleOption* option,
 }
 
 int HoloniightStyle::scaledMetric(int value) const {
-  return std::max(1, static_cast<int>(std::lround(static_cast<qreal>(value) * config_.scale_factor)));
+  return (std::max)(1, static_cast<int>(std::lround(static_cast<qreal>(value) * config_.scale_factor)));
 }
 
 void HoloniightStyle::drawControl(ControlElement element, const QStyleOption* option, QPainter* painter,
@@ -373,7 +370,7 @@ void HoloniightStyle::drawControl(ControlElement element, const QStyleOption* op
       if (frameOpt != nullptr) {
         const int frameShape = frameOpt->frameShape;
         if (frameShape == QFrame::HLine || frameShape == QFrame::VLine) {
-          const auto tok = tokens();
+          const auto& tok = tokens();
           painter->save();
           const Qt::Orientation orientation = frameShape == QFrame::HLine ? Qt::Horizontal : Qt::Vertical;
           drawSeparator(painter, option->rect, orientation, tok.borderPassive);
@@ -467,7 +464,7 @@ void HoloniightStyle::drawControl(ControlElement element, const QStyleOption* op
       drawTabBarTabImpl(option, painter, widget);
       return;
     case CE_ScrollBarSlider: {
-      const auto tok = tokens();
+      const auto& tok = tokens();
       painter->save();
       painter->setRenderHint(QPainter::Antialiasing);
       painter->setPen(Qt::NoPen);
@@ -482,7 +479,7 @@ void HoloniightStyle::drawControl(ControlElement element, const QStyleOption* op
       return;
     case CE_ScrollBarAddPage:
     case CE_ScrollBarSubPage: {
-      const auto tok = tokens();
+      const auto& tok = tokens();
       painter->save();
       painter->setPen(Qt::NoPen);
       painter->setBrush(tok.surface);
@@ -494,7 +491,7 @@ void HoloniightStyle::drawControl(ControlElement element, const QStyleOption* op
       drawHeaderImpl(option, painter, widget);
       return;
     case CE_Splitter: {
-      const auto tok = tokens();
+      const auto& tok = tokens();
       painter->save();
       painter->setRenderHint(QPainter::Antialiasing, false);
       if ((option->state & State_Horizontal) != 0U) {
@@ -521,7 +518,7 @@ void HoloniightStyle::drawPushButtonBevelImpl(const QStyleOption* option, QPaint
     return;
   }
 
-  const auto tok = tokens();
+  const auto& tok = tokens();
   painter->save();
   painter->setRenderHint(QPainter::Antialiasing);
   const bool hovered = (option->state & State_MouseOver) != 0U;
@@ -609,7 +606,7 @@ void HoloniightStyle::drawTabBarTabImpl(const QStyleOption* option, QPainter* pa
   if (opt == nullptr) {
     return;
   }
-  const auto tok = tokens();
+  const auto& tok = tokens();
   const bool selected = (opt->state & State_Selected) != 0U;
   const bool hovered = ((opt->state & State_MouseOver) != 0U) && !selected;
 
@@ -637,7 +634,7 @@ void HoloniightStyle::drawHeaderImpl(const QStyleOption* option, QPainter* paint
   if (opt == nullptr) {
     return;
   }
-  const auto tok = tokens();
+  const auto& tok = tokens();
   painter->save();
   const bool hovered = (opt->state & State_MouseOver) != 0U;
   painter->setPen(Qt::NoPen);
@@ -648,7 +645,9 @@ void HoloniightStyle::drawHeaderImpl(const QStyleOption* option, QPainter* paint
   painter->drawLine(opt->rect.topRight(), opt->rect.bottomRight());
   if (opt->sortIndicator != QStyleOptionHeader::None) {
     const QRect arrowRect = subElementRect(SE_HeaderArrow, opt, widget);
-    paintArrow(painter, arrowRect, opt->sortIndicator == QStyleOptionHeader::SortDown ? 0 : 1, tok.textPrimary);
+    paintArrow(painter, arrowRect,
+               opt->sortIndicator == QStyleOptionHeader::SortDown ? ArrowDirection::Down : ArrowDirection::Up,
+               tok.textPrimary);
   }
   const QRect labelRect = subElementRect(SE_HeaderLabel, opt, widget);
   painter->setPen(tok.textMuted);
@@ -658,29 +657,30 @@ void HoloniightStyle::drawHeaderImpl(const QStyleOption* option, QPainter* paint
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
 
-Holonight::ColorTokens HoloniightStyle::tokens() { return Holonight::darkTokens(); }
+const Holonight::ColorTokens& HoloniightStyle::tokens() {
+  static const Holonight::ColorTokens kTokens = Holonight::darkTokens();
+  return kTokens;
+}
 
-void HoloniightStyle::paintArrow(QPainter* painter, const QRect& rect, int dir, const QColor& color) {
+void HoloniightStyle::paintArrow(QPainter* painter, const QRect& rect, ArrowDirection direction, const QColor& color) {
   painter->save();
   painter->setPen(Qt::NoPen);
   painter->setBrush(color);
   const int arrowX = rect.center().x();
   const int arrowY = rect.center().y();
   QPolygon tri;
-  switch (dir) {
-    case 0:  // down
+  switch (direction) {
+    case ArrowDirection::Down:
       tri << QPoint{arrowX - 4, arrowY - 2} << QPoint{arrowX + 4, arrowY - 2} << QPoint{arrowX, arrowY + 2};
       break;
-    case 1:  // up
+    case ArrowDirection::Up:
       tri << QPoint{arrowX - 4, arrowY + 2} << QPoint{arrowX + 4, arrowY + 2} << QPoint{arrowX, arrowY - 2};
       break;
-    case 2:  // left
+    case ArrowDirection::Left:
       tri << QPoint{arrowX + 2, arrowY - 4} << QPoint{arrowX + 2, arrowY + 4} << QPoint{arrowX - 2, arrowY};
       break;
-    case 3:  // right
+    case ArrowDirection::Right:
       tri << QPoint{arrowX - 2, arrowY - 4} << QPoint{arrowX - 2, arrowY + 4} << QPoint{arrowX + 2, arrowY};
-      break;
-    default:
       break;
   }
   painter->drawPolygon(tri);
@@ -694,7 +694,7 @@ void HoloniightStyle::drawPanelButtonImpl(const QStyleOption* option, QPainter* 
     return;
   }
 
-  const auto tok = tokens();
+  const auto& tok = tokens();
   painter->save();
   painter->setRenderHint(QPainter::Antialiasing);
   const bool hovered = (option->state & State_MouseOver) != 0U;
@@ -719,7 +719,7 @@ void HoloniightStyle::drawPanelItemViewImpl(const QStyleOption* option, QPainter
   if (opt == nullptr) {
     return;
   }
-  const auto tok = tokens();
+  const auto& tok = tokens();
   painter->save();
   painter->setRenderHint(QPainter::Antialiasing);
   painter->setPen(Qt::NoPen);
@@ -747,7 +747,7 @@ void HoloniightStyle::drawItemViewItemImpl(const QStyleOption* option, QPainter*
     return;
   }
 
-  const auto tok = tokens();
+  const auto& tok = tokens();
   const bool selected = (opt->state & State_Selected) != 0U;
   const bool hovered = (opt->state & State_MouseOver) != 0U;
   const bool focused = (opt->state & State_HasFocus) != 0U;
@@ -831,7 +831,7 @@ void HoloniightStyle::drawItemViewItemImpl(const QStyleOption* option, QPainter*
 
 void HoloniightStyle::drawPrimitive(PrimitiveElement element, const QStyleOption* option, QPainter* painter,
                                     const QWidget* widget) const {
-  const auto tok = tokens();
+  const auto& tok = tokens();
 
   switch (element) {
     case PE_PanelButtonCommand:
@@ -980,23 +980,23 @@ void HoloniightStyle::drawPrimitive(PrimitiveElement element, const QStyleOption
     }
 
     case PE_IndicatorArrowDown:
-      paintArrow(painter, option->rect, 0, tok.textPrimary);
+      paintArrow(painter, option->rect, ArrowDirection::Down, tok.textPrimary);
       return;
     case PE_IndicatorArrowUp:
-      paintArrow(painter, option->rect, 1, tok.textPrimary);
+      paintArrow(painter, option->rect, ArrowDirection::Up, tok.textPrimary);
       return;
     case PE_IndicatorArrowLeft:
-      paintArrow(painter, option->rect, 2, tok.textPrimary);
+      paintArrow(painter, option->rect, ArrowDirection::Left, tok.textPrimary);
       return;
     case PE_IndicatorArrowRight:
-      paintArrow(painter, option->rect, 3, tok.textPrimary);
+      paintArrow(painter, option->rect, ArrowDirection::Right, tok.textPrimary);
       return;
 
     case PE_IndicatorBranch: {
       const bool hasChildren = (option->state & State_Children) != 0U;
       const bool expanded = (option->state & State_Open) != 0U;
       if (hasChildren) {
-        paintArrow(painter, option->rect, expanded ? 0 : 3, tok.textMuted);
+        paintArrow(painter, option->rect, expanded ? ArrowDirection::Down : ArrowDirection::Right, tok.textMuted);
       }
       return;
     }
@@ -1004,7 +1004,7 @@ void HoloniightStyle::drawPrimitive(PrimitiveElement element, const QStyleOption
     case PE_IndicatorHeaderArrow: {
       const auto* hOpt = qstyleoption_cast<const QStyleOptionHeader*>(option);
       const bool sortDown = (hOpt != nullptr) && (hOpt->sortIndicator == QStyleOptionHeader::SortDown);
-      paintArrow(painter, option->rect, sortDown ? 0 : 1, tok.textPrimary);
+      paintArrow(painter, option->rect, sortDown ? ArrowDirection::Down : ArrowDirection::Up, tok.textPrimary);
       return;
     }
 
@@ -1104,7 +1104,7 @@ void HoloniightStyle::drawComplexControl(ComplexControl control, const QStyleOpt
       if (opt == nullptr) {
         break;
       }
-      const auto tok = tokens();
+      const auto& tok = tokens();
       painter->save();
       painter->setRenderHint(QPainter::Antialiasing);
       const bool focused = (opt->state & State_HasFocus) != 0U;
@@ -1123,7 +1123,7 @@ void HoloniightStyle::drawComplexControl(ComplexControl control, const QStyleOpt
       painter->drawRoundedRect(opt->rect.adjusted(borderWidth, borderWidth, -borderWidth, -borderWidth), kRadiusControl,
                                kRadiusControl);
       const QRect arrowRect = subControlRect(CC_ComboBox, opt, SC_ComboBoxArrow, widget);
-      paintArrow(painter, arrowRect, 0, tok.textPrimary);
+      paintArrow(painter, arrowRect, ArrowDirection::Down, tok.textPrimary);
       painter->restore();
       return;
     }
@@ -1164,14 +1164,14 @@ QRect HoloniightStyle::subControlRect(ComplexControl control, const QStyleOption
       return {};
     }
     if (subControl == SC_ScrollBarSlider) {
-      const int range = std::max(0, opt->maximum - opt->minimum);
-      const int pageStep = std::max(1, opt->pageStep);
+      const int range = (std::max)(0, opt->maximum - opt->minimum);
+      const int pageStep = (std::max)(1, opt->pageStep);
       const int span = horizontal ? grooveRect.width() : grooveRect.height();
       const int minSliderLength = pixelMetric(PM_ScrollBarSliderMin, opt, widget);
       int sliderLength = range == 0 ? span : (span * pageStep) / (range + pageStep);
-      sliderLength = std::clamp(sliderLength, std::min(minSliderLength, span), span);
+      sliderLength = std::clamp(sliderLength, (std::min)(minSliderLength, span), span);
 
-      const int available = std::max(0, span - sliderLength);
+      const int available = (std::max)(0, span - sliderLength);
       const int sliderPos = range == 0 ? 0 : (available * (opt->sliderPosition - opt->minimum)) / range;
       QRect handleRect = grooveRect;
       if (horizontal) {
@@ -1193,7 +1193,7 @@ void HoloniightStyle::drawScrollBarImpl(const QStyleOptionComplex* option, QPain
   if (opt == nullptr) {
     return;
   }
-  const auto tok = tokens();
+  const auto& tok = tokens();
   const bool horizontal = opt->orientation == Qt::Horizontal;
   const QRect grooveRect =
       option->rect.adjusted(horizontal ? 2 : 1, horizontal ? 1 : 2, horizontal ? -2 : -1, horizontal ? -1 : -2);
@@ -1236,7 +1236,7 @@ void HoloniightStyle::drawSliderImpl(const QStyleOption* option, QPainter* paint
   if (opt == nullptr) {
     return;
   }
-  const auto tok = tokens();
+  const auto& tok = tokens();
   painter->save();
   painter->setRenderHint(QPainter::Antialiasing);
   const bool horizontal = opt->orientation == Qt::Horizontal;
@@ -1284,7 +1284,7 @@ void HoloniightStyle::drawSpinBoxImpl(const QStyleOption* option, QPainter* pain
   if (opt == nullptr) {
     return;
   }
-  const auto tok = tokens();
+  const auto& tok = tokens();
   painter->save();
   painter->setRenderHint(QPainter::Antialiasing);
   const bool focused = (opt->state & State_HasFocus) != 0U;
@@ -1316,8 +1316,8 @@ void HoloniightStyle::drawSpinBoxImpl(const QStyleOption* option, QPainter* pain
   painter->drawRect(downRect.adjusted(1, 0, -1, -1));
 
   const QColor arrowColor = enabled ? tok.textPrimary : tok.textDisabled;
-  paintArrow(painter, upRect, 1, arrowColor);
-  paintArrow(painter, downRect, 0, arrowColor);
+  paintArrow(painter, upRect, ArrowDirection::Up, arrowColor);
+  paintArrow(painter, downRect, ArrowDirection::Down, arrowColor);
   painter->restore();
 }
 
@@ -1326,7 +1326,7 @@ void HoloniightStyle::drawToolButtonImpl(const QStyleOption* option, QPainter* p
   if (opt == nullptr) {
     return;
   }
-  const auto tok = tokens();
+  const auto& tok = tokens();
   painter->save();
   painter->setRenderHint(QPainter::Antialiasing);
   const bool hovered = (opt->state & State_MouseOver) != 0U;
@@ -1355,7 +1355,7 @@ void HoloniightStyle::drawToolButtonImpl(const QStyleOption* option, QPainter* p
     const QRect menuRect = subControlRect(CC_ToolButton, opt, SC_ToolButtonMenu, widget);
     painter->setPen(QPen{tok.borderPassive, 1});
     painter->drawLine(menuRect.left(), opt->rect.top() + 3, menuRect.left(), opt->rect.bottom() - 3);
-    paintArrow(painter, menuRect, 0, tok.textPrimary);
+    paintArrow(painter, menuRect, ArrowDirection::Down, tok.textPrimary);
   }
   painter->restore();
   drawControl(CE_ToolButtonLabel, opt, painter, widget);
@@ -1366,7 +1366,7 @@ void HoloniightStyle::drawGroupBoxImpl(const QStyleOption* option, QPainter* pai
   if (opt == nullptr) {
     return;
   }
-  const auto tok = tokens();
+  const auto& tok = tokens();
   painter->save();
   painter->setRenderHint(QPainter::Antialiasing);
   const QRect frameRect = subControlRect(CC_GroupBox, opt, SC_GroupBoxFrame, widget);
@@ -1401,14 +1401,14 @@ QSize HoloniightStyle::sizeFromContents(ContentsType type, const QStyleOption* o
       constexpr int hPad = 8;
       constexpr int vPad = 8;
       constexpr int minH = 32;
-      return {size.width() + arrowWidth + hPad, std::max(size.height() + vPad, minH)};
+      return {size.width() + arrowWidth + hPad, (std::max)(size.height() + vPad, minH)};
     }
     case CT_SpinBox: {
       constexpr int arrowWidth = 40;
       constexpr int hPad = 8;
       constexpr int vPad = 8;
       constexpr int minH = 32;
-      return {size.width() + arrowWidth + hPad, std::max(size.height() + vPad, minH)};
+      return {size.width() + arrowWidth + hPad, (std::max)(size.height() + vPad, minH)};
     }
     default:
       break;

@@ -26,6 +26,7 @@ class HolonightTheme : public QObject {
 
  public:
   explicit HolonightTheme(QObject* parent = nullptr);
+  Q_DISABLE_COPY_MOVE(HolonightTheme)
 
   [[nodiscard]] QString iconTheme() const { return config_.icon_theme; }
   [[nodiscard]] QString fallbackIconTheme() const { return config_.fallback_icon_theme; }

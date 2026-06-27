@@ -7,7 +7,7 @@
 
 class PaletteTest : public ::testing::Test {
  protected:
-  QPalette palette_{Holonight::buildPalette(Holonight::darkTokens())};
+  QPalette palette_ = QPalette{Holonight::buildPalette(Holonight::darkTokens())};
   QPalette defaultPalette_;
 };
 
@@ -74,17 +74,17 @@ TEST_F(PaletteTest, HighlightIsHolonightPrimary) {
 
 TEST_F(PaletteTest, BorderRolesAreBorderPassive) {
   const Holonight::ColorTokens tok = Holonight::darkTokens();
-  EXPECT_EQ(palette_.color(QPalette::Active, QPalette::Mid),    tok.borderPassive)
+  EXPECT_EQ(palette_.color(QPalette::Active, QPalette::Mid), tok.borderPassive)
       << "Mid should be borderPassive (#565f89), not cyan outline";
-  EXPECT_EQ(palette_.color(QPalette::Active, QPalette::Dark),   tok.borderPassive)
+  EXPECT_EQ(palette_.color(QPalette::Active, QPalette::Dark), tok.borderPassive)
       << "Dark should be borderPassive (#565f89)";
   EXPECT_EQ(palette_.color(QPalette::Active, QPalette::Shadow), tok.borderPassive)
       << "Shadow should be borderPassive (#565f89)";
-  EXPECT_EQ(palette_.color(QPalette::Inactive, QPalette::Mid),    tok.borderPassive);
-  EXPECT_EQ(palette_.color(QPalette::Inactive, QPalette::Dark),   tok.borderPassive);
+  EXPECT_EQ(palette_.color(QPalette::Inactive, QPalette::Mid), tok.borderPassive);
+  EXPECT_EQ(palette_.color(QPalette::Inactive, QPalette::Dark), tok.borderPassive);
   EXPECT_EQ(palette_.color(QPalette::Inactive, QPalette::Shadow), tok.borderPassive);
-  EXPECT_EQ(palette_.color(QPalette::Disabled, QPalette::Mid),    tok.borderPassive);
-  EXPECT_EQ(palette_.color(QPalette::Disabled, QPalette::Dark),   tok.borderPassive);
+  EXPECT_EQ(palette_.color(QPalette::Disabled, QPalette::Mid), tok.borderPassive);
+  EXPECT_EQ(palette_.color(QPalette::Disabled, QPalette::Dark), tok.borderPassive);
   EXPECT_EQ(palette_.color(QPalette::Disabled, QPalette::Shadow), tok.borderPassive);
 }
 

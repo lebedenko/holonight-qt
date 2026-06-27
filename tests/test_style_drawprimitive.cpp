@@ -20,8 +20,8 @@
 class DrawPrimitiveTest : public ::testing::Test {
  protected:
   HoloniightStyle style_;
-  QPixmap pixmap_{100, 100};
-  QPainter painter_{&pixmap_};
+  QPixmap pixmap_ = QPixmap{100, 100};
+  QPainter painter_ = QPainter{&pixmap_};
 
   QStyleOption makeOpt(QStyle::State state = QStyle::State_Enabled) {
     QStyleOption opt;
@@ -44,9 +44,9 @@ TEST_F(DrawPrimitiveTest, PanelButtonCommand_Focused) {
 
 TEST_F(DrawPrimitiveTest, FlatFocusedButtonPanelIsTransparent) {
   constexpr QRgb background = qRgb(12, 34, 56);
-  QImage image{40, 24, QImage::Format_ARGB32_Premultiplied};
+  QImage image = QImage{40, 24, QImage::Format_ARGB32_Premultiplied};
   image.fill(background);
-  QPainter painter{&image};
+  QPainter painter = QPainter{&image};
 
   QStyleOptionButton opt;
   opt.rect = image.rect();
@@ -63,9 +63,9 @@ TEST_F(DrawPrimitiveTest, FlatFocusedButtonPanelIsTransparent) {
 
 TEST_F(DrawPrimitiveTest, FlatHoveredButtonPanelPaintsFillOnly) {
   constexpr QRgb background = qRgb(12, 34, 56);
-  QImage image{40, 24, QImage::Format_ARGB32_Premultiplied};
+  QImage image = QImage{40, 24, QImage::Format_ARGB32_Premultiplied};
   image.fill(background);
-  QPainter painter{&image};
+  QPainter painter = QPainter{&image};
 
   QStyleOptionButton opt;
   opt.rect = image.rect();
@@ -81,9 +81,9 @@ TEST_F(DrawPrimitiveTest, FlatHoveredButtonPanelPaintsFillOnly) {
 
 TEST_F(DrawPrimitiveTest, FlatFocusedAutoRaiseToolButtonPanelIsTransparent) {
   constexpr QRgb background = qRgb(12, 34, 56);
-  QImage image{40, 24, QImage::Format_ARGB32_Premultiplied};
+  QImage image = QImage{40, 24, QImage::Format_ARGB32_Premultiplied};
   image.fill(background);
-  QPainter painter{&image};
+  QPainter painter = QPainter{&image};
 
   QStyleOptionToolButton opt;
   opt.rect = image.rect();
@@ -100,9 +100,9 @@ TEST_F(DrawPrimitiveTest, FlatFocusedAutoRaiseToolButtonPanelIsTransparent) {
 
 TEST_F(DrawPrimitiveTest, FlatHoveredAutoRaiseToolButtonPanelPaintsFillOnly) {
   constexpr QRgb background = qRgb(12, 34, 56);
-  QImage image{40, 24, QImage::Format_ARGB32_Premultiplied};
+  QImage image = QImage{40, 24, QImage::Format_ARGB32_Premultiplied};
   image.fill(background);
-  QPainter painter{&image};
+  QPainter painter = QPainter{&image};
 
   QStyleOptionToolButton opt;
   opt.rect = image.rect();
@@ -127,9 +127,9 @@ TEST_F(DrawPrimitiveTest, Frame_NoAssertViolation) {
 }
 
 TEST_F(DrawPrimitiveTest, FramePaintsInsetBorder) {
-  QImage image{12, 12, QImage::Format_ARGB32_Premultiplied};
+  QImage image = QImage{12, 12, QImage::Format_ARGB32_Premultiplied};
   image.fill(Qt::transparent);
-  QPainter painter{&image};
+  QPainter painter = QPainter{&image};
 
   auto opt = makeOpt(QStyle::State_Enabled);
   opt.rect = image.rect();
@@ -145,9 +145,9 @@ TEST_F(DrawPrimitiveTest, FramePaintsInsetBorder) {
 }
 
 TEST_F(DrawPrimitiveTest, FramePaintsOnlyOnePixelEdges) {
-  QImage image{12, 12, QImage::Format_ARGB32_Premultiplied};
+  QImage image = QImage{12, 12, QImage::Format_ARGB32_Premultiplied};
   image.fill(Qt::transparent);
-  QPainter painter{&image};
+  QPainter painter = QPainter{&image};
 
   auto opt = makeOpt(QStyle::State_Enabled);
   opt.rect = image.rect();
@@ -163,9 +163,9 @@ TEST_F(DrawPrimitiveTest, FramePaintsOnlyOnePixelEdges) {
 
 TEST_F(DrawPrimitiveTest, ItemViewFrameIsSuppressed) {
   constexpr QRgb background = qRgb(12, 34, 56);
-  QImage image{12, 12, QImage::Format_ARGB32_Premultiplied};
+  QImage image = QImage{12, 12, QImage::Format_ARGB32_Premultiplied};
   image.fill(background);
-  QPainter painter{&image};
+  QPainter painter = QPainter{&image};
 
   QListView view;
   auto opt = makeOpt(QStyle::State_Enabled);
@@ -178,9 +178,9 @@ TEST_F(DrawPrimitiveTest, ItemViewFrameIsSuppressed) {
 }
 
 TEST_F(DrawPrimitiveTest, TextEditScrollAreaFrameUsesRoundedInsetStroke) {
-  QImage image{24, 24, QImage::Format_ARGB32_Premultiplied};
+  QImage image = QImage{24, 24, QImage::Format_ARGB32_Premultiplied};
   image.fill(Qt::transparent);
-  QPainter painter{&image};
+  QPainter painter = QPainter{&image};
 
   QTextEdit edit;
   auto opt = makeOpt(QStyle::State_Enabled);
@@ -195,9 +195,9 @@ TEST_F(DrawPrimitiveTest, TextEditScrollAreaFrameUsesRoundedInsetStroke) {
 }
 
 TEST_F(DrawPrimitiveTest, FocusedTextEditFrameUsesFocusColor) {
-  QImage image{24, 24, QImage::Format_ARGB32_Premultiplied};
+  QImage image = QImage{24, 24, QImage::Format_ARGB32_Premultiplied};
   image.fill(Qt::transparent);
-  QPainter painter{&image};
+  QPainter painter = QPainter{&image};
 
   QTextEdit edit;
   auto opt = makeOpt(QStyle::State_Enabled | QStyle::State_HasFocus);
@@ -270,9 +270,9 @@ TEST_F(DrawPrimitiveTest, PanelItemViewRow_Selected) {
 
 TEST_F(DrawPrimitiveTest, PanelItemViewRow_IdleIsTransparent) {
   constexpr QRgb background = qRgb(12, 34, 56);
-  QImage image{20, 20, QImage::Format_ARGB32_Premultiplied};
+  QImage image = QImage{20, 20, QImage::Format_ARGB32_Premultiplied};
   image.fill(background);
-  QPainter painter{&image};
+  QPainter painter = QPainter{&image};
 
   auto opt = makeOpt(QStyle::State_Enabled);
   opt.rect = image.rect();
@@ -288,9 +288,9 @@ TEST_F(DrawPrimitiveTest, PanelToolBar_NoAssertViolation) {
 }
 
 TEST_F(DrawPrimitiveTest, PanelStatusBarUsesElevatedSurfaceWithBorder) {
-  QImage image{24, 12, QImage::Format_ARGB32_Premultiplied};
+  QImage image = QImage{24, 12, QImage::Format_ARGB32_Premultiplied};
   image.fill(Qt::transparent);
-  QPainter painter{&image};
+  QPainter painter = QPainter{&image};
 
   auto opt = makeOpt(QStyle::State_Enabled);
   opt.rect = image.rect();
@@ -303,9 +303,9 @@ TEST_F(DrawPrimitiveTest, PanelStatusBarUsesElevatedSurfaceWithBorder) {
 }
 
 TEST_F(DrawPrimitiveTest, FrameStatusBarItemUsesElevatedSurfaceWithBorder) {
-  QImage image{24, 12, QImage::Format_ARGB32_Premultiplied};
+  QImage image = QImage{24, 12, QImage::Format_ARGB32_Premultiplied};
   image.fill(Qt::transparent);
-  QPainter painter{&image};
+  QPainter painter = QPainter{&image};
 
   auto opt = makeOpt(QStyle::State_Enabled);
   opt.rect = image.rect();
@@ -324,9 +324,9 @@ TEST_F(DrawPrimitiveTest, Widget_NoAssertViolation) {
 
 TEST_F(DrawPrimitiveTest, WidgetUsesPaletteWindowSurface) {
   const QColor windowColor{0x22, 0x33, 0x44};
-  QImage image{20, 20, QImage::Format_ARGB32_Premultiplied};
+  QImage image = QImage{20, 20, QImage::Format_ARGB32_Premultiplied};
   image.fill(Qt::transparent);
-  QPainter painter{&image};
+  QPainter painter = QPainter{&image};
 
   auto opt = makeOpt(QStyle::State_Enabled);
   opt.rect = image.rect();
@@ -353,9 +353,9 @@ TEST_F(DrawPrimitiveTest, PanelLineEdit_Focused) {
 }
 
 TEST_F(DrawPrimitiveTest, PanelLineEditFocusedBorderUsesInsetStroke) {
-  QImage image{24, 24, QImage::Format_ARGB32_Premultiplied};
+  QImage image = QImage{24, 24, QImage::Format_ARGB32_Premultiplied};
   image.fill(Qt::transparent);
-  QPainter painter{&image};
+  QPainter painter = QPainter{&image};
 
   auto opt = makeOpt(QStyle::State_Enabled | QStyle::State_HasFocus);
   opt.rect = image.rect();
@@ -370,9 +370,9 @@ TEST_F(DrawPrimitiveTest, PanelLineEditFocusedBorderUsesInsetStroke) {
 }
 
 TEST_F(DrawPrimitiveTest, FrameLineEditUsesDarkFillAndRoundedBorder) {
-  QImage image{24, 24, QImage::Format_ARGB32_Premultiplied};
+  QImage image = QImage{24, 24, QImage::Format_ARGB32_Premultiplied};
   image.fill(Qt::transparent);
-  QPainter painter{&image};
+  QPainter painter = QPainter{&image};
 
   auto opt = makeOpt(QStyle::State_Enabled);
   opt.rect = image.rect();

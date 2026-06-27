@@ -9,6 +9,7 @@
 #include <fstream>
 #include <iostream>
 #include <sstream>
+#include <stdexcept>
 #include <string>
 #include <string_view>
 
@@ -97,21 +98,28 @@ std::string generatedColors() {
 }
 
 std::string readFile(const std::filesystem::path& path) {
-  std::ifstream in{path};
+  std::ifstream in = std::ifstream{path};
   if (!in) {
     throw std::runtime_error{"failed to open " + path.string()};
   }
   std::ostringstream data;
   data << in.rdbuf();
+  if (in.bad() || !data) {
+    throw std::runtime_error{"failed to read " + path.string()};
+  }
   return data.str();
 }
 
 void writeFile(const std::filesystem::path& path, std::string_view content) {
-  std::ofstream out{path};
+  std::ofstream out = std::ofstream{path};
   if (!out) {
     throw std::runtime_error{"failed to open " + path.string() + " for writing"};
   }
   out << content;
+  out.flush();
+  if (!out) {
+    throw std::runtime_error{"failed to write " + path.string()};
+  }
 }
 
 }  // namespace

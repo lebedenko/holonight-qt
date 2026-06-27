@@ -113,6 +113,7 @@ class HoloniightPalette : public QObject {
 
  public:
   explicit HoloniightPalette(QObject* parent = nullptr);
+  Q_DISABLE_COPY_MOVE(HoloniightPalette)
 
   Q_INVOKABLE void reload();
 

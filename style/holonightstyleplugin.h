@@ -9,5 +9,8 @@ class HoloniightStylePlugin : public QStylePlugin {
   Q_OBJECT
   Q_PLUGIN_METADATA(IID QStyleFactoryInterface_iid FILE "holonightstyle.json")
  public:
+  HoloniightStylePlugin() = default;
+  Q_DISABLE_COPY_MOVE(HoloniightStylePlugin)
+
   [[nodiscard]] QStyle* create(const QString& key) override;
 };
