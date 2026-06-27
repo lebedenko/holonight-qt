@@ -404,6 +404,7 @@ TEST_F(DrawPrimitiveTest, PanelMenuUsesRaisedSurfaceWithBorder) {
   const auto tok = Holonight::darkTokens();
   EXPECT_EQ(image.pixelColor(image.rect().center()), tok.surfaceRaised);
   EXPECT_EQ(image.pixelColor(image.width() / 2, 0), tok.borderPassive);
+  EXPECT_EQ(image.pixelColor(0, 0).alpha(), 0);
 }
 
 TEST_F(DrawPrimitiveTest, FrameMenuUsesBorder) {
@@ -418,5 +419,5 @@ TEST_F(DrawPrimitiveTest, FrameMenuUsesBorder) {
 
   const auto tok = Holonight::darkTokens();
   EXPECT_EQ(image.pixelColor(image.width() / 2, 0), tok.borderPassive);
+  EXPECT_EQ(image.pixelColor(0, 0).alpha(), 0);
 }
-

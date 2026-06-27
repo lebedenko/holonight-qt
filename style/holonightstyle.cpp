@@ -6,6 +6,7 @@
 #include <QAbstractItemView>
 #include <QDockWidget>
 #include <QFrame>
+#include <QMenu>
 #include <QPainter>
 #include <QPlainTextEdit>
 #include <QSplitter>
@@ -241,6 +242,10 @@ void HoloniightStyle::polish(QWidget* widget) {
   QProxyStyle::polish(widget);
   if (widget == nullptr) {
     return;
+  }
+
+  if (qobject_cast<QMenu*>(widget) != nullptr) {
+    widget->setAttribute(Qt::WA_TranslucentBackground);
   }
 
   const auto& tok = tokens();
@@ -940,17 +945,29 @@ void HoloniightStyle::drawPrimitive(PrimitiveElement element, const QStyleOption
     }
 
     case PE_FrameMenu: {
-      drawPlainFrame(painter, option->rect, tok.borderPassive);
+      painter->save();
+      painter->setRenderHint(QPainter::Antialiasing, true);
+      painter->setPen(QPen{tok.borderPassive, 1.0});
+      painter->setBrush(Qt::NoBrush);
+      painter->drawRoundedRect(strokedRectInside(option->rect, 1.0), tok.radiusPopup, tok.radiusPopup);
+      painter->restore();
       return;
     }
 
     case PE_PanelMenu: {
       painter->save();
+      painter->setRenderHint(QPainter::Antialiasing, true);
       painter->setPen(Qt::NoPen);
       painter->setBrush(tok.surfaceRaised);
-      painter->drawRect(option->rect);
+      painter->drawRoundedRect(QRectF{option->rect}, tok.radiusPopup, tok.radiusPopup);
       painter->restore();
-      drawPlainFrame(painter, option->rect, tok.borderPassive);
+
+      painter->save();
+      painter->setRenderHint(QPainter::Antialiasing, true);
+      painter->setPen(QPen{tok.borderPassive, 1.0});
+      painter->setBrush(Qt::NoBrush);
+      painter->drawRoundedRect(strokedRectInside(option->rect, 1.0), tok.radiusPopup, tok.radiusPopup);
+      painter->restore();
       return;
     }
 
