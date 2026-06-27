@@ -82,12 +82,12 @@ T.ComboBox {
     popup: T.Popup {
         y: root.height
         width: root.width
-        implicitHeight: Math.min(contentItem.implicitHeight, Window.window ? Math.max(0, Window.window.height - y - 8) : contentItem.implicitHeight)
+        implicitHeight: Math.min(contentItem.implicitHeight, root.Window.window ? Math.max(0, root.Window.window.height - y - 8) : contentItem.implicitHeight)
         padding: 1
 
         contentItem: ListView {
             clip: true
-            implicitHeight: Math.min(contentHeight, Window.window ? Math.max(0, Window.window.height - root.popup.y - 8) : contentHeight)
+            implicitHeight: Math.min(contentHeight, root.Window.window ? Math.max(0, root.Window.window.height - root.popup.y - 8) : contentHeight)
             model: root.delegateModel
             currentIndex: root.highlightedIndex
             ScrollBar.vertical: T.ScrollBar {}
