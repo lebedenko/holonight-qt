@@ -390,3 +390,33 @@ TEST_F(DrawPrimitiveTest, FrameGroupBox_NoAssertViolation) {
   auto opt = makeOpt(QStyle::State_Enabled);
   style_.drawPrimitive(QStyle::PE_FrameGroupBox, &opt, &painter_);
 }
+
+TEST_F(DrawPrimitiveTest, PanelMenuUsesRaisedSurfaceWithBorder) {
+  QImage image = QImage{24, 24, QImage::Format_ARGB32_Premultiplied};
+  image.fill(Qt::transparent);
+  QPainter painter = QPainter{&image};
+
+  auto opt = makeOpt(QStyle::State_Enabled);
+  opt.rect = image.rect();
+  style_.drawPrimitive(QStyle::PE_PanelMenu, &opt, &painter);
+  painter.end();
+
+  const auto tok = Holonight::darkTokens();
+  EXPECT_EQ(image.pixelColor(image.rect().center()), tok.surfaceRaised);
+  EXPECT_EQ(image.pixelColor(image.width() / 2, 0), tok.borderPassive);
+}
+
+TEST_F(DrawPrimitiveTest, FrameMenuUsesBorder) {
+  QImage image = QImage{24, 24, QImage::Format_ARGB32_Premultiplied};
+  image.fill(Qt::transparent);
+  QPainter painter = QPainter{&image};
+
+  auto opt = makeOpt(QStyle::State_Enabled);
+  opt.rect = image.rect();
+  style_.drawPrimitive(QStyle::PE_FrameMenu, &opt, &painter);
+  painter.end();
+
+  const auto tok = Holonight::darkTokens();
+  EXPECT_EQ(image.pixelColor(image.width() / 2, 0), tok.borderPassive);
+}
+

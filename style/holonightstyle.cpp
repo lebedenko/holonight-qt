@@ -311,6 +311,8 @@ int HoloniightStyle::pixelMetric(PixelMetric metric, const QStyleOption* option,
   switch (metric) {
     case PM_DefaultFrameWidth:
       return 1;
+    case PM_MenuPanelWidth:
+      return 1;
     case PM_SplitterWidth:
       return 1;
     case PM_DockWidgetSeparatorExtent:
@@ -948,6 +950,7 @@ void HoloniightStyle::drawPrimitive(PrimitiveElement element, const QStyleOption
       painter->setBrush(tok.surfaceRaised);
       painter->drawRect(option->rect);
       painter->restore();
+      drawPlainFrame(painter, option->rect, tok.borderPassive);
       return;
     }
 

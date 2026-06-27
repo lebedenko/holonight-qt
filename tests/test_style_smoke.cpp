@@ -187,3 +187,9 @@ TEST(StyleSmoke, DockWidgetSeparatorExtentIsOne) {
   HoloniightStyle style;
   EXPECT_EQ(style.pixelMetric(QStyle::PM_DockWidgetSeparatorExtent), 1);
 }
+
+TEST(StyleSmoke, MenuPanelWidthIsOne) {
+  HoloniightStyle style;
+  EXPECT_EQ(style.pixelMetric(QStyle::PM_MenuPanelWidth), 1);
+}
+
