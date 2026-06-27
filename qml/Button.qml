@@ -25,7 +25,7 @@ T.Button {
         icon: root.icon
         text: root.text
         font: root.font
-        color: HoloniightPalette.textPrimary
+        color: root.highlighted ? HoloniightPalette.onPrimary : HoloniightPalette.textPrimary
     }
 
     background: Rectangle {

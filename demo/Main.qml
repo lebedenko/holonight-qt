@@ -31,7 +31,7 @@ ApplicationWindow {
         Label {
             text: "Dark Qt6 theme for tiling window managers"
             font.pixelSize: 13
-            color: palette.mid
+            color: palette.placeholderText
             Layout.leftMargin: 40
             Layout.bottomMargin: 16
         }
@@ -64,7 +64,7 @@ ApplicationWindow {
                     spacing: 0
 
                     Item { implicitHeight: 24 }
-                    Label { text: "BUTTONS"; font.pixelSize: 11; font.letterSpacing: 1; color: palette.mid; Layout.leftMargin: 40; Layout.bottomMargin: 10 }
+                    Label { text: "BUTTONS"; font.pixelSize: 11; font.letterSpacing: 1; color: palette.placeholderText; Layout.leftMargin: 40; Layout.bottomMargin: 10 }
                     RowLayout {
                         spacing: 8
                         Layout.leftMargin: 40
@@ -80,7 +80,7 @@ ApplicationWindow {
                         Button { text: "Disabled Primary"; highlighted: true; enabled: false }
                     }
 
-                    Label { text: "CHECKBOXES"; font.pixelSize: 11; font.letterSpacing: 1; color: palette.mid; Layout.leftMargin: 40; Layout.bottomMargin: 10 }
+                    Label { text: "CHECKBOXES"; font.pixelSize: 11; font.letterSpacing: 1; color: palette.placeholderText; Layout.leftMargin: 40; Layout.bottomMargin: 10 }
                     RowLayout {
                         spacing: 48
                         Layout.leftMargin: 40
@@ -99,7 +99,7 @@ ApplicationWindow {
                         }
                     }
 
-                    Label { text: "RADIO BUTTONS"; font.pixelSize: 11; font.letterSpacing: 1; color: palette.mid; Layout.leftMargin: 40; Layout.bottomMargin: 10 }
+                    Label { text: "RADIO BUTTONS"; font.pixelSize: 11; font.letterSpacing: 1; color: palette.placeholderText; Layout.leftMargin: 40; Layout.bottomMargin: 10 }
                     RowLayout {
                         spacing: 48
                         Layout.leftMargin: 40
@@ -118,7 +118,7 @@ ApplicationWindow {
                         }
                     }
 
-                    Label { text: "SWITCHES"; font.pixelSize: 11; font.letterSpacing: 1; color: palette.mid; Layout.leftMargin: 40; Layout.bottomMargin: 10 }
+                    Label { text: "SWITCHES"; font.pixelSize: 11; font.letterSpacing: 1; color: palette.placeholderText; Layout.leftMargin: 40; Layout.bottomMargin: 10 }
                     RowLayout {
                         spacing: 24
                         Layout.leftMargin: 40
@@ -129,7 +129,7 @@ ApplicationWindow {
                         Switch { text: "Disabled on"; checked: true; enabled: false }
                     }
 
-                    Label { text: "SLIDERS"; font.pixelSize: 11; font.letterSpacing: 1; color: palette.mid; Layout.leftMargin: 40; Layout.bottomMargin: 10 }
+                    Label { text: "SLIDERS"; font.pixelSize: 11; font.letterSpacing: 1; color: palette.placeholderText; Layout.leftMargin: 40; Layout.bottomMargin: 10 }
                     ColumnLayout {
                         spacing: 8
                         Layout.fillWidth: true
@@ -140,7 +140,7 @@ ApplicationWindow {
                         Slider { Layout.fillWidth: true; value: 0.7; enabled: false }
                     }
 
-                    Label { text: "RANGE SLIDER"; font.pixelSize: 11; font.letterSpacing: 1; color: palette.mid; Layout.leftMargin: 40; Layout.bottomMargin: 10 }
+                    Label { text: "RANGE SLIDER"; font.pixelSize: 11; font.letterSpacing: 1; color: palette.placeholderText; Layout.leftMargin: 40; Layout.bottomMargin: 10 }
                     ColumnLayout {
                         spacing: 8
                         Layout.fillWidth: true
@@ -151,7 +151,7 @@ ApplicationWindow {
                         RangeSlider { Layout.fillWidth: true; first.value: 0.2; second.value: 0.6; enabled: false }
                     }
 
-                    Label { text: "DIAL"; font.pixelSize: 11; font.letterSpacing: 1; color: palette.mid; Layout.leftMargin: 40; Layout.bottomMargin: 10 }
+                    Label { text: "DIAL"; font.pixelSize: 11; font.letterSpacing: 1; color: palette.placeholderText; Layout.leftMargin: 40; Layout.bottomMargin: 10 }
                     RowLayout {
                         spacing: 24
                         Layout.leftMargin: 40
@@ -175,7 +175,7 @@ ApplicationWindow {
                     spacing: 0
 
                     Item { implicitHeight: 24 }
-                    Label { text: "TEXT FIELD"; font.pixelSize: 11; font.letterSpacing: 1; color: palette.mid; Layout.leftMargin: 40; Layout.bottomMargin: 10 }
+                    Label { text: "TEXT FIELD"; font.pixelSize: 11; font.letterSpacing: 1; color: palette.placeholderText; Layout.leftMargin: 40; Layout.bottomMargin: 10 }
                     ColumnLayout {
                         spacing: 8
                         Layout.fillWidth: true
@@ -188,7 +188,7 @@ ApplicationWindow {
                         TextField { Layout.fillWidth: true; placeholderText: "Disabled"; enabled: false }
                     }
 
-                    Label { text: "TEXT AREA"; font.pixelSize: 11; font.letterSpacing: 1; color: palette.mid; Layout.leftMargin: 40; Layout.bottomMargin: 10 }
+                    Label { text: "TEXT AREA"; font.pixelSize: 11; font.letterSpacing: 1; color: palette.placeholderText; Layout.leftMargin: 40; Layout.bottomMargin: 10 }
                     ColumnLayout {
                         spacing: 8
                         Layout.fillWidth: true
@@ -210,7 +210,7 @@ ApplicationWindow {
                         }
                     }
 
-                    Label { text: "SPINBOX"; font.pixelSize: 11; font.letterSpacing: 1; color: palette.mid; Layout.leftMargin: 40; Layout.bottomMargin: 10 }
+                    Label { text: "SPINBOX"; font.pixelSize: 11; font.letterSpacing: 1; color: palette.placeholderText; Layout.leftMargin: 40; Layout.bottomMargin: 10 }
                     RowLayout {
                         spacing: 16
                         Layout.leftMargin: 40
@@ -219,7 +219,7 @@ ApplicationWindow {
                         SpinBox { value: 42; from: 0; to: 100; enabled: false }
                     }
 
-                    Label { text: "COMBOBOX"; font.pixelSize: 11; font.letterSpacing: 1; color: palette.mid; Layout.leftMargin: 40; Layout.bottomMargin: 10 }
+                    Label { text: "COMBOBOX"; font.pixelSize: 11; font.letterSpacing: 1; color: palette.placeholderText; Layout.leftMargin: 40; Layout.bottomMargin: 10 }
                     RowLayout {
                         spacing: 16
                         Layout.leftMargin: 40
@@ -243,7 +243,7 @@ ApplicationWindow {
                     spacing: 0
 
                     Item { implicitHeight: 24 }
-                    Label { text: "TAB BAR"; font.pixelSize: 11; font.letterSpacing: 1; color: palette.mid; Layout.leftMargin: 40; Layout.bottomMargin: 10 }
+                    Label { text: "TAB BAR"; font.pixelSize: 11; font.letterSpacing: 1; color: palette.placeholderText; Layout.leftMargin: 40; Layout.bottomMargin: 10 }
                     ColumnLayout {
                         spacing: 0
                         Layout.fillWidth: true
@@ -263,20 +263,20 @@ ApplicationWindow {
                             implicitHeight: 60
                             Item {
                                 Rectangle { anchors.fill: parent; color: palette.base; radius: 4
-                                    Label { anchors.centerIn: parent; text: "Alpha content"; color: palette.mid } }
+                                    Label { anchors.centerIn: parent; text: "Alpha content"; color: palette.placeholderText } }
                             }
                             Item {
                                 Rectangle { anchors.fill: parent; color: palette.base; radius: 4
-                                    Label { anchors.centerIn: parent; text: "Beta content"; color: palette.mid } }
+                                    Label { anchors.centerIn: parent; text: "Beta content"; color: palette.placeholderText } }
                             }
                             Item {
                                 Rectangle { anchors.fill: parent; color: palette.base; radius: 4
-                                    Label { anchors.centerIn: parent; text: "Gamma content"; color: palette.mid } }
+                                    Label { anchors.centerIn: parent; text: "Gamma content"; color: palette.placeholderText } }
                             }
                         }
                     }
 
-                    Label { text: "MENU"; font.pixelSize: 11; font.letterSpacing: 1; color: palette.mid; Layout.leftMargin: 40; Layout.bottomMargin: 10 }
+                    Label { text: "MENU"; font.pixelSize: 11; font.letterSpacing: 1; color: palette.placeholderText; Layout.leftMargin: 40; Layout.bottomMargin: 10 }
                     RowLayout {
                         Layout.leftMargin: 40
                         Layout.bottomMargin: 32
@@ -292,7 +292,7 @@ ApplicationWindow {
                         }
                     }
 
-                    Label { text: "TOOLBAR"; font.pixelSize: 11; font.letterSpacing: 1; color: palette.mid; Layout.leftMargin: 40; Layout.bottomMargin: 10 }
+                    Label { text: "TOOLBAR"; font.pixelSize: 11; font.letterSpacing: 1; color: palette.placeholderText; Layout.leftMargin: 40; Layout.bottomMargin: 10 }
                     ToolBar {
                         Layout.fillWidth: true
                         Layout.bottomMargin: 32
@@ -307,7 +307,7 @@ ApplicationWindow {
                         }
                     }
 
-                    Label { text: "SCROLLBAR"; font.pixelSize: 11; font.letterSpacing: 1; color: palette.mid; Layout.leftMargin: 40; Layout.bottomMargin: 10 }
+                    Label { text: "SCROLLBAR"; font.pixelSize: 11; font.letterSpacing: 1; color: palette.placeholderText; Layout.leftMargin: 40; Layout.bottomMargin: 10 }
                     Rectangle {
                         Layout.fillWidth: true
                         Layout.leftMargin: 40
@@ -361,7 +361,7 @@ ApplicationWindow {
                     spacing: 0
 
                     Item { implicitHeight: 24 }
-                    Label { text: "PROGRESS BAR"; font.pixelSize: 11; font.letterSpacing: 1; color: palette.mid; Layout.leftMargin: 40; Layout.bottomMargin: 10 }
+                    Label { text: "PROGRESS BAR"; font.pixelSize: 11; font.letterSpacing: 1; color: palette.placeholderText; Layout.leftMargin: 40; Layout.bottomMargin: 10 }
                     ColumnLayout {
                         spacing: 8
                         Layout.fillWidth: true
@@ -373,7 +373,7 @@ ApplicationWindow {
                         ProgressBar { Layout.fillWidth: true; value: 0.4; enabled: false }
                     }
 
-                    Label { text: "TOOLTIP"; font.pixelSize: 11; font.letterSpacing: 1; color: palette.mid; Layout.leftMargin: 40; Layout.bottomMargin: 10 }
+                    Label { text: "TOOLTIP"; font.pixelSize: 11; font.letterSpacing: 1; color: palette.placeholderText; Layout.leftMargin: 40; Layout.bottomMargin: 10 }
                     RowLayout {
                         spacing: 16
                         Layout.leftMargin: 40
@@ -400,7 +400,7 @@ ApplicationWindow {
                         }
                     }
 
-                    Label { text: "BUSY INDICATOR"; font.pixelSize: 11; font.letterSpacing: 1; color: palette.mid; Layout.leftMargin: 40; Layout.bottomMargin: 10 }
+                    Label { text: "BUSY INDICATOR"; font.pixelSize: 11; font.letterSpacing: 1; color: palette.placeholderText; Layout.leftMargin: 40; Layout.bottomMargin: 10 }
                     RowLayout {
                         spacing: 32
                         Layout.leftMargin: 40
@@ -424,7 +424,7 @@ ApplicationWindow {
                     spacing: 0
 
                     Item { implicitHeight: 24 }
-                    Label { text: "FRAME"; font.pixelSize: 11; font.letterSpacing: 1; color: palette.mid; Layout.leftMargin: 40; Layout.bottomMargin: 10 }
+                    Label { text: "FRAME"; font.pixelSize: 11; font.letterSpacing: 1; color: palette.placeholderText; Layout.leftMargin: 40; Layout.bottomMargin: 10 }
                     RowLayout {
                         spacing: 16
                         Layout.leftMargin: 40
@@ -443,7 +443,7 @@ ApplicationWindow {
                         }
                     }
 
-                    Label { text: "GROUP BOX"; font.pixelSize: 11; font.letterSpacing: 1; color: palette.mid; Layout.leftMargin: 40; Layout.bottomMargin: 10 }
+                    Label { text: "GROUP BOX"; font.pixelSize: 11; font.letterSpacing: 1; color: palette.placeholderText; Layout.leftMargin: 40; Layout.bottomMargin: 10 }
                     RowLayout {
                         spacing: 16
                         Layout.leftMargin: 40
@@ -470,7 +470,7 @@ ApplicationWindow {
                         }
                     }
 
-                    Label { text: "SCROLL VIEW"; font.pixelSize: 11; font.letterSpacing: 1; color: palette.mid; Layout.leftMargin: 40; Layout.bottomMargin: 10 }
+                    Label { text: "SCROLL VIEW"; font.pixelSize: 11; font.letterSpacing: 1; color: palette.placeholderText; Layout.leftMargin: 40; Layout.bottomMargin: 10 }
                     ScrollView {
                         Layout.fillWidth: true
                         Layout.leftMargin: 40
@@ -493,7 +493,7 @@ ApplicationWindow {
                         }
                     }
 
-                    Label { text: "LIST VIEW"; font.pixelSize: 11; font.letterSpacing: 1; color: palette.mid; Layout.leftMargin: 40; Layout.bottomMargin: 10 }
+                    Label { text: "LIST VIEW"; font.pixelSize: 11; font.letterSpacing: 1; color: palette.placeholderText; Layout.leftMargin: 40; Layout.bottomMargin: 10 }
                     Rectangle {
                         Layout.fillWidth: true
                         Layout.leftMargin: 40

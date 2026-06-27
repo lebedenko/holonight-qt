@@ -10,6 +10,10 @@ target_sources(qholonight PRIVATE
     holonightthemeplugin.cpp
 )
 
+set_target_properties(qholonight PROPERTIES
+    LIBRARY_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/lib/qt6/plugins/platformthemes"
+)
+
 target_link_libraries(qholonight PRIVATE
     holonight_config
     holonight_palette
