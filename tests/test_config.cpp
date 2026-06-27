@@ -4,6 +4,8 @@
 #include "holonight/config.h"
 
 #include <QFile>
+#include <QGuiApplication>
+#include <QStyleHints>
 #include <QTemporaryDir>
 
 #include <gtest/gtest.h>
@@ -62,6 +64,7 @@ TEST(ThemeConfig, LoadsJsonConfigFile) {
   EnvGuard fixedFontGuard = EnvGuard{"HOLONIGHT_FIXED_FONT"};
   EnvGuard sizeGuard = EnvGuard{"HOLONIGHT_FONT_SIZE"};
   EnvGuard scaleGuard = EnvGuard{"HOLONIGHT_SCALE_FACTOR"};
+  EnvGuard appearanceGuard = EnvGuard{"HOLONIGHT_APPEARANCE_MODE"};
 
   qunsetenv("HOLONIGHT_ICON_THEME");
   qunsetenv("HOLONIGHT_FALLBACK_ICON_THEME");
@@ -69,12 +72,14 @@ TEST(ThemeConfig, LoadsJsonConfigFile) {
   qunsetenv("HOLONIGHT_FIXED_FONT");
   qunsetenv("HOLONIGHT_FONT_SIZE");
   qunsetenv("HOLONIGHT_SCALE_FACTOR");
+  qunsetenv("HOLONIGHT_APPEARANCE_MODE");
 
   QTemporaryDir dir;
   ASSERT_TRUE(dir.isValid());
   const QString path = dir.filePath(QStringLiteral("theme.json"));
   writeFile(path, R"({
     "icons": { "theme": "Papirus-Dark", "fallback": "Adwaita" },
+    "appearance": { "mode": "light" },
     "fonts": { "ui": "Noto Sans", "fixed": "Iosevka", "baseSize": 11 },
     "scaleFactor": 1.25
   })");
@@ -87,6 +92,8 @@ TEST(ThemeConfig, LoadsJsonConfigFile) {
   EXPECT_EQ(config.fixed_font, QStringLiteral("Iosevka"));
   EXPECT_EQ(config.base_font_size, 11);
   EXPECT_DOUBLE_EQ(config.scale_factor, 1.25);
+  EXPECT_EQ(config.appearance_mode, Holonight::AppearanceMode::Light);
+  EXPECT_EQ(config.resolvedColorMode(), Holonight::ColorMode::Light);
 }
 
 TEST(ThemeConfig, EnvironmentOverridesConfigFile) {
@@ -97,12 +104,14 @@ TEST(ThemeConfig, EnvironmentOverridesConfigFile) {
   EnvGuard fixedFontGuard = EnvGuard{"HOLONIGHT_FIXED_FONT"};
   EnvGuard sizeGuard = EnvGuard{"HOLONIGHT_FONT_SIZE"};
   EnvGuard scaleGuard = EnvGuard{"HOLONIGHT_SCALE_FACTOR"};
+  EnvGuard appearanceGuard = EnvGuard{"HOLONIGHT_APPEARANCE_MODE"};
 
   QTemporaryDir dir;
   ASSERT_TRUE(dir.isValid());
   const QString path = dir.filePath(QStringLiteral("theme.json"));
   writeFile(path, R"({
     "icons": { "theme": "ConfigIcons", "fallback": "ConfigFallback" },
+    "appearance": { "mode": "dark" },
     "fonts": { "ui": "Config Sans", "fixed": "Config Mono", "baseSize": 10 },
     "scaleFactor": 1.0
   })");
@@ -114,6 +123,7 @@ TEST(ThemeConfig, EnvironmentOverridesConfigFile) {
   qputenv("HOLONIGHT_FIXED_FONT", "Env Mono");
   qputenv("HOLONIGHT_FONT_SIZE", "12");
   qputenv("HOLONIGHT_SCALE_FACTOR", "1.5");
+  qputenv("HOLONIGHT_APPEARANCE_MODE", "light");
 
   const Holonight::ThemeConfig config = Holonight::ThemeConfig::load();
   EXPECT_EQ(config.icon_theme, QStringLiteral("EnvIcons"));
@@ -122,4 +132,58 @@ TEST(ThemeConfig, EnvironmentOverridesConfigFile) {
   EXPECT_EQ(config.fixed_font, QStringLiteral("Env Mono"));
   EXPECT_EQ(config.base_font_size, 12);
   EXPECT_DOUBLE_EQ(config.scale_factor, 1.5);
+  EXPECT_EQ(config.appearance_mode, Holonight::AppearanceMode::Light);
+  EXPECT_EQ(config.resolvedColorMode(), Holonight::ColorMode::Light);
+}
+
+TEST(ThemeConfig, LoadsIniAppearanceMode) {
+  EnvGuard configFileGuard = EnvGuard{"HOLONIGHT_CONFIG_FILE"};
+  EnvGuard appearanceGuard = EnvGuard{"HOLONIGHT_APPEARANCE_MODE"};
+  qunsetenv("HOLONIGHT_APPEARANCE_MODE");
+
+  QTemporaryDir dir;
+  ASSERT_TRUE(dir.isValid());
+  const QString path = dir.filePath(QStringLiteral("theme.conf"));
+  writeFile(path, R"(
+[appearance]
+mode=light
+)");
+  qputenv("HOLONIGHT_CONFIG_FILE", path.toLocal8Bit());
+
+  const Holonight::ThemeConfig config = Holonight::ThemeConfig::load();
+  EXPECT_EQ(config.appearance_mode, Holonight::AppearanceMode::Light);
+  EXPECT_EQ(config.resolvedColorMode(), Holonight::ColorMode::Light);
+}
+
+TEST(ThemeConfig, InvalidAppearanceFallsBackToDark) {
+  EnvGuard configFileGuard = EnvGuard{"HOLONIGHT_CONFIG_FILE"};
+  EnvGuard appearanceGuard = EnvGuard{"HOLONIGHT_APPEARANCE_MODE"};
+
+  QTemporaryDir dir;
+  ASSERT_TRUE(dir.isValid());
+  const QString path = dir.filePath(QStringLiteral("theme.json"));
+  writeFile(path, R"({ "appearance": { "mode": "invalid" } })");
+  qputenv("HOLONIGHT_CONFIG_FILE", path.toLocal8Bit());
+  qputenv("HOLONIGHT_APPEARANCE_MODE", "also-invalid");
+
+  const Holonight::ThemeConfig config = Holonight::ThemeConfig::load();
+  EXPECT_EQ(config.appearance_mode, Holonight::AppearanceMode::Dark);
+  EXPECT_EQ(config.resolvedColorMode(), Holonight::ColorMode::Dark);
+}
+
+TEST(ThemeConfig, DefaultsToDarkAppearance) {
+  const Holonight::ThemeConfig config = Holonight::ThemeConfig::defaults();
+  EXPECT_EQ(config.appearance_mode, Holonight::AppearanceMode::Dark);
+  EXPECT_EQ(config.resolvedColorMode(), Holonight::ColorMode::Dark);
+}
+
+TEST(ThemeConfig, SystemAppearanceWithoutPreferenceFallsBackToDark) {
+  Holonight::ThemeConfig config = Holonight::ThemeConfig::defaults();
+  config.appearance_mode = Holonight::AppearanceMode::System;
+  const QGuiApplication* application = qobject_cast<const QGuiApplication*>(QGuiApplication::instance());
+  if (application != nullptr && application->styleHints()->colorScheme() == Qt::ColorScheme::Light) {
+    EXPECT_EQ(config.resolvedColorMode(), Holonight::ColorMode::Light);
+  } else {
+    EXPECT_EQ(config.resolvedColorMode(), Holonight::ColorMode::Dark);
+  }
 }

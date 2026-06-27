@@ -5,10 +5,12 @@
 
 #include <QDebug>
 #include <QFile>
+#include <QGuiApplication>
 #include <QJsonDocument>
 #include <QJsonObject>
 #include <QSettings>
 #include <QStandardPaths>
+#include <QStyleHints>
 #include <QtGlobal>
 
 #include <algorithm>
@@ -41,6 +43,17 @@ void setScaleIfValid(qreal* target, qreal value) {
   }
 }
 
+void setAppearanceModeIfValid(Holonight::AppearanceMode* target, const QString& value) {
+  const QString cleaned = cleanString(value).toLower();
+  if (cleaned == QStringLiteral("dark")) {
+    *target = Holonight::AppearanceMode::Dark;
+  } else if (cleaned == QStringLiteral("light")) {
+    *target = Holonight::AppearanceMode::Light;
+  } else if (cleaned == QStringLiteral("system")) {
+    *target = Holonight::AppearanceMode::System;
+  }
+}
+
 [[nodiscard]] QString envString(const char* name) { return cleanString(QString::fromLocal8Bit(qgetenv(name))); }
 
 [[nodiscard]] bool envInt(const char* name, int* value) {
@@ -62,6 +75,9 @@ void setScaleIfValid(qreal* target, qreal value) {
 }
 
 void readJsonObject(Holonight::ThemeConfig* config, const QJsonObject& root) {
+  const QJsonObject appearance = root.value(QStringLiteral("appearance")).toObject();
+  setAppearanceModeIfValid(&config->appearance_mode, appearance.value(QStringLiteral("mode")).toString());
+
   const QJsonObject icons = root.value(QStringLiteral("icons")).toObject();
   setStringIfPresent(&config->icon_theme, icons.value(QStringLiteral("theme")).toString());
   setStringIfPresent(&config->fallback_icon_theme, icons.value(QStringLiteral("fallback")).toString());
@@ -83,6 +99,7 @@ void readJsonObject(Holonight::ThemeConfig* config, const QJsonObject& root) {
 
 void readIniFile(Holonight::ThemeConfig* config, const QString& path) {
   QSettings settings = QSettings{path, QSettings::IniFormat};
+  setAppearanceModeIfValid(&config->appearance_mode, settings.value(QStringLiteral("appearance/mode")).toString());
   setStringIfPresent(&config->icon_theme, settings.value(QStringLiteral("icons/theme")).toString());
   setStringIfPresent(&config->fallback_icon_theme, settings.value(QStringLiteral("icons/fallback")).toString());
   setStringIfPresent(&config->ui_font, settings.value(QStringLiteral("fonts/ui")).toString());
@@ -127,6 +144,7 @@ void readConfigFile(Holonight::ThemeConfig* config, const QString& path) {
 }
 
 void applyEnvironment(Holonight::ThemeConfig* config) {
+  setAppearanceModeIfValid(&config->appearance_mode, envString("HOLONIGHT_APPEARANCE_MODE"));
   setStringIfPresent(&config->icon_theme, envString("HOLONIGHT_ICON_THEME"));
   setStringIfPresent(&config->fallback_icon_theme, envString("HOLONIGHT_FALLBACK_ICON_THEME"));
   setStringIfPresent(&config->fallback_icon_theme, envString("HOLONIGHT_ICON_FALLBACK_THEME"));
@@ -157,8 +175,34 @@ int ThemeConfig::titleSize() const { return (std::min)(kMaxFontSize, base_font_s
 
 int ThemeConfig::headingSize() const { return (std::min)(kMaxFontSize, base_font_size + 6); }
 
+ColorMode ThemeConfig::resolvedColorMode() const {
+  switch (appearance_mode) {
+    case AppearanceMode::Dark:
+      return ColorMode::Dark;
+    case AppearanceMode::Light:
+      return ColorMode::Light;
+    case AppearanceMode::System:
+      break;
+  }
+
+  const QGuiApplication* application = qobject_cast<const QGuiApplication*>(QGuiApplication::instance());
+  if (application == nullptr || application->styleHints() == nullptr) {
+    return ColorMode::Dark;
+  }
+
+  switch (application->styleHints()->colorScheme()) {
+    case Qt::ColorScheme::Light:
+      return ColorMode::Light;
+    case Qt::ColorScheme::Dark:
+    case Qt::ColorScheme::Unknown:
+      return ColorMode::Dark;
+  }
+  return ColorMode::Dark;
+}
+
 ThemeConfig ThemeConfig::defaults() {
-  return ThemeConfig{.icon_theme = QStringLiteral("HoloNight"),
+  return ThemeConfig{.appearance_mode = AppearanceMode::Dark,
+                     .icon_theme = QStringLiteral("HoloNight"),
                      .fallback_icon_theme = QStringLiteral("Papirus"),
                      .ui_font = QStringLiteral("Inter"),
                      .fixed_font = QStringLiteral("JetBrains Mono"),

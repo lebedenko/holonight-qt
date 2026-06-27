@@ -5,6 +5,42 @@
 
 namespace Holonight {
 
+namespace {
+
+void populateCompatibilityAliases(ColorTokens* tok, const QColor& outline, const QColor& outlineVariant) {
+  tok->surfaceVariant = tok->surface;
+  tok->surfaceContainer = tok->surfaceElevated;
+  tok->onSurface = tok->textPrimary;
+  tok->onSurfaceVariant = tok->textMuted;
+  tok->onSurfaceDisabled = tok->textDisabled;
+  tok->onSurfaceInverse = tok->textInverse;
+  tok->secondary = tok->surfaceRaised;
+  tok->onSecondary = tok->textPrimary;
+  tok->outline = outline;
+  tok->outlineVariant = outlineVariant;
+  tok->hover = tok->hoverOverlay;
+  tok->pressed = tok->pressedOverlay;
+  tok->textSubtle = tok->textSecondary;
+  tok->ansi0 = tok->ansiBlack;
+  tok->ansi1 = tok->ansiRed;
+  tok->ansi2 = tok->ansiGreen;
+  tok->ansi3 = tok->ansiYellow;
+  tok->ansi4 = tok->ansiBlue;
+  tok->ansi5 = tok->ansiMagenta;
+  tok->ansi6 = tok->ansiCyan;
+  tok->ansi7 = tok->ansiWhite;
+  tok->ansi8 = tok->ansiBrightBlack;
+  tok->ansi9 = tok->ansiBrightRed;
+  tok->ansi10 = tok->ansiBrightGreen;
+  tok->ansi11 = tok->ansiBrightYellow;
+  tok->ansi12 = tok->ansiBrightBlue;
+  tok->ansi13 = tok->ansiBrightMagenta;
+  tok->ansi14 = tok->ansiBrightCyan;
+  tok->ansi15 = tok->ansiBrightWhite;
+}
+
+}  // namespace
+
 ColorTokens darkTokens() {
   ColorTokens tok;
 
@@ -15,24 +51,24 @@ ColorTokens darkTokens() {
   tok.surfaceHover = QColor{0x1e, 0x22, 0x33};     // #1e2233
   tok.surfaceInverse = QColor{0x0d, 0x11, 0x17};   // #0d1117
 
-  tok.textPrimary = QColor{0xc0, 0xca, 0xf5};   // #c0caf5
-  tok.textSecondary = QColor{0xa9, 0xb1, 0xd6}; // #a9b1d6
-  tok.textMuted = QColor{0x56, 0x5f, 0x89};     // #565f89
-  tok.textDisabled = QColor{0x3b, 0x3f, 0x58};  // #3b3f58
-  tok.textInverse = QColor{0xc0, 0xca, 0xf5};   // #c0caf5
+  tok.textPrimary = QColor{0xc0, 0xca, 0xf5};    // #c0caf5
+  tok.textSecondary = QColor{0xa9, 0xb1, 0xd6};  // #a9b1d6
+  tok.textMuted = QColor{0x56, 0x5f, 0x89};      // #565f89
+  tok.textDisabled = QColor{0x3b, 0x3f, 0x58};   // #3b3f58
+  tok.textInverse = QColor{0xc0, 0xca, 0xf5};    // #c0caf5
 
-  tok.primary = QColor{0x7a, 0xa2, 0xf7};  // #7aa2f7
+  tok.primary = QColor{0x7a, 0xa2, 0xf7};         // #7aa2f7
   tok.primaryHover = QColor{0x4d, 0xe9, 0xff};    // #4de9ff  L=65%
   tok.primaryPressed = QColor{0x5d, 0x7f, 0xc7};  // #5d7fc7
   tok.onPrimary = QColor{0x1a, 0x1b, 0x26};       // #1a1b26  dark text on selection fill
 
-  tok.borderSubtle = QColor{0x2f, 0x35, 0x4d};   // #2f354d
-  tok.borderPassive = QColor{0x56, 0x5f, 0x89};  // #565f89  passive frame border
-  tok.borderStrong = QColor{0x7c, 0x86, 0xb8};   // #7c86b8
+  tok.borderSubtle = QColor{0x2f, 0x35, 0x4d};       // #2f354d
+  tok.borderPassive = QColor{0x56, 0x5f, 0x89};      // #565f89  passive frame border
+  tok.borderStrong = QColor{0x7c, 0x86, 0xb8};       // #7c86b8
   tok.borderHover = QColor{0x7d, 0xcf, 0xff, 0x4d};  // #7dcfff ~30%  hover-state border
-  tok.borderFocus = QColor{0x00, 0xe0, 0xff};   // #00e0ff  keyboard focus ring
-  tok.borderActive = QColor{0x7a, 0xa2, 0xf7};  // #7aa2f7  selected/active border
-  tok.borderUrgent = QColor{0xf7, 0x76, 0x8e};  // #f7768e  critical/error border
+  tok.borderFocus = QColor{0x00, 0xe0, 0xff};        // #00e0ff  keyboard focus ring
+  tok.borderActive = QColor{0x7a, 0xa2, 0xf7};       // #7aa2f7  selected/active border
+  tok.borderUrgent = QColor{0xf7, 0x76, 0x8e};       // #f7768e  critical/error border
 
   tok.glowCyanSoft = QColor{0x00, 0xe0, 0xff, 0x33};
   tok.glowBlueSoft = QColor{0x7a, 0xa2, 0xf7, 0x33};
@@ -43,9 +79,9 @@ ColorTokens darkTokens() {
   tok.pressedOverlay = QColor{0x00, 0xe0, 0xff, 0x26};
   tok.disabledOverlay = QColor{0x10, 0x13, 0x1f, 0x80};
   tok.focusRing = QColor{0x00, 0xe0, 0xff};  // #00e0ff
-  tok.shadow = QColor{0x00, 0x00, 0x00};      // #000000
+  tok.shadow = QColor{0x00, 0x00, 0x00};     // #000000
 
-  tok.error = QColor{0xf7, 0x76, 0x8e};  // #f7768e
+  tok.error = QColor{0xf7, 0x76, 0x8e};    // #f7768e
   tok.warning = QColor{0xff, 0x9e, 0x64};  // #ff9e64
   tok.success = QColor{0x9e, 0xce, 0x6a};  // #9ece6a
   tok.onError = QColor{0x12, 0x16, 0x26};  // #121626
@@ -75,37 +111,93 @@ ColorTokens darkTokens() {
   tok.ansiBrightCyan = QColor{0x9d, 0xe8, 0xff};
   tok.ansiBrightWhite = QColor{0xd5, 0xdc, 0xff};
 
-  tok.surfaceVariant = tok.surface;
-  tok.surfaceContainer = tok.surfaceElevated;
-  tok.onSurface = tok.textPrimary;
-  tok.onSurfaceVariant = tok.textMuted;
-  tok.onSurfaceDisabled = tok.textDisabled;
-  tok.onSurfaceInverse = tok.textInverse;
-  tok.secondary = tok.surfaceRaised;
-  tok.onSecondary = tok.textPrimary;
-  tok.outline = tok.borderActive;
-  tok.outlineVariant = tok.borderPassive;
-  tok.hover = tok.hoverOverlay;
-  tok.pressed = tok.pressedOverlay;
-  tok.textSubtle = tok.textSecondary;
-  tok.ansi0 = tok.ansiBlack;
-  tok.ansi1 = tok.ansiRed;
-  tok.ansi2 = tok.ansiGreen;
-  tok.ansi3 = tok.ansiYellow;
-  tok.ansi4 = tok.ansiBlue;
-  tok.ansi5 = tok.ansiMagenta;
-  tok.ansi6 = tok.ansiCyan;
-  tok.ansi7 = tok.ansiWhite;
-  tok.ansi8 = tok.ansiBrightBlack;
-  tok.ansi9 = tok.ansiBrightRed;
-  tok.ansi10 = tok.ansiBrightGreen;
-  tok.ansi11 = tok.ansiBrightYellow;
-  tok.ansi12 = tok.ansiBrightBlue;
-  tok.ansi13 = tok.ansiBrightMagenta;
-  tok.ansi14 = tok.ansiBrightCyan;
-  tok.ansi15 = tok.ansiBrightWhite;
+  populateCompatibilityAliases(&tok, tok.borderActive, tok.borderPassive);
 
   return tok;
+}
+
+ColorTokens lightTokens() {
+  ColorTokens tok;
+
+  tok.background = QColor{0xf4, 0xf7, 0xfb};
+  tok.surface = QColor{0xed, 0xf2, 0xf8};
+  tok.surfaceElevated = QColor{0xff, 0xff, 0xff};
+  tok.surfaceRaised = QColor{0xe6, 0xed, 0xf6};
+  tok.surfaceHover = QColor{0xdb, 0xe7, 0xf4};
+  tok.surfaceInverse = QColor{0x15, 0x18, 0x27};
+
+  tok.textPrimary = QColor{0x1f, 0x23, 0x35};
+  tok.textSecondary = QColor{0x3b, 0x42, 0x61};
+  tok.textMuted = QColor{0x6b, 0x73, 0x94};
+  tok.textDisabled = QColor{0xa7, 0xae, 0xc4};
+  tok.textInverse = QColor{0xc0, 0xca, 0xf5};
+
+  tok.primary = QColor{0x2f, 0x6f, 0xe4};
+  tok.primaryHover = QColor{0x00, 0x8f, 0xc7};
+  tok.primaryPressed = QColor{0x27, 0x57, 0xb8};
+  tok.onPrimary = QColor{0xff, 0xff, 0xff};
+
+  tok.borderSubtle = QColor{0xd6, 0xde, 0xec};
+  tok.borderPassive = QColor{0xae, 0xb9, 0xcf};
+  tok.borderStrong = QColor{0x7f, 0x8d, 0xad};
+  tok.borderHover = QColor{0x00, 0x8f, 0xc7, 0x66};
+  tok.borderFocus = QColor{0x00, 0xa6, 0xd6};
+  tok.borderActive = QColor{0x2f, 0x6f, 0xe4};
+  tok.borderUrgent = QColor{0xd9, 0x3f, 0x5c};
+
+  tok.glowCyanSoft = QColor{0x00, 0xa6, 0xd6, 0x33};
+  tok.glowBlueSoft = QColor{0x2f, 0x6f, 0xe4, 0x33};
+  tok.glowVioletSoft = QColor{0x7b, 0x61, 0xd1, 0x33};
+  tok.scrim = QColor{0x1f, 0x23, 0x35, 0x99};
+  tok.glassTint = QColor{0xff, 0xff, 0xff, 0xcc};
+  tok.hoverOverlay = QColor{0x00, 0xa6, 0xd6, 0x1a};
+  tok.pressedOverlay = QColor{0x00, 0xa6, 0xd6, 0x26};
+  tok.disabledOverlay = QColor{0xf4, 0xf7, 0xfb, 0x80};
+  tok.focusRing = QColor{0x00, 0xa6, 0xd6};
+  tok.shadow = QColor{0x00, 0x00, 0x00};
+
+  tok.error = QColor{0xd9, 0x3f, 0x5c};
+  tok.warning = QColor{0xc4, 0x7a, 0x1c};
+  tok.success = QColor{0x4d, 0x8f, 0x31};
+  tok.onError = QColor{0xff, 0xff, 0xff};
+
+  tok.accentCyan = QColor{0x00, 0x8f, 0xc7};
+  tok.accentBlue = QColor{0x2f, 0x6f, 0xe4};
+  tok.accentViolet = QColor{0x7b, 0x61, 0xd1};
+  tok.accentYellow = QColor{0xb8, 0x79, 0x00};
+
+  tok.workspaceOccupied = QColor{0xe3, 0xea, 0xf5};
+  tok.workspaceActive = QColor{0xd7, 0xe4, 0xf6};
+
+  tok.ansiBlack = QColor{0xd6, 0xde, 0xec};
+  tok.ansiRed = QColor{0xd9, 0x3f, 0x5c};
+  tok.ansiGreen = QColor{0x4d, 0x8f, 0x31};
+  tok.ansiYellow = QColor{0xb8, 0x79, 0x00};
+  tok.ansiBlue = QColor{0x2f, 0x6f, 0xe4};
+  tok.ansiMagenta = QColor{0x7b, 0x61, 0xd1};
+  tok.ansiCyan = QColor{0x00, 0x8f, 0xc7};
+  tok.ansiWhite = QColor{0x1f, 0x23, 0x35};
+  tok.ansiBrightBlack = QColor{0x8c, 0x96, 0xad};
+  tok.ansiBrightRed = QColor{0xb9, 0x1f, 0x3d};
+  tok.ansiBrightGreen = QColor{0x36, 0x75, 0x1f};
+  tok.ansiBrightYellow = QColor{0x94, 0x62, 0x00};
+  tok.ansiBrightBlue = QColor{0x1e, 0x55, 0xc8};
+  tok.ansiBrightMagenta = QColor{0x66, 0x48, 0xc3};
+  tok.ansiBrightCyan = QColor{0x00, 0x76, 0xa6};
+  tok.ansiBrightWhite = QColor{0x10, 0x13, 0x1f};
+
+  populateCompatibilityAliases(&tok, tok.borderPassive, tok.borderSubtle);
+  return tok;
+}
+
+ColorTokens tokensForMode(ColorMode mode) {
+  switch (mode) {
+    case ColorMode::Dark:
+      return darkTokens();
+    case ColorMode::Light:
+      return lightTokens();
+  }
+  return darkTokens();
 }
 
 QPalette buildPalette(const ColorTokens& tok) {

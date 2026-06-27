@@ -34,17 +34,22 @@ void writeCommonForegrounds(std::ostringstream& out, const Holonight::ColorToken
   out << "DecorationHover=" << rgb(tok.primaryHover) << '\n';
 }
 
-std::string generatedColors() {
-  const auto tok = Holonight::darkTokens();
+std::string schemeName(Holonight::ColorMode mode) {
+  return mode == Holonight::ColorMode::Light ? "Holonight Day" : "Holonight";
+}
+
+std::string generatedColors(Holonight::ColorMode mode) {
+  const auto tok = Holonight::tokensForMode(mode);
+  const std::string name = schemeName(mode);
   std::ostringstream out;
 
   out << "[ColorScheme]\n";
-  out << "Name=Holonight\n";
+  out << "Name=" << name << '\n';
   out << "ColorSchemeVersion=2\n\n";
 
   out << "[General]\n";
-  out << "ColorScheme=Holonight\n";
-  out << "Name=Holonight\n";
+  out << "ColorScheme=" << name << '\n';
+  out << "Name=" << name << '\n';
   out << "shadeSortColumn=true\n\n";
 
   out << "[Colors:Window]\n";
@@ -122,32 +127,69 @@ void writeFile(const std::filesystem::path& path, std::string_view content) {
   }
 }
 
+Holonight::ColorMode parseMode(std::string_view value) {
+  if (value == "dark") {
+    return Holonight::ColorMode::Dark;
+  }
+  if (value == "light") {
+    return Holonight::ColorMode::Light;
+  }
+  throw std::runtime_error{"invalid mode '" + std::string{value} + "'; expected dark or light"};
+}
+
+struct Arguments {
+  Holonight::ColorMode mode = Holonight::ColorMode::Dark;
+  bool check = false;
+  std::filesystem::path output;
+};
+
+Arguments parseArguments(int argc, char** argv) {
+  Arguments arguments;
+  for (int index = 1; index < argc; ++index) {
+    const std::string_view arg{argv[index]};
+    if (arg == "--mode") {
+      if (index + 1 >= argc) {
+        throw std::runtime_error{"--mode requires dark or light"};
+      }
+      arguments.mode = parseMode(argv[++index]);
+    } else if (arg == "--check") {
+      arguments.check = true;
+    } else if (arguments.output.empty()) {
+      arguments.output = argv[index];
+    } else {
+      throw std::runtime_error{"unexpected argument '" + std::string{arg} + "'"};
+    }
+  }
+  return arguments;
+}
+
 }  // namespace
 
 int main(int argc, char** argv) {
   try {
-    const std::string content = generatedColors();
-    if (argc == 3 && std::string_view{argv[1]} == "--check") {
-      const std::filesystem::path path{argv[2]};
-      if (readFile(path) != content) {
-        std::cerr << path << " is stale; regenerate it with generate_holonight_colors\n";
+    const Arguments arguments = parseArguments(argc, argv);
+    const std::string content = generatedColors(arguments.mode);
+    if (arguments.check) {
+      if (arguments.output.empty()) {
+        throw std::runtime_error{"--check requires OUTPUT"};
+      }
+      if (readFile(arguments.output) != content) {
+        std::cerr << arguments.output << " is stale; regenerate it with generate_holonight_colors --mode "
+                  << (arguments.mode == Holonight::ColorMode::Light ? "light" : "dark") << '\n';
         return 1;
       }
       return 0;
     }
-    if (argc == 2) {
-      writeFile(argv[1], content);
+    if (!arguments.output.empty()) {
+      writeFile(arguments.output, content);
       return 0;
     }
-    if (argc == 1) {
-      std::cout << content;
-      return 0;
-    }
-    std::cerr << "usage: generate_holonight_colors [OUTPUT]\n"
-              << "       generate_holonight_colors --check OUTPUT\n";
-    return 2;
+    std::cout << content;
+    return 0;
   } catch (const std::exception& error) {
-    std::cerr << error.what() << '\n';
-    return 1;
+    std::cerr << error.what() << "\n"
+              << "usage: generate_holonight_colors [--mode dark|light] [OUTPUT]\n"
+              << "       generate_holonight_colors [--mode dark|light] --check OUTPUT\n";
+    return 2;
   }
 }

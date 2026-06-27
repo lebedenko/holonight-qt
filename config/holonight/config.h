@@ -3,12 +3,21 @@
 
 #pragma once
 
+#include "holonight/palette.h"
+
 #include <QString>
 #include <QtGlobal>
 
 namespace Holonight {
 
+enum class AppearanceMode {
+  Dark,
+  Light,
+  System,
+};
+
 struct ThemeConfig {
+  AppearanceMode appearance_mode = AppearanceMode::Dark;
   QString icon_theme;
   QString fallback_icon_theme;
   QString ui_font;
@@ -20,6 +29,7 @@ struct ThemeConfig {
   [[nodiscard]] int bodySize() const;
   [[nodiscard]] int titleSize() const;
   [[nodiscard]] int headingSize() const;
+  [[nodiscard]] ColorMode resolvedColorMode() const;
 
   [[nodiscard]] static ThemeConfig defaults();
   [[nodiscard]] static ThemeConfig load();

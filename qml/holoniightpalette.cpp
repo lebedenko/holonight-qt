@@ -3,9 +3,12 @@
 
 #include "holoniightpalette.h"
 
-HoloniightPalette::HoloniightPalette(QObject* parent) : QObject{parent}, tok_{Holonight::darkTokens()} {}
+#include "holonight/config.h"
+
+HoloniightPalette::HoloniightPalette(QObject* parent)
+    : QObject{parent}, tok_{Holonight::tokensForMode(Holonight::ThemeConfig::load().resolvedColorMode())} {}
 
 void HoloniightPalette::reload() {
-  tok_ = Holonight::darkTokens();
+  tok_ = Holonight::tokensForMode(Holonight::ThemeConfig::load().resolvedColorMode());
   Q_EMIT paletteChanged();
 }

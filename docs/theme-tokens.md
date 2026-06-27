@@ -1,12 +1,12 @@
 # HoloNight Theme Tokens
 
-The palette layer is the canonical source for resolved theme values. `Holonight::darkTokens()` currently returns the complete Storm variant; all Qt palettes, widgets, QML controls, platform theme colors, and generated KDE color-scheme values should consume roles from `Holonight::ColorTokens`.
+The palette layer is the canonical source for resolved theme values. `Holonight::darkTokens()` returns the complete Storm dark variant and `Holonight::lightTokens()` returns the Day light variant; all Qt palettes, widgets, QML controls, platform theme colors, and generated KDE color-scheme values should consume roles from `Holonight::ColorTokens`.
 
 ## Variant Status
 
 | Variant | Status | Dark | Light | Notes |
 | --- | --- | --- | --- | --- |
-| Storm | Implemented | Yes | No | Default resolved theme. Tokyo Night inspired. |
+| Storm / Day | Implemented | Yes | Yes | Default dark mode plus light counterpart. Tokyo Night inspired. |
 | Aurora | Planned | Planned | No | Nord inspired. Not parsed or exported yet. |
 | Mocha | Planned | Planned | No | Catppuccin inspired. Not parsed or exported yet. |
 | Ember | Planned | Planned | No | Warm dark variant. Not parsed or exported yet. |
@@ -118,7 +118,34 @@ Current implemented precedence is:
 
 1. Built-in defaults from `ThemeConfig::defaults()`.
 2. Config file selected from `HOLONIGHT_CONFIG_FILE` when set; otherwise legacy user config from `~/.config/holonight/theme.json`, or `~/.config/holonight/theme.conf` if JSON is absent.
-3. Environment value overrides such as `HOLONIGHT_ICON_THEME`, `HOLONIGHT_FONT`, and `HOLONIGHT_SCALE_FACTOR`.
+3. Environment value overrides such as `HOLONIGHT_APPEARANCE_MODE`, `HOLONIGHT_ICON_THEME`, `HOLONIGHT_FONT`, and `HOLONIGHT_SCALE_FACTOR`.
+
+Appearance mode is configured as `dark`, `light`, or `system`. Invalid or missing values resolve to dark. `system` reads `QGuiApplication::styleHints()->colorScheme()` at startup; `Unknown` or no application instance resolves to dark.
+
+JSON shape:
+
+```json
+{
+  "appearance": {
+    "mode": "dark"
+  }
+}
+```
+
+INI shape:
+
+```ini
+[appearance]
+mode=dark
+```
+
+Environment override:
+
+```bash
+HOLONIGHT_APPEARANCE_MODE=light
+```
+
+Generated KDE schemes are `data/holonight.colors` (`Holonight`) and `data/holonight-day.colors` (`Holonight Day`).
 
 Future shared config will use `~/.config/holonight/config.toml`, but TOML parsing is not implemented in this pass and no new dependency is introduced.
 

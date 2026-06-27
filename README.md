@@ -26,11 +26,12 @@ This repository contains only the Qt theme implementation. The shell, icon theme
 
 Using `QT_QPA_PLATFORMTHEME=holonight` is the recommended activation method — it loads the style and QML layers automatically.
 
-A KDE color scheme (`data/holonight.colors`) is also installed to `share/color-schemes`.
+KDE color schemes are also installed to `share/color-schemes`: `data/holonight.colors` for dark mode and
+`data/holonight-day.colors` for light mode.
 
 ## Palette
 
-HoloNight currently ships one complete resolved theme: **Storm**, a TokyoNight-inspired dark variant. All resolved colors and metrics originate in `palette/holonight/palette.h` through `Holonight::darkTokens()`, and downstream layers consume that token model rather than hard-coded color values.
+HoloNight ships two complete resolved token sets: **Storm** (`darkTokens()`), a TokyoNight-inspired dark variant, and **Day** (`lightTokens()`), its light counterpart. Startup mode is resolved from config/env as `dark`, `light`, or `system`; missing, invalid, or unknown system preferences fall back to dark. All resolved colors and metrics originate in `palette/holonight/palette.h`, and downstream layers consume that token model rather than hard-coded color values.
 
 The preferred public token roles are canonical names such as `background`, `surface`, `surfaceElevated`, `surfaceRaised`, `textPrimary`, `textMuted`, `borderPassive`, `borderActive`, and `borderFocus`. Older names such as `surfaceVariant`, `surfaceContainer`, `onSurface`, `outline`, and `textSubtle` remain available as deprecated compatibility aliases.
 
@@ -116,6 +117,9 @@ Default JSON:
 
 ```json
 {
+  "appearance": {
+    "mode": "dark"
+  },
   "icons": {
     "theme": "HoloNight",
     "fallback": "Papirus"
@@ -129,6 +133,15 @@ Default JSON:
 }
 ```
 
+For INI config, use:
+
+```ini
+[appearance]
+mode=dark
+```
+
+Supported appearance modes are `dark`, `light`, and `system`. `system` reads Qt's startup color-scheme hint and falls back to dark when Qt reports no preference.
+
 `baseSize` is the body font size. Derived sizes are `caption = baseSize - 1`, `title = baseSize + 3`, and `heading = baseSize + 6`.
 
 Supported environment overrides:
@@ -141,6 +154,7 @@ HOLONIGHT_FONT="Noto Sans"
 HOLONIGHT_FIXED_FONT="JetBrains Mono"
 HOLONIGHT_FONT_SIZE=10
 HOLONIGHT_SCALE_FACTOR=1.0
+HOLONIGHT_APPEARANCE_MODE=dark
 ```
 
 The same loaded values are exposed to QML through the `HolonightTheme` singleton:
@@ -180,7 +194,7 @@ QT_QPA_PLATFORM=offscreen ctest --test-dir build --output-on-failure
 
 ## Architecture
 
-- **All colors** originate in `palette/holonight/palette.h` (`darkTokens()` → `buildPalette()`). Change colors there, nowhere else.
+- **All colors** originate in `palette/holonight/palette.h` (`darkTokens()`/`lightTokens()` → `buildPalette()`). Change colors there, nowhere else.
 - **Configuration** is loaded once per consumer through `holonight_config`: defaults, config file, then environment overrides.
 - **QML module URI** is `Holonight` (capital N). Use `import Holonight` in QML files to access all components plus the `HoloniightPalette` and `HolonightTheme` singletons. A lowercase alias (`import holonight`) is also installed for compatibility.
 - **Platform theme** reads configured icon theme, fallback icon theme, UI font, fixed font, and base font size. Defaults are HoloNight/Papirus icons, Inter UI font, JetBrains Mono fixed font, and 10pt body size.

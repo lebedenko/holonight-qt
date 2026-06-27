@@ -1,6 +1,8 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 // SPDX-FileCopyrightText: 2026 Andrii L <lebeden@gmail.com>
 
+#include <QByteArray>
+#include <QColor>
 #include <QQmlComponent>
 #include <QQmlEngine>
 #include <QString>
@@ -8,6 +10,32 @@
 
 #include <gtest/gtest.h>
 #include <memory>
+
+namespace {
+
+class EnvGuard {
+ public:
+  explicit EnvGuard(const char* name) : name_{name}, had_value_{qEnvironmentVariableIsSet(name)} {
+    if (had_value_) {
+      old_value_ = qgetenv(name);
+    }
+  }
+
+  ~EnvGuard() {
+    if (had_value_) {
+      qputenv(name_, old_value_);
+    } else {
+      qunsetenv(name_);
+    }
+  }
+
+ private:
+  const char* name_;
+  bool had_value_;
+  QByteArray old_value_;
+};
+
+}  // namespace
 
 class QmlSmoke : public ::testing::Test {
  protected:
@@ -167,6 +195,29 @@ TEST_F(QmlSmoke, HoloniightPalette_ReloadEmitsNotification) {
   std::unique_ptr<QObject> object{comp.create()};
   ASSERT_NE(object, nullptr);
   EXPECT_GE(object->property("changedCount").toInt(), 1);
+}
+
+TEST_F(QmlSmoke, HoloniightPalette_ReloadUsesLightAppearanceMode) {
+  EnvGuard guard{"HOLONIGHT_APPEARANCE_MODE"};
+  qputenv("HOLONIGHT_APPEARANCE_MODE", "light");
+
+  QQmlComponent comp = QQmlComponent{&engine_};
+  comp.setData(R"(
+    import QtQuick
+    import Holonight
+    Item {
+      property color background: HoloniightPalette.background
+      Component.onCompleted: {
+        HoloniightPalette.reload()
+        background = HoloniightPalette.background
+      }
+    }
+  )",
+               QUrl{});
+  ASSERT_EQ(comp.status(), QQmlComponent::Ready) << comp.errorString().toStdString();
+  std::unique_ptr<QObject> object{comp.create()};
+  ASSERT_NE(object, nullptr);
+  EXPECT_EQ(object->property("background").value<QColor>(), QColor(0xf4, 0xf7, 0xfb));
 }
 
 TEST_F(QmlSmoke, HolonightTheme_ConfigPropertiesAreValid) {

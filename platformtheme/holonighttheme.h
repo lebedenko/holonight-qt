@@ -20,6 +20,8 @@ class HoloniightTheme : public QPlatformTheme {
 
  private:
   Holonight::ThemeConfig config_;
+  Holonight::ColorMode color_mode_;
+  QPalette palette_;
   QFont font_system_;
   QFont font_title_;
   QFont font_fixed_;

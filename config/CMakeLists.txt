@@ -8,7 +8,7 @@ target_include_directories(holonight_config
         $<INSTALL_INTERFACE:include>
 )
 
-target_link_libraries(holonight_config PUBLIC Qt6::Core)
+target_link_libraries(holonight_config PUBLIC holonight_palette Qt6::Core Qt6::Gui)
 
 set_target_properties(holonight_config PROPERTIES
     CXX_STANDARD 23

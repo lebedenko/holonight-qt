@@ -8,6 +8,11 @@
 
 namespace Holonight {
 
+enum class ColorMode {
+  Dark,
+  Light,
+};
+
 struct ColorTokens {
   // Canonical surface roles
   QColor background;       // #10131f  Main window/background plane
@@ -97,24 +102,26 @@ struct ColorTokens {
   QColor ansiBrightWhite;
 
   // Deprecated compatibility aliases; new code should use canonical roles above.
-  QColor surfaceVariant;       // DEPRECATED: use surface
-  QColor surfaceContainer;     // DEPRECATED: use surfaceElevated
-  QColor onSurface;            // DEPRECATED: use textPrimary
-  QColor onSurfaceVariant;     // DEPRECATED: use textMuted
-  QColor onSurfaceDisabled;    // DEPRECATED: use textDisabled
-  QColor onSurfaceInverse;     // DEPRECATED: use textInverse
-  QColor secondary;            // DEPRECATED: use surfaceRaised
-  QColor onSecondary;          // DEPRECATED: use textPrimary
-  QColor outline;              // DEPRECATED: use semantic border tokens
-  QColor outlineVariant;       // DEPRECATED: use semantic border tokens
-  QColor hover;                // DEPRECATED: use hoverOverlay
-  QColor pressed;              // DEPRECATED: use pressedOverlay
-  QColor textSubtle;           // DEPRECATED: use textSecondary
+  QColor surfaceVariant;     // DEPRECATED: use surface
+  QColor surfaceContainer;   // DEPRECATED: use surfaceElevated
+  QColor onSurface;          // DEPRECATED: use textPrimary
+  QColor onSurfaceVariant;   // DEPRECATED: use textMuted
+  QColor onSurfaceDisabled;  // DEPRECATED: use textDisabled
+  QColor onSurfaceInverse;   // DEPRECATED: use textInverse
+  QColor secondary;          // DEPRECATED: use surfaceRaised
+  QColor onSecondary;        // DEPRECATED: use textPrimary
+  QColor outline;            // DEPRECATED: use semantic border tokens
+  QColor outlineVariant;     // DEPRECATED: use semantic border tokens
+  QColor hover;              // DEPRECATED: use hoverOverlay
+  QColor pressed;            // DEPRECATED: use pressedOverlay
+  QColor textSubtle;         // DEPRECATED: use textSecondary
   QColor ansi0, ansi1, ansi2, ansi3, ansi4, ansi5, ansi6, ansi7;
   QColor ansi8, ansi9, ansi10, ansi11, ansi12, ansi13, ansi14, ansi15;
 };
 
 [[nodiscard]] ColorTokens darkTokens();
+[[nodiscard]] ColorTokens lightTokens();
+[[nodiscard]] ColorTokens tokensForMode(ColorMode mode);
 [[nodiscard]] QPalette buildPalette(const ColorTokens& tokens);
 
 }  // namespace Holonight

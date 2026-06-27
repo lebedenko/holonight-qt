@@ -21,7 +21,7 @@ static double contrastRatio(const QColor& fgColor, const QColor& bgColor) {
 
 class ContrastTest : public ::testing::Test {
  protected:
-  Holonight::ColorTokens tok_ = Holonight::ColorTokens{Holonight::darkTokens()};
+  Holonight::ColorTokens tok_ = Holonight::darkTokens();
 };
 
 // ── Text contrast: WCAG 1.4.3 requires ≥4.5:1 for normal text ──────────────
@@ -169,6 +169,18 @@ TEST_F(ContrastTest, OnSurfaceVsNewSurfaceVariant) {
 TEST_F(ContrastTest, OnSurfaceVsNewSurfaceContainer) {
   EXPECT_GE(contrastRatio(tok_.textPrimary, tok_.surfaceElevated), 4.5)
       << "textPrimary on surfaceElevated (#1a1b26) fails WCAG AA";
+}
+
+TEST(LightContrast, CoreTextAndSelectionPairsMeetContrast) {
+  const Holonight::ColorTokens tok = Holonight::lightTokens();
+  EXPECT_GE(contrastRatio(tok.textPrimary, tok.background), 4.5) << "textPrimary on light background fails WCAG AA";
+  EXPECT_GE(contrastRatio(tok.textPrimary, tok.surface), 4.5) << "textPrimary on light surface fails WCAG AA";
+  EXPECT_GE(contrastRatio(tok.textPrimary, tok.surfaceElevated), 4.5)
+      << "textPrimary on light elevated surface fails WCAG AA";
+  EXPECT_GE(contrastRatio(tok.textSecondary, tok.background), 4.5) << "textSecondary on light background fails WCAG AA";
+  EXPECT_GE(contrastRatio(tok.onPrimary, tok.primary), 4.5) << "onPrimary on light primary fails WCAG AA";
+  EXPECT_GE(contrastRatio(tok.borderActive, tok.background), 3.0)
+      << "borderActive on light background fails WCAG 1.4.11";
 }
 
 // ── Intentionally untested pairs (WCAG exemptions) ──────────────────────────

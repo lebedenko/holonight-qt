@@ -4,6 +4,7 @@
 #include "../style/holonightstyle.h"
 #include "holonight/palette.h"
 
+#include <QByteArray>
 #include <QDockWidget>
 #include <QListView>
 #include <QSplitter>
@@ -11,6 +12,32 @@
 #include <QTextEdit>
 
 #include <gtest/gtest.h>
+
+namespace {
+
+class EnvGuard {
+ public:
+  explicit EnvGuard(const char* name) : name_{name}, had_value_{qEnvironmentVariableIsSet(name)} {
+    if (had_value_) {
+      old_value_ = qgetenv(name);
+    }
+  }
+
+  ~EnvGuard() {
+    if (had_value_) {
+      qputenv(name_, old_value_);
+    } else {
+      qunsetenv(name_);
+    }
+  }
+
+ private:
+  const char* name_;
+  bool had_value_;
+  QByteArray old_value_;
+};
+
+}  // namespace
 
 TEST(StyleSmoke, InstantiatesWithoutCrash) {
   HoloniightStyle style;
@@ -22,6 +49,17 @@ TEST(StyleSmoke, StandardPaletteNonDefault) {
   const QPalette pal = style.standardPalette();
   const QPalette defaultPal;
   EXPECT_NE(pal.color(QPalette::Active, QPalette::Window), defaultPal.color(QPalette::Active, QPalette::Window));
+}
+
+TEST(StyleSmoke, StandardPaletteUsesLightAppearanceMode) {
+  EnvGuard guard{"HOLONIGHT_APPEARANCE_MODE"};
+  qputenv("HOLONIGHT_APPEARANCE_MODE", "light");
+
+  HoloniightStyle style;
+  const QPalette pal = style.standardPalette();
+  const Holonight::ColorTokens tok = Holonight::lightTokens();
+  EXPECT_EQ(pal.color(QPalette::Active, QPalette::Window), tok.background);
+  EXPECT_EQ(pal.color(QPalette::Active, QPalette::Highlight), tok.primary);
 }
 
 TEST(StyleSmoke, ScrollBarExtentIsEight) {
@@ -192,4 +230,3 @@ TEST(StyleSmoke, MenuPanelWidthIsOne) {
   HoloniightStyle style;
   EXPECT_EQ(style.pixelMetric(QStyle::PM_MenuPanelWidth), 1);
 }
-

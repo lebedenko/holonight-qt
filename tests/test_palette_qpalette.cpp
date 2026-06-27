@@ -5,13 +5,19 @@
 
 #include <gtest/gtest.h>
 
-class PaletteTest : public ::testing::Test {
+class PaletteTest : public ::testing::TestWithParam<Holonight::ColorMode> {
  protected:
-  QPalette palette_ = QPalette{Holonight::buildPalette(Holonight::darkTokens())};
+  void SetUp() override {
+    tok_ = Holonight::tokensForMode(GetParam());
+    palette_ = QPalette{Holonight::buildPalette(tok_)};
+  }
+
+  Holonight::ColorTokens tok_;
+  QPalette palette_;
   QPalette defaultPalette_;
 };
 
-TEST_F(PaletteTest, ActiveGroupPopulated) {
+TEST_P(PaletteTest, ActiveGroupPopulated) {
   const QList<QPalette::ColorRole> roles = {
       QPalette::Window,     QPalette::WindowText,  QPalette::Base,        QPalette::Text,
       QPalette::Button,     QPalette::ButtonText,  QPalette::Highlight,   QPalette::HighlightedText,
@@ -20,12 +26,17 @@ TEST_F(PaletteTest, ActiveGroupPopulated) {
   };
 
   for (const auto role : roles) {
+    if (GetParam() == Holonight::ColorMode::Light) {
+      EXPECT_TRUE(palette_.color(QPalette::Active, role).isValid())
+          << "Role " << static_cast<int>(role) << " not valid in Active group";
+      continue;
+    }
     EXPECT_NE(palette_.color(QPalette::Active, role), defaultPalette_.color(QPalette::Active, role))
         << "Role " << static_cast<int>(role) << " not set in Active group";
   }
 }
 
-TEST_F(PaletteTest, InactiveGroupMatchesActive) {
+TEST_P(PaletteTest, InactiveGroupMatchesActive) {
   const QList<QPalette::ColorRole> roles = {
       QPalette::Window, QPalette::WindowText, QPalette::Base, QPalette::Text,
       QPalette::Button, QPalette::Highlight,  QPalette::Mid,  QPalette::Shadow,
@@ -37,7 +48,7 @@ TEST_F(PaletteTest, InactiveGroupMatchesActive) {
   }
 }
 
-TEST_F(PaletteTest, DisabledGroupDimmed) {
+TEST_P(PaletteTest, DisabledGroupDimmed) {
   const QList<QPalette::ColorRole> dimmedRoles = {
       QPalette::WindowText,
       QPalette::Text,
@@ -53,7 +64,7 @@ TEST_F(PaletteTest, DisabledGroupDimmed) {
   }
 }
 
-TEST_F(PaletteTest, DisabledFillRolesUnchanged) {
+TEST_P(PaletteTest, DisabledFillRolesUnchanged) {
   const QList<QPalette::ColorRole> fillRoles = {
       QPalette::Window,
       QPalette::Base,
@@ -66,14 +77,14 @@ TEST_F(PaletteTest, DisabledFillRolesUnchanged) {
   }
 }
 
-TEST_F(PaletteTest, HighlightIsHolonightPrimary) {
-  const Holonight::ColorTokens tok = Holonight::darkTokens();
+TEST_P(PaletteTest, HighlightIsHolonightPrimary) {
+  const Holonight::ColorTokens& tok = tok_;
   EXPECT_EQ(palette_.color(QPalette::Active, QPalette::Highlight), tok.primary);
   EXPECT_EQ(palette_.color(QPalette::Active, QPalette::HighlightedText), tok.onPrimary);
 }
 
-TEST_F(PaletteTest, BorderRolesAreBorderPassive) {
-  const Holonight::ColorTokens tok = Holonight::darkTokens();
+TEST_P(PaletteTest, BorderRolesAreBorderPassive) {
+  const Holonight::ColorTokens& tok = tok_;
   EXPECT_EQ(palette_.color(QPalette::Active, QPalette::Mid), tok.borderPassive)
       << "Mid should be borderPassive (#565f89), not cyan outline";
   EXPECT_EQ(palette_.color(QPalette::Active, QPalette::Dark), tok.borderPassive)
@@ -88,8 +99,8 @@ TEST_F(PaletteTest, BorderRolesAreBorderPassive) {
   EXPECT_EQ(palette_.color(QPalette::Disabled, QPalette::Shadow), tok.borderPassive);
 }
 
-TEST_F(PaletteTest, CanonicalSurfaceRolesAreMapped) {
-  const Holonight::ColorTokens tok = Holonight::darkTokens();
+TEST_P(PaletteTest, CanonicalSurfaceRolesAreMapped) {
+  const Holonight::ColorTokens& tok = tok_;
   EXPECT_EQ(palette_.color(QPalette::Active, QPalette::Window), tok.background);
   EXPECT_EQ(palette_.color(QPalette::Active, QPalette::Base), tok.surface);
   EXPECT_EQ(palette_.color(QPalette::Active, QPalette::AlternateBase), tok.surfaceElevated);
@@ -99,8 +110,8 @@ TEST_F(PaletteTest, CanonicalSurfaceRolesAreMapped) {
   EXPECT_EQ(palette_.color(QPalette::Disabled, QPalette::Base), tok.surface);
 }
 
-TEST_F(PaletteTest, CanonicalTextRolesAreMapped) {
-  const Holonight::ColorTokens tok = Holonight::darkTokens();
+TEST_P(PaletteTest, CanonicalTextRolesAreMapped) {
+  const Holonight::ColorTokens& tok = tok_;
   EXPECT_EQ(palette_.color(QPalette::Active, QPalette::WindowText), tok.textPrimary);
   EXPECT_EQ(palette_.color(QPalette::Active, QPalette::Text), tok.textPrimary);
   EXPECT_EQ(palette_.color(QPalette::Active, QPalette::ButtonText), tok.textPrimary);
@@ -110,8 +121,11 @@ TEST_F(PaletteTest, CanonicalTextRolesAreMapped) {
   EXPECT_EQ(palette_.color(QPalette::Disabled, QPalette::PlaceholderText), tok.textDisabled);
 }
 
-TEST_F(PaletteTest, LinkAndVisitedLinkUseCanonicalTokens) {
-  const Holonight::ColorTokens tok = Holonight::darkTokens();
+TEST_P(PaletteTest, LinkAndVisitedLinkUseCanonicalTokens) {
+  const Holonight::ColorTokens& tok = tok_;
   EXPECT_EQ(palette_.color(QPalette::Active, QPalette::Link), tok.primary);
   EXPECT_EQ(palette_.color(QPalette::Active, QPalette::LinkVisited), tok.error);
 }
+
+INSTANTIATE_TEST_SUITE_P(AllModes, PaletteTest,
+                         ::testing::Values(Holonight::ColorMode::Dark, Holonight::ColorMode::Light));

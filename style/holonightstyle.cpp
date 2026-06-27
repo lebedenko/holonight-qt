@@ -206,7 +206,7 @@ bool isFlatButtonOption(const QStyleOption* option) {
   return buttonOpt != nullptr && (buttonOpt->features & QStyleOptionButton::Flat) != 0U;
 }
 
-bool drawFlatButtonPanelIfNeeded(const QStyleOption* option, QPainter* painter) {
+bool drawFlatButtonPanelIfNeeded(const QStyleOption* option, QPainter* painter, const Holonight::ColorTokens& tok) {
   if (!isFlatButtonOption(option)) {
     return false;
   }
@@ -218,7 +218,6 @@ bool drawFlatButtonPanelIfNeeded(const QStyleOption* option, QPainter* painter) 
     return true;
   }
 
-  const auto tok = Holonight::darkTokens();
   painter->save();
   painter->setRenderHint(QPainter::Antialiasing);
   painter->setPen(Qt::NoPen);
@@ -229,9 +228,12 @@ bool drawFlatButtonPanelIfNeeded(const QStyleOption* option, QPainter* painter) 
 }
 }  // namespace
 
-HoloniightStyle::HoloniightStyle() : QProxyStyle(QStringLiteral("fusion")), config_{Holonight::ThemeConfig::load()} {}
+HoloniightStyle::HoloniightStyle()
+    : QProxyStyle(QStringLiteral("fusion")),
+      config_{Holonight::ThemeConfig::load()},
+      tokens_{Holonight::tokensForMode(config_.resolvedColorMode())} {}
 
-QPalette HoloniightStyle::standardPalette() const { return Holonight::buildPalette(Holonight::darkTokens()); }
+QPalette HoloniightStyle::standardPalette() const { return Holonight::buildPalette(tokens_); }
 
 void HoloniightStyle::polish(QPalette& palette) {
   palette = standardPalette();
@@ -520,8 +522,8 @@ void HoloniightStyle::drawControl(ControlElement element, const QStyleOption* op
   QProxyStyle::drawControl(element, option, painter, widget);
 }
 
-void HoloniightStyle::drawPushButtonBevelImpl(const QStyleOption* option, QPainter* painter) {
-  if (drawFlatButtonPanelIfNeeded(option, painter)) {
+void HoloniightStyle::drawPushButtonBevelImpl(const QStyleOption* option, QPainter* painter) const {
+  if (drawFlatButtonPanelIfNeeded(option, painter, tokens())) {
     return;
   }
 
@@ -664,10 +666,7 @@ void HoloniightStyle::drawHeaderImpl(const QStyleOption* option, QPainter* paint
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
 
-const Holonight::ColorTokens& HoloniightStyle::tokens() {
-  static const Holonight::ColorTokens kTokens = Holonight::darkTokens();
-  return kTokens;
-}
+const Holonight::ColorTokens& HoloniightStyle::tokens() const { return tokens_; }
 
 void HoloniightStyle::paintArrow(QPainter* painter, const QRect& rect, ArrowDirection direction, const QColor& color) {
   painter->save();
@@ -696,8 +695,8 @@ void HoloniightStyle::paintArrow(QPainter* painter, const QRect& rect, ArrowDire
 
 // ── drawPrimitive helpers ─────────────────────────────────────────────────────
 
-void HoloniightStyle::drawPanelButtonImpl(const QStyleOption* option, QPainter* painter) {
-  if (drawFlatButtonPanelIfNeeded(option, painter)) {
+void HoloniightStyle::drawPanelButtonImpl(const QStyleOption* option, QPainter* painter) const {
+  if (drawFlatButtonPanelIfNeeded(option, painter, tokens())) {
     return;
   }
 
@@ -721,7 +720,7 @@ void HoloniightStyle::drawPanelButtonImpl(const QStyleOption* option, QPainter* 
   painter->restore();
 }
 
-void HoloniightStyle::drawPanelItemViewImpl(const QStyleOption* option, QPainter* painter) {
+void HoloniightStyle::drawPanelItemViewImpl(const QStyleOption* option, QPainter* painter) const {
   const auto* opt = qstyleoption_cast<const QStyleOptionViewItem*>(option);
   if (opt == nullptr) {
     return;

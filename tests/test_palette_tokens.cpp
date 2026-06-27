@@ -197,3 +197,98 @@ TEST(DarkTokens, SurfaceLuminanceOrdering) {
   EXPECT_LT(lum(tok.surface), lum(tok.surfaceElevated)) << "surface must be darker than surfaceElevated";
   EXPECT_LT(lum(tok.surfaceElevated), lum(tok.surfaceRaised)) << "surfaceElevated must be darker than surfaceRaised";
 }
+
+TEST(LightTokens, AllColorsValid) {
+  const Holonight::ColorTokens tok = Holonight::lightTokens();
+  EXPECT_TRUE(tok.background.isValid());
+  EXPECT_TRUE(tok.surface.isValid());
+  EXPECT_TRUE(tok.surfaceElevated.isValid());
+  EXPECT_TRUE(tok.surfaceRaised.isValid());
+  EXPECT_TRUE(tok.surfaceHover.isValid());
+  EXPECT_TRUE(tok.surfaceInverse.isValid());
+  EXPECT_TRUE(tok.textPrimary.isValid());
+  EXPECT_TRUE(tok.textSecondary.isValid());
+  EXPECT_TRUE(tok.textMuted.isValid());
+  EXPECT_TRUE(tok.textDisabled.isValid());
+  EXPECT_TRUE(tok.textInverse.isValid());
+  EXPECT_TRUE(tok.primary.isValid());
+  EXPECT_TRUE(tok.primaryHover.isValid());
+  EXPECT_TRUE(tok.primaryPressed.isValid());
+  EXPECT_TRUE(tok.onPrimary.isValid());
+  EXPECT_TRUE(tok.borderSubtle.isValid());
+  EXPECT_TRUE(tok.borderPassive.isValid());
+  EXPECT_TRUE(tok.borderStrong.isValid());
+  EXPECT_TRUE(tok.borderHover.isValid());
+  EXPECT_TRUE(tok.borderFocus.isValid());
+  EXPECT_TRUE(tok.borderActive.isValid());
+  EXPECT_TRUE(tok.borderUrgent.isValid());
+  EXPECT_TRUE(tok.hoverOverlay.isValid());
+  EXPECT_TRUE(tok.pressedOverlay.isValid());
+  EXPECT_TRUE(tok.disabledOverlay.isValid());
+  EXPECT_TRUE(tok.error.isValid());
+  EXPECT_TRUE(tok.warning.isValid());
+  EXPECT_TRUE(tok.success.isValid());
+  EXPECT_TRUE(tok.onError.isValid());
+  EXPECT_TRUE(tok.accentCyan.isValid());
+  EXPECT_TRUE(tok.accentBlue.isValid());
+  EXPECT_TRUE(tok.accentViolet.isValid());
+  EXPECT_TRUE(tok.accentYellow.isValid());
+  EXPECT_TRUE(tok.workspaceOccupied.isValid());
+  EXPECT_TRUE(tok.workspaceActive.isValid());
+  EXPECT_TRUE(tok.ansiBlack.isValid());
+  EXPECT_TRUE(tok.ansiBrightWhite.isValid());
+}
+
+TEST(LightTokens, DocumentedColorValues) {
+  const Holonight::ColorTokens tok = Holonight::lightTokens();
+  EXPECT_EQ(tok.background.rgb(), QColor(0xf4, 0xf7, 0xfb).rgb());
+  EXPECT_EQ(tok.surface.rgb(), QColor(0xed, 0xf2, 0xf8).rgb());
+  EXPECT_EQ(tok.surfaceElevated.rgb(), QColor(0xff, 0xff, 0xff).rgb());
+  EXPECT_EQ(tok.surfaceRaised.rgb(), QColor(0xe6, 0xed, 0xf6).rgb());
+  EXPECT_EQ(tok.surfaceHover.rgb(), QColor(0xdb, 0xe7, 0xf4).rgb());
+  EXPECT_EQ(tok.textPrimary.rgb(), QColor(0x1f, 0x23, 0x35).rgb());
+  EXPECT_EQ(tok.primary.rgb(), QColor(0x2f, 0x6f, 0xe4).rgb());
+  EXPECT_EQ(tok.primaryHover.rgb(), QColor(0x00, 0x8f, 0xc7).rgb());
+  EXPECT_EQ(tok.borderFocus.rgb(), QColor(0x00, 0xa6, 0xd6).rgb());
+  EXPECT_EQ(tok.error.rgb(), QColor(0xd9, 0x3f, 0x5c).rgb());
+  EXPECT_EQ(tok.warning.rgb(), QColor(0xc4, 0x7a, 0x1c).rgb());
+  EXPECT_EQ(tok.success.rgb(), QColor(0x4d, 0x8f, 0x31).rgb());
+  EXPECT_EQ(tok.ansiBrightWhite.rgb(), QColor(0x10, 0x13, 0x1f).rgb());
+}
+
+TEST(LightTokens, DeprecatedAliasesMatchDocumentedCanonicalRoles) {
+  const Holonight::ColorTokens tok = Holonight::lightTokens();
+  EXPECT_EQ(tok.surfaceVariant, tok.surface);
+  EXPECT_EQ(tok.surfaceContainer, tok.surfaceElevated);
+  EXPECT_EQ(tok.onSurface, tok.textPrimary);
+  EXPECT_EQ(tok.onSurfaceVariant, tok.textMuted);
+  EXPECT_EQ(tok.onSurfaceDisabled, tok.textDisabled);
+  EXPECT_EQ(tok.onSurfaceInverse, tok.textInverse);
+  EXPECT_EQ(tok.secondary, tok.surfaceRaised);
+  EXPECT_EQ(tok.onSecondary, tok.textPrimary);
+  EXPECT_EQ(tok.outline, tok.borderPassive);
+  EXPECT_EQ(tok.outlineVariant, tok.borderSubtle);
+  EXPECT_EQ(tok.hover, tok.hoverOverlay);
+  EXPECT_EQ(tok.pressed, tok.pressedOverlay);
+  EXPECT_EQ(tok.textSubtle, tok.textSecondary);
+  EXPECT_EQ(tok.ansi0, tok.ansiBlack);
+  EXPECT_EQ(tok.ansi15, tok.ansiBrightWhite);
+}
+
+TEST(LightTokens, OverlayAlphaValuesMatchDarkTokenExpectations) {
+  const Holonight::ColorTokens tok = Holonight::lightTokens();
+  EXPECT_EQ(tok.borderHover.alpha(), 0x66);
+  EXPECT_EQ(tok.glowCyanSoft.alpha(), 0x33);
+  EXPECT_EQ(tok.glowBlueSoft.alpha(), 0x33);
+  EXPECT_EQ(tok.glowVioletSoft.alpha(), 0x33);
+  EXPECT_EQ(tok.scrim.alpha(), 0x99);
+  EXPECT_EQ(tok.glassTint.alpha(), 0xcc);
+  EXPECT_EQ(tok.hoverOverlay.alpha(), 0x1a);
+  EXPECT_EQ(tok.pressedOverlay.alpha(), 0x26);
+  EXPECT_EQ(tok.disabledOverlay.alpha(), 0x80);
+}
+
+TEST(ColorMode, TokensForModeSelectsRequestedPalette) {
+  EXPECT_EQ(Holonight::tokensForMode(Holonight::ColorMode::Dark).background, Holonight::darkTokens().background);
+  EXPECT_EQ(Holonight::tokensForMode(Holonight::ColorMode::Light).background, Holonight::lightTokens().background);
+}

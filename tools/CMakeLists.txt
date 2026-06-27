@@ -11,4 +11,8 @@ if(BUILD_TESTS)
         NAME generated_holonight_colors_current
         COMMAND generate_holonight_colors --check ${CMAKE_SOURCE_DIR}/data/holonight.colors
     )
+    add_test(
+        NAME generated_holonight_day_colors_current
+        COMMAND generate_holonight_colors --mode light --check ${CMAKE_SOURCE_DIR}/data/holonight-day.colors
+    )
 endif()

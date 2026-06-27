@@ -54,16 +54,16 @@ class HoloniightStyle : public QProxyStyle {
 
   static void paintArrow(QPainter* painter, const QRect& rect, ArrowDirection direction, const QColor& color);
 
-  [[nodiscard]] static const Holonight::ColorTokens& tokens();
+  [[nodiscard]] const Holonight::ColorTokens& tokens() const;
 
-  static void drawPushButtonBevelImpl(const QStyleOption* option, QPainter* painter);
+  void drawPushButtonBevelImpl(const QStyleOption* option, QPainter* painter) const;
   void drawItemViewItemImpl(const QStyleOption* option, QPainter* painter, const QWidget* widget) const;
   void drawCheckBoxImpl(const QStyleOption* option, QPainter* painter, const QWidget* widget) const;
   void drawRadioButtonImpl(const QStyleOption* option, QPainter* painter, const QWidget* widget) const;
   void drawTabBarTabImpl(const QStyleOption* option, QPainter* painter, const QWidget* widget) const;
   void drawHeaderImpl(const QStyleOption* option, QPainter* painter, const QWidget* widget) const;
-  static void drawPanelButtonImpl(const QStyleOption* option, QPainter* painter);
-  static void drawPanelItemViewImpl(const QStyleOption* option, QPainter* painter);
+  void drawPanelButtonImpl(const QStyleOption* option, QPainter* painter) const;
+  void drawPanelItemViewImpl(const QStyleOption* option, QPainter* painter) const;
   void drawScrollBarImpl(const QStyleOptionComplex* option, QPainter* painter, const QWidget* widget) const;
   void drawSliderImpl(const QStyleOption* option, QPainter* painter, const QWidget* widget) const;
   void drawSpinBoxImpl(const QStyleOption* option, QPainter* painter, const QWidget* widget) const;
@@ -71,4 +71,5 @@ class HoloniightStyle : public QProxyStyle {
   void drawGroupBoxImpl(const QStyleOption* option, QPainter* painter, const QWidget* widget) const;
 
   Holonight::ThemeConfig config_;
+  Holonight::ColorTokens tokens_;
 };

@@ -11,6 +11,8 @@
 
 HoloniightTheme::HoloniightTheme()
     : config_{Holonight::ThemeConfig::load()},
+      color_mode_{config_.resolvedColorMode()},
+      palette_{Holonight::buildPalette(Holonight::tokensForMode(color_mode_))},
       font_system_{config_.ui_font, config_.bodySize()},
       font_title_{config_.ui_font, config_.titleSize()},
       font_fixed_{config_.fixed_font, config_.bodySize()},
@@ -20,10 +22,7 @@ HoloniightTheme::HoloniightTheme()
   QIcon::setFallbackThemeName(config_.fallback_icon_theme);
 }
 
-const QPalette* HoloniightTheme::palette(Palette /*type*/) const {
-  static const QPalette kPalette = Holonight::buildPalette(Holonight::darkTokens());
-  return &kPalette;
-}
+const QPalette* HoloniightTheme::palette(Palette /*type*/) const { return &palette_; }
 
 QVariant HoloniightTheme::themeHint(ThemeHint hint) const {
   switch (hint) {
@@ -50,7 +49,9 @@ QVariant HoloniightTheme::themeHint(ThemeHint hint) const {
   }
 }
 
-Qt::ColorScheme HoloniightTheme::colorScheme() const { return Qt::ColorScheme::Dark; }
+Qt::ColorScheme HoloniightTheme::colorScheme() const {
+  return color_mode_ == Holonight::ColorMode::Light ? Qt::ColorScheme::Light : Qt::ColorScheme::Dark;
+}
 
 const QFont* HoloniightTheme::font(Font type) const {
   switch (type) {
