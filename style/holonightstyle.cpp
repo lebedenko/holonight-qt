@@ -4,44 +4,230 @@
 #include "holonightstyle.h"
 
 #include <QAbstractItemView>
+#include <QDockWidget>
 #include <QFrame>
 #include <QPainter>
+#include <QPlainTextEdit>
 #include <QSplitter>
 #include <QStatusBar>
 #include <QStyleOption>
 #include <QStyleOptionComplex>
 #include <QStyleOptionHeader>
+#include <QTextEdit>
+#include <QToolButton>
 #include <QWidget>
 
 #include <algorithm>
 #include <cmath>
+#include <cstdint>
 
 namespace {
 constexpr qreal kRadiusControl = 6.0;  // unified control corner radius
 constexpr qreal kRadiusTight = 2.0;    // tight radius for item-view selection/focus rings
 constexpr qreal kRadiusGroove = 3.0;   // progress-bar groove (not a control shape)
 
-bool isPlacesWidget(const QWidget* widget) {
+enum class SurfaceRole : uint8_t {
+  Window,
+  View,
+  SidePanel,
+  Container,
+  Popup,
+};
+
+bool nameContains(const QString& name, QLatin1StringView needle) { return name.contains(needle, Qt::CaseInsensitive); }
+
+bool isNamedSidePanel(const QWidget* widget) {
   if (widget == nullptr) {
     return false;
   }
   const QString className = QString::fromLatin1(widget->metaObject()->className());
   const QString objectName = widget->objectName();
-  return className.contains(QLatin1String("Places"), Qt::CaseInsensitive) ||
-         objectName.contains(QLatin1String("places"), Qt::CaseInsensitive);
+  return nameContains(className, QLatin1StringView{"PlacesPanel"}) ||
+         nameContains(className, QLatin1StringView{"InformationPanel"}) ||
+         nameContains(objectName, QLatin1StringView{"placesPanel"}) ||
+         nameContains(objectName, QLatin1StringView{"informationPanel"}) ||
+         nameContains(objectName, QLatin1StringView{"placesDock"}) ||
+         nameContains(objectName, QLatin1StringView{"infoDock"});
 }
 
-QColor getWidgetBackground(const QWidget* widget, const Holonight::ColorTokens& tok) {
+bool isNamedStatusPanel(const QWidget* widget) {
   if (widget == nullptr) {
-    return tok.surface;
+    return false;
   }
-  if (widget->property("isPlacesContainer").toBool()) {
-    return tok.surfaceVariant;
+  const QString className = QString::fromLatin1(widget->metaObject()->className());
+  const QString objectName = widget->objectName();
+  return nameContains(className, QLatin1StringView{"StatusBar"}) ||
+         nameContains(objectName, QLatin1StringView{"statusBar"}) ||
+         nameContains(objectName, QLatin1StringView{"statusLabel"});
+}
+
+SurfaceRole classifyWidgetSurface(const QWidget* widget) {
+  if (widget == nullptr) {
+    return SurfaceRole::Window;
   }
-  if (widget->inherits("QAbstractItemView")) {
-    return tok.surface;
+  if (isNamedSidePanel(widget)) {
+    return SurfaceRole::SidePanel;
   }
-  return widget->palette().color(widget->backgroundRole());
+  if (qobject_cast<const QDockWidget*>(widget) != nullptr) {
+    return SurfaceRole::SidePanel;
+  }
+  if (qobject_cast<const QAbstractItemView*>(widget) != nullptr) {
+    return SurfaceRole::View;
+  }
+  if (qobject_cast<const QStatusBar*>(widget) != nullptr || isNamedStatusPanel(widget)) {
+    return SurfaceRole::Container;
+  }
+  return SurfaceRole::Window;
+}
+
+QColor surfaceColor(SurfaceRole role, const Holonight::ColorTokens& tok) {
+  switch (role) {
+    case SurfaceRole::View:
+      return tok.surface;
+    case SurfaceRole::SidePanel:
+    case SurfaceRole::Container:
+      return tok.surfaceVariant;
+    case SurfaceRole::Popup:
+      return tok.secondary;
+    case SurfaceRole::Window:
+      return tok.surface;
+  }
+  return tok.surface;
+}
+
+QColor widgetSurfaceColor(const QWidget* widget, const Holonight::ColorTokens& tok) {
+  return surfaceColor(classifyWidgetSurface(widget), tok);
+}
+
+bool parentUsesSidePanelSurface(const QWidget* widget, const Holonight::ColorTokens& tok) {
+  for (const QWidget* parent = widget != nullptr ? widget->parentWidget() : nullptr; parent != nullptr;
+       parent = parent->parentWidget()) {
+    if (parent->palette().color(QPalette::Window) == tok.surfaceVariant) {
+      return true;
+    }
+  }
+  return false;
+}
+
+QRect centeredSeparatorRect(const QRect& rect, Qt::Orientation orientation) {
+  QRect lineRect = rect;
+  if (orientation == Qt::Horizontal) {
+    lineRect.setTop(rect.center().y());
+    lineRect.setHeight(1);
+  } else {
+    lineRect.setLeft(rect.center().x());
+    lineRect.setWidth(1);
+  }
+  return lineRect;
+}
+
+void drawSeparator(QPainter* painter, const QRect& rect, Qt::Orientation orientation, const QColor& color) {
+  painter->fillRect(centeredSeparatorRect(rect, orientation), color);
+}
+
+bool shouldSuppressScrollAreaFrame(const QWidget* widget) {
+  if (widget == nullptr) {
+    return false;
+  }
+  if (qobject_cast<const QAbstractItemView*>(widget) != nullptr) {
+    return true;
+  }
+
+  const QString className = QString::fromLatin1(widget->metaObject()->className());
+  return nameContains(className, QLatin1StringView{"KItemListContainer"});
+}
+
+bool isTextEditLikeWidget(const QWidget* widget) {
+  return qobject_cast<const QTextEdit*>(widget) != nullptr || qobject_cast<const QPlainTextEdit*>(widget) != nullptr;
+}
+
+QRectF strokedRectInside(const QRect& rect, qreal penWidth) {
+  const qreal inset = penWidth / 2.0;
+  return QRectF{rect}.adjusted(inset, inset, -inset, -inset);
+}
+
+void drawPlainFrame(QPainter* painter, const QRect& rect, const QColor& color) {
+  painter->save();
+  painter->setRenderHint(QPainter::Antialiasing, false);
+  painter->setPen(QPen{color, 1.0});
+  painter->setBrush(Qt::NoBrush);
+  painter->drawRect(strokedRectInside(rect, 1.0));
+  painter->restore();
+}
+
+void drawInputFrame(QPainter* painter, const QRect& rect, const QColor& color, qreal penWidth) {
+  painter->save();
+  painter->setRenderHint(QPainter::Antialiasing);
+  painter->setPen(QPen{color, penWidth});
+  painter->setBrush(Qt::NoBrush);
+  painter->drawRoundedRect(strokedRectInside(rect, penWidth), kRadiusControl, kRadiusControl);
+  painter->restore();
+}
+
+void drawInputPanel(QPainter* painter, const QRect& rect, const QColor& fill, const QColor& border, qreal penWidth) {
+  painter->save();
+  painter->setRenderHint(QPainter::Antialiasing);
+  painter->setPen(Qt::NoPen);
+  painter->setBrush(fill);
+  painter->drawRoundedRect(strokedRectInside(rect, penWidth), kRadiusControl, kRadiusControl);
+  painter->restore();
+  drawInputFrame(painter, rect, border, penWidth);
+}
+
+void makeSplitterHandleTransparent(QSplitterHandle* handle) {
+  if (handle == nullptr) {
+    return;
+  }
+  handle->setAutoFillBackground(false);
+  handle->setAttribute(Qt::WA_NoSystemBackground, true);
+  handle->setAttribute(Qt::WA_OpaquePaintEvent, false);
+}
+
+bool isFlatAutoRaiseToolButton(const QStyleOptionToolButton* option, const QWidget* widget) {
+  if ((option->features & QStyleOptionToolButton::MenuButtonPopup) != 0U) {
+    return false;
+  }
+
+  bool autoRaise = (option->state & QStyle::State_AutoRaise) != 0U;
+  if (const auto* toolButton = qobject_cast<const QToolButton*>(widget); toolButton != nullptr) {
+    autoRaise = autoRaise || toolButton->autoRaise();
+  }
+  return autoRaise;
+}
+
+bool isAutoRaiseToolButton(const QStyleOption* option, const QWidget* widget) {
+  bool autoRaise = (option->state & QStyle::State_AutoRaise) != 0U;
+  if (const auto* toolButton = qobject_cast<const QToolButton*>(widget); toolButton != nullptr) {
+    autoRaise = autoRaise || toolButton->autoRaise();
+  }
+  return autoRaise;
+}
+
+bool isFlatButtonOption(const QStyleOption* option) {
+  const auto* buttonOpt = qstyleoption_cast<const QStyleOptionButton*>(option);
+  return buttonOpt != nullptr && (buttonOpt->features & QStyleOptionButton::Flat) != 0U;
+}
+
+bool drawFlatButtonPanelIfNeeded(const QStyleOption* option, QPainter* painter) {
+  if (!isFlatButtonOption(option)) {
+    return false;
+  }
+
+  const bool hovered = (option->state & QStyle::State_MouseOver) != 0U;
+  const bool pressed = (option->state & QStyle::State_Sunken) != 0U;
+  const bool checked = (option->state & QStyle::State_On) != 0U;
+  if (!hovered && !pressed && !checked) {
+    return true;
+  }
+
+  const auto tok = Holonight::darkTokens();
+  painter->save();
+  painter->setRenderHint(QPainter::Antialiasing);
+  painter->setPen(Qt::NoPen);
+  painter->setBrush((pressed || checked) ? tok.surfaceVariant : tok.surfaceHover);
+  painter->drawRoundedRect(option->rect.adjusted(1, 1, -1, -1), kRadiusControl, kRadiusControl);
+  painter->restore();
+  return true;
 }
 }  // namespace
 
@@ -62,10 +248,17 @@ void HoloniightStyle::polish(QWidget* widget) {
 
   const auto tok = tokens();
   QPalette palette = widget->palette();
-  palette.setColor(QPalette::Window, tok.surface);
+  SurfaceRole surfaceRole = classifyWidgetSurface(widget);
+  QColor windowSurface = widgetSurfaceColor(widget, tok);
+  if (surfaceRole == SurfaceRole::Window &&
+      (palette.color(QPalette::Window) == tok.surfaceVariant || parentUsesSidePanelSurface(widget, tok))) {
+    surfaceRole = SurfaceRole::SidePanel;
+    windowSurface = surfaceColor(surfaceRole, tok);
+  }
+  palette.setColor(QPalette::Window, windowSurface);
   palette.setColor(QPalette::WindowText, tok.onSurface);
-  palette.setColor(QPalette::Base, tok.surfaceVariant);
-  palette.setColor(QPalette::AlternateBase, tok.surfaceVariant);
+  palette.setColor(QPalette::Base, surfaceRole == SurfaceRole::SidePanel ? tok.surface : windowSurface);
+  palette.setColor(QPalette::AlternateBase, palette.color(QPalette::Base));
   palette.setColor(QPalette::Text, tok.onSurface);
   palette.setColor(QPalette::Button, tok.surfaceVariant);
   palette.setColor(QPalette::ButtonText, tok.onSurface);
@@ -74,25 +267,46 @@ void HoloniightStyle::polish(QWidget* widget) {
   palette.setColor(QPalette::Mid, tok.borderPassive);
   palette.setColor(QPalette::Shadow, tok.borderPassive);
 
-  if (isPlacesWidget(widget)) {
-    widget->setProperty("isPlacesContainer", true);
-    palette.setColor(QPalette::Window, tok.surfaceVariant);
-    palette.setColor(QPalette::Base, tok.surfaceVariant);
-  }
-
-  if (auto* view = qobject_cast<QAbstractItemView*>(widget); view != nullptr) {
+  if (auto* splitter = qobject_cast<QSplitter*>(widget); splitter != nullptr) {
+    widget->setPalette(palette);
+    splitter->setHandleWidth(pixelMetric(PM_SplitterWidth, nullptr, splitter));
+    for (int i = 1; i < splitter->count(); ++i) {
+      makeSplitterHandleTransparent(splitter->handle(i));
+    }
+  } else if (auto* handle = qobject_cast<QSplitterHandle*>(widget); handle != nullptr) {
+    widget->setPalette(palette);
+    makeSplitterHandleTransparent(handle);
+  } else if (auto* view = qobject_cast<QAbstractItemView*>(widget); view != nullptr) {
+    palette.setColor(QPalette::Base, surfaceRole == SurfaceRole::SidePanel ? windowSurface : tok.surface);
+    palette.setColor(QPalette::AlternateBase, palette.color(QPalette::Base));
     view->setPalette(palette);
     view->viewport()->setPalette(palette);
     view->viewport()->setAutoFillBackground(true);
     view->viewport()->setBackgroundRole(QPalette::Base);
-  } else if (qobject_cast<QStatusBar*>(widget) != nullptr) {
-    palette.setColor(QPalette::Window, tok.surfaceContainer);
-    palette.setColor(QPalette::WindowText, tok.onSurface);
+  } else if (auto* textEdit = qobject_cast<QTextEdit*>(widget); textEdit != nullptr) {
+    palette.setColor(QPalette::Base, tok.surface);
+    palette.setColor(QPalette::AlternateBase, tok.surface);
+    textEdit->setPalette(palette);
+    textEdit->viewport()->setPalette(palette);
+    textEdit->viewport()->setAutoFillBackground(true);
+    textEdit->viewport()->setBackgroundRole(QPalette::Base);
+  } else if (auto* plainTextEdit = qobject_cast<QPlainTextEdit*>(widget); plainTextEdit != nullptr) {
+    palette.setColor(QPalette::Base, tok.surface);
+    palette.setColor(QPalette::AlternateBase, tok.surface);
+    plainTextEdit->setPalette(palette);
+    plainTextEdit->viewport()->setPalette(palette);
+    plainTextEdit->viewport()->setAutoFillBackground(true);
+    plainTextEdit->viewport()->setBackgroundRole(QPalette::Base);
+  } else if (surfaceRole == SurfaceRole::Container) {
     widget->setPalette(palette);
     widget->setAutoFillBackground(true);
     widget->setBackgroundRole(QPalette::Window);
   } else {
     widget->setPalette(palette);
+    if (surfaceRole == SurfaceRole::SidePanel) {
+      widget->setAutoFillBackground(true);
+      widget->setBackgroundRole(QPalette::Window);
+    }
   }
 }
 
@@ -101,6 +315,8 @@ int HoloniightStyle::pixelMetric(PixelMetric metric, const QStyleOption* option,
     case PM_DefaultFrameWidth:
       return 1;
     case PM_SplitterWidth:
+      return 1;
+    case PM_DockWidgetSeparatorExtent:
       return 1;
     case PM_ButtonMargin:
       return scaledMetric(6);
@@ -159,19 +375,8 @@ void HoloniightStyle::drawControl(ControlElement element, const QStyleOption* op
         if (frameShape == QFrame::HLine || frameShape == QFrame::VLine) {
           const auto tok = tokens();
           painter->save();
-          if (frameShape == QFrame::HLine) {
-            const int centerY = option->rect.center().y();
-            QRect lineRect = option->rect;
-            lineRect.setTop(centerY);
-            lineRect.setHeight(1);
-            painter->fillRect(lineRect, tok.borderPassive);
-          } else {
-            const int centerX = option->rect.center().x();
-            QRect lineRect = option->rect;
-            lineRect.setLeft(centerX);
-            lineRect.setWidth(1);
-            painter->fillRect(lineRect, tok.borderPassive);
-          }
+          const Qt::Orientation orientation = frameShape == QFrame::HLine ? Qt::Horizontal : Qt::Vertical;
+          drawSeparator(painter, option->rect, orientation, tok.borderPassive);
           painter->restore();
           return;
         }
@@ -292,52 +497,10 @@ void HoloniightStyle::drawControl(ControlElement element, const QStyleOption* op
       const auto tok = tokens();
       painter->save();
       painter->setRenderHint(QPainter::Antialiasing, false);
-
-      QColor leftColor = tok.surface;
-      QColor rightColor = tok.surface;
-
-      const auto* handle = qobject_cast<const QSplitterHandle*>(widget);
-      if (handle != nullptr) {
-        auto* splitter = handle->splitter();
-        if (splitter != nullptr) {
-          int idx = splitter->indexOf(const_cast<QSplitterHandle*>(handle));
-          if (idx > 0) {
-            leftColor = getWidgetBackground(splitter->widget(idx - 1), tok);
-            rightColor = getWidgetBackground(splitter->widget(idx), tok);
-          }
-        }
-      }
-
       if ((option->state & State_Horizontal) != 0U) {
-        const int centerX = option->rect.center().x();
-
-        QRect leftRect = option->rect;
-        leftRect.setRight(centerX - 1);
-        painter->fillRect(leftRect, leftColor);
-
-        QRect rightRect = option->rect;
-        rightRect.setLeft(centerX + 1);
-        painter->fillRect(rightRect, rightColor);
-
-        QRect lineRect = option->rect;
-        lineRect.setLeft(centerX);
-        lineRect.setWidth(1);
-        painter->fillRect(lineRect, tok.borderPassive);
+        drawSeparator(painter, option->rect, Qt::Vertical, tok.borderPassive);
       } else {
-        const int centerY = option->rect.center().y();
-
-        QRect topRect = option->rect;
-        topRect.setBottom(centerY - 1);
-        painter->fillRect(topRect, leftColor);
-
-        QRect bottomRect = option->rect;
-        bottomRect.setTop(centerY + 1);
-        painter->fillRect(bottomRect, rightColor);
-
-        QRect lineRect = option->rect;
-        lineRect.setTop(centerY);
-        lineRect.setHeight(1);
-        painter->fillRect(lineRect, tok.borderPassive);
+        drawSeparator(painter, option->rect, Qt::Horizontal, tok.borderPassive);
       }
       painter->restore();
       return;
@@ -354,6 +517,10 @@ void HoloniightStyle::drawControl(ControlElement element, const QStyleOption* op
 }
 
 void HoloniightStyle::drawPushButtonBevelImpl(const QStyleOption* option, QPainter* painter) {
+  if (drawFlatButtonPanelIfNeeded(option, painter)) {
+    return;
+  }
+
   const auto tok = tokens();
   painter->save();
   painter->setRenderHint(QPainter::Antialiasing);
@@ -523,6 +690,10 @@ void HoloniightStyle::paintArrow(QPainter* painter, const QRect& rect, int dir, 
 // ── drawPrimitive helpers ─────────────────────────────────────────────────────
 
 void HoloniightStyle::drawPanelButtonImpl(const QStyleOption* option, QPainter* painter) {
+  if (drawFlatButtonPanelIfNeeded(option, painter)) {
+    return;
+  }
+
   const auto tok = tokens();
   painter->save();
   painter->setRenderHint(QPainter::Antialiasing);
@@ -667,6 +838,32 @@ void HoloniightStyle::drawPrimitive(PrimitiveElement element, const QStyleOption
       drawPanelButtonImpl(option, painter);
       return;
 
+    case PE_PanelButtonTool: {
+      const auto* toolOpt = qstyleoption_cast<const QStyleOptionToolButton*>(option);
+      const bool flatAutoRaise =
+          toolOpt != nullptr ? isFlatAutoRaiseToolButton(toolOpt, widget) : isAutoRaiseToolButton(option, widget);
+      const bool hovered = (option->state & State_MouseOver) != 0U;
+      const bool pressed = (option->state & State_Sunken) != 0U;
+      const bool checked = (option->state & State_On) != 0U;
+
+      if (flatAutoRaise) {
+        if (!hovered && !pressed && !checked) {
+          return;
+        }
+
+        painter->save();
+        painter->setRenderHint(QPainter::Antialiasing);
+        painter->setPen(Qt::NoPen);
+        painter->setBrush((pressed || checked) ? tok.surfaceVariant : tok.surfaceHover);
+        painter->drawRoundedRect(option->rect.adjusted(1, 1, -1, -1), kRadiusControl, kRadiusControl);
+        painter->restore();
+        return;
+      }
+
+      drawPanelButtonImpl(option, painter);
+      return;
+    }
+
     case PE_FrameDefaultButton: {
       painter->save();
       painter->setRenderHint(QPainter::Antialiasing);
@@ -678,23 +875,30 @@ void HoloniightStyle::drawPrimitive(PrimitiveElement element, const QStyleOption
     }
 
     case PE_Frame: {
-      if (widget && widget->inherits("QAbstractScrollArea")) {
+      if (shouldSuppressScrollAreaFrame(widget)) {
         return;
       }
-      painter->save();
-      painter->setPen(tok.borderPassive);
-      painter->setBrush(Qt::NoBrush);
-      painter->drawRect(option->rect.adjusted(0, 0, -1, -1));
-      painter->restore();
+      if (isTextEditLikeWidget(widget)) {
+        const bool focused = (option->state & State_HasFocus) != 0U;
+        const qreal borderWidth = focused ? 2.0 : 1.0;
+        drawInputPanel(painter, option->rect, option->palette.color(QPalette::Base),
+                       focused ? tok.borderFocus : tok.borderPassive, borderWidth);
+        return;
+      }
+      drawPlainFrame(painter, option->rect, tok.borderPassive);
+      return;
+    }
+
+    case PE_FrameLineEdit: {
+      const bool focused = (option->state & State_HasFocus) != 0U;
+      const qreal borderWidth = focused ? 2.0 : 1.0;
+      drawInputPanel(painter, option->rect, option->palette.color(QPalette::Base),
+                     focused ? tok.borderFocus : tok.borderPassive, borderWidth);
       return;
     }
 
     case PE_FrameTabWidget: {
-      painter->save();
-      painter->setPen(tok.borderPassive);
-      painter->setBrush(Qt::NoBrush);
-      painter->drawRect(option->rect.adjusted(0, 0, -1, -1));
-      painter->restore();
+      drawPlainFrame(painter, option->rect, tok.borderPassive);
       return;
     }
 
@@ -711,7 +915,7 @@ void HoloniightStyle::drawPrimitive(PrimitiveElement element, const QStyleOption
     case PE_FrameWindow: {
       painter->save();
       painter->setPen(Qt::NoPen);
-      painter->setBrush(tok.surface);
+      painter->setBrush(option->palette.color(QPalette::Window));
       painter->drawRect(option->rect);
       painter->restore();
       return;
@@ -722,23 +926,19 @@ void HoloniightStyle::drawPrimitive(PrimitiveElement element, const QStyleOption
       painter->setPen(Qt::NoPen);
       painter->setBrush(tok.surface);
       painter->drawRect(option->rect);
-      
+
       // Draw bottom separator line using fillRect to prevent clipping and ensure consistent thickness
       QRect borderRect = option->rect;
       borderRect.setTop(option->rect.bottom());
       borderRect.setHeight(1);
       painter->fillRect(borderRect, tok.borderPassive);
-      
+
       painter->restore();
       return;
     }
 
     case PE_FrameMenu: {
-      painter->save();
-      painter->setPen(QPen{tok.borderPassive, 1});
-      painter->setBrush(Qt::NoBrush);
-      painter->drawRect(option->rect.adjusted(0, 0, -1, -1));
-      painter->restore();
+      drawPlainFrame(painter, option->rect, tok.borderPassive);
       return;
     }
 
@@ -753,10 +953,11 @@ void HoloniightStyle::drawPrimitive(PrimitiveElement element, const QStyleOption
 
     case PE_PanelTipLabel: {
       painter->save();
-      painter->setPen(QPen{tok.borderPassive, 1});
       painter->setBrush(tok.surfaceInverse);
-      painter->drawRect(option->rect.adjusted(0, 0, -1, -1));
+      painter->setPen(Qt::NoPen);
+      painter->drawRect(option->rect);
       painter->restore();
+      drawPlainFrame(painter, option->rect, tok.borderPassive);
       return;
     }
 
@@ -821,16 +1022,18 @@ void HoloniightStyle::drawPrimitive(PrimitiveElement element, const QStyleOption
       return;
 
     case PE_PanelItemViewRow: {
-      painter->save();
-      painter->setPen(Qt::NoPen);
       const bool selected = (option->state & State_Selected) != 0U;
       const bool hovered = (option->state & State_MouseOver) != 0U;
+      if (!selected && !hovered) {
+        return;
+      }
+
+      painter->save();
+      painter->setPen(Qt::NoPen);
       if (selected) {
         painter->setBrush(tok.primary);
-      } else if (hovered) {
-        painter->setBrush(tok.surfaceHover);
       } else {
-        painter->setBrush(tok.surfaceVariant);
+        painter->setBrush(tok.surfaceHover);
       }
       painter->drawRect(option->rect);
       painter->restore();
@@ -838,11 +1041,8 @@ void HoloniightStyle::drawPrimitive(PrimitiveElement element, const QStyleOption
     }
 
     case PE_PanelLineEdit: {
-      painter->save();
-      painter->setRenderHint(QPainter::Antialiasing);
       const bool focused = (option->state & State_HasFocus) != 0U;
       const bool enabled = (option->state & State_Enabled) != 0U;
-      painter->setBrush(tok.surfaceVariant);
       const int borderWidth = focused ? 2 : 1;
       QColor border = tok.borderPassive;
       if (focused) {
@@ -850,10 +1050,7 @@ void HoloniightStyle::drawPrimitive(PrimitiveElement element, const QStyleOption
       } else if (!enabled) {
         border = tok.borderPassive;  // TODO(borderUrgent): if error state added, use tok.borderUrgent here
       }
-      painter->setPen(QPen{border, static_cast<qreal>(borderWidth)});
-      painter->drawRoundedRect(option->rect.adjusted(borderWidth, borderWidth, -borderWidth, -borderWidth),
-                               kRadiusControl, kRadiusControl);
-      painter->restore();
+      drawInputPanel(painter, option->rect, option->palette.color(QPalette::Base), border, borderWidth);
       return;
     }
 
@@ -862,7 +1059,7 @@ void HoloniightStyle::drawPrimitive(PrimitiveElement element, const QStyleOption
       painter->setRenderHint(QPainter::Antialiasing);
       painter->setPen(QPen{tok.borderPassive, 1});
       painter->setBrush(Qt::NoBrush);
-      painter->drawRoundedRect(option->rect.adjusted(0, 0, -1, -1), kRadiusControl, kRadiusControl);
+      painter->drawRoundedRect(strokedRectInside(option->rect, 1.0), kRadiusControl, kRadiusControl);
       painter->restore();
       return;
     }
@@ -870,11 +1067,20 @@ void HoloniightStyle::drawPrimitive(PrimitiveElement element, const QStyleOption
     case PE_PanelStatusBar: {
       painter->save();
       painter->setPen(Qt::NoPen);
-      painter->setBrush(tok.surface);
+      painter->setBrush(tok.surfaceVariant);
       painter->drawRect(option->rect);
-      painter->setPen(QPen{tok.borderPassive, 1});
-      painter->drawLine(option->rect.topLeft(), option->rect.topRight());
       painter->restore();
+      drawPlainFrame(painter, option->rect, tok.borderPassive);
+      return;
+    }
+
+    case PE_FrameStatusBarItem: {
+      painter->save();
+      painter->setPen(Qt::NoPen);
+      painter->setBrush(tok.surfaceVariant);
+      painter->drawRect(option->rect);
+      painter->restore();
+      drawPlainFrame(painter, option->rect, tok.borderPassive);
       return;
     }
 
@@ -1127,6 +1333,7 @@ void HoloniightStyle::drawToolButtonImpl(const QStyleOption* option, QPainter* p
   const bool pressed = (opt->state & State_Sunken) != 0U;
   const bool checked = (opt->state & State_On) != 0U;
   const bool focused = (opt->state & State_HasFocus) != 0U;
+  const bool idleFlatAutoRaise = isFlatAutoRaiseToolButton(opt, widget) && !hovered && !pressed && !checked;
 
   QColor bgColor = Qt::transparent;
   if (pressed || checked) {
@@ -1138,7 +1345,7 @@ void HoloniightStyle::drawToolButtonImpl(const QStyleOption* option, QPainter* p
   painter->setBrush(bgColor);
   painter->drawRoundedRect(opt->rect.adjusted(1, 1, -1, -1), kRadiusControl, kRadiusControl);
 
-  if (focused) {
+  if (focused && !idleFlatAutoRaise) {
     painter->setPen(QPen{tok.focusRing, 1, Qt::DashLine});
     painter->setBrush(Qt::NoBrush);
     painter->drawRoundedRect(opt->rect.adjusted(1, 1, -1, -1), kRadiusControl, kRadiusControl);

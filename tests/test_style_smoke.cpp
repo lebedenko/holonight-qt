@@ -4,8 +4,11 @@
 #include "../style/holonightstyle.h"
 #include "holonight/palette.h"
 
+#include <QDockWidget>
 #include <QListView>
+#include <QSplitter>
 #include <QStatusBar>
+#include <QTextEdit>
 
 #include <gtest/gtest.h>
 
@@ -41,10 +44,146 @@ TEST(StyleSmoke, PolishPlacesViewUsesVariantSurface) {
   EXPECT_EQ(view.viewport()->palette().color(QPalette::Base), tok.surfaceVariant);
 }
 
-TEST(StyleSmoke, PolishStatusBarUsesContainerSurface) {
+TEST(StyleSmoke, PolishMainViewUsesDarkerSurface) {
+  HoloniightStyle style;
+  QListView view;
+  style.polish(&view);
+  const auto tok = Holonight::darkTokens();
+  EXPECT_EQ(view.palette().color(QPalette::Window), tok.surface);
+  EXPECT_EQ(view.palette().color(QPalette::Base), tok.surface);
+  EXPECT_EQ(view.viewport()->palette().color(QPalette::Base), tok.surface);
+}
+
+TEST(StyleSmoke, PolishInformationPanelUsesVariantSurface) {
+  HoloniightStyle style;
+  QWidget panel;
+  panel.setObjectName(QStringLiteral("infoDock"));
+
+  style.polish(&panel);
+
+  const auto tok = Holonight::darkTokens();
+  EXPECT_EQ(panel.palette().color(QPalette::Window), tok.surfaceVariant);
+  EXPECT_EQ(panel.palette().color(QPalette::Base), tok.surface);
+}
+
+TEST(StyleSmoke, PolishDockWidgetUsesVariantSurface) {
+  HoloniightStyle style;
+  QDockWidget dock;
+
+  style.polish(&dock);
+
+  const auto tok = Holonight::darkTokens();
+  EXPECT_EQ(dock.palette().color(QPalette::Window), tok.surfaceVariant);
+  EXPECT_EQ(dock.palette().color(QPalette::Base), tok.surface);
+  EXPECT_TRUE(dock.autoFillBackground());
+  EXPECT_EQ(dock.backgroundRole(), QPalette::Window);
+}
+
+TEST(StyleSmoke, PolishSidePanelChildKeepsInheritedSurface) {
+  HoloniightStyle style;
+  QWidget panel;
+  panel.setObjectName(QStringLiteral("informationPanel"));
+  style.polish(&panel);
+
+  QWidget child(&panel);
+  style.polish(&child);
+
+  const auto tok = Holonight::darkTokens();
+  EXPECT_EQ(child.palette().color(QPalette::Window), tok.surfaceVariant);
+  EXPECT_EQ(child.palette().color(QPalette::Base), tok.surface);
+}
+
+TEST(StyleSmoke, PolishNestedSidePanelChildKeepsInheritedSurface) {
+  HoloniightStyle style;
+  QDockWidget dock;
+  style.polish(&dock);
+
+  QWidget content(&dock);
+  style.polish(&content);
+  QWidget details(&content);
+  style.polish(&details);
+
+  const auto tok = Holonight::darkTokens();
+  EXPECT_EQ(content.palette().color(QPalette::Window), tok.surfaceVariant);
+  EXPECT_EQ(details.palette().color(QPalette::Window), tok.surfaceVariant);
+  EXPECT_TRUE(content.autoFillBackground());
+  EXPECT_TRUE(details.autoFillBackground());
+}
+
+TEST(StyleSmoke, PolishSidePanelChildOverridesMainWindowSurface) {
+  HoloniightStyle style;
+  QWidget panel;
+  panel.setObjectName(QStringLiteral("informationPanel"));
+  style.polish(&panel);
+
+  const auto tok = Holonight::darkTokens();
+  QWidget child(&panel);
+  QPalette childPalette = style.standardPalette();
+  childPalette.setColor(QPalette::Window, tok.surface);
+  child.setPalette(childPalette);
+
+  style.polish(&child);
+
+  EXPECT_EQ(child.palette().color(QPalette::Window), tok.surfaceVariant);
+  EXPECT_EQ(child.palette().color(QPalette::Base), tok.surface);
+}
+
+TEST(StyleSmoke, PolishSidePanelTextEditUsesDarkerBase) {
+  HoloniightStyle style;
+  QWidget panel;
+  panel.setObjectName(QStringLiteral("informationPanel"));
+  style.polish(&panel);
+
+  QTextEdit edit(&panel);
+  style.polish(&edit);
+
+  const auto tok = Holonight::darkTokens();
+  EXPECT_EQ(edit.palette().color(QPalette::Window), tok.surfaceVariant);
+  EXPECT_EQ(edit.palette().color(QPalette::Base), tok.surface);
+  EXPECT_EQ(edit.viewport()->palette().color(QPalette::Base), tok.surface);
+}
+
+TEST(StyleSmoke, PolishStatusBarUsesVariantSurface) {
   HoloniightStyle style;
   QStatusBar statusBar;
   style.polish(&statusBar);
   const auto tok = Holonight::darkTokens();
-  EXPECT_EQ(statusBar.palette().color(QPalette::Window), tok.surfaceContainer);
+  EXPECT_EQ(statusBar.palette().color(QPalette::Window), tok.surfaceVariant);
+}
+
+TEST(StyleSmoke, PolishNamedStatusWidgetUsesVariantSurface) {
+  HoloniightStyle style;
+  QWidget statusWidget;
+  statusWidget.setObjectName(QStringLiteral("statusBar"));
+
+  style.polish(&statusWidget);
+
+  const auto tok = Holonight::darkTokens();
+  EXPECT_EQ(statusWidget.palette().color(QPalette::Window), tok.surfaceVariant);
+  EXPECT_TRUE(statusWidget.autoFillBackground());
+  EXPECT_EQ(statusWidget.backgroundRole(), QPalette::Window);
+}
+
+TEST(StyleSmoke, PolishSplitterUsesOnePixelHandle) {
+  HoloniightStyle style;
+  QSplitter splitter;
+  QWidget first;
+  QWidget second;
+  splitter.addWidget(&first);
+  splitter.addWidget(&second);
+  splitter.setHandleWidth(5);
+
+  style.polish(&splitter);
+
+  EXPECT_EQ(splitter.handleWidth(), 1);
+  QSplitterHandle* handle = splitter.handle(1);
+  ASSERT_NE(handle, nullptr);
+  EXPECT_FALSE(handle->autoFillBackground());
+  EXPECT_TRUE(handle->testAttribute(Qt::WA_NoSystemBackground));
+  EXPECT_FALSE(handle->testAttribute(Qt::WA_OpaquePaintEvent));
+}
+
+TEST(StyleSmoke, DockWidgetSeparatorExtentIsOne) {
+  HoloniightStyle style;
+  EXPECT_EQ(style.pixelMetric(QStyle::PM_DockWidgetSeparatorExtent), 1);
 }
