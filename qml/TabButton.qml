@@ -6,7 +6,7 @@ import QtQuick.Templates as T
 import Holonight
 
 T.TabButton {
-    id: control
+    id: root
 
     implicitWidth: Math.max(implicitBackgroundWidth + leftInset + rightInset,
                             implicitContentWidth + leftPadding + rightPadding)
@@ -17,22 +17,23 @@ T.TabButton {
     horizontalPadding: 12
 
     contentItem: Text {
-        text: control.text
-        font: control.font
+        text: root.text
+        font: root.font
         color: {
-            if (!control.enabled) return HoloniightPalette.textDisabled
-            if (control.checked)  return HoloniightPalette.primary
-            return control.hovered ? HoloniightPalette.textPrimary : HoloniightPalette.textMuted
+            if (!root.enabled) return HoloniightPalette.textDisabled
+            if (root.checked)  return HoloniightPalette.primary
+            return root.hovered ? HoloniightPalette.textPrimary : HoloniightPalette.textMuted
         }
         horizontalAlignment: Text.AlignHCenter
         verticalAlignment: Text.AlignVCenter
+        textFormat: Text.PlainText
     }
 
     background: Item {
         // Tab body
         Rectangle {
             anchors.fill: parent
-            color: control.hovered ? HoloniightPalette.surfaceHover : "transparent"
+            color: root.hovered ? HoloniightPalette.surfaceHover : Qt.rgba(0, 0, 0, 0)
         }
 
         // Active indicator bar
@@ -41,16 +42,16 @@ T.TabButton {
             width: parent.width
             height: 2
             color: HoloniightPalette.primary
-            visible: control.checked
+            visible: root.checked
         }
 
         // Focus border
         Rectangle {
             anchors.fill: parent
-            color: "transparent"
+            color: Qt.rgba(0, 0, 0, 0)
             border.color: HoloniightPalette.borderFocus
             border.width: HoloniightPalette.borderWidth
-            visible: control.visualFocus
+            visible: root.visualFocus
         }
     }
 }

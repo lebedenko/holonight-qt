@@ -6,7 +6,9 @@ import QtQuick.Templates as T
 import Holonight
 
 T.TextField {
-    id: control
+    id: root
+
+    property bool hasError: false
 
     implicitWidth: implicitBackgroundWidth + leftInset + rightInset
                    || Math.ceil(Math.max(contentWidth, placeholder.implicitWidth)) + leftPadding + rightPadding
@@ -19,8 +21,6 @@ T.TextField {
     topPadding: 6
     bottomPadding: 6
 
-    property bool hasError: false
-
     color: HoloniightPalette.textPrimary
     selectionColor: Qt.rgba(HoloniightPalette.primary.r, HoloniightPalette.primary.g,
                             HoloniightPalette.primary.b, 0.3)
@@ -29,18 +29,20 @@ T.TextField {
 
     Text {
         id: placeholder
-        x: control.leftPadding
-        y: control.topPadding
-        width: control.width - (control.leftPadding + control.rightPadding)
-        height: control.height - (control.topPadding + control.bottomPadding)
+        x: root.leftPadding
+        y: root.topPadding
+        width: root.width - (root.leftPadding + root.rightPadding)
+        height: root.height - (root.topPadding + root.bottomPadding)
 
-        text: control.placeholderText
-        font: control.font
-        color: control.placeholderTextColor
-        verticalAlignment: control.verticalAlignment
-        visible: !control.length && !control.preeditText && (!control.activeFocus || control.horizontalAlignment !== Qt.AlignHCenter)
+        text: root.placeholderText
+        font: root.font
+        color: root.placeholderTextColor
+        verticalAlignment: root.verticalAlignment
+        visible: root.length < 1 && root.preeditText.length < 1
+                 && (root.horizontalAlignment === Qt.AlignHCenter ? root.activeFocus === false : true)
         elide: Text.ElideRight
-        renderType: control.renderType
+        renderType: root.renderType
+        textFormat: Text.PlainText
     }
 
     background: Rectangle {
@@ -50,14 +52,14 @@ T.TextField {
         color: HoloniightPalette.surface
         radius: HoloniightPalette.radiusControl
 
-        border.width: (control.activeFocus || control.hasError) ? HoloniightPalette.focusBorderWidth : HoloniightPalette.borderWidth
+        border.width: (root.activeFocus || root.hasError) ? HoloniightPalette.focusBorderWidth : HoloniightPalette.borderWidth
         border.color: {
-            if (control.hasError)       return HoloniightPalette.borderUrgent
-            if (control.activeFocus)    return HoloniightPalette.borderFocus
+            if (root.hasError)       return HoloniightPalette.borderUrgent
+            if (root.activeFocus)    return HoloniightPalette.borderFocus
             return HoloniightPalette.borderPassive
         }
 
-        opacity: control.enabled ? 1.0 : 0.5
+        opacity: root.enabled ? 1.0 : 0.5
 
         Behavior on border.color { ColorAnimation { duration: 80 } }
     }

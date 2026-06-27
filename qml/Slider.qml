@@ -6,7 +6,7 @@ import QtQuick.Templates as T
 import Holonight
 
 T.Slider {
-    id: control
+    id: root
 
     implicitWidth: Math.max(implicitBackgroundWidth + leftInset + rightInset,
                             implicitContentWidth + leftPadding + rightPadding)
@@ -16,17 +16,16 @@ T.Slider {
     padding: 6
 
     handle: Rectangle {
-        id: handle
-        x: control.leftPadding + (control.horizontal ? control.visualPosition * (control.availableWidth - width) : (control.availableWidth - width) / 2)
-        y: control.topPadding + (control.horizontal ? (control.availableHeight - height) / 2 : control.visualPosition * (control.availableHeight - height))
+        x: root.leftPadding + (root.horizontal ? root.visualPosition * (root.availableWidth - width) : (root.availableWidth - width) / 2)
+        y: root.topPadding + (root.horizontal ? (root.availableHeight - height) / 2 : root.visualPosition * (root.availableHeight - height))
         implicitWidth: 12
         implicitHeight: 12
         radius: 2
 
         color: {
-            if (!control.enabled) return HoloniightPalette.textDisabled
-            if (control.pressed)  return HoloniightPalette.primaryPressed
-            if (control.hovered)  return HoloniightPalette.primaryHover
+            if (!root.enabled) return HoloniightPalette.textDisabled
+            if (root.pressed)  return HoloniightPalette.primaryPressed
+            if (root.hovered)  return HoloniightPalette.primaryHover
             return HoloniightPalette.primary
         }
 
@@ -34,48 +33,42 @@ T.Slider {
         border.width: 1
 
         Rectangle {
-            visible: control.visualFocus
+            visible: root.visualFocus
             anchors.centerIn: parent
             width: parent.width + 4
             height: parent.height + 4
             radius: 4
-            color: "transparent"
+            color: Qt.rgba(0, 0, 0, 0)
             border.color: HoloniightPalette.borderFocus
             border.width: HoloniightPalette.borderWidth
         }
     }
 
     background: Item {
-        x: control.leftPadding
-        y: control.topPadding
-        implicitWidth: control.horizontal ? 200 : 14
-        implicitHeight: control.horizontal ? 14 : 200
-        width: control.availableWidth
-        height: control.availableHeight
+        x: root.leftPadding
+        y: root.topPadding
+        implicitWidth: root.horizontal ? 200 : 14
+        implicitHeight: root.horizontal ? 14 : 200
+        width: root.availableWidth
+        height: root.availableHeight
 
         // Full groove
         Rectangle {
             anchors.centerIn: parent
-            width: control.horizontal ? parent.width : 4
-            height: control.horizontal ? 4 : parent.height
+            width: root.horizontal ? parent.width : 4
+            height: root.horizontal ? 4 : parent.height
             radius: 2
             color: HoloniightPalette.borderPassive
         }
 
         // Filled portion
         Rectangle {
-            anchors {
-                left: control.horizontal ? parent.left : undefined
-                right: control.horizontal ? undefined : undefined
-                horizontalCenter: control.horizontal ? undefined : parent.horizontalCenter
-                top: control.horizontal ? undefined : control.handle.verticalCenter
-                bottom: control.horizontal ? undefined : parent.bottom
-                verticalCenter: control.horizontal ? parent.verticalCenter : undefined
-            }
-            width: control.horizontal ? control.handle.x + control.handle.width / 2 : 4
-            height: control.horizontal ? 4 : parent.height - (control.handle.y + control.handle.height / 2)
+            x: root.horizontal ? 0 : (parent.width - width) / 2
+            y: root.horizontal ? (parent.height - height) / 2 : root.handle.y + root.handle.height / 2
+            width: root.horizontal ? root.handle.x + root.handle.width / 2 : 4
+            height: root.horizontal ? 4 : parent.height - (root.handle.y + root.handle.height / 2)
             radius: 2
-            color: control.enabled ? HoloniightPalette.primary : HoloniightPalette.textDisabled
+            color: root.enabled ? HoloniightPalette.primary : HoloniightPalette.textDisabled
         }
     }
 }

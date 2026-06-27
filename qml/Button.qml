@@ -7,7 +7,7 @@ import QtQuick.Templates as T
 import Holonight
 
 T.Button {
-    id: control
+    id: root
 
     implicitWidth: Math.max(implicitBackgroundWidth + leftInset + rightInset,
                             implicitContentWidth + leftPadding + rightPadding)
@@ -19,12 +19,12 @@ T.Button {
     spacing: 4
 
     contentItem: IconLabel {
-        spacing: control.spacing
-        mirrored: control.mirrored
-        display: control.display
-        icon: control.icon
-        text: control.text
-        font: control.font
+        spacing: root.spacing
+        mirrored: root.mirrored
+        display: root.display
+        icon: root.icon
+        text: root.text
+        font: root.font
         color: HoloniightPalette.textPrimary
     }
 
@@ -34,17 +34,17 @@ T.Button {
         radius: HoloniightPalette.radiusControl
 
         color: {
-            if (!control.enabled)    return HoloniightPalette.surfaceRaised
-            if (control.pressed)     return HoloniightPalette.surface
-            if (control.highlighted) return HoloniightPalette.primary
-            if (control.hovered)     return HoloniightPalette.surfaceHover
+            if (!root.enabled)    return HoloniightPalette.surfaceRaised
+            if (root.pressed)     return HoloniightPalette.surface
+            if (root.highlighted) return HoloniightPalette.primary
+            if (root.hovered)     return HoloniightPalette.surfaceHover
             return HoloniightPalette.surfaceRaised
         }
 
-        border.color: control.visualFocus ? HoloniightPalette.borderFocus : HoloniightPalette.borderPassive
-        border.width: control.visualFocus ? HoloniightPalette.focusBorderWidth : HoloniightPalette.borderWidth
+        border.color: root.visualFocus ? HoloniightPalette.borderFocus : HoloniightPalette.borderPassive
+        border.width: root.visualFocus ? HoloniightPalette.focusBorderWidth : HoloniightPalette.borderWidth
 
-        opacity: control.enabled ? 1.0 : 0.5
+        opacity: root.enabled ? 1.0 : 0.5
 
         Behavior on color { ColorAnimation { duration: 80 } }
     }

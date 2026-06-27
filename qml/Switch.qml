@@ -6,7 +6,7 @@ import QtQuick.Templates as T
 import Holonight
 
 T.Switch {
-    id: control
+    id: root
 
     implicitWidth: Math.max(implicitBackgroundWidth + leftInset + rightInset,
                             implicitContentWidth + leftPadding + rightPadding)
@@ -19,7 +19,7 @@ T.Switch {
     indicator: Item {
         implicitWidth: 34
         implicitHeight: 16
-        x: control.leftPadding
+        x: root.leftPadding
         anchors.verticalCenter: parent.verticalCenter
 
         // Track
@@ -27,9 +27,9 @@ T.Switch {
             anchors.fill: parent
             radius: 8
             color: {
-                if (!control.enabled)  return HoloniightPalette.surface
-                if (control.checked)   return control.hovered ? HoloniightPalette.primaryHover : HoloniightPalette.primary
-                return control.hovered ? HoloniightPalette.textMuted : HoloniightPalette.borderPassive
+                if (!root.enabled)  return HoloniightPalette.surface
+                if (root.checked)   return root.hovered ? HoloniightPalette.primaryHover : HoloniightPalette.primary
+                return root.hovered ? HoloniightPalette.textMuted : HoloniightPalette.borderPassive
             }
 
             Behavior on color { ColorAnimation { duration: 150 } }
@@ -37,16 +37,15 @@ T.Switch {
 
         // Thumb
         Rectangle {
-            id: thumb
             width: 12
             height: 12
             radius: 6
             anchors.verticalCenter: parent.verticalCenter
-            x: control.checked ? parent.width - width - 2 : 2
+            x: root.checked ? parent.width - width - 2 : 2
 
             color: {
-                if (!control.enabled) return HoloniightPalette.textDisabled
-                return control.checked ? HoloniightPalette.onPrimary : HoloniightPalette.textMuted
+                if (!root.enabled) return HoloniightPalette.textDisabled
+                return root.checked ? HoloniightPalette.onPrimary : HoloniightPalette.textMuted
             }
 
             Behavior on x { NumberAnimation { duration: 150; easing.type: Easing.InOutQuad } }
@@ -54,12 +53,12 @@ T.Switch {
 
             // Focus ring
             Rectangle {
-                visible: control.visualFocus
+                visible: root.visualFocus
                 anchors.centerIn: parent
                 width: parent.width + 4
                 height: parent.height + 4
                 radius: (parent.width + 4) / 2
-                color: "transparent"
+                color: Qt.rgba(0, 0, 0, 0)
                 border.color: HoloniightPalette.borderFocus
                 border.width: HoloniightPalette.borderWidth
             }
@@ -67,10 +66,11 @@ T.Switch {
     }
 
     contentItem: Text {
-        leftPadding: control.indicator.width + control.spacing
-        text: control.text
-        font: control.font
-        color: control.enabled ? HoloniightPalette.textPrimary : HoloniightPalette.textDisabled
+        leftPadding: root.indicator.width + root.spacing
+        text: root.text
+        font: root.font
+        color: root.enabled ? HoloniightPalette.textPrimary : HoloniightPalette.textDisabled
         verticalAlignment: Text.AlignVCenter
+        textFormat: Text.PlainText
     }
 }

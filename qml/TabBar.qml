@@ -6,7 +6,7 @@ import QtQuick.Templates as T
 import Holonight
 
 T.TabBar {
-    id: control
+    id: root
 
     implicitWidth: Math.max(implicitBackgroundWidth + leftInset + rightInset,
                             implicitContentWidth + leftPadding + rightPadding)
@@ -14,10 +14,10 @@ T.TabBar {
                              implicitContentHeight + topPadding + bottomPadding)
 
     contentItem: ListView {
-        model: control.contentModel
-        currentIndex: control.currentIndex
+        model: root.contentModel
+        currentIndex: root.currentIndex
 
-        spacing: control.spacing
+        spacing: root.spacing
         orientation: ListView.Horizontal
         boundsBehavior: Flickable.StopAtBounds
         flickableDirection: Flickable.AutoFlickIfNeeded

@@ -1,12 +1,14 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 // SPDX-FileCopyrightText: 2026 Andrii L <lebeden@gmail.com>
 
+pragma ComponentBehavior: Bound
+
 import QtQuick
 import QtQuick.Templates as T
 import Holonight
 
 T.ComboBox {
-    id: control
+    id: root
 
     implicitWidth: Math.max(implicitBackgroundWidth + leftInset + rightInset,
                             implicitContentWidth + leftPadding + rightPadding)
@@ -19,82 +21,75 @@ T.ComboBox {
     bottomPadding: 6
 
     delegate: T.ItemDelegate {
-        width: control.popup.width
+        id: delegateRoot
+
+        required property int index
+        required property var model
+        required property var modelData
+
+        width: root.popup.width
         height: 28
-        text: control.textRole ? (Array.isArray(control.model) ? modelData[control.textRole] : model[control.textRole]) : modelData
+        text: root.textRole ? (Array.isArray(root.model) ? modelData[root.textRole] : model[root.textRole]) : modelData
+        highlighted: root.highlightedIndex === index
 
         contentItem: Text {
-            text: parent.text
+            text: delegateRoot.text
             color: ListView.isCurrentItem ? HoloniightPalette.onPrimary : HoloniightPalette.textPrimary
-            font: control.font
+            font: root.font
             verticalAlignment: Text.AlignVCenter
+            textFormat: Text.PlainText
             leftPadding: 8
         }
 
         background: Rectangle {
-            color: parent.highlighted ? HoloniightPalette.surfaceHover : (ListView.isCurrentItem ? HoloniightPalette.primary : "transparent")
+            color: delegateRoot.highlighted ? HoloniightPalette.surfaceHover : (ListView.isCurrentItem ? HoloniightPalette.primary : Qt.rgba(0, 0, 0, 0))
             radius: HoloniightPalette.radiusControl
         }
-
-        highlighted: control.highlightedIndex === index
     }
 
-    indicator: Canvas {
-        id: arrow
-        x: control.width - width - 8
-        y: (control.height - height) / 2
+    indicator: Text {
+        x: root.width - width - 8
+        y: (root.height - height) / 2
         width: 12
         height: 8
-        contextType: "2d"
-
-        Connections {
-            target: control
-            function onPressedChanged() { arrow.requestPaint() }
-        }
-
-        onPaint: {
-            var ctx = getContext("2d")
-            ctx.reset()
-            ctx.fillStyle = HoloniightPalette.textPrimary
-            ctx.beginPath()
-            ctx.moveTo(0, 0)
-            ctx.lineTo(width, 0)
-            ctx.lineTo(width / 2, height)
-            ctx.closePath()
-            ctx.fill()
-        }
+        text: "▾"
+        color: HoloniightPalette.textPrimary
+        horizontalAlignment: Text.AlignHCenter
+        verticalAlignment: Text.AlignVCenter
+        textFormat: Text.PlainText
     }
 
     contentItem: Text {
         leftPadding: 0
-        rightPadding: control.indicator.width + 4
-        text: control.displayText
-        font: control.font
-        color: control.enabled ? HoloniightPalette.textPrimary : HoloniightPalette.textDisabled
+        rightPadding: root.indicator.width + 4
+        text: root.displayText
+        font: root.font
+        color: root.enabled ? HoloniightPalette.textPrimary : HoloniightPalette.textDisabled
         verticalAlignment: Text.AlignVCenter
         elide: Text.ElideRight
+        textFormat: Text.PlainText
     }
 
     background: Rectangle {
         implicitWidth: 120
         implicitHeight: 32
         radius: HoloniightPalette.radiusControl
-        color: control.hovered ? HoloniightPalette.surfaceHover : HoloniightPalette.surface
-        border.color: control.visualFocus || control.popup.visible ? HoloniightPalette.borderFocus : (control.enabled ? HoloniightPalette.borderPassive : HoloniightPalette.borderPassive)
-        border.width: (control.visualFocus || control.popup.visible) ? HoloniightPalette.focusBorderWidth : HoloniightPalette.borderWidth
+        color: root.hovered ? HoloniightPalette.surfaceHover : HoloniightPalette.surface
+        border.color: root.visualFocus || root.popup.visible ? HoloniightPalette.borderFocus : (root.enabled ? HoloniightPalette.borderPassive : HoloniightPalette.borderPassive)
+        border.width: (root.visualFocus || root.popup.visible) ? HoloniightPalette.focusBorderWidth : HoloniightPalette.borderWidth
     }
 
     popup: T.Popup {
-        y: control.height
-        width: control.width
-        implicitHeight: contentItem.implicitHeight
+        y: root.height
+        width: root.width
+        implicitHeight: Math.min(contentItem.implicitHeight, Window.window ? Math.max(0, Window.window.height - y - 8) : contentItem.implicitHeight)
         padding: 1
 
         contentItem: ListView {
             clip: true
-            implicitHeight: contentHeight
-            model: control.delegateModel
-            currentIndex: control.highlightedIndex
+            implicitHeight: Math.min(contentHeight, Window.window ? Math.max(0, Window.window.height - root.popup.y - 8) : contentHeight)
+            model: root.delegateModel
+            currentIndex: root.highlightedIndex
             ScrollBar.vertical: T.ScrollBar {}
         }
 

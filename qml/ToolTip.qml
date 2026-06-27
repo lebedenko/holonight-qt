@@ -6,7 +6,7 @@ import QtQuick.Templates as T
 import Holonight
 
 T.ToolTip {
-    id: control
+    id: root
 
     x: parent ? (parent.width - implicitWidth) / 2 : 0
     y: -implicitHeight - 4
@@ -23,10 +23,11 @@ T.ToolTip {
     timeout: 5000
 
     contentItem: Text {
-        text: control.text
-        font: control.font
+        text: root.text
+        font: root.font
         color: HoloniightPalette.textInverse
         wrapMode: Text.Wrap
+        textFormat: Text.PlainText
     }
 
     background: Rectangle {

@@ -1,9 +1,12 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 // SPDX-FileCopyrightText: 2026 Andrii L <lebeden@gmail.com>
 
+pragma ComponentBehavior: Bound
+
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
+import Holonight as H
 
 ApplicationWindow {
     id: root
@@ -181,7 +184,7 @@ ApplicationWindow {
                         Layout.bottomMargin: 32
                         TextField { Layout.fillWidth: true; placeholderText: "Placeholder text" }
                         TextField { Layout.fillWidth: true; text: "Filled input value" }
-                        TextField { Layout.fillWidth: true; placeholderText: "Error state"; hasError: true }
+                        H.TextField { Layout.fillWidth: true; placeholderText: "Error state"; hasError: true }
                         TextField { Layout.fillWidth: true; placeholderText: "Disabled"; enabled: false }
                     }
 
@@ -327,10 +330,17 @@ ApplicationWindow {
                                 "TabBar", "TextField", "TextArea", "ToolBar", "ToolButton"
                             ]
                             delegate: ItemDelegate {
-                                width: navListView.width
+                                required property int index
+                                required property string modelData
+
+                                width: ListView.view ? ListView.view.width : 0
                                 text: modelData
                                 highlighted: ListView.isCurrentItem
-                                onClicked: navListView.currentIndex = index
+                                onClicked: {
+                                    if (ListView.view) {
+                                        ListView.view.currentIndex = index
+                                    }
+                                }
                             }
                             ScrollBar.vertical: ScrollBar { policy: ScrollBar.AlwaysOn }
                         }
@@ -369,16 +379,24 @@ ApplicationWindow {
                         Layout.leftMargin: 40
                         Layout.bottomMargin: 32
                         Button {
+                            id: immediateTooltipButton
+
                             text: "Hover me"
-                            ToolTip.visible: hovered
-                            ToolTip.text: "This is a tooltip"
-                            ToolTip.delay: 0
+                            ToolTip {
+                                visible: immediateTooltipButton.hovered
+                                text: "This is a tooltip"
+                                delay: 0
+                            }
                         }
                         Button {
+                            id: delayedTooltipButton
+
                             text: "Delayed tooltip"
-                            ToolTip.visible: hovered
-                            ToolTip.text: "Tooltip with 500ms delay"
-                            ToolTip.delay: 500
+                            ToolTip {
+                                visible: delayedTooltipButton.hovered
+                                text: "Tooltip with 500ms delay"
+                                delay: 500
+                            }
                         }
                     }
 
@@ -461,11 +479,16 @@ ApplicationWindow {
                         implicitHeight: 120
                         clip: true
                         ColumnLayout {
-                            width: 1
+                            width: parent.availableWidth
                             spacing: 4
                             Repeater {
                                 model: 12
-                                Label { text: "Scrollable row " + (index + 1); leftPadding: 8 }
+                                Label {
+                                    required property int index
+
+                                    text: "Scrollable row " + (index + 1)
+                                    leftPadding: 8
+                                }
                             }
                         }
                     }
@@ -492,10 +515,17 @@ ApplicationWindow {
                                 "ItemDelegate Seven", "ItemDelegate Eight"
                             ]
                             delegate: ItemDelegate {
-                                width: containersListView.width
+                                required property int index
+                                required property string modelData
+
+                                width: ListView.view ? ListView.view.width : 0
                                 text: modelData
                                 highlighted: ListView.isCurrentItem
-                                onClicked: containersListView.currentIndex = index
+                                onClicked: {
+                                    if (ListView.view) {
+                                        ListView.view.currentIndex = index
+                                    }
+                                }
                             }
                             ScrollBar.vertical: ScrollBar { policy: ScrollBar.AlwaysOn }
                         }

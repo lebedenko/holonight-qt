@@ -6,7 +6,7 @@ import QtQuick.Templates as T
 import Holonight
 
 T.MenuItem {
-    id: control
+    id: root
 
     implicitWidth: Math.max(implicitBackgroundWidth + leftInset + rightInset,
                             implicitContentWidth + leftPadding + rightPadding)
@@ -19,39 +19,41 @@ T.MenuItem {
     spacing: 6
 
     contentItem: Row {
-        spacing: control.spacing
+        spacing: root.spacing
 
-        Rectangle {
+        Item {
             width: 16
             height: 16
             anchors.verticalCenter: parent.verticalCenter
-            color: "transparent"
 
             // Checkmark for checkable items
-            visible: control.checkable
+            visible: root.checkable
             Text {
                 anchors.centerIn: parent
-                text: control.checked ? "✓" : ""
+                text: root.checked ? "✓" : ""
                 color: HoloniightPalette.primary
                 font.pixelSize: 12
+                textFormat: Text.PlainText
             }
         }
 
         Text {
-            text: control.text
-            font: control.font
-            color: control.enabled ? (control.highlighted ? HoloniightPalette.onPrimary : HoloniightPalette.textPrimary) : HoloniightPalette.textDisabled
+            text: root.text
+            font: root.font
+            color: root.enabled ? (root.highlighted ? HoloniightPalette.onPrimary : HoloniightPalette.textPrimary) : HoloniightPalette.textDisabled
             verticalAlignment: Text.AlignVCenter
+            textFormat: Text.PlainText
         }
     }
 
     arrow: Text {
-        x: control.width - width - 8
+        x: root.width - width - 8
         anchors.verticalCenter: parent.verticalCenter
-        visible: control.subMenu
+        visible: root.subMenu
         text: "›"
-        color: control.enabled ? HoloniightPalette.textPrimary : HoloniightPalette.textDisabled
+        color: root.enabled ? HoloniightPalette.textPrimary : HoloniightPalette.textDisabled
         font.pixelSize: 14
+        textFormat: Text.PlainText
     }
 
     background: Rectangle {
@@ -59,9 +61,9 @@ T.MenuItem {
         implicitHeight: 28
         radius: HoloniightPalette.radiusControl
         color: {
-            if (control.pressed || control.highlighted) return HoloniightPalette.primary
-            if (control.hovered)                        return HoloniightPalette.surfaceHover
-            return "transparent"
+            if (root.pressed || root.highlighted) return HoloniightPalette.primary
+            if (root.hovered)                        return HoloniightPalette.surfaceHover
+            return Qt.rgba(0, 0, 0, 0)
         }
     }
 }

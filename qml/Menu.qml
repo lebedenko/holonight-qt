@@ -6,7 +6,7 @@ import QtQuick.Templates as T
 import Holonight
 
 T.Menu {
-    id: control
+    id: root
 
     implicitWidth: Math.max(implicitBackgroundWidth + leftInset + rightInset,
                             implicitContentWidth + leftPadding + rightPadding)
@@ -19,11 +19,11 @@ T.Menu {
     delegate: MenuItem {}
 
     contentItem: ListView {
-        implicitHeight: contentHeight
-        model: control.contentModel
-        interactive: Window.window ? contentHeight > Window.window.height : false
+        implicitHeight: Math.min(contentHeight, Window.window ? Math.max(0, Window.window.height - root.y - 8) : contentHeight)
+        model: root.contentModel
+        interactive: contentHeight > implicitHeight
         clip: true
-        currentIndex: control.currentIndex
+        currentIndex: root.currentIndex
     }
 
     background: Rectangle {
