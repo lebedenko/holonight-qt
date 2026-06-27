@@ -20,7 +20,7 @@ T.ScrollBar {
         implicitHeight: control.interactive ? (control.hovered ? 10 : 6) : 4
 
         radius: width / 2
-        color: control.hovered ? HoloniightPalette.onSurface : HoloniightPalette.onSurfaceVariant
+        color: control.hovered ? HoloniightPalette.textPrimary : HoloniightPalette.textMuted
         opacity: control.policy === T.ScrollBar.AlwaysOn || (control.active && control.size < 1.0) ? 1.0 : 0.0
 
         Behavior on implicitWidth { NumberAnimation { duration: 120 } }

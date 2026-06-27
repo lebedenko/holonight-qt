@@ -25,24 +25,24 @@ T.Button {
         icon: control.icon
         text: control.text
         font: control.font
-        color: HoloniightPalette.onSurface
+        color: HoloniightPalette.textPrimary
     }
 
     background: Rectangle {
         implicitWidth: 80
-        implicitHeight: 28
-        radius: 4
+        implicitHeight: HoloniightPalette.controlHeight
+        radius: HoloniightPalette.radiusControl
 
         color: {
-            if (!control.enabled)    return HoloniightPalette.secondary
-            if (control.pressed)     return HoloniightPalette.surfaceVariant
+            if (!control.enabled)    return HoloniightPalette.surfaceRaised
+            if (control.pressed)     return HoloniightPalette.surface
             if (control.highlighted) return HoloniightPalette.primary
             if (control.hovered)     return HoloniightPalette.surfaceHover
-            return HoloniightPalette.secondary
+            return HoloniightPalette.surfaceRaised
         }
 
         border.color: control.visualFocus ? HoloniightPalette.borderFocus : HoloniightPalette.borderPassive
-        border.width: control.visualFocus ? 2 : 1
+        border.width: control.visualFocus ? HoloniightPalette.focusBorderWidth : HoloniightPalette.borderWidth
 
         opacity: control.enabled ? 1.0 : 0.5
 

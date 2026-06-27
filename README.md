@@ -30,63 +30,30 @@ A KDE color scheme (`data/holonight.colors`) is also installed to `share/color-s
 
 ## Palette
 
-Colors are based on the [HoloNight](https://github.com/topics/kde-color-scheme) KDE color scheme — a futuristic cyan/violet dark palette. All tokens are defined in `palette/holonight/palette.h` and originate from `darkTokens()`.
+HoloNight currently ships one complete resolved theme: **Storm**, a TokyoNight-inspired dark variant. All resolved colors and metrics originate in `palette/holonight/palette.h` through `Holonight::darkTokens()`, and downstream layers consume that token model rather than hard-coded color values.
 
-**Surface elevation** (ordered darkest to lightest):
+The preferred public token roles are canonical names such as `background`, `surface`, `surfaceElevated`, `surfaceRaised`, `textPrimary`, `textMuted`, `borderPassive`, `borderActive`, and `borderFocus`. Older names such as `surfaceVariant`, `surfaceContainer`, `onSurface`, `outline`, and `textSubtle` remain available as deprecated compatibility aliases.
 
-| Role | Value | Usage |
-|---|---|---|
-| `surface` | `#10131f` | Main background |
-| `surfaceVariant` | `#161925` | View / content background |
-| `surfaceContainer` | `#1a1b26` | Cards, grouped containers |
-| `secondary` | `#24283b` | Panel / menu / popup surface |
-| `surfaceHover` | `#1e2233` | Hover-state filled surface overlay |
-| `surfaceInverse` | `#0d1117` | ToolTip / pop-out surface |
-
-**Content and text:**
+Key Storm defaults:
 
 | Role | Value | Usage |
 |---|---|---|
-| `onSurface` | `#c0caf5` | Primary text and icons |
-| `textSubtle` | `#a9b1d6` | Secondary text |
-| `onSurfaceVariant` | `#565f89` | Disabled / placeholder text (WCAG 1.4.3 exempt) |
-| `onSurfaceDisabled` | `#3b3f58` | Inactive UI elements (WCAG 1.4.3 exempt) |
-| `onSurfaceInverse` | `#c0caf5` | Text on inverse surface |
-| `primary` | `#00a0dc` | Selection highlight fill |
-| `error` | `#f7768e` | Destructive / error |
-| `warning` | `#ff9e64` | Caution |
-| `success` | `#9ece6a` | Confirmation |
-| `shadow` | `#000000` | Drop-shadow base (alpha applied at paint time) |
+| `background` | `#10131f` | Main window/background plane |
+| `surface` | `#161925` | Views, text fields, and recessed base surfaces |
+| `surfaceElevated` | `#1a1b26` | Cards, alternate rows, side/status panels |
+| `surfaceRaised` | `#24283b` | Buttons, menus, popovers, raised controls |
+| `textPrimary` | `#c0caf5` | Normal text and icons |
+| `textSecondary` | `#a9b1d6` | Secondary readable text |
+| `textMuted` | `#565f89` | Placeholder and inactive text |
+| `textDisabled` | `#3b3f58` | Disabled UI text |
+| `primary` | `#7aa2f7` | Selection/link fill |
+| `borderFocus` | `#00e0ff` | Keyboard focus only |
+| `borderActive` | `#7aa2f7` | Current, selected, or active border |
+| `borderPassive` | `#565f89` | Passive frames and separators |
 
-**Design-system accents:**
+The token model also includes semantic status colors, overlay/effect tokens, radius and metric tokens, workspace indicators, and ANSI terminal colors. See [`docs/theme-tokens.md`](docs/theme-tokens.md) for the full schema, deprecated alias mapping, Qt palette mapping, variant status, and future `config.toml` shape.
 
-Yellow is exposed as an accent token, not a warning state; `warning` remains orange for caution/status UI.
-
-| Role | Value | Usage |
-|---|---|---|
-| `accentCyan` | `#7dcfff` | Primary neon accent |
-| `accentBlue` | `#7aa2f7` | Secondary accent |
-| `accentViolet` | `#bb9af7` | Tertiary accent / special workspace outline |
-| `accentYellow` | `#e0af68` | Warm accent / attention highlight |
-
-**Semantic border tokens:**
-
-| Role | Value | Usage |
-|---|---|---|
-| `borderPassive` | `#565f89` | Passive / inactive control frames and separators (WCAG 1.4.11 exempt — not interactive) |
-| `borderHover` | `#7dcfff` ~30% α | Transient hover-state border overlay (semi-transparent by design) |
-| `borderFocus` | `#00e0ff` | Keyboard focus ring border |
-| `borderActive` | `#7aa2f7` | Selected / active state border |
-| `borderUrgent` | `#f7768e` | Error / destructive state border |
-
-**Workspace indicator tokens:**
-
-| Role | Value | Usage |
-|---|---|---|
-| `workspaceOccupied` | `#1f2335` | Occupied / urgent workspace pill fill |
-| `workspaceActive` | `#20263a` | Active workspace pill fill |
-
-WCAG AA contrast (4.5:1) is enforced by the test suite for all text and selection pairs. Non-text UI components (borders, focus rings) are tested at the WCAG 1.4.11 threshold of 3:1. Known intentional deviations from the design-system color table are documented in [`docs/holonight-design-deviations.md`](docs/holonight-design-deviations.md).
+WCAG AA contrast (4.5:1) is enforced by the test suite for text and selection pairs. Non-text UI components such as focus rings and active borders are tested at the WCAG 1.4.11 threshold of 3:1. Known intentional deviations from the design-system color table are documented in [`docs/holonight-design-deviations.md`](docs/holonight-design-deviations.md).
 
 ## Requirements
 
@@ -143,6 +110,7 @@ If `theme.json` does not exist, it falls back to:
 ```
 
 `HOLONIGHT_CONFIG_FILE` can point at another file for testing. Environment variables override file values and are intended for development/debugging.
+The canonical token schema, Qt palette mapping, variant status, and future `config.toml` shape are documented in [`docs/theme-tokens.md`](docs/theme-tokens.md).
 
 Default JSON:
 

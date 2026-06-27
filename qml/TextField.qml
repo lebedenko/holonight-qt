@@ -21,11 +21,11 @@ T.TextField {
 
     property bool hasError: false
 
-    color: HoloniightPalette.onSurface
+    color: HoloniightPalette.textPrimary
     selectionColor: Qt.rgba(HoloniightPalette.primary.r, HoloniightPalette.primary.g,
                             HoloniightPalette.primary.b, 0.3)
     selectedTextColor: HoloniightPalette.onPrimary
-    placeholderTextColor: HoloniightPalette.onSurfaceVariant
+    placeholderTextColor: HoloniightPalette.textMuted
 
     Text {
         id: placeholder
@@ -48,9 +48,9 @@ T.TextField {
         implicitHeight: 32
 
         color: HoloniightPalette.surface
-        radius: 4
+        radius: HoloniightPalette.radiusControl
 
-        border.width: (control.activeFocus || control.hasError) ? 2 : 1
+        border.width: (control.activeFocus || control.hasError) ? HoloniightPalette.focusBorderWidth : HoloniightPalette.borderWidth
         border.color: {
             if (control.hasError)       return HoloniightPalette.borderUrgent
             if (control.activeFocus)    return HoloniightPalette.borderFocus

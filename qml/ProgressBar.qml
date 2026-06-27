@@ -38,6 +38,6 @@ T.ProgressBar {
         implicitWidth: 200
         implicitHeight: control.barHeight
         radius: height / 2
-        color: HoloniightPalette.surfaceVariant
+        color: HoloniightPalette.surface
     }
 }

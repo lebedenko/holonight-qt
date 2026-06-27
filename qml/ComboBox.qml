@@ -25,7 +25,7 @@ T.ComboBox {
 
         contentItem: Text {
             text: parent.text
-            color: ListView.isCurrentItem ? HoloniightPalette.onPrimary : HoloniightPalette.onSurface
+            color: ListView.isCurrentItem ? HoloniightPalette.onPrimary : HoloniightPalette.textPrimary
             font: control.font
             verticalAlignment: Text.AlignVCenter
             leftPadding: 8
@@ -33,7 +33,7 @@ T.ComboBox {
 
         background: Rectangle {
             color: parent.highlighted ? HoloniightPalette.surfaceHover : (ListView.isCurrentItem ? HoloniightPalette.primary : "transparent")
-            radius: 4
+            radius: HoloniightPalette.radiusControl
         }
 
         highlighted: control.highlightedIndex === index
@@ -55,7 +55,7 @@ T.ComboBox {
         onPaint: {
             var ctx = getContext("2d")
             ctx.reset()
-            ctx.fillStyle = HoloniightPalette.onSurface
+            ctx.fillStyle = HoloniightPalette.textPrimary
             ctx.beginPath()
             ctx.moveTo(0, 0)
             ctx.lineTo(width, 0)
@@ -70,7 +70,7 @@ T.ComboBox {
         rightPadding: control.indicator.width + 4
         text: control.displayText
         font: control.font
-        color: control.enabled ? HoloniightPalette.onSurface : HoloniightPalette.onSurfaceDisabled
+        color: control.enabled ? HoloniightPalette.textPrimary : HoloniightPalette.textDisabled
         verticalAlignment: Text.AlignVCenter
         elide: Text.ElideRight
     }
@@ -78,10 +78,10 @@ T.ComboBox {
     background: Rectangle {
         implicitWidth: 120
         implicitHeight: 32
-        radius: 4
+        radius: HoloniightPalette.radiusControl
         color: control.hovered ? HoloniightPalette.surfaceHover : HoloniightPalette.surface
         border.color: control.visualFocus || control.popup.visible ? HoloniightPalette.borderFocus : (control.enabled ? HoloniightPalette.borderPassive : HoloniightPalette.borderPassive)
-        border.width: (control.visualFocus || control.popup.visible) ? 2 : 1
+        border.width: (control.visualFocus || control.popup.visible) ? HoloniightPalette.focusBorderWidth : HoloniightPalette.borderWidth
     }
 
     popup: T.Popup {
@@ -101,8 +101,8 @@ T.ComboBox {
         background: Rectangle {
             color: HoloniightPalette.surface
             border.color: HoloniightPalette.borderPassive
-            border.width: 1
-            radius: 4
+            border.width: HoloniightPalette.borderWidth
+            radius: HoloniightPalette.radiusPopup
         }
     }
 }

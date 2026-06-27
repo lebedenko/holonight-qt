@@ -287,7 +287,7 @@ TEST_F(DrawPrimitiveTest, PanelToolBar_NoAssertViolation) {
   style_.drawPrimitive(QStyle::PE_PanelToolBar, &opt, &painter_);
 }
 
-TEST_F(DrawPrimitiveTest, PanelStatusBarUsesVariantSurfaceWithBorder) {
+TEST_F(DrawPrimitiveTest, PanelStatusBarUsesElevatedSurfaceWithBorder) {
   QImage image{24, 12, QImage::Format_ARGB32_Premultiplied};
   image.fill(Qt::transparent);
   QPainter painter{&image};
@@ -298,11 +298,11 @@ TEST_F(DrawPrimitiveTest, PanelStatusBarUsesVariantSurfaceWithBorder) {
   painter.end();
 
   const auto tok = Holonight::darkTokens();
-  EXPECT_EQ(image.pixelColor(image.rect().center()), tok.surfaceVariant);
+  EXPECT_EQ(image.pixelColor(image.rect().center()), tok.surfaceElevated);
   EXPECT_EQ(image.pixelColor(image.width() / 2, 0), tok.borderPassive);
 }
 
-TEST_F(DrawPrimitiveTest, FrameStatusBarItemUsesVariantSurfaceWithBorder) {
+TEST_F(DrawPrimitiveTest, FrameStatusBarItemUsesElevatedSurfaceWithBorder) {
   QImage image{24, 12, QImage::Format_ARGB32_Premultiplied};
   image.fill(Qt::transparent);
   QPainter painter{&image};
@@ -313,7 +313,7 @@ TEST_F(DrawPrimitiveTest, FrameStatusBarItemUsesVariantSurfaceWithBorder) {
   painter.end();
 
   const auto tok = Holonight::darkTokens();
-  EXPECT_EQ(image.pixelColor(image.rect().center()), tok.surfaceVariant);
+  EXPECT_EQ(image.pixelColor(image.rect().center()), tok.surfaceElevated);
   EXPECT_EQ(image.pixelColor(image.width() / 2, 0), tok.borderPassive);
 }
 

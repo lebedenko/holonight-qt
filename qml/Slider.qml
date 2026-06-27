@@ -24,7 +24,7 @@ T.Slider {
         radius: 2
 
         color: {
-            if (!control.enabled) return HoloniightPalette.onSurfaceDisabled
+            if (!control.enabled) return HoloniightPalette.textDisabled
             if (control.pressed)  return HoloniightPalette.primaryPressed
             if (control.hovered)  return HoloniightPalette.primaryHover
             return HoloniightPalette.primary
@@ -40,8 +40,8 @@ T.Slider {
             height: parent.height + 4
             radius: 4
             color: "transparent"
-            border.color: HoloniightPalette.focusRing
-            border.width: 1
+            border.color: HoloniightPalette.borderFocus
+            border.width: HoloniightPalette.borderWidth
         }
     }
 
@@ -75,7 +75,7 @@ T.Slider {
             width: control.horizontal ? control.handle.x + control.handle.width / 2 : 4
             height: control.horizontal ? 4 : parent.height - (control.handle.y + control.handle.height / 2)
             radius: 2
-            color: control.enabled ? HoloniightPalette.primary : HoloniightPalette.onSurfaceDisabled
+            color: control.enabled ? HoloniightPalette.primary : HoloniightPalette.textDisabled
         }
     }
 }

@@ -30,7 +30,7 @@ T.RadioButton {
         }
 
         border.color: {
-            if (!control.enabled)   return HoloniightPalette.onSurfaceDisabled
+            if (!control.enabled)   return HoloniightPalette.textDisabled
             if (control.checked)    return color
             return control.hovered ? HoloniightPalette.borderActive : HoloniightPalette.borderPassive
         }
@@ -54,8 +54,8 @@ T.RadioButton {
             height: parent.height + 4
             radius: (parent.width + 4) / 2
             color: "transparent"
-            border.color: HoloniightPalette.focusRing
-            border.width: 2
+            border.color: HoloniightPalette.borderFocus
+            border.width: HoloniightPalette.focusBorderWidth
         }
     }
 
@@ -63,7 +63,7 @@ T.RadioButton {
         leftPadding: control.indicator.width + control.spacing
         text: control.text
         font: control.font
-        color: control.enabled ? HoloniightPalette.onSurface : HoloniightPalette.onSurfaceDisabled
+        color: control.enabled ? HoloniightPalette.textPrimary : HoloniightPalette.textDisabled
         verticalAlignment: Text.AlignVCenter
     }
 }

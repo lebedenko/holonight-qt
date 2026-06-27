@@ -25,14 +25,14 @@ T.ToolTip {
     contentItem: Text {
         text: control.text
         font: control.font
-        color: HoloniightPalette.onSurfaceInverse
+        color: HoloniightPalette.textInverse
         wrapMode: Text.Wrap
     }
 
     background: Rectangle {
         color: HoloniightPalette.surfaceInverse
         border.color: HoloniightPalette.borderPassive
-        border.width: 1
-        radius: 4
+        border.width: HoloniightPalette.borderWidth
+        radius: HoloniightPalette.radiusPopup
     }
 }

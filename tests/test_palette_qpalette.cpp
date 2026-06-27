@@ -69,6 +69,7 @@ TEST_F(PaletteTest, DisabledFillRolesUnchanged) {
 TEST_F(PaletteTest, HighlightIsHolonightPrimary) {
   const Holonight::ColorTokens tok = Holonight::darkTokens();
   EXPECT_EQ(palette_.color(QPalette::Active, QPalette::Highlight), tok.primary);
+  EXPECT_EQ(palette_.color(QPalette::Active, QPalette::HighlightedText), tok.onPrimary);
 }
 
 TEST_F(PaletteTest, BorderRolesAreBorderPassive) {
@@ -87,11 +88,30 @@ TEST_F(PaletteTest, BorderRolesAreBorderPassive) {
   EXPECT_EQ(palette_.color(QPalette::Disabled, QPalette::Shadow), tok.borderPassive);
 }
 
-TEST_F(PaletteTest, BaseIsSurfaceVariant) {
+TEST_F(PaletteTest, CanonicalSurfaceRolesAreMapped) {
   const Holonight::ColorTokens tok = Holonight::darkTokens();
-  EXPECT_EQ(palette_.color(QPalette::Active,   QPalette::Base), tok.surfaceVariant)
-      << "Base should be surfaceVariant (#161925) to elevate list views and text fields";
-  EXPECT_EQ(palette_.color(QPalette::Disabled, QPalette::Base), tok.surfaceVariant)
-      << "Disabled Base should also be surfaceVariant";
-  EXPECT_EQ(palette_.color(QPalette::Inactive, QPalette::Base), tok.surfaceVariant);
+  EXPECT_EQ(palette_.color(QPalette::Active, QPalette::Window), tok.background);
+  EXPECT_EQ(palette_.color(QPalette::Active, QPalette::Base), tok.surface);
+  EXPECT_EQ(palette_.color(QPalette::Active, QPalette::AlternateBase), tok.surfaceElevated);
+  EXPECT_EQ(palette_.color(QPalette::Active, QPalette::Button), tok.surfaceRaised);
+  EXPECT_EQ(palette_.color(QPalette::Active, QPalette::ToolTipBase), tok.surfaceInverse);
+  EXPECT_EQ(palette_.color(QPalette::Inactive, QPalette::Base), tok.surface);
+  EXPECT_EQ(palette_.color(QPalette::Disabled, QPalette::Base), tok.surface);
+}
+
+TEST_F(PaletteTest, CanonicalTextRolesAreMapped) {
+  const Holonight::ColorTokens tok = Holonight::darkTokens();
+  EXPECT_EQ(palette_.color(QPalette::Active, QPalette::WindowText), tok.textPrimary);
+  EXPECT_EQ(palette_.color(QPalette::Active, QPalette::Text), tok.textPrimary);
+  EXPECT_EQ(palette_.color(QPalette::Active, QPalette::ButtonText), tok.textPrimary);
+  EXPECT_EQ(palette_.color(QPalette::Active, QPalette::PlaceholderText), tok.textMuted);
+  EXPECT_EQ(palette_.color(QPalette::Active, QPalette::ToolTipText), tok.textInverse);
+  EXPECT_EQ(palette_.color(QPalette::Disabled, QPalette::Text), tok.textDisabled);
+  EXPECT_EQ(palette_.color(QPalette::Disabled, QPalette::PlaceholderText), tok.textDisabled);
+}
+
+TEST_F(PaletteTest, LinkAndVisitedLinkUseCanonicalTokens) {
+  const Holonight::ColorTokens tok = Holonight::darkTokens();
+  EXPECT_EQ(palette_.color(QPalette::Active, QPalette::Link), tok.primary);
+  EXPECT_EQ(palette_.color(QPalette::Active, QPalette::LinkVisited), tok.error);
 }

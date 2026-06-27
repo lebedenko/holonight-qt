@@ -21,8 +21,8 @@ std::string rgb(const QColor& color) {
 }
 
 void writeCommonForegrounds(std::ostringstream& out, const Holonight::ColorTokens& tok) {
-  out << "ForegroundNormal=" << rgb(tok.onSurface) << '\n';
-  out << "ForegroundInactive=" << rgb(tok.onSurfaceVariant) << '\n';
+  out << "ForegroundNormal=" << rgb(tok.textPrimary) << '\n';
+  out << "ForegroundInactive=" << rgb(tok.textMuted) << '\n';
   out << "ForegroundActive=" << rgb(tok.primary) << '\n';
   out << "ForegroundLink=" << rgb(tok.primary) << '\n';
   out << "ForegroundVisited=" << rgb(tok.error) << '\n';
@@ -47,14 +47,14 @@ std::string generatedColors() {
   out << "shadeSortColumn=true\n\n";
 
   out << "[Colors:Window]\n";
-  out << "BackgroundNormal=" << rgb(tok.surface) << '\n';
-  out << "BackgroundAlternate=" << rgb(tok.surfaceVariant) << '\n';
+  out << "BackgroundNormal=" << rgb(tok.background) << '\n';
+  out << "BackgroundAlternate=" << rgb(tok.surface) << '\n';
   writeCommonForegrounds(out, tok);
   out << '\n';
 
   out << "[Colors:Button]\n";
-  out << "BackgroundNormal=" << rgb(tok.surfaceVariant) << '\n';
-  out << "BackgroundAlternate=" << rgb(tok.surfaceContainer) << '\n';
+  out << "BackgroundNormal=" << rgb(tok.surfaceRaised) << '\n';
+  out << "BackgroundAlternate=" << rgb(tok.surfaceElevated) << '\n';
   writeCommonForegrounds(out, tok);
   out << '\n';
 
@@ -62,7 +62,7 @@ std::string generatedColors() {
   out << "BackgroundNormal=" << rgb(tok.primary) << '\n';
   out << "BackgroundAlternate=" << rgb(tok.primaryHover) << '\n';
   out << "ForegroundNormal=" << rgb(tok.onPrimary) << '\n';
-  out << "ForegroundInactive=" << rgb(tok.onSurface) << '\n';
+  out << "ForegroundInactive=" << rgb(tok.textPrimary) << '\n';
   out << "ForegroundActive=" << rgb(tok.onPrimary) << '\n';
   out << "ForegroundLink=" << rgb(tok.onPrimary) << '\n';
   out << "ForegroundVisited=" << rgb(tok.error) << '\n';
@@ -75,18 +75,18 @@ std::string generatedColors() {
 
   out << "[Colors:View]\n";
   out << "BackgroundNormal=" << rgb(tok.surface) << '\n';
-  out << "BackgroundAlternate=" << rgb(tok.surfaceVariant) << '\n';
+  out << "BackgroundAlternate=" << rgb(tok.surfaceElevated) << '\n';
   writeCommonForegrounds(out, tok);
   out << '\n';
 
   out << "[Colors:Tooltip]\n";
   out << "BackgroundNormal=" << rgb(tok.surfaceInverse) << '\n';
-  out << "ForegroundNormal=" << rgb(tok.onSurfaceInverse) << '\n';
+  out << "ForegroundNormal=" << rgb(tok.textInverse) << '\n';
   out << '\n';
 
   out << "[Colors:Complementary]\n";
   out << "BackgroundNormal=" << rgb(tok.surfaceInverse) << '\n';
-  out << "ForegroundNormal=" << rgb(tok.onSurfaceInverse) << '\n';
+  out << "ForegroundNormal=" << rgb(tok.textInverse) << '\n';
   out << '\n';
 
   out << "[DecorationColors]\n";

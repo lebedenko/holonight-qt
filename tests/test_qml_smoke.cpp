@@ -3,7 +3,9 @@
 
 #include <QQmlComponent>
 #include <QQmlEngine>
+#include <QScopedPointer>
 #include <QString>
+#include <QVariant>
 
 #include <gtest/gtest.h>
 
@@ -96,6 +98,75 @@ TEST_F(QmlSmoke, HoloniightPalette_DesignSystemAccentsAreValid) {
   )",
                QUrl{});
   ASSERT_EQ(comp.status(), QQmlComponent::Ready) << comp.errorString().toStdString();
+}
+
+TEST_F(QmlSmoke, HoloniightPalette_CanonicalPropertiesAreValid) {
+  QQmlComponent comp{&engine_};
+  comp.setData(R"(
+    import QtQuick
+    import Holonight
+    Item {
+      property color background: HoloniightPalette.background
+      property color surfaceElevated: HoloniightPalette.surfaceElevated
+      property color surfaceRaised: HoloniightPalette.surfaceRaised
+      property color textPrimary: HoloniightPalette.textPrimary
+      property color textSecondary: HoloniightPalette.textSecondary
+      property color textMuted: HoloniightPalette.textMuted
+      property color textDisabled: HoloniightPalette.textDisabled
+      property color borderSubtle: HoloniightPalette.borderSubtle
+      property color borderStrong: HoloniightPalette.borderStrong
+      property color hoverOverlay: HoloniightPalette.hoverOverlay
+      property int radiusControl: HoloniightPalette.radiusControl
+      property int focusBorderWidth: HoloniightPalette.focusBorderWidth
+      property color ansiBlue: HoloniightPalette.ansiBlue
+      property color ansiBrightWhite: HoloniightPalette.ansiBrightWhite
+    }
+  )",
+               QUrl{});
+  ASSERT_EQ(comp.status(), QQmlComponent::Ready) << comp.errorString().toStdString();
+}
+
+TEST_F(QmlSmoke, HoloniightPalette_DeprecatedAliasesRemainAvailable) {
+  QQmlComponent comp{&engine_};
+  comp.setData(R"(
+    import QtQuick
+    import Holonight
+    Item {
+      property bool surfaceAlias: HoloniightPalette.surfaceVariant === HoloniightPalette.surface
+      property bool textAlias: HoloniightPalette.onSurface === HoloniightPalette.textPrimary
+      property bool disabledAlias: HoloniightPalette.onSurfaceDisabled === HoloniightPalette.textDisabled
+      property bool outlineAlias: HoloniightPalette.outlineVariant === HoloniightPalette.borderPassive
+    }
+  )",
+               QUrl{});
+  ASSERT_EQ(comp.status(), QQmlComponent::Ready) << comp.errorString().toStdString();
+  QScopedPointer<QObject> object{comp.create()};
+  ASSERT_NE(object, nullptr);
+  EXPECT_TRUE(object->property("surfaceAlias").toBool());
+  EXPECT_TRUE(object->property("textAlias").toBool());
+  EXPECT_TRUE(object->property("disabledAlias").toBool());
+  EXPECT_TRUE(object->property("outlineAlias").toBool());
+}
+
+TEST_F(QmlSmoke, HoloniightPalette_ReloadEmitsNotification) {
+  QQmlComponent comp{&engine_};
+  comp.setData(R"(
+    import QtQuick
+    import Holonight
+    Item {
+      property int changedCount: 0
+      Connections {
+        target: HoloniightPalette
+        function onPaletteChanged() { changedCount += 1 }
+      }
+      Component.onCompleted: HoloniightPalette.reload()
+    }
+  )",
+               QUrl{});
+  ASSERT_EQ(comp.status(), QQmlComponent::Ready) << comp.errorString().toStdString();
+  QScopedPointer<QObject> object{comp.create()};
+  ASSERT_NE(object, nullptr);
+  EXPECT_GE(object->property("changedCount").toInt(), 1);
 }
 
 TEST_F(QmlSmoke, HolonightTheme_ConfigPropertiesAreValid) {

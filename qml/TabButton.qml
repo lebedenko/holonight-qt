@@ -20,9 +20,9 @@ T.TabButton {
         text: control.text
         font: control.font
         color: {
-            if (!control.enabled) return HoloniightPalette.onSurfaceDisabled
+            if (!control.enabled) return HoloniightPalette.textDisabled
             if (control.checked)  return HoloniightPalette.primary
-            return control.hovered ? HoloniightPalette.onSurface : HoloniightPalette.onSurfaceVariant
+            return control.hovered ? HoloniightPalette.textPrimary : HoloniightPalette.textMuted
         }
         horizontalAlignment: Text.AlignHCenter
         verticalAlignment: Text.AlignVCenter
@@ -48,8 +48,8 @@ T.TabButton {
         Rectangle {
             anchors.fill: parent
             color: "transparent"
-            border.color: HoloniightPalette.focusRing
-            border.width: 1
+            border.color: HoloniightPalette.borderFocus
+            border.width: HoloniightPalette.borderWidth
             visible: control.visualFocus
         }
     }

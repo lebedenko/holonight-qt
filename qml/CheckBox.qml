@@ -31,7 +31,7 @@ T.CheckBox {
         }
 
         border.color: {
-            if (!control.enabled)                     return HoloniightPalette.onSurfaceDisabled
+            if (!control.enabled)                     return HoloniightPalette.textDisabled
             if (control.checkState !== Qt.Unchecked)  return color
             return control.hovered ? HoloniightPalette.borderActive : HoloniightPalette.borderPassive
         }
@@ -76,10 +76,10 @@ T.CheckBox {
             anchors.centerIn: parent
             width: parent.width + 4
             height: parent.height + 4
-            radius: 5
+            radius: HoloniightPalette.radiusControl
             color: "transparent"
-            border.color: HoloniightPalette.focusRing
-            border.width: 2
+            border.color: HoloniightPalette.borderFocus
+            border.width: HoloniightPalette.focusBorderWidth
         }
     }
 
@@ -87,7 +87,7 @@ T.CheckBox {
         leftPadding: control.indicator.width + control.spacing
         text: control.text
         font: control.font
-        color: control.enabled ? HoloniightPalette.onSurface : HoloniightPalette.onSurfaceDisabled
+        color: control.enabled ? HoloniightPalette.textPrimary : HoloniightPalette.textDisabled
         verticalAlignment: Text.AlignVCenter
     }
 }

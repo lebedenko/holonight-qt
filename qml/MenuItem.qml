@@ -40,7 +40,7 @@ T.MenuItem {
         Text {
             text: control.text
             font: control.font
-            color: control.enabled ? (control.highlighted ? HoloniightPalette.onPrimary : HoloniightPalette.onSurface) : HoloniightPalette.onSurfaceDisabled
+            color: control.enabled ? (control.highlighted ? HoloniightPalette.onPrimary : HoloniightPalette.textPrimary) : HoloniightPalette.textDisabled
             verticalAlignment: Text.AlignVCenter
         }
     }
@@ -50,14 +50,14 @@ T.MenuItem {
         anchors.verticalCenter: parent.verticalCenter
         visible: control.subMenu
         text: "›"
-        color: control.enabled ? HoloniightPalette.onSurface : HoloniightPalette.onSurfaceDisabled
+        color: control.enabled ? HoloniightPalette.textPrimary : HoloniightPalette.textDisabled
         font.pixelSize: 14
     }
 
     background: Rectangle {
         implicitWidth: 180
         implicitHeight: 28
-        radius: 4
+        radius: HoloniightPalette.radiusControl
         color: {
             if (control.pressed || control.highlighted) return HoloniightPalette.primary
             if (control.hovered)                        return HoloniightPalette.surfaceHover

@@ -28,9 +28,9 @@ T.Menu {
 
     background: Rectangle {
         implicitWidth: 180
-        color: HoloniightPalette.surface
+        color: HoloniightPalette.surfaceRaised
         border.color: HoloniightPalette.borderPassive
-        border.width: 1
-        radius: 4
+        border.width: HoloniightPalette.borderWidth
+        radius: HoloniightPalette.radiusPopup
     }
 }
