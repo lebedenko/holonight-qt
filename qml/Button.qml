@@ -25,7 +25,10 @@ T.Button {
         icon: root.icon
         text: root.text
         font: root.font
-        color: root.highlighted ? HoloniightPalette.onPrimary : HoloniightPalette.textPrimary
+        color: {
+            if (!root.enabled) return HoloniightPalette.textDisabled
+            return root.highlighted ? HoloniightPalette.onPrimary : HoloniightPalette.textPrimary
+        }
     }
 
     background: Rectangle {
@@ -36,7 +39,7 @@ T.Button {
         color: {
             if (!root.enabled)    return HoloniightPalette.surfaceRaised
             if (root.pressed)     return HoloniightPalette.surface
-            if (root.highlighted) return HoloniightPalette.primary
+            if (root.highlighted) return root.hovered ? HoloniightPalette.primaryHover : HoloniightPalette.primary
             if (root.hovered)     return HoloniightPalette.surfaceHover
             return HoloniightPalette.surfaceRaised
         }

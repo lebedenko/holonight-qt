@@ -43,7 +43,7 @@ T.CheckBox {
             y: 6
             width: 9
             height: 2
-            color: HoloniightPalette.onPrimary
+            color: root.enabled ? HoloniightPalette.onPrimary : HoloniightPalette.textDisabled
             rotation: -45
             transformOrigin: Item.Left
         }
@@ -57,7 +57,7 @@ T.CheckBox {
             }
             width: 2
             height: 5
-            color: HoloniightPalette.onPrimary
+            color: root.enabled ? HoloniightPalette.onPrimary : HoloniightPalette.textDisabled
             rotation: -45
             transformOrigin: Item.Bottom
         }
@@ -68,7 +68,7 @@ T.CheckBox {
             anchors.centerIn: parent
             width: 8
             height: 2
-            color: HoloniightPalette.onPrimary
+            color: root.enabled ? HoloniightPalette.onPrimary : HoloniightPalette.textDisabled
         }
 
         // Focus ring

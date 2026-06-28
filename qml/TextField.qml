@@ -21,7 +21,7 @@ T.TextField {
     topPadding: 6
     bottomPadding: 6
 
-    color: HoloniightPalette.textPrimary
+    color: root.enabled ? HoloniightPalette.textPrimary : HoloniightPalette.textDisabled
     selectionColor: Qt.rgba(HoloniightPalette.primary.r, HoloniightPalette.primary.g,
                             HoloniightPalette.primary.b, 0.3)
     selectedTextColor: HoloniightPalette.onPrimary

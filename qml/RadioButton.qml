@@ -43,7 +43,7 @@ T.RadioButton {
             width: 6
             height: 6
             radius: 3
-            color: HoloniightPalette.onPrimary
+            color: root.enabled ? HoloniightPalette.onPrimary : HoloniightPalette.textDisabled
         }
 
         // Focus ring
