@@ -231,9 +231,10 @@ bool drawFlatButtonPanelIfNeeded(const QStyleOption* option, QPainter* painter, 
 HoloniightStyle::HoloniightStyle()
     : QProxyStyle(QStringLiteral("fusion")),
       config_{Holonight::ThemeConfig::load()},
-      tokens_{Holonight::tokensForMode(config_.resolvedColorMode())} {}
+      tokens_{Holonight::tokensForMode(config_.resolvedColorMode())},
+      palette_{Holonight::buildPalette(tokens_)} {}
 
-QPalette HoloniightStyle::standardPalette() const { return Holonight::buildPalette(tokens_); }
+QPalette HoloniightStyle::standardPalette() const { return palette_; }
 
 void HoloniightStyle::polish(QPalette& palette) {
   palette = standardPalette();

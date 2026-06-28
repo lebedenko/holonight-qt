@@ -19,6 +19,10 @@ class EnvGuard {
       old_value_ = qgetenv(name);
     }
   }
+  EnvGuard(const EnvGuard&) = delete;
+  EnvGuard& operator=(const EnvGuard&) = delete;
+  EnvGuard(EnvGuard&&) = delete;
+  EnvGuard& operator=(EnvGuard&&) = delete;
 
   ~EnvGuard() {
     if (had_value_) {
@@ -69,7 +73,7 @@ TEST(PlatformThemeSmoke, ColorSchemeIsDark) {
 }
 
 TEST(PlatformThemeSmoke, LightAppearanceUsesLightPaletteAndScheme) {
-  EnvGuard guard{"HOLONIGHT_APPEARANCE_MODE"};
+  EnvGuard guard = EnvGuard{"HOLONIGHT_APPEARANCE_MODE"};
   qputenv("HOLONIGHT_APPEARANCE_MODE", "light");
 
   HoloniightTheme theme;

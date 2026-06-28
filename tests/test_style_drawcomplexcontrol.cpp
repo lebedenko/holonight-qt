@@ -283,8 +283,9 @@ TEST_F(DrawComplexTest, MainWindowDockSeparatorIsOnePixelWide) {
 
   int separatorPixels = 0;
   const int y = image.height() / 2;
+  const QColor separatorColor = style_.standardPalette().color(QPalette::Mid);
   for (int x = 0; x < image.width(); ++x) {
-    if (image.pixelColor(x, y) == style_.standardPalette().color(QPalette::Mid)) {
+    if (image.pixelColor(x, y) == separatorColor) {
       ++separatorPixels;
     }
   }

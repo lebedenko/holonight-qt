@@ -5,6 +5,7 @@
 
 #include <QDebug>
 #include <QFile>
+#include <QFileInfo>
 #include <QGuiApplication>
 #include <QJsonDocument>
 #include <QJsonObject>
@@ -21,6 +22,8 @@ constexpr int kMinFontSize = 6;
 constexpr int kMaxFontSize = 48;
 constexpr qreal kMinScaleFactor = 0.5;
 constexpr qreal kMaxScaleFactor = 3.0;
+constexpr qint64 kMaxConfigFileSize = 64 * 1024;
+constexpr int kConfigSchemaVersion = 1;
 
 [[nodiscard]] QString cleanString(const QString& value) { return value.trimmed(); }
 
@@ -75,6 +78,12 @@ void setAppearanceModeIfValid(Holonight::AppearanceMode* target, const QString& 
 }
 
 void readJsonObject(Holonight::ThemeConfig* config, const QJsonObject& root) {
+  if (root.contains(QStringLiteral("version")) &&
+      root.value(QStringLiteral("version")).toInt(kConfigSchemaVersion) != kConfigSchemaVersion) {
+    qWarning() << "Unsupported Holonight config version" << root.value(QStringLiteral("version"));
+    return;
+  }
+
   const QJsonObject appearance = root.value(QStringLiteral("appearance")).toObject();
   setAppearanceModeIfValid(&config->appearance_mode, appearance.value(QStringLiteral("mode")).toString());
 
@@ -123,7 +132,15 @@ void readIniFile(Holonight::ThemeConfig* config, const QString& path) {
 
 void readConfigFile(Holonight::ThemeConfig* config, const QString& path) {
   QFile file = QFile{path};
-  if (!file.exists() || !file.open(QIODevice::ReadOnly | QIODevice::Text)) {
+  if (!file.exists()) {
+    return;
+  }
+  if (!file.open(QIODevice::ReadOnly | QIODevice::Text)) {
+    qWarning() << "Failed to open Holonight config" << path << file.errorString();
+    return;
+  }
+  if (file.size() > kMaxConfigFileSize) {
+    qWarning() << "Ignoring oversized Holonight config" << path << file.size();
     return;
   }
 
@@ -137,6 +154,10 @@ void readConfigFile(Holonight::ThemeConfig* config, const QString& path) {
   const QJsonDocument document = QJsonDocument::fromJson(bytes, &error);
   if (error.error == QJsonParseError::NoError && document.isObject()) {
     readJsonObject(config, document.object());
+    return;
+  }
+  if (QFileInfo{path}.suffix().compare(QStringLiteral("json"), Qt::CaseInsensitive) == 0) {
+    qWarning() << "Failed to parse Holonight JSON config" << path << error.errorString();
     return;
   }
 

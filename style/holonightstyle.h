@@ -72,4 +72,5 @@ class HoloniightStyle : public QProxyStyle {
 
   Holonight::ThemeConfig config_;
   Holonight::ColorTokens tokens_;
+  QPalette palette_;
 };

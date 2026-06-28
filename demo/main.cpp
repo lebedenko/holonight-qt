@@ -13,6 +13,14 @@
 #include <QQmlApplicationEngine>
 #include <QQuickStyle>
 
+namespace {
+
+bool isColorModeValue(const QString& value) {
+  return value == QStringLiteral("light") || value == QStringLiteral("dark");
+}
+
+}  // namespace
+
 int main(int argc, char* argv[]) {
   // Prepend paths relative to the binary so the installed demo finds
   // ~/.local/lib/qt6/plugins/{styles,platformthemes} without overriding
@@ -27,12 +35,12 @@ int main(int argc, char* argv[]) {
     const QString arg = QString::fromLocal8Bit(argv[i]);
     if ((arg == QStringLiteral("--mode") || arg == QStringLiteral("-m")) && i + 1 < argc) {
       const QString value = QString::fromLocal8Bit(argv[i + 1]).toLower();
-      if (value == QStringLiteral("light") || value == QStringLiteral("dark")) {
+      if (isColorModeValue(value)) {
         qputenv("HOLONIGHT_APPEARANCE_MODE", value.toLocal8Bit());
       }
     } else if (arg.startsWith(QStringLiteral("--mode="))) {
       const QString value = arg.mid(7).toLower();
-      if (value == QStringLiteral("light") || value == QStringLiteral("dark")) {
+      if (isColorModeValue(value)) {
         qputenv("HOLONIGHT_APPEARANCE_MODE", value.toLocal8Bit());
       }
     }
@@ -53,7 +61,7 @@ int main(int argc, char* argv[]) {
 
   if (parser.isSet(modeOption)) {
     const QString mode = parser.value(modeOption).toLower();
-    if (mode != QStringLiteral("light") && mode != QStringLiteral("dark")) {
+    if (!isColorModeValue(mode)) {
       qWarning() << "Error: Invalid mode" << mode << "(must be 'light' or 'dark')";
       return 1;
     }

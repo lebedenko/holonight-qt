@@ -19,6 +19,10 @@ class EnvGuard {
       old_value_ = qgetenv(name);
     }
   }
+  EnvGuard(const EnvGuard&) = delete;
+  EnvGuard& operator=(const EnvGuard&) = delete;
+  EnvGuard(EnvGuard&&) = delete;
+  EnvGuard& operator=(EnvGuard&&) = delete;
 
   ~EnvGuard() {
     if (had_value_) {
@@ -165,6 +169,54 @@ TEST(ThemeConfig, InvalidAppearanceFallsBackToDark) {
   writeFile(path, R"({ "appearance": { "mode": "invalid" } })");
   qputenv("HOLONIGHT_CONFIG_FILE", path.toLocal8Bit());
   qputenv("HOLONIGHT_APPEARANCE_MODE", "also-invalid");
+
+  const Holonight::ThemeConfig config = Holonight::ThemeConfig::load();
+  EXPECT_EQ(config.appearance_mode, Holonight::AppearanceMode::Dark);
+  EXPECT_EQ(config.resolvedColorMode(), Holonight::ColorMode::Dark);
+}
+
+TEST(ThemeConfig, MalformedJsonDoesNotFallBackToIni) {
+  EnvGuard configFileGuard = EnvGuard{"HOLONIGHT_CONFIG_FILE"};
+
+  QTemporaryDir dir;
+  ASSERT_TRUE(dir.isValid());
+  const QString path = dir.filePath(QStringLiteral("theme.json"));
+  writeFile(path, R"(
+[appearance]
+mode=light
+)");
+  qputenv("HOLONIGHT_CONFIG_FILE", path.toLocal8Bit());
+
+  const Holonight::ThemeConfig config = Holonight::ThemeConfig::load();
+  EXPECT_EQ(config.appearance_mode, Holonight::AppearanceMode::Dark);
+  EXPECT_EQ(config.resolvedColorMode(), Holonight::ColorMode::Dark);
+}
+
+TEST(ThemeConfig, OversizedConfigFallsBackToDefaults) {
+  EnvGuard configFileGuard = EnvGuard{"HOLONIGHT_CONFIG_FILE"};
+
+  QTemporaryDir dir;
+  ASSERT_TRUE(dir.isValid());
+  const QString path = dir.filePath(QStringLiteral("theme.json"));
+  writeFile(path, QByteArray(70 * 1024, '{'));
+  qputenv("HOLONIGHT_CONFIG_FILE", path.toLocal8Bit());
+
+  const Holonight::ThemeConfig config = Holonight::ThemeConfig::load();
+  EXPECT_EQ(config.icon_theme, Holonight::ThemeConfig::defaults().icon_theme);
+  EXPECT_EQ(config.appearance_mode, Holonight::AppearanceMode::Dark);
+}
+
+TEST(ThemeConfig, UnsupportedConfigVersionFallsBackToDefaults) {
+  EnvGuard configFileGuard = EnvGuard{"HOLONIGHT_CONFIG_FILE"};
+
+  QTemporaryDir dir;
+  ASSERT_TRUE(dir.isValid());
+  const QString path = dir.filePath(QStringLiteral("theme.json"));
+  writeFile(path, R"({
+    "version": 2,
+    "appearance": { "mode": "light" }
+  })");
+  qputenv("HOLONIGHT_CONFIG_FILE", path.toLocal8Bit());
 
   const Holonight::ThemeConfig config = Holonight::ThemeConfig::load();
   EXPECT_EQ(config.appearance_mode, Holonight::AppearanceMode::Dark);
