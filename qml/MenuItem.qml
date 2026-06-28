@@ -59,11 +59,8 @@ T.MenuItem {
     background: Rectangle {
         implicitWidth: 180
         implicitHeight: 28
+        visible: root.pressed || root.highlighted || root.hovered
         radius: HoloniightPalette.radiusControl
-        color: {
-            if (root.pressed || root.highlighted) return HoloniightPalette.primary
-            if (root.hovered)                        return HoloniightPalette.surfaceHover
-            return Qt.rgba(0, 0, 0, 0)
-        }
+        color: root.pressed || root.highlighted ? HoloniightPalette.primary : HoloniightPalette.surfaceHover
     }
 }

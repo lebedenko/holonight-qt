@@ -49,17 +49,17 @@ T.CheckBox {
         }
         Rectangle {
             visible: root.checkState === Qt.Checked
+            width: 2
+            height: 5
+            color: root.enabled ? HoloniightPalette.onPrimary : HoloniightPalette.textDisabled
+            rotation: -45
+            transformOrigin: Item.Bottom
             anchors {
                 left: parent.left
                 bottom: parent.bottom
                 leftMargin: 3
                 bottomMargin: 4
             }
-            width: 2
-            height: 5
-            color: root.enabled ? HoloniightPalette.onPrimary : HoloniightPalette.textDisabled
-            rotation: -45
-            transformOrigin: Item.Bottom
         }
 
         // Indeterminate dash

@@ -20,32 +20,7 @@ T.ComboBox {
     topPadding: 6
     bottomPadding: 6
 
-    delegate: T.ItemDelegate {
-        id: delegateRoot
-
-        required property int index
-        required property var model
-        required property var modelData
-
-        width: root.popup.width
-        height: 28
-        text: root.textRole ? (Array.isArray(root.model) ? modelData[root.textRole] : model[root.textRole]) : modelData
-        highlighted: root.highlightedIndex === index
-
-        contentItem: Text {
-            text: delegateRoot.text
-            color: ListView.isCurrentItem ? HoloniightPalette.onPrimary : HoloniightPalette.textPrimary
-            font: root.font
-            verticalAlignment: Text.AlignVCenter
-            textFormat: Text.PlainText
-            leftPadding: 8
-        }
-
-        background: Rectangle {
-            color: delegateRoot.highlighted ? HoloniightPalette.surfaceHover : (ListView.isCurrentItem ? HoloniightPalette.primary : Qt.rgba(0, 0, 0, 0))
-            radius: HoloniightPalette.radiusControl
-        }
-    }
+    delegate: comboBoxDelegate
 
     indicator: Text {
         x: root.width - width - 8
@@ -82,12 +57,12 @@ T.ComboBox {
     popup: T.Popup {
         y: root.height
         width: root.width
-        implicitHeight: Math.min(contentItem.implicitHeight, root.Window.window ? Math.max(0, root.Window.window.height - y - 8) : contentItem.implicitHeight)
+        implicitHeight: Math.min(contentItem.implicitHeight, Window.window ? Math.max(0, Window.window.height - y - 8) : contentItem.implicitHeight)
         padding: 1
 
         contentItem: ListView {
             clip: true
-            implicitHeight: Math.min(contentHeight, root.Window.window ? Math.max(0, root.Window.window.height - root.popup.y - 8) : contentHeight)
+            implicitHeight: Math.min(contentHeight, Window.window ? Math.max(0, Window.window.height - root.popup.y - 8) : contentHeight)
             model: root.delegateModel
             currentIndex: root.highlightedIndex
             ScrollBar.vertical: T.ScrollBar {}
@@ -98,6 +73,36 @@ T.ComboBox {
             border.color: HoloniightPalette.borderPassive
             border.width: HoloniightPalette.borderWidth
             radius: HoloniightPalette.radiusPopup
+        }
+    }
+
+    Component {
+        id: comboBoxDelegate
+
+        T.ItemDelegate {
+            id: delegateRoot
+
+            required property int index
+
+            width: root.popup.width
+            height: 28
+            text: root.textAt(index)
+            highlighted: root.highlightedIndex === index
+
+            contentItem: Text {
+                text: delegateRoot.text
+                color: ListView.isCurrentItem ? HoloniightPalette.onPrimary : HoloniightPalette.textPrimary
+                font: root.font
+                verticalAlignment: Text.AlignVCenter
+                textFormat: Text.PlainText
+                leftPadding: 8
+            }
+
+            background: Rectangle {
+                visible: delegateRoot.highlighted || ListView.isCurrentItem
+                color: delegateRoot.highlighted ? HoloniightPalette.surfaceHover : HoloniightPalette.primary
+                radius: HoloniightPalette.radiusControl
+            }
         }
     }
 }

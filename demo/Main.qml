@@ -196,17 +196,17 @@ ApplicationWindow {
                         Layout.rightMargin: 40
                         Layout.bottomMargin: 32
                         TextArea {
-                            Layout.fillWidth: true
                             implicitHeight: 80
                             text: "Multi-line\ntext area\nwith content"
                             wrapMode: TextArea.Wrap
+                            Layout.fillWidth: true
                         }
                         TextArea {
-                            Layout.fillWidth: true
                             implicitHeight: 80
                             text: "Disabled text area"
                             wrapMode: TextArea.Wrap
                             enabled: false
+                            Layout.fillWidth: true
                         }
                     }
 
@@ -259,8 +259,8 @@ ApplicationWindow {
                         }
                         StackLayout {
                             currentIndex: innerTabBar.currentIndex
-                            Layout.fillWidth: true
                             implicitHeight: 60
+                            Layout.fillWidth: true
                             Item {
                                 Rectangle { anchors.fill: parent; color: palette.base; radius: 4
                                     Label { anchors.centerIn: parent; text: "Alpha content"; color: palette.placeholderText } }
@@ -309,18 +309,16 @@ ApplicationWindow {
 
                     Label { text: "SCROLLBAR"; font.pixelSize: 11; font.letterSpacing: 1; color: palette.placeholderText; Layout.leftMargin: 40; Layout.bottomMargin: 10 }
                     Rectangle {
-                        Layout.fillWidth: true
-                        Layout.leftMargin: 40
-                        Layout.rightMargin: 40
-                        Layout.bottomMargin: 32
                         implicitHeight: 180
                         color: palette.base
                         radius: 4
                         border.color: palette.mid
                         border.width: 1
-                        clip: true
+                        Layout.fillWidth: true
+                        Layout.leftMargin: 40
+                        Layout.rightMargin: 40
+                        Layout.bottomMargin: 32
                         ListView {
-                            id: navListView
                             anchors.fill: parent
                             anchors.margins: 1
                             model: [
@@ -329,20 +327,26 @@ ApplicationWindow {
                                 "ScrollBar", "ScrollView", "Slider", "SpinBox", "Switch",
                                 "TabBar", "TextField", "TextArea", "ToolBar", "ToolButton"
                             ]
-                            delegate: ItemDelegate {
-                                required property int index
-                                required property string modelData
+                            delegate: navItemDelegate
+                            ScrollBar.vertical: ScrollBar { policy: ScrollBar.AlwaysOn }
 
-                                width: ListView.view ? ListView.view.width : 0
-                                text: modelData
-                                highlighted: ListView.isCurrentItem
-                                onClicked: {
-                                    if (ListView.view) {
-                                        ListView.view.currentIndex = index
+                            Component {
+                                id: navItemDelegate
+
+                                ItemDelegate {
+                                    required property int index
+                                    required property string modelData
+
+                                    width: ListView.view ? ListView.view.width : 0
+                                    text: modelData
+                                    highlighted: ListView.isCurrentItem
+                                    onClicked: {
+                                        if (ListView.view) {
+                                            ListView.view.currentIndex = index
+                                        }
                                     }
                                 }
                             }
-                            ScrollBar.vertical: ScrollBar { policy: ScrollBar.AlwaysOn }
                         }
                     }
 
@@ -472,12 +476,12 @@ ApplicationWindow {
 
                     Label { text: "SCROLL VIEW"; font.pixelSize: 11; font.letterSpacing: 1; color: palette.placeholderText; Layout.leftMargin: 40; Layout.bottomMargin: 10 }
                     ScrollView {
+                        implicitHeight: 120
+                        clip: true
                         Layout.fillWidth: true
                         Layout.leftMargin: 40
                         Layout.rightMargin: 40
                         Layout.bottomMargin: 32
-                        implicitHeight: 120
-                        clip: true
                         ColumnLayout {
                             width: parent.availableWidth
                             spacing: 4
@@ -495,18 +499,16 @@ ApplicationWindow {
 
                     Label { text: "LIST VIEW"; font.pixelSize: 11; font.letterSpacing: 1; color: palette.placeholderText; Layout.leftMargin: 40; Layout.bottomMargin: 10 }
                     Rectangle {
-                        Layout.fillWidth: true
-                        Layout.leftMargin: 40
-                        Layout.rightMargin: 40
-                        Layout.bottomMargin: 32
                         implicitHeight: 180
                         color: palette.base
                         radius: 4
                         border.color: palette.mid
                         border.width: 1
-                        clip: true
+                        Layout.fillWidth: true
+                        Layout.leftMargin: 40
+                        Layout.rightMargin: 40
+                        Layout.bottomMargin: 32
                         ListView {
-                            id: containersListView
                             anchors.fill: parent
                             anchors.margins: 1
                             model: [
@@ -514,20 +516,26 @@ ApplicationWindow {
                                 "ItemDelegate Four", "ItemDelegate Five", "ItemDelegate Six",
                                 "ItemDelegate Seven", "ItemDelegate Eight"
                             ]
-                            delegate: ItemDelegate {
-                                required property int index
-                                required property string modelData
+                            delegate: containerItemDelegate
+                            ScrollBar.vertical: ScrollBar { policy: ScrollBar.AlwaysOn }
 
-                                width: ListView.view ? ListView.view.width : 0
-                                text: modelData
-                                highlighted: ListView.isCurrentItem
-                                onClicked: {
-                                    if (ListView.view) {
-                                        ListView.view.currentIndex = index
+                            Component {
+                                id: containerItemDelegate
+
+                                ItemDelegate {
+                                    required property int index
+                                    required property string modelData
+
+                                    width: ListView.view ? ListView.view.width : 0
+                                    text: modelData
+                                    highlighted: ListView.isCurrentItem
+                                    onClicked: {
+                                        if (ListView.view) {
+                                            ListView.view.currentIndex = index
+                                        }
                                     }
                                 }
                             }
-                            ScrollBar.vertical: ScrollBar { policy: ScrollBar.AlwaysOn }
                         }
                     }
 
