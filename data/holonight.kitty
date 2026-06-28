@@ -1,0 +1,47 @@
+# HoloNight Kitty Terminal Theme
+# Generated from the HoloNight dark color tokens
+
+# Base colors
+background            #10131f
+foreground            #c0caf5
+
+# Cursor colors
+cursor                #7dcfff
+cursor_text_color     #10131f
+
+# Selection colors
+selection_background  #33467c
+selection_foreground  #c0caf5
+
+# ANSI colors
+# Black (Normal / Bright)
+color0                #10131f
+color8                #565f89
+
+# Red (Normal / Bright)
+color1                #f7768e
+color9                #ff8ca3
+
+# Green (Normal / Bright)
+color2                #9ece6a
+color10               #b9f27c
+
+# Yellow (Normal / Bright)
+color3                #ff9e64
+color11               #ffc777
+
+# Blue (Normal / Bright)
+color4                #7aa2f7
+color12               #9ab8ff
+
+# Magenta (Normal / Bright)
+color5                #bb9af7
+color13               #d7b0ff
+
+# Cyan (Normal / Bright)
+color6                #7dcfff
+color14               #9de8ff
+
+# White (Normal / Bright)
+color7                #c0caf5
+color15               #d5dcff

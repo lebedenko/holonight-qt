@@ -1,0 +1,47 @@
+# HoloNight Ghostty Terminal Theme
+# Generated from the HoloNight dark color tokens
+
+# Base colors
+background = #10131f
+foreground = #c0caf5
+
+# Cursor colors
+cursor-color = #7dcfff
+cursor-text = #10131f
+
+# Selection colors
+selection-background = #33467c
+selection-foreground = #c0caf5
+
+# ANSI colors
+# Black
+palette = 0=#10131f
+palette = 8=#565f89
+
+# Red
+palette = 1=#f7768e
+palette = 9=#ff8ca3
+
+# Green
+palette = 2=#9ece6a
+palette = 10=#b9f27c
+
+# Yellow
+palette = 3=#ff9e64
+palette = 11=#ffc777
+
+# Blue
+palette = 4=#7aa2f7
+palette = 12=#9ab8ff
+
+# Magenta
+palette = 5=#bb9af7
+palette = 13=#d7b0ff
+
+# Cyan
+palette = 6=#7dcfff
+palette = 14=#9de8ff
+
+# White
+palette = 7=#c0caf5
+palette = 15=#d5dcff
