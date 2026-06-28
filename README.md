@@ -101,13 +101,13 @@ To make this permanent, export `QT_QPA_PLATFORMTHEME=holonight` in your composit
 HoloNight loads user-facing theme configuration from:
 
 ```text
-~/.config/holonight/theme.json
+~/.config/holonight/theme.conf
 ```
 
-If `theme.json` does not exist, it falls back to:
+If `theme.conf` does not exist, it falls back to the legacy JSON file:
 
 ```text
-~/.config/holonight/theme.conf
+~/.config/holonight/theme.json
 ```
 
 `HOLONIGHT_CONFIG_FILE` can point at another file for testing. Environment variables override file values and are intended for development/debugging.

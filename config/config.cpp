@@ -238,11 +238,15 @@ QString ThemeConfig::configFilePath() {
   }
 
   const QString base = QStandardPaths::writableLocation(QStandardPaths::ConfigLocation) + QStringLiteral("/holonight");
+  const QString iniPath = base + QStringLiteral("/theme.conf");
+  if (QFile::exists(iniPath)) {
+    return iniPath;
+  }
   const QString jsonPath = base + QStringLiteral("/theme.json");
   if (QFile::exists(jsonPath)) {
     return jsonPath;
   }
-  return base + QStringLiteral("/theme.conf");
+  return iniPath;
 }
 
 ThemeConfig ThemeConfig::load() {

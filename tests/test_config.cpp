@@ -3,6 +3,7 @@
 
 #include "holonight/config.h"
 
+#include <QDir>
 #include <QFile>
 #include <QGuiApplication>
 #include <QStyleHints>
@@ -157,6 +158,26 @@ mode=light
   const Holonight::ThemeConfig config = Holonight::ThemeConfig::load();
   EXPECT_EQ(config.appearance_mode, Holonight::AppearanceMode::Light);
   EXPECT_EQ(config.resolvedColorMode(), Holonight::ColorMode::Light);
+}
+
+TEST(ThemeConfig, ConfigFilePathPrefersIniOverLegacyJson) {
+  EnvGuard configFileGuard = EnvGuard{"HOLONIGHT_CONFIG_FILE"};
+  EnvGuard xdgGuard = EnvGuard{"XDG_CONFIG_HOME"};
+  qunsetenv("HOLONIGHT_CONFIG_FILE");
+
+  QTemporaryDir dir;
+  ASSERT_TRUE(dir.isValid());
+  qputenv("XDG_CONFIG_HOME", dir.path().toLocal8Bit());
+  const QString config_dir = dir.filePath(QStringLiteral("holonight"));
+  ASSERT_TRUE(QDir{}.mkpath(config_dir));
+  const QString ini_path = config_dir + QStringLiteral("/theme.conf");
+  const QString json_path = config_dir + QStringLiteral("/theme.json");
+  writeFile(ini_path, "[appearance]\nmode=light\n");
+  writeFile(json_path, R"({ "appearance": { "mode": "dark" } })");
+
+  EXPECT_EQ(Holonight::ThemeConfig::configFilePath(), ini_path);
+  const Holonight::ThemeConfig config = Holonight::ThemeConfig::load();
+  EXPECT_EQ(config.appearance_mode, Holonight::AppearanceMode::Light);
 }
 
 TEST(ThemeConfig, InvalidAppearanceFallsBackToDark) {

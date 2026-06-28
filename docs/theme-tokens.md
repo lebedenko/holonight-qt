@@ -117,7 +117,7 @@ Startup-only platform integration values remain on `HolonightTheme` as constants
 Current implemented precedence is:
 
 1. Built-in defaults from `ThemeConfig::defaults()`.
-2. Config file selected from `HOLONIGHT_CONFIG_FILE` when set; otherwise legacy user config from `~/.config/holonight/theme.json`, or `~/.config/holonight/theme.conf` if JSON is absent.
+2. Config file selected from `HOLONIGHT_CONFIG_FILE` when set; otherwise user config from `~/.config/holonight/theme.conf`, or legacy `~/.config/holonight/theme.json` if INI is absent.
 3. Environment value overrides such as `HOLONIGHT_APPEARANCE_MODE`, `HOLONIGHT_ICON_THEME`, `HOLONIGHT_FONT`, and `HOLONIGHT_SCALE_FACTOR`.
 
 Appearance mode is configured as `dark`, `light`, or `system`. Invalid or missing values resolve to dark. `system` reads `QGuiApplication::styleHints()->colorScheme()` at startup; `Unknown` or no application instance resolves to dark.
