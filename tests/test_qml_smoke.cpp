@@ -78,6 +78,21 @@ TEST_F(QmlSmoke, ComboBox_LoadsWithoutError) {
   checkComponent(engine_, R"(import Holonight; ComboBox { model: ["a", "b"] })");
 }
 
+TEST_F(QmlSmoke, ComboBox_InstantiatesAndOpensPopup) {
+  QQmlComponent comp = QQmlComponent{&engine_};
+  comp.setData(R"(
+    import QtQuick
+    import Holonight
+    ComboBox {
+      model: ["item1", "item2", "item3"]
+    }
+  )", QUrl{});
+  ASSERT_EQ(comp.status(), QQmlComponent::Ready) << comp.errorString().toStdString();
+  std::unique_ptr<QObject> object{comp.create()};
+  ASSERT_NE(object, nullptr);
+  object->setProperty("opened", true);
+}
+
 TEST_F(QmlSmoke, Slider_LoadsWithoutError) { checkComponent(engine_, R"(import Holonight; Slider {})"); }
 
 TEST_F(QmlSmoke, Switch_LoadsWithoutError) {
@@ -95,6 +110,22 @@ TEST_F(QmlSmoke, TabButton_LoadsWithoutError) {
 }
 
 TEST_F(QmlSmoke, Menu_LoadsWithoutError) { checkComponent(engine_, R"(import Holonight; Menu {})"); }
+
+TEST_F(QmlSmoke, Menu_InstantiatesAndOpens) {
+  QQmlComponent comp = QQmlComponent{&engine_};
+  comp.setData(R"(
+    import QtQuick
+    import Holonight
+    Menu {
+      MenuItem { text: "Item 1" }
+      MenuItem { text: "Item 2" }
+    }
+  )", QUrl{});
+  ASSERT_EQ(comp.status(), QQmlComponent::Ready) << comp.errorString().toStdString();
+  std::unique_ptr<QObject> object{comp.create()};
+  ASSERT_NE(object, nullptr);
+  object->setProperty("opened", true);
+}
 
 TEST_F(QmlSmoke, MenuItem_LoadsWithoutError) {
   checkComponent(engine_, R"(import Holonight; MenuItem { text: "Action" })");

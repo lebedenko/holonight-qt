@@ -19,7 +19,7 @@ T.Menu {
     delegate: MenuItem {}
 
     contentItem: ListView {
-        implicitHeight: Math.min(contentHeight, Window.window ? Math.max(0, Window.window.height - root.y - 8) : contentHeight)
+        implicitHeight: contentHeight
         model: root.contentModel
         interactive: contentHeight > implicitHeight
         clip: true
