@@ -211,7 +211,20 @@ TEST_F(QmlSmoke, HoloniightPalette_DeprecatedAliasesRemainAvailable) {
   EXPECT_TRUE(object->property("outlineAlias").toBool());
 }
 
-TEST_F(QmlSmoke, HoloniightPalette_ReloadEmitsNotification) {
+TEST_F(QmlSmoke, HoloniightPalette_ReloadEmitsNotificationOnChange) {
+  // Force singleton creation in dark mode first.
+  {
+    QQmlComponent init = QQmlComponent{&engine_};
+    init.setData(R"(import QtQuick; import Holonight; Item { property color c: HoloniightPalette.primary })",
+                 QUrl{});
+    std::unique_ptr<QObject> tmp{init.create()};
+    ASSERT_NE(tmp, nullptr);
+  }
+
+  // Switching to light forces a token change → signal must fire.
+  EnvGuard guard = EnvGuard{"HOLONIGHT_APPEARANCE_MODE"};
+  qputenv("HOLONIGHT_APPEARANCE_MODE", "light");
+
   QQmlComponent comp = QQmlComponent{&engine_};
   comp.setData(R"(
     import QtQuick

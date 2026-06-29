@@ -24,9 +24,8 @@ endif()
 
 add_subdirectory(palette)
 add_subdirectory(config)
-add_subdirectory(style)
+add_subdirectory(src)
 add_subdirectory(qml)
-add_subdirectory(platformtheme)
 add_subdirectory(tools)
 
 if(BUILD_TESTS)
@@ -45,7 +44,7 @@ find_program(CLANG_TIDY clang-tidy)
 file(GLOB_RECURSE ALL_CXX_IMPL_FILES
     LIST_DIRECTORIES false
     CONFIGURE_DEPENDS
-    platformtheme/*.cpp style/*.cpp palette/*.cpp tools/*.cpp tests/*.cpp
+    src/*.cpp palette/*.cpp config/*.cpp tools/*.cpp tests/*.cpp
 )
 
 if(CLANG_TIDY)

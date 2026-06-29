@@ -46,6 +46,12 @@ void setScaleIfValid(qreal* target, qreal value) {
   }
 }
 
+void setTransparencyIfValid(qreal* target, qreal value) {
+  if (value >= 0.0 && value <= 1.0) {
+    *target = value;
+  }
+}
+
 void setAppearanceModeIfValid(Holonight::AppearanceMode* target, const QString& value) {
   const QString cleaned = cleanString(value).toLower();
   if (cleaned == QStringLiteral("dark")) {
@@ -86,6 +92,13 @@ void readJsonObject(Holonight::ThemeConfig* config, const QJsonObject& root) {
 
   const QJsonObject appearance = root.value(QStringLiteral("appearance")).toObject();
   setAppearanceModeIfValid(&config->appearance_mode, appearance.value(QStringLiteral("mode")).toString());
+  setStringIfPresent(&config->scheme, appearance.value(QStringLiteral("scheme")).toString());
+  setStringIfPresent(&config->accent, appearance.value(QStringLiteral("accent")).toString());
+
+  const QJsonObject effects = root.value(QStringLiteral("effects")).toObject();
+  if (effects.contains(QStringLiteral("transparency"))) {
+    setTransparencyIfValid(&config->transparency, effects.value(QStringLiteral("transparency")).toDouble(1.0));
+  }
 
   const QJsonObject icons = root.value(QStringLiteral("icons")).toObject();
   setStringIfPresent(&config->icon_theme, icons.value(QStringLiteral("theme")).toString());
@@ -109,6 +122,8 @@ void readJsonObject(Holonight::ThemeConfig* config, const QJsonObject& root) {
 void readIniFile(Holonight::ThemeConfig* config, const QString& path) {
   QSettings settings = QSettings{path, QSettings::IniFormat};
   setAppearanceModeIfValid(&config->appearance_mode, settings.value(QStringLiteral("appearance/mode")).toString());
+  setStringIfPresent(&config->scheme, settings.value(QStringLiteral("appearance/scheme")).toString());
+  setStringIfPresent(&config->accent, settings.value(QStringLiteral("appearance/accent")).toString());
   setStringIfPresent(&config->icon_theme, settings.value(QStringLiteral("icons/theme")).toString());
   setStringIfPresent(&config->fallback_icon_theme, settings.value(QStringLiteral("icons/fallback")).toString());
   setStringIfPresent(&config->ui_font, settings.value(QStringLiteral("fonts/ui")).toString());
@@ -123,6 +138,11 @@ void readIniFile(Holonight::ThemeConfig* config, const QString& path) {
   const qreal scaleFactor = settings.value(QStringLiteral("scaleFactor")).toDouble(&ok);
   if (ok) {
     setScaleIfValid(&config->scale_factor, scaleFactor);
+  }
+
+  const qreal transparency = settings.value(QStringLiteral("effects/transparency")).toDouble(&ok);
+  if (ok) {
+    setTransparencyIfValid(&config->transparency, transparency);
   }
 
   if (settings.status() != QSettings::NoError) {
@@ -223,6 +243,9 @@ ColorMode ThemeConfig::resolvedColorMode() const {
 
 ThemeConfig ThemeConfig::defaults() {
   return ThemeConfig{.appearance_mode = AppearanceMode::Dark,
+                     .scheme = {},
+                     .accent = {},
+                     .transparency = 1.0,
                      .icon_theme = QStringLiteral("HoloNight"),
                      .fallback_icon_theme = QStringLiteral("Papirus"),
                      .ui_font = QStringLiteral("Inter"),

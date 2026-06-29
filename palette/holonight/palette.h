@@ -117,6 +117,8 @@ struct ColorTokens {
   QColor textSubtle;         // DEPRECATED: use textSecondary
   QColor ansi0, ansi1, ansi2, ansi3, ansi4, ansi5, ansi6, ansi7;
   QColor ansi8, ansi9, ansi10, ansi11, ansi12, ansi13, ansi14, ansi15;
+
+  [[nodiscard]] bool operator==(const ColorTokens&) const noexcept = default;
 };
 
 [[nodiscard]] ColorTokens darkTokens();

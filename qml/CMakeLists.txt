@@ -48,6 +48,7 @@ foreach(HOLONIGHT_QML_FILE IN LISTS HOLONIGHT_QML_FILES)
 endforeach()
 
 target_link_libraries(holonight_qml PRIVATE
+    holonight_theme
     holonight_config
     holonight_palette
     Qt6::Quick

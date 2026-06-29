@@ -26,7 +26,7 @@ cmake-build-*/
 compile_commands.json
 
 # Project
-.claude/settings.local.json
+.claude/
 .task/
 CLAUDE.local.md
 .codex/

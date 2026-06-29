@@ -1,6 +1,6 @@
 set_source_files_properties(
-    ${CMAKE_SOURCE_DIR}/style/holonightstyle.cpp
-    ${CMAKE_SOURCE_DIR}/platformtheme/holonighttheme.cpp
+    ${CMAKE_SOURCE_DIR}/src/style/holonightstyle.cpp
+    ${CMAKE_SOURCE_DIR}/src/platformtheme/holonighttheme.cpp
     PROPERTIES SKIP_AUTOMOC OFF
 )
 
@@ -28,10 +28,10 @@ add_executable(holonight_tests
     test_palette_qpalette.cpp
     test_palette_contrast.cpp
     # Style smoke test: compile holonightstyle.cpp directly into the test binary
-    ${CMAKE_SOURCE_DIR}/style/holonightstyle.cpp
+    ${CMAKE_SOURCE_DIR}/src/style/holonightstyle.cpp
     test_style_smoke.cpp
     # Platform theme smoke test: compile holonighttheme.cpp directly
-    ${CMAKE_SOURCE_DIR}/platformtheme/holonighttheme.cpp
+    ${CMAKE_SOURCE_DIR}/src/platformtheme/holonighttheme.cpp
     test_platformtheme_smoke.cpp
     test_platformtheme_fonts.cpp
     test_platformtheme_icons.cpp
@@ -40,8 +40,8 @@ add_executable(holonight_tests
 set_target_properties(holonight_tests PROPERTIES AUTOMOC ON)
 
 target_include_directories(holonight_tests PRIVATE
-    ${CMAKE_SOURCE_DIR}/style
-    ${CMAKE_SOURCE_DIR}/platformtheme
+    ${CMAKE_SOURCE_DIR}/src/style
+    ${CMAKE_SOURCE_DIR}/src/platformtheme
 )
 
 target_link_libraries(holonight_tests PRIVATE
@@ -66,14 +66,14 @@ set_property(TEST holonight_tests PROPERTY
 
 add_executable(holonight_style_primitive_tests
     main.cpp
-    ${CMAKE_SOURCE_DIR}/style/holonightstyle.cpp
+    ${CMAKE_SOURCE_DIR}/src/style/holonightstyle.cpp
     test_style_drawprimitive.cpp
 )
 
 set_target_properties(holonight_style_primitive_tests PROPERTIES AUTOMOC ON)
 
 target_include_directories(holonight_style_primitive_tests PRIVATE
-    ${CMAKE_SOURCE_DIR}/style
+    ${CMAKE_SOURCE_DIR}/src/style
 )
 
 target_link_libraries(holonight_style_primitive_tests PRIVATE
@@ -96,14 +96,14 @@ set_property(TEST holonight_style_primitive_tests PROPERTY
 
 add_executable(holonight_style_complex_tests
     main.cpp
-    ${CMAKE_SOURCE_DIR}/style/holonightstyle.cpp
+    ${CMAKE_SOURCE_DIR}/src/style/holonightstyle.cpp
     test_style_drawcomplexcontrol.cpp
 )
 
 set_target_properties(holonight_style_complex_tests PROPERTIES AUTOMOC ON)
 
 target_include_directories(holonight_style_complex_tests PRIVATE
-    ${CMAKE_SOURCE_DIR}/style
+    ${CMAKE_SOURCE_DIR}/src/style
 )
 
 target_link_libraries(holonight_style_complex_tests PRIVATE
@@ -119,6 +119,36 @@ add_test(NAME holonight_style_complex_tests COMMAND holonight_style_complex_test
 )
 
 set_property(TEST holonight_style_complex_tests PROPERTY
+    ENVIRONMENT "${HOLONIGHT_TEST_ENV}"
+)
+
+# ── Theme resolver tests ──────────────────────────────────────────────────────
+
+add_executable(holonight_theme_resolver_tests
+    main.cpp
+    test_theme_resolver.cpp
+)
+
+set_target_properties(holonight_theme_resolver_tests PROPERTIES AUTOMOC ON)
+
+target_include_directories(holonight_theme_resolver_tests PRIVATE
+    ${CMAKE_SOURCE_DIR}/src/theme
+)
+
+target_link_libraries(holonight_theme_resolver_tests PRIVATE
+    holonight_theme
+    holonight_config
+    holonight_palette
+    Qt6::Gui
+    Qt6::Widgets
+    GTest::gtest
+)
+
+add_test(NAME holonight_theme_resolver_tests COMMAND holonight_theme_resolver_tests
+    WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
+)
+
+set_property(TEST holonight_theme_resolver_tests PROPERTY
     ENVIRONMENT "${HOLONIGHT_TEST_ENV}"
 )
 

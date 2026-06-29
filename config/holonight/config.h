@@ -18,6 +18,9 @@ enum class AppearanceMode {
 
 struct ThemeConfig {
   AppearanceMode appearance_mode = AppearanceMode::Dark;
+  QString scheme;
+  QString accent;
+  qreal transparency = 1.0;
   QString icon_theme;
   QString fallback_icon_theme;
   QString ui_font;
