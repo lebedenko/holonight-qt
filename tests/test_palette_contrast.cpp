@@ -185,6 +185,56 @@ TEST(LightContrast, CoreTextAndSelectionPairsMeetContrast) {
       << "borderActive on light background fails WCAG 1.4.11";
 }
 
+TEST(EmberContrast, CoreTextAndSelectionPairsMeetContrast) {
+  const Holonight::ColorTokens tok = Holonight::tokensForScheme(Holonight::ThemeSchemeKind::HoloNightEmber);
+  EXPECT_GE(contrastRatio(tok.textPrimary, tok.background), 4.5);
+  EXPECT_GE(contrastRatio(tok.textPrimary, tok.surface), 4.5);
+  EXPECT_GE(contrastRatio(tok.textPrimary, tok.surfaceElevated), 4.5);
+  EXPECT_GE(contrastRatio(tok.textPrimary, tok.surfaceRaised), 4.5);
+  EXPECT_GE(contrastRatio(tok.textSecondary, tok.background), 4.5);
+  EXPECT_GE(contrastRatio(tok.onPrimary, tok.primary), 4.5);
+  EXPECT_GE(contrastRatio(tok.onError, tok.error), 4.5);
+  EXPECT_GE(contrastRatio(tok.error, tok.background), 4.5);
+  EXPECT_GE(contrastRatio(tok.warning, tok.background), 4.5);
+  EXPECT_GE(contrastRatio(tok.success, tok.background), 4.5);
+  EXPECT_GE(contrastRatio(tok.borderFocus, tok.background), 3.0);
+  EXPECT_GE(contrastRatio(tok.borderFocus, tok.surfaceRaised), 3.0);
+  EXPECT_GE(contrastRatio(tok.borderActive, tok.background), 3.0);
+  EXPECT_GE(contrastRatio(tok.borderActive, tok.surfaceRaised), 3.0);
+  EXPECT_GE(contrastRatio(tok.borderUrgent, tok.background), 3.0);
+  EXPECT_GE(contrastRatio(tok.borderUrgent, tok.surfaceRaised), 3.0);
+  EXPECT_GE(contrastRatio(tok.primaryPressed, tok.background), 3.0);
+  EXPECT_GE(contrastRatio(tok.primaryPressed, tok.surfaceRaised), 3.0);
+  EXPECT_GE(contrastRatio(tok.textInverse, tok.surfaceInverse), 4.5);
+  EXPECT_GE(contrastRatio(tok.focusRing, tok.surfaceHover), 3.0);
+  EXPECT_GE(contrastRatio(tok.borderActive, tok.surfaceHover), 3.0);
+}
+
+TEST(SolContrast, CoreTextAndSelectionPairsMeetContrast) {
+  const Holonight::ColorTokens tok = Holonight::tokensForScheme(Holonight::ThemeSchemeKind::HoloNightSol);
+  EXPECT_GE(contrastRatio(tok.textPrimary, tok.background), 4.5);
+  EXPECT_GE(contrastRatio(tok.textPrimary, tok.surface), 4.5);
+  EXPECT_GE(contrastRatio(tok.textPrimary, tok.surfaceElevated), 4.5);
+  EXPECT_GE(contrastRatio(tok.textPrimary, tok.surfaceRaised), 4.5);
+  EXPECT_GE(contrastRatio(tok.textSecondary, tok.background), 4.5);
+  EXPECT_GE(contrastRatio(tok.onPrimary, tok.primary), 4.5);
+  EXPECT_GE(contrastRatio(tok.onError, tok.error), 4.5);
+  EXPECT_GE(contrastRatio(tok.error, tok.background), 4.5);
+  EXPECT_GE(contrastRatio(tok.warning, tok.background), 4.5);
+  EXPECT_GE(contrastRatio(tok.success, tok.background), 4.5);
+  EXPECT_GE(contrastRatio(tok.borderFocus, tok.background), 3.0);
+  EXPECT_GE(contrastRatio(tok.borderFocus, tok.surfaceRaised), 3.0);
+  EXPECT_GE(contrastRatio(tok.borderActive, tok.background), 3.0);
+  EXPECT_GE(contrastRatio(tok.borderActive, tok.surfaceRaised), 3.0);
+  EXPECT_GE(contrastRatio(tok.borderUrgent, tok.background), 3.0);
+  EXPECT_GE(contrastRatio(tok.borderUrgent, tok.surfaceRaised), 3.0);
+  EXPECT_GE(contrastRatio(tok.primaryPressed, tok.background), 3.0);
+  EXPECT_GE(contrastRatio(tok.primaryPressed, tok.surfaceRaised), 3.0);
+  EXPECT_GE(contrastRatio(tok.textInverse, tok.surfaceInverse), 4.5);
+  EXPECT_GE(contrastRatio(tok.focusRing, tok.surfaceHover), 3.0);
+  EXPECT_GE(contrastRatio(tok.borderActive, tok.surfaceHover), 3.0);
+}
+
 // ── Intentionally untested pairs (WCAG exemptions) ──────────────────────────
 //
 // onSurfaceVariant (#565f89) achieves ~2.35–2.90:1 against all surfaces.

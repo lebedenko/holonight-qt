@@ -31,4 +31,12 @@ if(BUILD_TESTS)
         NAME generated_tokyonight_day_colors_current
         COMMAND generate_holonight_colors --scheme tokyonight-day --check ${CMAKE_SOURCE_DIR}/data/tokyonight-day.colors
     )
+    add_test(
+        NAME generated_holonight_ember_colors_current
+        COMMAND generate_holonight_colors --scheme holonight-ember --check ${CMAKE_SOURCE_DIR}/data/holonight-ember.colors
+    )
+    add_test(
+        NAME generated_holonight_sol_colors_current
+        COMMAND generate_holonight_colors --scheme holonight-sol --check ${CMAKE_SOURCE_DIR}/data/holonight-sol.colors
+    )
 endif()

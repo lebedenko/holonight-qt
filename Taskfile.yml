@@ -72,6 +72,8 @@ tasks:
       - ./{{.BUILD_DIR}}/tools/generate_holonight_colors --scheme holonight-latte data/holonight-latte.colors
       - ./{{.BUILD_DIR}}/tools/generate_holonight_colors --scheme tokyonight-storm data/tokyonight-storm.colors
       - ./{{.BUILD_DIR}}/tools/generate_holonight_colors --scheme tokyonight-day data/tokyonight-day.colors
+      - ./{{.BUILD_DIR}}/tools/generate_holonight_colors --scheme holonight-ember data/holonight-ember.colors
+      - ./{{.BUILD_DIR}}/tools/generate_holonight_colors --scheme holonight-sol data/holonight-sol.colors
 
   install:local:
     desc: Install to ~/.local (no sudo)

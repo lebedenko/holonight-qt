@@ -416,8 +416,8 @@ TEST(ThemeConfig, InvalidAccentResolvesToDefault) {
 }
 
 TEST(ThemeCatalog, ListsFamiliesVariantsAndDefaultAccentOptions) {
-  ASSERT_EQ(Holonight::themeFamilies().size(), 3);
-  ASSERT_EQ(Holonight::themeVariants().size(), 6);
+  ASSERT_EQ(Holonight::themeFamilies().size(), 4);
+  ASSERT_EQ(Holonight::themeVariants().size(), 8);
 
   for (const Holonight::ThemeFamilyCatalogEntry& family : Holonight::themeFamilies()) {
     EXPECT_FALSE(family.id.isEmpty());

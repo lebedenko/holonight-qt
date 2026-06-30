@@ -391,8 +391,8 @@ TEST_F(QmlSmoke, HolonightTheme_CatalogPropertiesAreReadable) {
   ASSERT_EQ(comp.status(), QQmlComponent::Ready) << comp.errorString().toStdString();
   std::unique_ptr<QObject> object{comp.create()};
   ASSERT_NE(object, nullptr);
-  EXPECT_EQ(object->property("familyCount").toInt(), 3);
-  EXPECT_EQ(object->property("variantCount").toInt(), 6);
+  EXPECT_EQ(object->property("familyCount").toInt(), 4);
+  EXPECT_EQ(object->property("variantCount").toInt(), 8);
   EXPECT_EQ(object->property("firstAccentId").toString(), QStringLiteral("default"));
   EXPECT_TRUE(object->property("firstAccentColor").value<QColor>().isValid());
 }

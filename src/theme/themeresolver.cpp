@@ -59,7 +59,49 @@ bool catppuccinAccent(const QString& accent, ThemeSchemeKind scheme, AccentOverr
   return false;
 }
 
-void applyCatppuccinAccent(ColorTokens& tok, const AccentOverride& colors) {
+bool gruvboxAccent(const QString& accent, ThemeSchemeKind scheme, AccentOverride* out) {
+  if (scheme == ThemeSchemeKind::HoloNightEmber) {
+    if (accent == QStringLiteral("cyan")) {
+      *out = {QColor{QStringLiteral("#8ec07c")}, QColor{QStringLiteral("#a8d3c5")}, QColor{QStringLiteral("#83a598")}};
+      return true;
+    }
+    if (accent == QStringLiteral("blue")) {
+      *out = {QColor{QStringLiteral("#83a598")}, QColor{QStringLiteral("#a8d3c5")}, QColor{QStringLiteral("#95c3b1")}};
+      return true;
+    }
+    if (accent == QStringLiteral("violet")) {
+      *out = {QColor{QStringLiteral("#d3869b")}, QColor{QStringLiteral("#e5b3c3")}, QColor{QStringLiteral("#c1728a")}};
+      return true;
+    }
+    if (accent == QStringLiteral("yellow")) {
+      *out = {QColor{QStringLiteral("#fabd2f")}, QColor{QStringLiteral("#fcd268")}, QColor{QStringLiteral("#e5aa20")}};
+      return true;
+    }
+  }
+
+  if (scheme == ThemeSchemeKind::HoloNightSol) {
+    if (accent == QStringLiteral("cyan")) {
+      *out = {QColor{QStringLiteral("#427b58")}, QColor{QStringLiteral("#689d6a")}, QColor{QStringLiteral("#2d5c3f")}};
+      return true;
+    }
+    if (accent == QStringLiteral("blue")) {
+      *out = {QColor{QStringLiteral("#076678")}, QColor{QStringLiteral("#458588")}, QColor{QStringLiteral("#054955")}};
+      return true;
+    }
+    if (accent == QStringLiteral("violet")) {
+      *out = {QColor{QStringLiteral("#8f3f71")}, QColor{QStringLiteral("#b16286")}, QColor{QStringLiteral("#6b2d52")}};
+      return true;
+    }
+    if (accent == QStringLiteral("yellow")) {
+      *out = {QColor{QStringLiteral("#b57614")}, QColor{QStringLiteral("#d79921")}, QColor{QStringLiteral("#8c580c")}};
+      return true;
+    }
+  }
+
+  return false;
+}
+
+void applyAccentOverride(ColorTokens& tok, const AccentOverride& colors) {
   tok.primary = colors.primary;
   tok.primaryHover = colors.hover;
   tok.primaryPressed = colors.pressed;
@@ -82,9 +124,13 @@ void ThemeResolver::applyAccent(ColorTokens& tok, const QString& accent, ThemeSc
     return;
   }
 
-  AccentOverride catppuccin;
-  if (catppuccinAccent(accent, scheme, &catppuccin)) {
-    applyCatppuccinAccent(tok, catppuccin);
+  AccentOverride overrideColors;
+  if (catppuccinAccent(accent, scheme, &overrideColors)) {
+    applyAccentOverride(tok, overrideColors);
+    return;
+  }
+  if (gruvboxAccent(accent, scheme, &overrideColors)) {
+    applyAccentOverride(tok, overrideColors);
     return;
   }
 

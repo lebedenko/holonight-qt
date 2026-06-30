@@ -314,6 +314,10 @@ TEST(ThemeResolver, SchemesResolveToConcreteCatalogEntries) {
       makeConfig(Holonight::AppearanceMode::Dark, QStringLiteral("cyan"), QStringLiteral("holonight-latte")));
   const Holonight::ColorTokens tokyoDay = Holonight::ThemeResolver::resolve(
       makeConfig(Holonight::AppearanceMode::Dark, QStringLiteral("cyan"), QStringLiteral("tokyonight-day")));
+  const Holonight::ColorTokens holonightEmber = Holonight::ThemeResolver::resolve(
+      makeConfig(Holonight::AppearanceMode::Light, QStringLiteral("cyan"), QStringLiteral("holonight-ember")));
+  const Holonight::ColorTokens holonightSol = Holonight::ThemeResolver::resolve(
+      makeConfig(Holonight::AppearanceMode::Dark, QStringLiteral("cyan"), QStringLiteral("holonight-sol")));
 
   EXPECT_EQ(holonightDark.background, Holonight::tokensForScheme(Holonight::ThemeSchemeKind::HoloNightDark).background);
   EXPECT_EQ(tokyoStorm.background, Holonight::tokensForScheme(Holonight::ThemeSchemeKind::TokyoNightStorm).background);
@@ -324,12 +328,29 @@ TEST(ThemeResolver, SchemesResolveToConcreteCatalogEntries) {
   EXPECT_EQ(holonightLatte.background,
             Holonight::tokensForScheme(Holonight::ThemeSchemeKind::HoloNightLatte).background);
   EXPECT_EQ(tokyoDay.background, Holonight::tokensForScheme(Holonight::ThemeSchemeKind::TokyoNightDay).background);
+  EXPECT_EQ(holonightEmber.background,
+            Holonight::tokensForScheme(Holonight::ThemeSchemeKind::HoloNightEmber).background);
+  EXPECT_EQ(holonightSol.background, Holonight::tokensForScheme(Holonight::ThemeSchemeKind::HoloNightSol).background);
   EXPECT_NE(holonightDark.background, tokyoStorm.background);
   EXPECT_NE(holonightDark.background, holonightMocha.background);
   EXPECT_NE(tokyoStorm.background, holonightMocha.background);
   EXPECT_NE(holonightLight.background, tokyoDay.background);
   EXPECT_NE(holonightLight.background, holonightLatte.background);
   EXPECT_NE(tokyoDay.background, holonightLatte.background);
+}
+
+TEST(ThemeResolver, GruvboxAccentCyanUsesSchemeNativeColors) {
+  const Holonight::ColorTokens ember = Holonight::ThemeResolver::resolve(
+      makeConfig(Holonight::AppearanceMode::Light, QStringLiteral("cyan"), QStringLiteral("holonight-ember")));
+  EXPECT_EQ(ember.primary, QColor(QStringLiteral("#8ec07c")));
+  EXPECT_EQ(ember.primaryHover, QColor(QStringLiteral("#a8d3c5")));
+  EXPECT_EQ(ember.primaryPressed, QColor(QStringLiteral("#83a598")));
+
+  const Holonight::ColorTokens sol = Holonight::ThemeResolver::resolve(
+      makeConfig(Holonight::AppearanceMode::Dark, QStringLiteral("cyan"), QStringLiteral("holonight-sol")));
+  EXPECT_EQ(sol.primary, QColor(QStringLiteral("#427b58")));
+  EXPECT_EQ(sol.primaryHover, QColor(QStringLiteral("#689d6a")));
+  EXPECT_EQ(sol.primaryPressed, QColor(QStringLiteral("#2d5c3f")));
 }
 
 TEST(ThemeResolver, ValidSchemeWinsWhenModeDisagrees) {

@@ -9,13 +9,13 @@ The palette layer is the canonical source for resolved theme values. `Holonight:
 | HoloNight Dark / Light | Implemented | Yes | Yes | Default HoloNight schemes selected by legacy mode fallback. |
 | HoloNight Mocha / Latte | Implemented | Yes | Yes | Catppuccin-based schemes selected by explicit scheme ID. |
 | TokyoNight Storm / Day | Implemented | Yes | Yes | Bundled Tokyo Night inspired compatibility schemes. |
+| HoloNight Ember / Sol | Implemented | Yes | Yes | Gruvbox-based high contrast schemes. |
 | Aurora | Planned | Planned | No | Nord inspired. Not parsed or exported yet. |
-| Ember | Planned | Planned | No | Warm dark variant. Not parsed or exported yet. |
 | Eclipse | Planned | Planned | No | Lower-chroma dark variant. Not parsed or exported yet. |
 | Neon | Planned | Planned | No | Higher-accent dark variant. Not parsed or exported yet. |
 
 Current scheme IDs are `holonight-dark`, `holonight-light`, `holonight-mocha`, `holonight-latte`,
-`tokyonight-storm`, and `tokyonight-day`.
+`tokyonight-storm`, `tokyonight-day`, `holonight-ember`, and `holonight-sol`.
 All current scheme IDs resolve to distinct built-in token sets.
 
 ## Canonical Roles

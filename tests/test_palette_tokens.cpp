@@ -412,6 +412,74 @@ TEST(SchemeCatalog, HoloNightLatteMatchesCatppuccinValues) {
   EXPECT_EQ(tok.accentYellow, QColor(QStringLiteral("#DF8E1D")));
 }
 
+TEST(SchemeCatalog, HoloNightEmberMatchesGruvboxValues) {
+  const Holonight::ColorTokens tok = Holonight::tokensForScheme(Holonight::ThemeSchemeKind::HoloNightEmber);
+  EXPECT_EQ(tok.background, QColor(QStringLiteral("#1d2021")));
+  EXPECT_EQ(tok.surface, QColor(QStringLiteral("#282828")));
+  EXPECT_EQ(tok.surfaceElevated, QColor(QStringLiteral("#3c3836")));
+  EXPECT_EQ(tok.surfaceRaised, QColor(QStringLiteral("#504945")));
+  EXPECT_EQ(tok.surfaceHover, QColor(QStringLiteral("#665c54")));
+  EXPECT_EQ(tok.textPrimary, QColor(QStringLiteral("#fbf1c7")));
+  EXPECT_EQ(tok.textSecondary, QColor(QStringLiteral("#ebdbb2")));
+  EXPECT_EQ(tok.textMuted, QColor(QStringLiteral("#bdae93")));
+  EXPECT_EQ(tok.textDisabled, QColor(QStringLiteral("#928374")));
+  EXPECT_EQ(tok.primary, QColor(QStringLiteral("#8ec07c")));
+  EXPECT_EQ(tok.primaryHover, QColor(QStringLiteral("#a8d3c5")));
+  EXPECT_EQ(tok.primaryPressed, QColor(QStringLiteral("#83a598")));
+  EXPECT_EQ(tok.borderFocus, QColor(QStringLiteral("#fabd2f")));
+  EXPECT_EQ(tok.error, QColor(QStringLiteral("#ff6550")));
+  EXPECT_EQ(tok.warning, QColor(QStringLiteral("#fe8019")));
+  EXPECT_EQ(tok.success, QColor(QStringLiteral("#b8bb26")));
+  EXPECT_EQ(tok.accentCyan, QColor(QStringLiteral("#8ec07c")));
+  EXPECT_EQ(tok.accentBlue, QColor(QStringLiteral("#83a598")));
+  EXPECT_EQ(tok.accentViolet, QColor(QStringLiteral("#d3869b")));
+  EXPECT_EQ(tok.accentYellow, QColor(QStringLiteral("#fabd2f")));
+}
+
+TEST(SchemeCatalog, HoloNightSolMatchesGruvboxValues) {
+  const Holonight::ColorTokens tok = Holonight::tokensForScheme(Holonight::ThemeSchemeKind::HoloNightSol);
+  EXPECT_EQ(tok.background, QColor(QStringLiteral("#f9f5d7")));
+  EXPECT_EQ(tok.surface, QColor(QStringLiteral("#fbf1c7")));
+  EXPECT_EQ(tok.surfaceElevated, QColor(QStringLiteral("#ebdbb2")));
+  EXPECT_EQ(tok.surfaceRaised, QColor(QStringLiteral("#d5c4a1")));
+  EXPECT_EQ(tok.surfaceHover, QColor(QStringLiteral("#bdae93")));
+  EXPECT_EQ(tok.textPrimary, QColor(QStringLiteral("#282828")));
+  EXPECT_EQ(tok.textSecondary, QColor(QStringLiteral("#3c3836")));
+  EXPECT_EQ(tok.textMuted, QColor(QStringLiteral("#665c54")));
+  EXPECT_EQ(tok.textDisabled, QColor(QStringLiteral("#928374")));
+  EXPECT_EQ(tok.primary, QColor(QStringLiteral("#076678")));
+  EXPECT_EQ(tok.primaryHover, QColor(QStringLiteral("#458588")));
+  EXPECT_EQ(tok.primaryPressed, QColor(QStringLiteral("#054955")));
+  EXPECT_EQ(tok.borderFocus, QColor(QStringLiteral("#9e3202")));
+  EXPECT_EQ(tok.error, QColor(QStringLiteral("#9d0006")));
+  EXPECT_EQ(tok.warning, QColor(QStringLiteral("#9e3202")));
+  EXPECT_EQ(tok.success, QColor(QStringLiteral("#736e0f")));
+  EXPECT_EQ(tok.accentCyan, QColor(QStringLiteral("#427b58")));
+  EXPECT_EQ(tok.accentBlue, QColor(QStringLiteral("#076678")));
+  EXPECT_EQ(tok.accentViolet, QColor(QStringLiteral("#8f3f71")));
+  EXPECT_EQ(tok.accentYellow, QColor(QStringLiteral("#b57614")));
+}
+
+TEST(SchemeCatalog, GruvboxAliasesMatchCanonicalRoles) {
+  for (const Holonight::ThemeSchemeKind scheme :
+       {Holonight::ThemeSchemeKind::HoloNightEmber, Holonight::ThemeSchemeKind::HoloNightSol}) {
+    const Holonight::ColorTokens tok = Holonight::tokensForScheme(scheme);
+    EXPECT_EQ(tok.surfaceVariant, tok.surface);
+    EXPECT_EQ(tok.surfaceContainer, tok.surfaceElevated);
+    EXPECT_EQ(tok.onSurface, tok.textPrimary);
+    EXPECT_EQ(tok.onSurfaceVariant, tok.textMuted);
+    EXPECT_EQ(tok.onSurfaceDisabled, tok.textDisabled);
+    EXPECT_EQ(tok.onSurfaceInverse, tok.textInverse);
+    EXPECT_EQ(tok.secondary, tok.surfaceRaised);
+    EXPECT_EQ(tok.onSecondary, tok.textPrimary);
+    EXPECT_EQ(tok.hover, tok.hoverOverlay);
+    EXPECT_EQ(tok.pressed, tok.pressedOverlay);
+    EXPECT_EQ(tok.textSubtle, tok.textSecondary);
+    EXPECT_EQ(tok.ansi0, tok.ansiBlack);
+    EXPECT_EQ(tok.ansi15, tok.ansiBrightWhite);
+  }
+}
+
 TEST(SchemeCatalog, CatppuccinAliasesMatchCanonicalRoles) {
   for (const Holonight::ThemeSchemeKind scheme :
        {Holonight::ThemeSchemeKind::HoloNightMocha, Holonight::ThemeSchemeKind::HoloNightLatte}) {

@@ -63,6 +63,20 @@ namespace {
        .mode = Holonight::ColorMode::Light,
        .default_accent_color = defaultAccentColor(Holonight::ThemeSchemeKind::TokyoNightDay),
        .kde_color_scheme_name = QStringLiteral("TokyoNight Day")},
+      {.id = QStringLiteral("holonight-ember"),
+       .name = QStringLiteral("HoloNight Ember"),
+       .family_id = QStringLiteral("gruvbox"),
+       .scheme = Holonight::ThemeSchemeKind::HoloNightEmber,
+       .mode = Holonight::ColorMode::Dark,
+       .default_accent_color = defaultAccentColor(Holonight::ThemeSchemeKind::HoloNightEmber),
+       .kde_color_scheme_name = QStringLiteral("HoloNight Ember")},
+      {.id = QStringLiteral("holonight-sol"),
+       .name = QStringLiteral("HoloNight Sol"),
+       .family_id = QStringLiteral("gruvbox"),
+       .scheme = Holonight::ThemeSchemeKind::HoloNightSol,
+       .mode = Holonight::ColorMode::Light,
+       .default_accent_color = defaultAccentColor(Holonight::ThemeSchemeKind::HoloNightSol),
+       .kde_color_scheme_name = QStringLiteral("HoloNight Sol")},
   };
   return entries;
 }
@@ -82,6 +96,9 @@ const QVector<ThemeFamilyCatalogEntry>& themeFamilies() {
       {.id = QStringLiteral("tokyonight"),
        .name = QStringLiteral("TokyoNight"),
        .variant_ids = {QStringLiteral("tokyonight-storm"), QStringLiteral("tokyonight-day")}},
+      {.id = QStringLiteral("gruvbox"),
+       .name = QStringLiteral("Gruvbox"),
+       .variant_ids = {QStringLiteral("holonight-ember"), QStringLiteral("holonight-sol")}},
   };
   return entries;
 }

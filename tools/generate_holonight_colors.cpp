@@ -53,10 +53,16 @@ Holonight::ThemeSchemeKind parseScheme(std::string_view value) {
   if (value == "tokyonight-day") {
     return Holonight::ThemeSchemeKind::TokyoNightDay;
   }
+  if (value == "holonight-ember") {
+    return Holonight::ThemeSchemeKind::HoloNightEmber;
+  }
+  if (value == "holonight-sol") {
+    return Holonight::ThemeSchemeKind::HoloNightSol;
+  }
   throw std::runtime_error{
       "invalid scheme '" + std::string{value} +
-      "'; expected holonight-dark, holonight-light, holonight-mocha, holonight-latte, tokyonight-storm, or "
-      "tokyonight-day"};
+      "'; expected holonight-dark, holonight-light, holonight-mocha, holonight-latte, tokyonight-storm, "
+      "tokyonight-day, holonight-ember, or holonight-sol"};
 }
 
 std::string schemeName(Holonight::ThemeSchemeKind scheme) {
@@ -73,6 +79,10 @@ std::string schemeName(Holonight::ThemeSchemeKind scheme) {
       return "TokyoNight Storm";
     case Holonight::ThemeSchemeKind::TokyoNightDay:
       return "TokyoNight Day";
+    case Holonight::ThemeSchemeKind::HoloNightEmber:
+      return "HoloNight Ember";
+    case Holonight::ThemeSchemeKind::HoloNightSol:
+      return "HoloNight Sol";
   }
   return "HoloNight Dark";
 }
@@ -91,6 +101,10 @@ std::string schemeId(Holonight::ThemeSchemeKind scheme) {
       return "tokyonight-storm";
     case Holonight::ThemeSchemeKind::TokyoNightDay:
       return "tokyonight-day";
+    case Holonight::ThemeSchemeKind::HoloNightEmber:
+      return "holonight-ember";
+    case Holonight::ThemeSchemeKind::HoloNightSol:
+      return "holonight-sol";
   }
   return "holonight-dark";
 }
