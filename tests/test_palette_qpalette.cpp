@@ -1,14 +1,15 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 // SPDX-FileCopyrightText: 2026 Andrii L <lebeden@gmail.com>
 
+#include "holonight/config.h"
 #include "holonight/palette.h"
 
 #include <gtest/gtest.h>
 
-class PaletteTest : public ::testing::TestWithParam<Holonight::ColorMode> {
+class PaletteTest : public ::testing::TestWithParam<Holonight::ThemeSchemeKind> {
  protected:
   void SetUp() override {
-    tok_ = Holonight::tokensForMode(GetParam());
+    tok_ = Holonight::tokensForScheme(GetParam());
     palette_ = QPalette{Holonight::buildPalette(tok_)};
   }
 
@@ -26,7 +27,7 @@ TEST_P(PaletteTest, ActiveGroupPopulated) {
   };
 
   for (const auto role : roles) {
-    if (GetParam() == Holonight::ColorMode::Light) {
+    if (Holonight::colorModeForScheme(GetParam()) == Holonight::ColorMode::Light) {
       EXPECT_TRUE(palette_.color(QPalette::Active, role).isValid())
           << "Role " << static_cast<int>(role) << " not valid in Active group";
       continue;
@@ -127,5 +128,8 @@ TEST_P(PaletteTest, LinkAndVisitedLinkUseCanonicalTokens) {
   EXPECT_EQ(palette_.color(QPalette::Active, QPalette::LinkVisited), tok.error);
 }
 
-INSTANTIATE_TEST_SUITE_P(AllModes, PaletteTest,
-                         ::testing::Values(Holonight::ColorMode::Dark, Holonight::ColorMode::Light));
+INSTANTIATE_TEST_SUITE_P(AllSchemes, PaletteTest,
+                         ::testing::Values(Holonight::ThemeSchemeKind::HoloNightDark,
+                                           Holonight::ThemeSchemeKind::HoloNightLight,
+                                           Holonight::ThemeSchemeKind::TokyoNightStorm,
+                                           Holonight::ThemeSchemeKind::TokyoNightDay));

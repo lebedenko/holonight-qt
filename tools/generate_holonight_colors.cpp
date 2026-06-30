@@ -39,7 +39,9 @@ std::string schemeName(Holonight::ColorMode mode) {
 }
 
 std::string generatedColors(Holonight::ColorMode mode) {
-  const auto tok = Holonight::tokensForMode(mode);
+  const auto tok =
+      Holonight::tokensForScheme(mode == Holonight::ColorMode::Light ? Holonight::ThemeSchemeKind::TokyoNightDay
+                                                                     : Holonight::ThemeSchemeKind::TokyoNightStorm);
   const std::string name = schemeName(mode);
   std::ostringstream out;
 

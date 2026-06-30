@@ -190,13 +190,13 @@ TEST_F(DrawPrimitiveTest, TextEditScrollAreaFrameUsesRoundedInsetStroke) {
   QTextEdit edit;
   auto opt = makeOpt(QStyle::State_Enabled);
   opt.rect = image.rect();
-  opt.palette.setColor(QPalette::Base, Holonight::darkTokens().surface);
+  opt.palette.setColor(QPalette::Base, Holonight::tokensForScheme(Holonight::ThemeSchemeKind::HoloNightDark).surface);
   style_.drawPrimitive(QStyle::PE_Frame, &opt, &painter, &edit);
   painter.end();
 
   EXPECT_GT(image.pixelColor(image.width() / 2, 0).alpha(), 0);
   EXPECT_GT(image.pixelColor(0, image.height() / 2).alpha(), 0);
-  EXPECT_EQ(image.pixelColor(image.rect().center()), Holonight::darkTokens().surface);
+  EXPECT_EQ(image.pixelColor(image.rect().center()), Holonight::tokensForScheme(Holonight::ThemeSchemeKind::HoloNightDark).surface);
 }
 
 TEST_F(DrawPrimitiveTest, FocusedTextEditFrameUsesFocusColor) {
@@ -302,7 +302,7 @@ TEST_F(DrawPrimitiveTest, PanelStatusBarUsesElevatedSurfaceWithBorder) {
   style_.drawPrimitive(QStyle::PE_PanelStatusBar, &opt, &painter);
   painter.end();
 
-  const auto tok = Holonight::darkTokens();
+  const auto tok = Holonight::tokensForScheme(Holonight::ThemeSchemeKind::HoloNightDark);
   EXPECT_EQ(image.pixelColor(image.rect().center()), tok.surfaceElevated);
   EXPECT_EQ(image.pixelColor(image.width() / 2, 0), tok.borderPassive);
 }
@@ -317,7 +317,7 @@ TEST_F(DrawPrimitiveTest, FrameStatusBarItemUsesElevatedSurfaceWithBorder) {
   style_.drawPrimitive(QStyle::PE_FrameStatusBarItem, &opt, &painter);
   painter.end();
 
-  const auto tok = Holonight::darkTokens();
+  const auto tok = Holonight::tokensForScheme(Holonight::ThemeSchemeKind::HoloNightDark);
   EXPECT_EQ(image.pixelColor(image.rect().center()), tok.surfaceElevated);
   EXPECT_EQ(image.pixelColor(image.width() / 2, 0), tok.borderPassive);
 }
@@ -364,12 +364,12 @@ TEST_F(DrawPrimitiveTest, PanelLineEditFocusedBorderUsesInsetStroke) {
 
   auto opt = makeOpt(QStyle::State_Enabled | QStyle::State_HasFocus);
   opt.rect = image.rect();
-  opt.palette.setColor(QPalette::Base, Holonight::darkTokens().surface);
+  opt.palette.setColor(QPalette::Base, Holonight::tokensForScheme(Holonight::ThemeSchemeKind::HoloNightDark).surface);
   style_.drawPrimitive(QStyle::PE_PanelLineEdit, &opt, &painter);
   painter.end();
 
   const QColor focusColor = resolvedDefaultTokens().borderFocus;
-  const QColor fillColor = Holonight::darkTokens().surface;
+  const QColor fillColor = Holonight::tokensForScheme(Holonight::ThemeSchemeKind::HoloNightDark).surface;
   EXPECT_EQ(image.pixelColor(image.width() / 2, 1), focusColor);
   EXPECT_EQ(image.pixelColor(image.rect().center()), fillColor);
 }
@@ -381,11 +381,11 @@ TEST_F(DrawPrimitiveTest, FrameLineEditUsesDarkFillAndRoundedBorder) {
 
   auto opt = makeOpt(QStyle::State_Enabled);
   opt.rect = image.rect();
-  opt.palette.setColor(QPalette::Base, Holonight::darkTokens().surface);
+  opt.palette.setColor(QPalette::Base, Holonight::tokensForScheme(Holonight::ThemeSchemeKind::HoloNightDark).surface);
   style_.drawPrimitive(QStyle::PE_FrameLineEdit, &opt, &painter);
   painter.end();
 
-  const auto tok = Holonight::darkTokens();
+  const auto tok = Holonight::tokensForScheme(Holonight::ThemeSchemeKind::HoloNightDark);
   EXPECT_EQ(image.pixelColor(image.rect().center()), tok.surface);
   EXPECT_GT(image.pixelColor(image.width() / 2, 0).alpha(), 0);
   EXPECT_GT(image.pixelColor(0, image.height() / 2).alpha(), 0);
@@ -406,7 +406,7 @@ TEST_F(DrawPrimitiveTest, PanelMenuUsesRaisedSurfaceWithBorder) {
   style_.drawPrimitive(QStyle::PE_PanelMenu, &opt, &painter);
   painter.end();
 
-  const auto tok = Holonight::darkTokens();
+  const auto tok = Holonight::tokensForScheme(Holonight::ThemeSchemeKind::HoloNightDark);
   EXPECT_EQ(image.pixelColor(image.rect().center()), tok.surfaceRaised);
   EXPECT_EQ(image.pixelColor(image.width() / 2, 0), tok.borderPassive);
   EXPECT_EQ(image.pixelColor(0, 0).alpha(), 0);
@@ -422,7 +422,7 @@ TEST_F(DrawPrimitiveTest, FrameMenuUsesBorder) {
   style_.drawPrimitive(QStyle::PE_FrameMenu, &opt, &painter);
   painter.end();
 
-  const auto tok = Holonight::darkTokens();
+  const auto tok = Holonight::tokensForScheme(Holonight::ThemeSchemeKind::HoloNightDark);
   EXPECT_EQ(image.pixelColor(image.width() / 2, 0), tok.borderPassive);
   EXPECT_EQ(image.pixelColor(0, 0).alpha(), 0);
 }

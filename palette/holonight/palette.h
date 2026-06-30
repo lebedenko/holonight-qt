@@ -13,6 +13,13 @@ enum class ColorMode : uint8_t {
   Light,
 };
 
+enum class ThemeSchemeKind {
+  HoloNightDark,
+  HoloNightLight,
+  TokyoNightStorm,
+  TokyoNightDay,
+};
+
 struct ColorTokens {
   // Canonical surface roles
   QColor background;       // #10131f  Main window/background plane
@@ -121,9 +128,7 @@ struct ColorTokens {
   [[nodiscard]] bool operator==(const ColorTokens&) const noexcept = default;
 };
 
-[[nodiscard]] ColorTokens darkTokens();
-[[nodiscard]] ColorTokens lightTokens();
-[[nodiscard]] ColorTokens tokensForMode(ColorMode mode);
+[[nodiscard]] ColorTokens tokensForScheme(ThemeSchemeKind scheme);
 [[nodiscard]] QPalette buildPalette(const ColorTokens& tokens);
 
 }  // namespace Holonight

@@ -275,7 +275,7 @@ TEST_F(QmlSmoke, HoloniightPalette_ReloadUsesLightAppearanceMode) {
   ASSERT_EQ(comp.status(), QQmlComponent::Ready) << comp.errorString().toStdString();
   std::unique_ptr<QObject> object{comp.create()};
   ASSERT_NE(object, nullptr);
-  EXPECT_EQ(object->property("background").value<QColor>(), QColor(0xf4, 0xf7, 0xfb));
+  EXPECT_EQ(object->property("background").value<QColor>(), QColor(QStringLiteral("#F3F7FB")));
 }
 
 TEST_F(QmlSmoke, HoloniightPalette_ReloadUsesSchemeBeforeModeAndAppliesAccent) {
@@ -307,7 +307,7 @@ TEST_F(QmlSmoke, HoloniightPalette_ReloadUsesSchemeBeforeModeAndAppliesAccent) {
   ASSERT_EQ(comp.status(), QQmlComponent::Ready) << comp.errorString().toStdString();
   std::unique_ptr<QObject> object{comp.create()};
   ASSERT_NE(object, nullptr);
-  EXPECT_EQ(object->property("background").value<QColor>(), QColor(0xf4, 0xf7, 0xfb));
+  EXPECT_EQ(object->property("background").value<QColor>(), QColor(QStringLiteral("#F3F7FB")));
   EXPECT_EQ(object->property("primary").value<QColor>(), QColor(QStringLiteral("#7aa2f7")));
 }
 

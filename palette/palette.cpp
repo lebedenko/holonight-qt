@@ -3,6 +3,8 @@
 
 #include "holonight/palette.h"
 
+#include <QString>
+
 namespace Holonight {
 
 namespace {
@@ -39,9 +41,155 @@ void populateCompatibilityAliases(ColorTokens* tok, const QColor& outline, const
   tok->ansi15 = tok->ansiBrightWhite;
 }
 
-}  // namespace
+ColorTokens holoNightDarkTokens() {
+  ColorTokens tok;
 
-ColorTokens darkTokens() {
+  tok.background = QColor{QStringLiteral("#0C1118")};
+  tok.surface = QColor{QStringLiteral("#131A24")};
+  tok.surfaceElevated = QColor{QStringLiteral("#18212D")};
+  tok.surfaceRaised = QColor{QStringLiteral("#202B39")};
+  tok.surfaceHover = QColor{QStringLiteral("#253243")};
+  tok.surfaceInverse = QColor{QStringLiteral("#F3F6FA")};
+
+  tok.textPrimary = QColor{QStringLiteral("#E7EDF5")};
+  tok.textSecondary = QColor{QStringLiteral("#C5D0DE")};
+  tok.textMuted = QColor{QStringLiteral("#8D99AD")};
+  tok.textDisabled = QColor{QStringLiteral("#5B6678")};
+  tok.textInverse = QColor{QStringLiteral("#0F141C")};
+
+  tok.primary = QColor{QStringLiteral("#5EA2FF")};
+  tok.primaryHover = QColor{QStringLiteral("#77B2FF")};
+  tok.primaryPressed = QColor{QStringLiteral("#438CEB")};
+  tok.onPrimary = QColor{QStringLiteral("#081018")};
+
+  tok.borderSubtle = QColor{QStringLiteral("#263241")};
+  tok.borderPassive = QColor{QStringLiteral("#36465A")};
+  tok.borderStrong = QColor{QStringLiteral("#53677F")};
+  tok.borderHover = QColor{QStringLiteral("#56D7FF55")};
+  tok.borderFocus = QColor{QStringLiteral("#56D7FF")};
+  tok.borderActive = QColor{QStringLiteral("#5EA2FF")};
+  tok.borderUrgent = QColor{QStringLiteral("#FF718C")};
+
+  tok.glowCyanSoft = QColor{QStringLiteral("#56D7FF33")};
+  tok.glowBlueSoft = QColor{QStringLiteral("#5EA2FF30")};
+  tok.glowVioletSoft = QColor{QStringLiteral("#9A8CFF30")};
+  tok.scrim = QColor{QStringLiteral("#00000088")};
+  tok.glassTint = QColor{QStringLiteral("#18212DD8")};
+  tok.hoverOverlay = QColor{QStringLiteral("#56D7FF12")};
+  tok.pressedOverlay = QColor{QStringLiteral("#56D7FF22")};
+  tok.disabledOverlay = QColor{QStringLiteral("#0C111880")};
+  tok.focusRing = QColor{QStringLiteral("#56D7FF")};
+  tok.shadow = QColor{0x00, 0x00, 0x00};
+
+  tok.error = QColor{QStringLiteral("#FF718C")};
+  tok.warning = QColor{QStringLiteral("#F2C46B")};
+  tok.success = QColor{QStringLiteral("#79D97F")};
+  tok.onError = QColor{QStringLiteral("#081018")};
+
+  tok.accentCyan = QColor{QStringLiteral("#56D7FF")};
+  tok.accentBlue = QColor{QStringLiteral("#5EA2FF")};
+  tok.accentViolet = QColor{QStringLiteral("#9A8CFF")};
+  tok.accentYellow = QColor{QStringLiteral("#F2C46B")};
+
+  tok.workspaceOccupied = QColor{QStringLiteral("#18212D")};
+  tok.workspaceActive = QColor{QStringLiteral("#202B39")};
+
+  tok.ansiBlack = QColor{QStringLiteral("#1A222D")};
+  tok.ansiRed = QColor{QStringLiteral("#F06A84")};
+  tok.ansiGreen = QColor{QStringLiteral("#74D88B")};
+  tok.ansiYellow = QColor{QStringLiteral("#EFC36B")};
+  tok.ansiBlue = QColor{QStringLiteral("#5EA2FF")};
+  tok.ansiMagenta = QColor{QStringLiteral("#A88CFF")};
+  tok.ansiCyan = QColor{QStringLiteral("#56D7FF")};
+  tok.ansiWhite = QColor{QStringLiteral("#DCE6F2")};
+  tok.ansiBrightBlack = QColor{QStringLiteral("#4B5B70")};
+  tok.ansiBrightRed = QColor{QStringLiteral("#FF8CA0")};
+  tok.ansiBrightGreen = QColor{QStringLiteral("#99F2A9")};
+  tok.ansiBrightYellow = QColor{QStringLiteral("#FFD98A")};
+  tok.ansiBrightBlue = QColor{QStringLiteral("#82BAFF")};
+  tok.ansiBrightMagenta = QColor{QStringLiteral("#C3AEFF")};
+  tok.ansiBrightCyan = QColor{QStringLiteral("#8EE8FF")};
+  tok.ansiBrightWhite = QColor{QStringLiteral("#FFFFFF")};
+
+  populateCompatibilityAliases(&tok, tok.borderActive, tok.borderPassive);
+  return tok;
+}
+
+ColorTokens holoNightLightTokens() {
+  ColorTokens tok;
+
+  tok.background = QColor{QStringLiteral("#F3F7FB")};
+  tok.surface = QColor{QStringLiteral("#EDF2F8")};
+  tok.surfaceElevated = QColor{QStringLiteral("#FFFFFF")};
+  tok.surfaceRaised = QColor{QStringLiteral("#E5ECF4")};
+  tok.surfaceHover = QColor{QStringLiteral("#DCE6F1")};
+  tok.surfaceInverse = QColor{QStringLiteral("#121922")};
+
+  tok.textPrimary = QColor{QStringLiteral("#1B2533")};
+  tok.textSecondary = QColor{QStringLiteral("#435164")};
+  tok.textMuted = QColor{QStringLiteral("#6F7D91")};
+  tok.textDisabled = QColor{QStringLiteral("#A7B1BF")};
+  tok.textInverse = QColor{QStringLiteral("#EEF3F8")};
+
+  tok.primary = QColor{QStringLiteral("#3E7BDB")};
+  tok.primaryHover = QColor{QStringLiteral("#4C8BEF")};
+  tok.primaryPressed = QColor{QStringLiteral("#3266BE")};
+  tok.onPrimary = QColor{QStringLiteral("#FFFFFF")};
+
+  tok.borderSubtle = QColor{QStringLiteral("#D6DEE8")};
+  tok.borderPassive = QColor{QStringLiteral("#B7C3D2")};
+  tok.borderStrong = QColor{QStringLiteral("#8898AB")};
+  tok.borderHover = QColor{QStringLiteral("#00A8D833")};
+  tok.borderFocus = QColor{QStringLiteral("#00A8D8")};
+  tok.borderActive = QColor{QStringLiteral("#3E7BDB")};
+  tok.borderUrgent = QColor{QStringLiteral("#D84A68")};
+
+  tok.glowCyanSoft = QColor{QStringLiteral("#00A8D833")};
+  tok.glowBlueSoft = QColor{QStringLiteral("#3E7BDB30")};
+  tok.glowVioletSoft = QColor{QStringLiteral("#7566D430")};
+  tok.scrim = QColor{QStringLiteral("#1B253399")};
+  tok.glassTint = QColor{QStringLiteral("#FFFFFFCC")};
+  tok.hoverOverlay = QColor{QStringLiteral("#00A8D812")};
+  tok.pressedOverlay = QColor{QStringLiteral("#00A8D822")};
+  tok.disabledOverlay = QColor{QStringLiteral("#F3F7FB80")};
+  tok.focusRing = QColor{QStringLiteral("#00A8D8")};
+  tok.shadow = QColor{0x00, 0x00, 0x00};
+
+  tok.error = QColor{QStringLiteral("#D84A68")};
+  tok.warning = QColor{QStringLiteral("#C38A1C")};
+  tok.success = QColor{QStringLiteral("#3E9449")};
+  tok.onError = QColor{QStringLiteral("#FFFFFF")};
+
+  tok.accentCyan = QColor{QStringLiteral("#00A8D8")};
+  tok.accentBlue = QColor{QStringLiteral("#3E7BDB")};
+  tok.accentViolet = QColor{QStringLiteral("#7566D4")};
+  tok.accentYellow = QColor{QStringLiteral("#C38A1C")};
+
+  tok.workspaceOccupied = QColor{QStringLiteral("#E3EAF3")};
+  tok.workspaceActive = QColor{QStringLiteral("#D8E4F2")};
+
+  tok.ansiBlack = QColor{QStringLiteral("#3B4554")};
+  tok.ansiRed = QColor{QStringLiteral("#D94C67")};
+  tok.ansiGreen = QColor{QStringLiteral("#3E964A")};
+  tok.ansiYellow = QColor{QStringLiteral("#B97C00")};
+  tok.ansiBlue = QColor{QStringLiteral("#3E7BDB")};
+  tok.ansiMagenta = QColor{QStringLiteral("#7566D4")};
+  tok.ansiCyan = QColor{QStringLiteral("#009CC8")};
+  tok.ansiWhite = QColor{QStringLiteral("#F5F7FA")};
+  tok.ansiBrightBlack = QColor{QStringLiteral("#7A8698")};
+  tok.ansiBrightRed = QColor{QStringLiteral("#E86C84")};
+  tok.ansiBrightGreen = QColor{QStringLiteral("#56B867")};
+  tok.ansiBrightYellow = QColor{QStringLiteral("#D89A25")};
+  tok.ansiBrightBlue = QColor{QStringLiteral("#5E97ED")};
+  tok.ansiBrightMagenta = QColor{QStringLiteral("#9587EA")};
+  tok.ansiBrightCyan = QColor{QStringLiteral("#1DB8E5")};
+  tok.ansiBrightWhite = QColor{QStringLiteral("#FFFFFF")};
+
+  populateCompatibilityAliases(&tok, tok.borderPassive, tok.borderSubtle);
+  return tok;
+}
+
+ColorTokens tokyoNightStormTokens() {
   ColorTokens tok;
 
   tok.background = QColor{0x10, 0x13, 0x1f};       // #10131f
@@ -116,7 +264,7 @@ ColorTokens darkTokens() {
   return tok;
 }
 
-ColorTokens lightTokens() {
+ColorTokens tokyoNightDayTokens() {
   ColorTokens tok;
 
   tok.background = QColor{0xf4, 0xf7, 0xfb};
@@ -190,14 +338,20 @@ ColorTokens lightTokens() {
   return tok;
 }
 
-ColorTokens tokensForMode(ColorMode mode) {
-  switch (mode) {
-    case ColorMode::Dark:
-      return darkTokens();
-    case ColorMode::Light:
-      return lightTokens();
+}  // namespace
+
+ColorTokens tokensForScheme(ThemeSchemeKind scheme) {
+  switch (scheme) {
+    case ThemeSchemeKind::HoloNightDark:
+      return holoNightDarkTokens();
+    case ThemeSchemeKind::HoloNightLight:
+      return holoNightLightTokens();
+    case ThemeSchemeKind::TokyoNightStorm:
+      return tokyoNightStormTokens();
+    case ThemeSchemeKind::TokyoNightDay:
+      return tokyoNightDayTokens();
   }
-  return darkTokens();
+  return holoNightDarkTokens();
 }
 
 QPalette buildPalette(const ColorTokens& tok) {

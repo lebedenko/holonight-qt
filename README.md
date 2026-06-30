@@ -31,26 +31,26 @@ KDE color schemes are also installed to `share/color-schemes`: `data/holonight.c
 
 ## Palette
 
-HoloNight ships two complete resolved token sets: **Storm** (`darkTokens()`), a TokyoNight-inspired dark variant, and **Day** (`lightTokens()`), its light counterpart. Startup mode is resolved from config/env as `dark`, `light`, or `system`; missing, invalid, or unknown system preferences fall back to dark. All resolved colors and metrics originate in `palette/holonight/palette.h`, and downstream layers consume that token model rather than hard-coded color values.
+HoloNight ships a scheme catalog selected with `tokensForScheme(ThemeSchemeKind)`: **HoloNight Dark**, **HoloNight Light**, **TokyoNight Storm**, and **TokyoNight Day**. `appearance/scheme` is the canonical config selector; legacy `appearance/mode` is only used as a fallback when no valid scheme is present. All resolved colors and metrics originate in `palette/holonight/palette.h`, and downstream layers consume that token model rather than hard-coded color values.
 
 The preferred public token roles are canonical names such as `background`, `surface`, `surfaceElevated`, `surfaceRaised`, `textPrimary`, `textMuted`, `borderPassive`, `borderActive`, and `borderFocus`. Older names such as `surfaceVariant`, `surfaceContainer`, `onSurface`, `outline`, and `textSubtle` remain available as deprecated compatibility aliases.
 
-Key Storm defaults:
+Key HoloNight Dark defaults:
 
 | Role | Value | Usage |
 |---|---|---|
-| `background` | `#10131f` | Main window/background plane |
-| `surface` | `#161925` | Views, text fields, and recessed base surfaces |
-| `surfaceElevated` | `#1a1b26` | Cards, alternate rows, side/status panels |
-| `surfaceRaised` | `#24283b` | Buttons, menus, popovers, raised controls |
-| `textPrimary` | `#c0caf5` | Normal text and icons |
-| `textSecondary` | `#a9b1d6` | Secondary readable text |
-| `textMuted` | `#565f89` | Placeholder and inactive text |
-| `textDisabled` | `#3b3f58` | Disabled UI text |
-| `primary` | `#7aa2f7` | Selection/link fill |
-| `borderFocus` | `#00e0ff` | Keyboard focus only |
-| `borderActive` | `#7aa2f7` | Current, selected, or active border |
-| `borderPassive` | `#565f89` | Passive frames and separators |
+| `background` | `#0C1118` | Main window/background plane |
+| `surface` | `#131A24` | Views, text fields, and recessed base surfaces |
+| `surfaceElevated` | `#18212D` | Cards, alternate rows, side/status panels |
+| `surfaceRaised` | `#202B39` | Buttons, menus, popovers, raised controls |
+| `textPrimary` | `#E7EDF5` | Normal text and icons |
+| `textSecondary` | `#C5D0DE` | Secondary readable text |
+| `textMuted` | `#8D99AD` | Placeholder and inactive text |
+| `textDisabled` | `#5B6678` | Disabled UI text |
+| `primary` | `#5EA2FF` | Selection/link fill |
+| `borderFocus` | `#56D7FF` | Keyboard focus only |
+| `borderActive` | `#5EA2FF` | Current, selected, or active border |
+| `borderPassive` | `#36465A` | Passive frames and separators |
 
 The token model also includes semantic status colors, overlay/effect tokens, radius and metric tokens, workspace indicators, and ANSI terminal colors. See [`docs/theme-tokens.md`](docs/theme-tokens.md) for the full schema, deprecated alias mapping, Qt palette mapping, variant status, and future `config.toml` shape.
 
@@ -201,7 +201,7 @@ QT_QPA_PLATFORM=offscreen ctest --test-dir build --output-on-failure
 
 ## Architecture
 
-- **All colors** originate in `palette/holonight/palette.h` (`darkTokens()`/`lightTokens()` → `buildPalette()`). Change colors there, nowhere else.
+- **All colors** originate in `palette/holonight/palette.h` (`tokensForScheme(ThemeSchemeKind)` → `buildPalette()`). Change colors there, nowhere else.
 - **Configuration** is loaded once per consumer through `holonight_config`: defaults, config file, then environment overrides.
 - **QML module URI** is `Holonight` (capital N). Use `import Holonight` in QML files to access all components plus the `HoloniightPalette` and `HolonightTheme` singletons. A lowercase alias (`import holonight`) is also installed for compatibility.
 - **Platform theme** reads configured icon theme, fallback icon theme, UI font, fixed font, and base font size. Defaults are HoloNight/Papirus icons, Inter UI font, JetBrains Mono fixed font, and 10pt body size.

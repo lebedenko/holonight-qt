@@ -5,8 +5,8 @@
 
 #include <gtest/gtest.h>
 
-TEST(DarkTokens, AllColorsValid) {
-  const Holonight::ColorTokens tok = Holonight::darkTokens();
+TEST(TokyoNightStormTokens, AllColorsValid) {
+  const Holonight::ColorTokens tok = Holonight::tokensForScheme(Holonight::ThemeSchemeKind::TokyoNightStorm);
   EXPECT_TRUE(tok.background.isValid());
   EXPECT_TRUE(tok.surface.isValid());
   EXPECT_TRUE(tok.surfaceElevated.isValid());
@@ -52,8 +52,8 @@ TEST(DarkTokens, AllColorsValid) {
 }
 
 // hover, pressed, and borderHover are intentionally semi-transparent; shadow alpha is set at paint time
-TEST(DarkTokens, OpaqueColorsAreOpaque) {
-  const Holonight::ColorTokens tok = Holonight::darkTokens();
+TEST(TokyoNightStormTokens, OpaqueColorsAreOpaque) {
+  const Holonight::ColorTokens tok = Holonight::tokensForScheme(Holonight::ThemeSchemeKind::TokyoNightStorm);
   EXPECT_EQ(tok.background.alpha(), 255);
   EXPECT_EQ(tok.surface.alpha(), 255);
   EXPECT_EQ(tok.surfaceElevated.alpha(), 255);
@@ -93,16 +93,16 @@ TEST(DarkTokens, OpaqueColorsAreOpaque) {
   EXPECT_EQ(tok.workspaceActive.alpha(), 255);
 }
 
-TEST(DarkTokens, NoTransparentColors) {
-  const Holonight::ColorTokens tok = Holonight::darkTokens();
+TEST(TokyoNightStormTokens, NoTransparentColors) {
+  const Holonight::ColorTokens tok = Holonight::tokensForScheme(Holonight::ThemeSchemeKind::TokyoNightStorm);
   EXPECT_NE(tok.surface, QColor(Qt::transparent));
   EXPECT_NE(tok.primary, QColor(Qt::transparent));
   EXPECT_NE(tok.textPrimary, QColor(Qt::transparent));
   EXPECT_NE(tok.error, QColor(Qt::transparent));
 }
 
-TEST(DarkTokens, HoverAndPressedAreSemiTransparent) {
-  const Holonight::ColorTokens tok = Holonight::darkTokens();
+TEST(TokyoNightStormTokens, HoverAndPressedAreSemiTransparent) {
+  const Holonight::ColorTokens tok = Holonight::tokensForScheme(Holonight::ThemeSchemeKind::TokyoNightStorm);
   EXPECT_EQ(tok.hoverOverlay.alpha(), 0x1a);
   EXPECT_EQ(tok.pressedOverlay.alpha(), 0x26);
   EXPECT_EQ(tok.disabledOverlay.alpha(), 0x80);
@@ -114,8 +114,8 @@ TEST(DarkTokens, HoverAndPressedAreSemiTransparent) {
   EXPECT_TRUE(tok.borderHover.isValid());
 }
 
-TEST(DarkTokens, BorderTokenValues) {
-  const Holonight::ColorTokens tok = Holonight::darkTokens();
+TEST(TokyoNightStormTokens, BorderTokenValues) {
+  const Holonight::ColorTokens tok = Holonight::tokensForScheme(Holonight::ThemeSchemeKind::TokyoNightStorm);
   EXPECT_EQ(tok.borderSubtle.rgb(), QColor(0x2f, 0x35, 0x4d).rgb());
   EXPECT_EQ(tok.borderPassive.rgb(), QColor(0x56, 0x5f, 0x89).rgb());
   EXPECT_EQ(tok.borderStrong.rgb(), QColor(0x7c, 0x86, 0xb8).rgb());
@@ -129,8 +129,8 @@ TEST(DarkTokens, BorderTokenValues) {
   EXPECT_EQ(tok.borderUrgent.rgb(), QColor(0xf7, 0x76, 0x8e).rgb());
 }
 
-TEST(DarkTokens, DesignSystemColorValues) {
-  const Holonight::ColorTokens tok = Holonight::darkTokens();
+TEST(TokyoNightStormTokens, DesignSystemColorValues) {
+  const Holonight::ColorTokens tok = Holonight::tokensForScheme(Holonight::ThemeSchemeKind::TokyoNightStorm);
   EXPECT_EQ(tok.background.rgb(), QColor(0x10, 0x13, 0x1f).rgb());
   EXPECT_EQ(tok.surface.rgb(), QColor(0x16, 0x19, 0x25).rgb());
   EXPECT_EQ(tok.surfaceElevated.rgb(), QColor(0x1a, 0x1b, 0x26).rgb());
@@ -148,16 +148,16 @@ TEST(DarkTokens, DesignSystemColorValues) {
   EXPECT_EQ(tok.error.rgb(), QColor(0xf7, 0x76, 0x8e).rgb());
 }
 
-TEST(DarkTokens, SurfaceValues) {
-  const Holonight::ColorTokens tok = Holonight::darkTokens();
+TEST(TokyoNightStormTokens, SurfaceValues) {
+  const Holonight::ColorTokens tok = Holonight::tokensForScheme(Holonight::ThemeSchemeKind::TokyoNightStorm);
   EXPECT_EQ(tok.background.rgb(), QColor(0x10, 0x13, 0x1f).rgb());
   EXPECT_EQ(tok.surface.rgb(), QColor(0x16, 0x19, 0x25).rgb());
   EXPECT_EQ(tok.surfaceElevated.rgb(), QColor(0x1a, 0x1b, 0x26).rgb());
   EXPECT_EQ(tok.surfaceRaised.rgb(), QColor(0x24, 0x28, 0x3b).rgb());
 }
 
-TEST(DarkTokens, DeprecatedAliasesMatchCanonicalRoles) {
-  const Holonight::ColorTokens tok = Holonight::darkTokens();
+TEST(TokyoNightStormTokens, DeprecatedAliasesMatchCanonicalRoles) {
+  const Holonight::ColorTokens tok = Holonight::tokensForScheme(Holonight::ThemeSchemeKind::TokyoNightStorm);
   EXPECT_EQ(tok.surfaceVariant, tok.surface);
   EXPECT_EQ(tok.surfaceContainer, tok.surfaceElevated);
   EXPECT_EQ(tok.onSurface, tok.textPrimary);
@@ -173,8 +173,8 @@ TEST(DarkTokens, DeprecatedAliasesMatchCanonicalRoles) {
   EXPECT_EQ(tok.textSubtle, tok.textSecondary);
 }
 
-TEST(DarkTokens, RadiusMetricAndAnsiTokens) {
-  const Holonight::ColorTokens tok = Holonight::darkTokens();
+TEST(TokyoNightStormTokens, RadiusMetricAndAnsiTokens) {
+  const Holonight::ColorTokens tok = Holonight::tokensForScheme(Holonight::ThemeSchemeKind::TokyoNightStorm);
   EXPECT_EQ(tok.radiusTight, 2);
   EXPECT_EQ(tok.radiusControl, 6);
   EXPECT_EQ(tok.radiusPopup, 6);
@@ -187,8 +187,8 @@ TEST(DarkTokens, RadiusMetricAndAnsiTokens) {
   EXPECT_EQ(tok.ansi15, tok.ansiBrightWhite);
 }
 
-TEST(DarkTokens, SurfaceLuminanceOrdering) {
-  const Holonight::ColorTokens tok = Holonight::darkTokens();
+TEST(TokyoNightStormTokens, SurfaceLuminanceOrdering) {
+  const Holonight::ColorTokens tok = Holonight::tokensForScheme(Holonight::ThemeSchemeKind::TokyoNightStorm);
   auto lum = [](const QColor& c) -> double {
     auto lin = [](double v) { return v <= 0.04045 ? v / 12.92 : std::pow((v + 0.055) / 1.055, 2.4); };
     return 0.2126 * lin(c.redF()) + 0.7152 * lin(c.greenF()) + 0.0722 * lin(c.blueF());
@@ -198,8 +198,8 @@ TEST(DarkTokens, SurfaceLuminanceOrdering) {
   EXPECT_LT(lum(tok.surfaceElevated), lum(tok.surfaceRaised)) << "surfaceElevated must be darker than surfaceRaised";
 }
 
-TEST(LightTokens, AllColorsValid) {
-  const Holonight::ColorTokens tok = Holonight::lightTokens();
+TEST(TokyoNightDayTokens, AllColorsValid) {
+  const Holonight::ColorTokens tok = Holonight::tokensForScheme(Holonight::ThemeSchemeKind::TokyoNightDay);
   EXPECT_TRUE(tok.background.isValid());
   EXPECT_TRUE(tok.surface.isValid());
   EXPECT_TRUE(tok.surfaceElevated.isValid());
@@ -239,8 +239,8 @@ TEST(LightTokens, AllColorsValid) {
   EXPECT_TRUE(tok.ansiBrightWhite.isValid());
 }
 
-TEST(LightTokens, DocumentedColorValues) {
-  const Holonight::ColorTokens tok = Holonight::lightTokens();
+TEST(TokyoNightDayTokens, DocumentedColorValues) {
+  const Holonight::ColorTokens tok = Holonight::tokensForScheme(Holonight::ThemeSchemeKind::TokyoNightDay);
   EXPECT_EQ(tok.background.rgb(), QColor(0xf4, 0xf7, 0xfb).rgb());
   EXPECT_EQ(tok.surface.rgb(), QColor(0xed, 0xf2, 0xf8).rgb());
   EXPECT_EQ(tok.surfaceElevated.rgb(), QColor(0xff, 0xff, 0xff).rgb());
@@ -256,8 +256,8 @@ TEST(LightTokens, DocumentedColorValues) {
   EXPECT_EQ(tok.ansiBrightWhite.rgb(), QColor(0x10, 0x13, 0x1f).rgb());
 }
 
-TEST(LightTokens, DeprecatedAliasesMatchDocumentedCanonicalRoles) {
-  const Holonight::ColorTokens tok = Holonight::lightTokens();
+TEST(TokyoNightDayTokens, DeprecatedAliasesMatchDocumentedCanonicalRoles) {
+  const Holonight::ColorTokens tok = Holonight::tokensForScheme(Holonight::ThemeSchemeKind::TokyoNightDay);
   EXPECT_EQ(tok.surfaceVariant, tok.surface);
   EXPECT_EQ(tok.surfaceContainer, tok.surfaceElevated);
   EXPECT_EQ(tok.onSurface, tok.textPrimary);
@@ -275,8 +275,8 @@ TEST(LightTokens, DeprecatedAliasesMatchDocumentedCanonicalRoles) {
   EXPECT_EQ(tok.ansi15, tok.ansiBrightWhite);
 }
 
-TEST(LightTokens, OverlayAlphaValuesMatchDarkTokenExpectations) {
-  const Holonight::ColorTokens tok = Holonight::lightTokens();
+TEST(TokyoNightDayTokens, OverlayAlphaValuesMatchDarkTokenExpectations) {
+  const Holonight::ColorTokens tok = Holonight::tokensForScheme(Holonight::ThemeSchemeKind::TokyoNightDay);
   EXPECT_EQ(tok.borderHover.alpha(), 0x66);
   EXPECT_EQ(tok.glowCyanSoft.alpha(), 0x33);
   EXPECT_EQ(tok.glowBlueSoft.alpha(), 0x33);
@@ -288,7 +288,85 @@ TEST(LightTokens, OverlayAlphaValuesMatchDarkTokenExpectations) {
   EXPECT_EQ(tok.disabledOverlay.alpha(), 0x80);
 }
 
-TEST(ColorMode, TokensForModeSelectsRequestedPalette) {
-  EXPECT_EQ(Holonight::tokensForMode(Holonight::ColorMode::Dark).background, Holonight::darkTokens().background);
-  EXPECT_EQ(Holonight::tokensForMode(Holonight::ColorMode::Light).background, Holonight::lightTokens().background);
+TEST(SchemeCatalog, HoloNightDarkMatchesDocumentedValues) {
+  const Holonight::ColorTokens tok = Holonight::tokensForScheme(Holonight::ThemeSchemeKind::HoloNightDark);
+  EXPECT_EQ(tok.background, QColor(QStringLiteral("#0C1118")));
+  EXPECT_EQ(tok.surface, QColor(QStringLiteral("#131A24")));
+  EXPECT_EQ(tok.surfaceElevated, QColor(QStringLiteral("#18212D")));
+  EXPECT_EQ(tok.surfaceRaised, QColor(QStringLiteral("#202B39")));
+  EXPECT_EQ(tok.surfaceHover, QColor(QStringLiteral("#253243")));
+  EXPECT_EQ(tok.surfaceInverse, QColor(QStringLiteral("#F3F6FA")));
+  EXPECT_EQ(tok.textPrimary, QColor(QStringLiteral("#E7EDF5")));
+  EXPECT_EQ(tok.textSecondary, QColor(QStringLiteral("#C5D0DE")));
+  EXPECT_EQ(tok.textMuted, QColor(QStringLiteral("#8D99AD")));
+  EXPECT_EQ(tok.textDisabled, QColor(QStringLiteral("#5B6678")));
+  EXPECT_EQ(tok.textInverse, QColor(QStringLiteral("#0F141C")));
+  EXPECT_EQ(tok.primary, QColor(QStringLiteral("#5EA2FF")));
+  EXPECT_EQ(tok.primaryHover, QColor(QStringLiteral("#77B2FF")));
+  EXPECT_EQ(tok.primaryPressed, QColor(QStringLiteral("#438CEB")));
+  EXPECT_EQ(tok.onPrimary, QColor(QStringLiteral("#081018")));
+  EXPECT_EQ(tok.borderSubtle, QColor(QStringLiteral("#263241")));
+  EXPECT_EQ(tok.borderPassive, QColor(QStringLiteral("#36465A")));
+  EXPECT_EQ(tok.borderStrong, QColor(QStringLiteral("#53677F")));
+  EXPECT_EQ(tok.borderHover, QColor(QStringLiteral("#56D7FF55")));
+  EXPECT_EQ(tok.borderFocus, QColor(QStringLiteral("#56D7FF")));
+  EXPECT_EQ(tok.borderActive, QColor(QStringLiteral("#5EA2FF")));
+  EXPECT_EQ(tok.borderUrgent, QColor(QStringLiteral("#FF718C")));
+  EXPECT_EQ(tok.success, QColor(QStringLiteral("#79D97F")));
+  EXPECT_EQ(tok.warning, QColor(QStringLiteral("#F2C46B")));
+  EXPECT_EQ(tok.error, QColor(QStringLiteral("#FF718C")));
+  EXPECT_EQ(tok.ansiBlack, QColor(QStringLiteral("#1A222D")));
+  EXPECT_EQ(tok.ansiBrightWhite, QColor(QStringLiteral("#FFFFFF")));
+}
+
+TEST(SchemeCatalog, HoloNightLightMatchesDocumentedValues) {
+  const Holonight::ColorTokens tok = Holonight::tokensForScheme(Holonight::ThemeSchemeKind::HoloNightLight);
+  EXPECT_EQ(tok.background, QColor(QStringLiteral("#F3F7FB")));
+  EXPECT_EQ(tok.surface, QColor(QStringLiteral("#EDF2F8")));
+  EXPECT_EQ(tok.surfaceElevated, QColor(QStringLiteral("#FFFFFF")));
+  EXPECT_EQ(tok.surfaceRaised, QColor(QStringLiteral("#E5ECF4")));
+  EXPECT_EQ(tok.surfaceHover, QColor(QStringLiteral("#DCE6F1")));
+  EXPECT_EQ(tok.surfaceInverse, QColor(QStringLiteral("#121922")));
+  EXPECT_EQ(tok.textPrimary, QColor(QStringLiteral("#1B2533")));
+  EXPECT_EQ(tok.textSecondary, QColor(QStringLiteral("#435164")));
+  EXPECT_EQ(tok.textMuted, QColor(QStringLiteral("#6F7D91")));
+  EXPECT_EQ(tok.textDisabled, QColor(QStringLiteral("#A7B1BF")));
+  EXPECT_EQ(tok.textInverse, QColor(QStringLiteral("#EEF3F8")));
+  EXPECT_EQ(tok.primary, QColor(QStringLiteral("#3E7BDB")));
+  EXPECT_EQ(tok.primaryHover, QColor(QStringLiteral("#4C8BEF")));
+  EXPECT_EQ(tok.primaryPressed, QColor(QStringLiteral("#3266BE")));
+  EXPECT_EQ(tok.onPrimary, QColor(QStringLiteral("#FFFFFF")));
+  EXPECT_EQ(tok.borderSubtle, QColor(QStringLiteral("#D6DEE8")));
+  EXPECT_EQ(tok.borderPassive, QColor(QStringLiteral("#B7C3D2")));
+  EXPECT_EQ(tok.borderStrong, QColor(QStringLiteral("#8898AB")));
+  EXPECT_EQ(tok.borderHover, QColor(QStringLiteral("#00A8D833")));
+  EXPECT_EQ(tok.borderFocus, QColor(QStringLiteral("#00A8D8")));
+  EXPECT_EQ(tok.borderActive, QColor(QStringLiteral("#3E7BDB")));
+  EXPECT_EQ(tok.borderUrgent, QColor(QStringLiteral("#D84A68")));
+  EXPECT_EQ(tok.success, QColor(QStringLiteral("#3E9449")));
+  EXPECT_EQ(tok.warning, QColor(QStringLiteral("#C38A1C")));
+  EXPECT_EQ(tok.error, QColor(QStringLiteral("#D84A68")));
+  EXPECT_EQ(tok.ansiBlack, QColor(QStringLiteral("#3B4554")));
+  EXPECT_EQ(tok.ansiBrightWhite, QColor(QStringLiteral("#FFFFFF")));
+}
+
+TEST(SchemeCatalog, TokyoNightStormAndDayPreserveExistingValues) {
+  const Holonight::ColorTokens storm = Holonight::tokensForScheme(Holonight::ThemeSchemeKind::TokyoNightStorm);
+  const Holonight::ColorTokens day = Holonight::tokensForScheme(Holonight::ThemeSchemeKind::TokyoNightDay);
+
+  EXPECT_EQ(storm.background.rgb(), QColor(0x10, 0x13, 0x1f).rgb());
+  EXPECT_EQ(storm.primary.rgb(), QColor(0x7a, 0xa2, 0xf7).rgb());
+  EXPECT_EQ(storm.borderFocus.rgb(), QColor(0x00, 0xe0, 0xff).rgb());
+  EXPECT_EQ(storm.ansiBrightWhite.rgb(), QColor(0xd5, 0xdc, 0xff).rgb());
+  EXPECT_EQ(day.background.rgb(), QColor(0xf4, 0xf7, 0xfb).rgb());
+  EXPECT_EQ(day.primary.rgb(), QColor(0x2f, 0x6f, 0xe4).rgb());
+  EXPECT_EQ(day.borderFocus.rgb(), QColor(0x00, 0xa6, 0xd6).rgb());
+  EXPECT_EQ(day.ansiBrightWhite.rgb(), QColor(0x10, 0x13, 0x1f).rgb());
+}
+
+TEST(SchemeCatalog, SchemesDifferWithinSameMode) {
+  EXPECT_NE(Holonight::tokensForScheme(Holonight::ThemeSchemeKind::HoloNightDark),
+            Holonight::tokensForScheme(Holonight::ThemeSchemeKind::TokyoNightStorm));
+  EXPECT_NE(Holonight::tokensForScheme(Holonight::ThemeSchemeKind::HoloNightLight),
+            Holonight::tokensForScheme(Holonight::ThemeSchemeKind::TokyoNightDay));
 }

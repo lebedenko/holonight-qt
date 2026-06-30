@@ -16,13 +16,6 @@ enum class AppearanceMode {
   System,
 };
 
-enum class ThemeSchemeKind {
-  HoloNightDark,
-  HoloNightLight,
-  TokyoNightStorm,
-  TokyoNightDay,
-};
-
 struct ThemeConfig {
   AppearanceMode appearance_mode = AppearanceMode::Dark;
   QString scheme;

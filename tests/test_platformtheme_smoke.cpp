@@ -112,7 +112,8 @@ TEST(PlatformThemeSmoke, LightSchemeUsesLightPaletteWhenModeIsStaleDark) {
   const QPalette* pal = theme.palette(QPlatformTheme::SystemPalette);
   ASSERT_NE(pal, nullptr);
   EXPECT_EQ(theme.colorScheme(), Qt::ColorScheme::Light);
-  EXPECT_EQ(pal->color(QPalette::Active, QPalette::Window), Holonight::lightTokens().background);
+  EXPECT_EQ(pal->color(QPalette::Active, QPalette::Window),
+            Holonight::tokensForScheme(Holonight::ThemeSchemeKind::HoloNightLight).background);
   EXPECT_EQ(pal->color(QPalette::Active, QPalette::Highlight), QColor(QStringLiteral("#e0af68")));
 }
 

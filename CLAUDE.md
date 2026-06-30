@@ -69,7 +69,7 @@ QT_QPA_PLATFORM=offscreen ctest --test-dir build --output-on-failure
 - To diagnose plugin loading: `QPluginLoader::metaData()` reveals the actual structure Qt sees; check that `Keys` is at `MetaData.Keys`, not `MetaData.MetaData.Keys`.
 - For system-level testing (not unit tests), install with `sudo cmake --install build --prefix /usr` and use `Release` builds — debug plugins have `"debug": true` metadata which differs from system Qt plugins.
 
-- All colors originate in `palette/holonight/palette.h` (`ColorTokens` struct → `darkTokens()` → `buildPalette()`). Change colors there, nowhere else.
+- All colors originate in `palette/holonight/palette.h` (`ColorTokens` struct → `tokensForScheme(ThemeSchemeKind)` → `buildPalette()`). Change colors there, nowhere else.
 - Class names use three i's: `HoloniightStyle`, `HoloniightTheme` — this is intentional.
 - Tests compile plugin source directly (not via Qt plugin-loading) so `QApplication` + `QT_QPA_PLATFORM=offscreen` is sufficient; no actual plugin install needed for tests.
 - WCAG AA contrast (4.5:1) is enforced by `tests/test_palette_contrast.cpp` — if you add color tokens or modify existing ones, update the contrast test.

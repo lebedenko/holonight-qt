@@ -1,12 +1,13 @@
 # HoloNight Theme Tokens
 
-The palette layer is the canonical source for resolved theme values. `Holonight::darkTokens()` returns the complete Storm dark variant and `Holonight::lightTokens()` returns the Day light variant; all Qt palettes, widgets, QML controls, platform theme colors, and generated KDE color-scheme values should consume roles from `Holonight::ColorTokens`.
+The palette layer is the canonical source for resolved theme values. `Holonight::tokensForScheme(ThemeSchemeKind)` returns one of the built-in concrete schemes; all Qt palettes, widgets, QML controls, platform theme colors, and generated KDE color-scheme values should consume roles from `Holonight::ColorTokens`.
 
 ## Variant Status
 
 | Variant | Status | Dark | Light | Notes |
 | --- | --- | --- | --- | --- |
-| Storm / Day | Implemented | Yes | Yes | Default dark mode plus light counterpart. Tokyo Night inspired. |
+| HoloNight Dark / Light | Implemented | Yes | Yes | Default HoloNight schemes selected by legacy mode fallback. |
+| TokyoNight Storm / Day | Implemented | Yes | Yes | Bundled Tokyo Night inspired compatibility schemes. |
 | Aurora | Planned | Planned | No | Nord inspired. Not parsed or exported yet. |
 | Mocha | Planned | Planned | No | Catppuccin inspired. Not parsed or exported yet. |
 | Ember | Planned | Planned | No | Warm dark variant. Not parsed or exported yet. |
@@ -14,7 +15,7 @@ The palette layer is the canonical source for resolved theme values. `Holonight:
 | Neon | Planned | Planned | No | Higher-accent dark variant. Not parsed or exported yet. |
 
 Current scheme IDs are `holonight-dark`, `holonight-light`, `tokyonight-storm`, and `tokyonight-day`.
-`holonight-dark` and `tokyonight-storm` currently resolve to `darkTokens()`; `holonight-light` and `tokyonight-day` currently resolve to `lightTokens()`.
+`holonight-dark`, `holonight-light`, `tokyonight-storm`, and `tokyonight-day` resolve to distinct built-in token sets.
 
 ## Canonical Roles
 

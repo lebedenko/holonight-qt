@@ -5,7 +5,7 @@
 
 namespace Holonight {
 
-ColorTokens ThemeResolver::resolveBase(ThemeSchemeKind scheme) { return tokensForMode(colorModeForScheme(scheme)); }
+ColorTokens ThemeResolver::resolveBase(ThemeSchemeKind scheme) { return tokensForScheme(scheme); }
 
 void ThemeResolver::applyAccent(ColorTokens& tok, const QString& accent) {
   if (accent == QStringLiteral("cyan")) {

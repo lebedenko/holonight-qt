@@ -107,7 +107,7 @@ TEST(ThemeLoader, ExplicitDarkMode) {
   const Holonight::ThemeConfig cfg = Holonight::ThemeLoader::load();
   EXPECT_EQ(cfg.appearance_mode, Holonight::AppearanceMode::Dark);
   const Holonight::ColorTokens tok = Holonight::ThemeResolver::resolve(cfg);
-  EXPECT_EQ(tok.background, Holonight::darkTokens().background);
+  EXPECT_EQ(tok.background, Holonight::tokensForScheme(Holonight::ThemeSchemeKind::HoloNightDark).background);
   expectCyanAccent(tok);
 }
 
@@ -126,7 +126,7 @@ TEST(ThemeLoader, ExplicitLightMode) {
   const Holonight::ThemeConfig cfg = Holonight::ThemeLoader::load();
   EXPECT_EQ(cfg.appearance_mode, Holonight::AppearanceMode::Light);
   const Holonight::ColorTokens tok = Holonight::ThemeResolver::resolve(cfg);
-  EXPECT_EQ(tok.background, Holonight::lightTokens().background);
+  EXPECT_EQ(tok.background, Holonight::tokensForScheme(Holonight::ThemeSchemeKind::HoloNightLight).background);
   expectCyanAccent(tok);
 }
 
@@ -145,7 +145,7 @@ TEST(ThemeLoader, SystemModeFallsBackToDark) {
   const Holonight::ThemeConfig cfg = Holonight::ThemeLoader::load();
   EXPECT_EQ(cfg.appearance_mode, Holonight::AppearanceMode::System);
   const Holonight::ColorTokens tok = Holonight::ThemeResolver::resolve(cfg);
-  EXPECT_EQ(tok.background, Holonight::darkTokens().background);
+  EXPECT_EQ(tok.background, Holonight::tokensForScheme(Holonight::ThemeSchemeKind::HoloNightDark).background);
   expectCyanAccent(tok);
 }
 
@@ -171,14 +171,14 @@ TEST(ThemeLoader, NewFieldsAreParsedFromIni) {
 
 TEST(ThemeResolver, EmptyAccentProducesCyanTokens) {
   const Holonight::ColorTokens tok = Holonight::ThemeResolver::resolve(makeConfig(Holonight::AppearanceMode::Dark));
-  EXPECT_EQ(tok.background, Holonight::darkTokens().background);
+  EXPECT_EQ(tok.background, Holonight::tokensForScheme(Holonight::ThemeSchemeKind::HoloNightDark).background);
   expectCyanAccent(tok);
 }
 
 TEST(ThemeResolver, InvalidAccentProducesCyanTokens) {
   const Holonight::ColorTokens tok =
       Holonight::ThemeResolver::resolve(makeConfig(Holonight::AppearanceMode::Dark, QStringLiteral("magenta")));
-  EXPECT_EQ(tok.background, Holonight::darkTokens().background);
+  EXPECT_EQ(tok.background, Holonight::tokensForScheme(Holonight::ThemeSchemeKind::HoloNightDark).background);
   expectCyanAccent(tok);
 }
 
@@ -189,7 +189,7 @@ TEST(ThemeResolver, AccentCyanOverridesCorrectSlots) {
   expectCyanAccent(tok);
 
   // Non-accent slots must stay at base dark values.
-  const Holonight::ColorTokens base = Holonight::darkTokens();
+  const Holonight::ColorTokens base = Holonight::tokensForScheme(Holonight::ThemeSchemeKind::HoloNightDark);
   EXPECT_EQ(tok.background, base.background);
   EXPECT_EQ(tok.accentCyan, base.accentCyan);
   EXPECT_EQ(tok.accentBlue, base.accentBlue);
@@ -248,7 +248,7 @@ TEST(ThemeResolver, AccentIsCaseInsensitive) {
   EXPECT_EQ(lower, upper);
 }
 
-TEST(ThemeResolver, SchemesResolveToCurrentTokenAliases) {
+TEST(ThemeResolver, SchemesResolveToConcreteCatalogEntries) {
   const Holonight::ColorTokens holonightDark = Holonight::ThemeResolver::resolve(
       makeConfig(Holonight::AppearanceMode::Light, QStringLiteral("cyan"), QStringLiteral("holonight-dark")));
   const Holonight::ColorTokens tokyoStorm = Holonight::ThemeResolver::resolve(
@@ -258,18 +258,19 @@ TEST(ThemeResolver, SchemesResolveToCurrentTokenAliases) {
   const Holonight::ColorTokens tokyoDay = Holonight::ThemeResolver::resolve(
       makeConfig(Holonight::AppearanceMode::Dark, QStringLiteral("cyan"), QStringLiteral("tokyonight-day")));
 
-  EXPECT_EQ(holonightDark.background, Holonight::darkTokens().background);
-  EXPECT_EQ(tokyoStorm.background, Holonight::darkTokens().background);
-  EXPECT_EQ(holonightLight.background, Holonight::lightTokens().background);
-  EXPECT_EQ(tokyoDay.background, Holonight::lightTokens().background);
-  EXPECT_EQ(holonightDark, tokyoStorm);
-  EXPECT_EQ(holonightLight, tokyoDay);
+  EXPECT_EQ(holonightDark.background, Holonight::tokensForScheme(Holonight::ThemeSchemeKind::HoloNightDark).background);
+  EXPECT_EQ(tokyoStorm.background, Holonight::tokensForScheme(Holonight::ThemeSchemeKind::TokyoNightStorm).background);
+  EXPECT_EQ(holonightLight.background,
+            Holonight::tokensForScheme(Holonight::ThemeSchemeKind::HoloNightLight).background);
+  EXPECT_EQ(tokyoDay.background, Holonight::tokensForScheme(Holonight::ThemeSchemeKind::TokyoNightDay).background);
+  EXPECT_NE(holonightDark.background, tokyoStorm.background);
+  EXPECT_NE(holonightLight.background, tokyoDay.background);
 }
 
 TEST(ThemeResolver, ValidSchemeWinsWhenModeDisagrees) {
   const Holonight::ColorTokens tok = Holonight::ThemeResolver::resolve(
       makeConfig(Holonight::AppearanceMode::Dark, QStringLiteral("cyan"), QStringLiteral("tokyonight-day")));
-  EXPECT_EQ(tok.background, Holonight::lightTokens().background);
+  EXPECT_EQ(tok.background, Holonight::tokensForScheme(Holonight::ThemeSchemeKind::TokyoNightDay).background);
 }
 
 TEST(ThemeResolver, RadiusAndMetricsRemainStableAcrossSchemes) {
