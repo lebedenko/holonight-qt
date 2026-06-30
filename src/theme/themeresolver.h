@@ -9,12 +9,12 @@
 namespace Holonight {
 
 class ThemeResolver {
-public:
+ public:
   ThemeResolver() = delete;
   [[nodiscard]] static ColorTokens resolve(const ThemeConfig& config);
 
-private:
-  [[nodiscard]] static ColorTokens resolveBase(ColorMode mode);
+ private:
+  [[nodiscard]] static ColorTokens resolveBase(ThemeSchemeKind scheme);
   static void applyAccent(ColorTokens& tok, const QString& accent);
 };
 

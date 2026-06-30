@@ -1,11 +1,10 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 // SPDX-FileCopyrightText: 2026 Andrii L <lebeden@gmail.com>
 
-#include "themeloader.h"
-#include "themeresolver.h"
-
 #include "holonight/config.h"
 #include "holonight/palette.h"
+#include "themeloader.h"
+#include "themeresolver.h"
 
 #include <QDir>
 #include <QFile>
@@ -46,11 +45,25 @@ class EnvGuard {
   QByteArray old_value_;
 };
 
-Holonight::ThemeConfig makeConfig(Holonight::AppearanceMode mode, const QString& accent = {}) {
+Holonight::ThemeConfig makeConfig(Holonight::AppearanceMode mode, const QString& accent = {},
+                                  const QString& scheme = {}) {
   Holonight::ThemeConfig cfg;
   cfg.appearance_mode = mode;
   cfg.accent = accent;
+  cfg.scheme = scheme;
   return cfg;
+}
+
+void expectCyanAccent(const Holonight::ColorTokens& tok) {
+  EXPECT_EQ(tok.primary, QColor(QStringLiteral("#7dcfff")));
+  EXPECT_EQ(tok.primaryHover, QColor(QStringLiteral("#a3d8ff")));
+  EXPECT_EQ(tok.primaryPressed, QColor(QStringLiteral("#5cb8f5")));
+  EXPECT_EQ(tok.borderFocus, QColor(QStringLiteral("#7dcfff")));
+  EXPECT_EQ(tok.borderActive, QColor(QStringLiteral("#7dcfff")));
+  EXPECT_EQ(tok.focusRing, QColor(QStringLiteral("#7dcfff55")));
+  EXPECT_EQ(tok.glowCyanSoft, QColor(QStringLiteral("#7dcfff22")));
+  EXPECT_EQ(tok.glowBlueSoft, QColor(QStringLiteral("#7dcfff18")));
+  EXPECT_EQ(tok.glowVioletSoft, QColor(QStringLiteral("#7dcfff12")));
 }
 
 }  // namespace
@@ -93,7 +106,9 @@ TEST(ThemeLoader, ExplicitDarkMode) {
 
   const Holonight::ThemeConfig cfg = Holonight::ThemeLoader::load();
   EXPECT_EQ(cfg.appearance_mode, Holonight::AppearanceMode::Dark);
-  EXPECT_EQ(Holonight::ThemeResolver::resolve(cfg), Holonight::darkTokens());
+  const Holonight::ColorTokens tok = Holonight::ThemeResolver::resolve(cfg);
+  EXPECT_EQ(tok.background, Holonight::darkTokens().background);
+  expectCyanAccent(tok);
 }
 
 TEST(ThemeLoader, ExplicitLightMode) {
@@ -110,11 +125,12 @@ TEST(ThemeLoader, ExplicitLightMode) {
 
   const Holonight::ThemeConfig cfg = Holonight::ThemeLoader::load();
   EXPECT_EQ(cfg.appearance_mode, Holonight::AppearanceMode::Light);
-  EXPECT_EQ(Holonight::ThemeResolver::resolve(cfg), Holonight::lightTokens());
+  const Holonight::ColorTokens tok = Holonight::ThemeResolver::resolve(cfg);
+  EXPECT_EQ(tok.background, Holonight::lightTokens().background);
+  expectCyanAccent(tok);
 }
 
-TEST(ThemeLoader, SystemModeInHeadlessEnvironmentFallsBackToDark) {
-  // In offscreen/headless Qt, QGuiApplication::styleHints()->colorScheme() returns Unknown.
+TEST(ThemeLoader, SystemModeFallsBackToDark) {
   QTemporaryDir dir;
   ASSERT_TRUE(dir.isValid());
   const QString path = dir.path() + QStringLiteral("/theme.conf");
@@ -128,8 +144,9 @@ TEST(ThemeLoader, SystemModeInHeadlessEnvironmentFallsBackToDark) {
 
   const Holonight::ThemeConfig cfg = Holonight::ThemeLoader::load();
   EXPECT_EQ(cfg.appearance_mode, Holonight::AppearanceMode::System);
-  // system + Unknown colorScheme → dark
-  EXPECT_EQ(Holonight::ThemeResolver::resolve(cfg), Holonight::darkTokens());
+  const Holonight::ColorTokens tok = Holonight::ThemeResolver::resolve(cfg);
+  EXPECT_EQ(tok.background, Holonight::darkTokens().background);
+  expectCyanAccent(tok);
 }
 
 TEST(ThemeLoader, NewFieldsAreParsedFromIni) {
@@ -152,30 +169,24 @@ TEST(ThemeLoader, NewFieldsAreParsedFromIni) {
 
 // ── Accent override ───────────────────────────────────────────────────────────
 
-TEST(ThemeResolver, EmptyAccentProducesBaseTokens) {
+TEST(ThemeResolver, EmptyAccentProducesCyanTokens) {
   const Holonight::ColorTokens tok = Holonight::ThemeResolver::resolve(makeConfig(Holonight::AppearanceMode::Dark));
-  EXPECT_EQ(tok, Holonight::darkTokens());
+  EXPECT_EQ(tok.background, Holonight::darkTokens().background);
+  expectCyanAccent(tok);
 }
 
-TEST(ThemeResolver, InvalidAccentProducesBaseTokens) {
+TEST(ThemeResolver, InvalidAccentProducesCyanTokens) {
   const Holonight::ColorTokens tok =
       Holonight::ThemeResolver::resolve(makeConfig(Holonight::AppearanceMode::Dark, QStringLiteral("magenta")));
-  EXPECT_EQ(tok, Holonight::darkTokens());
+  EXPECT_EQ(tok.background, Holonight::darkTokens().background);
+  expectCyanAccent(tok);
 }
 
 TEST(ThemeResolver, AccentCyanOverridesCorrectSlots) {
   const Holonight::ColorTokens tok =
       Holonight::ThemeResolver::resolve(makeConfig(Holonight::AppearanceMode::Dark, QStringLiteral("cyan")));
 
-  EXPECT_EQ(tok.primary, QColor(QStringLiteral("#7dcfff")));
-  EXPECT_EQ(tok.primaryHover, QColor(QStringLiteral("#a3d8ff")));
-  EXPECT_EQ(tok.primaryPressed, QColor(QStringLiteral("#5cb8f5")));
-  EXPECT_EQ(tok.borderFocus, QColor(QStringLiteral("#7dcfff")));
-  EXPECT_EQ(tok.borderActive, QColor(QStringLiteral("#7dcfff")));
-  EXPECT_EQ(tok.focusRing, QColor(QStringLiteral("#7dcfff55")));
-  EXPECT_EQ(tok.glowCyanSoft, QColor(QStringLiteral("#7dcfff22")));
-  EXPECT_EQ(tok.glowBlueSoft, QColor(QStringLiteral("#7dcfff18")));
-  EXPECT_EQ(tok.glowVioletSoft, QColor(QStringLiteral("#7dcfff12")));
+  expectCyanAccent(tok);
 
   // Non-accent slots must stay at base dark values.
   const Holonight::ColorTokens base = Holonight::darkTokens();
@@ -237,6 +248,47 @@ TEST(ThemeResolver, AccentIsCaseInsensitive) {
   EXPECT_EQ(lower, upper);
 }
 
+TEST(ThemeResolver, SchemesResolveToCurrentTokenAliases) {
+  const Holonight::ColorTokens holonightDark = Holonight::ThemeResolver::resolve(
+      makeConfig(Holonight::AppearanceMode::Light, QStringLiteral("cyan"), QStringLiteral("holonight-dark")));
+  const Holonight::ColorTokens tokyoStorm = Holonight::ThemeResolver::resolve(
+      makeConfig(Holonight::AppearanceMode::Light, QStringLiteral("cyan"), QStringLiteral("tokyonight-storm")));
+  const Holonight::ColorTokens holonightLight = Holonight::ThemeResolver::resolve(
+      makeConfig(Holonight::AppearanceMode::Dark, QStringLiteral("cyan"), QStringLiteral("holonight-light")));
+  const Holonight::ColorTokens tokyoDay = Holonight::ThemeResolver::resolve(
+      makeConfig(Holonight::AppearanceMode::Dark, QStringLiteral("cyan"), QStringLiteral("tokyonight-day")));
+
+  EXPECT_EQ(holonightDark.background, Holonight::darkTokens().background);
+  EXPECT_EQ(tokyoStorm.background, Holonight::darkTokens().background);
+  EXPECT_EQ(holonightLight.background, Holonight::lightTokens().background);
+  EXPECT_EQ(tokyoDay.background, Holonight::lightTokens().background);
+  EXPECT_EQ(holonightDark, tokyoStorm);
+  EXPECT_EQ(holonightLight, tokyoDay);
+}
+
+TEST(ThemeResolver, ValidSchemeWinsWhenModeDisagrees) {
+  const Holonight::ColorTokens tok = Holonight::ThemeResolver::resolve(
+      makeConfig(Holonight::AppearanceMode::Dark, QStringLiteral("cyan"), QStringLiteral("tokyonight-day")));
+  EXPECT_EQ(tok.background, Holonight::lightTokens().background);
+}
+
+TEST(ThemeResolver, RadiusAndMetricsRemainStableAcrossSchemes) {
+  const Holonight::ColorTokens dark = Holonight::ThemeResolver::resolve(
+      makeConfig(Holonight::AppearanceMode::Dark, QStringLiteral("cyan"), QStringLiteral("holonight-dark")));
+  const Holonight::ColorTokens light = Holonight::ThemeResolver::resolve(
+      makeConfig(Holonight::AppearanceMode::Dark, QStringLiteral("cyan"), QStringLiteral("holonight-light")));
+
+  EXPECT_EQ(dark.radiusTight, light.radiusTight);
+  EXPECT_EQ(dark.radiusControl, light.radiusControl);
+  EXPECT_EQ(dark.radiusPopup, light.radiusPopup);
+  EXPECT_EQ(dark.radiusPill, light.radiusPill);
+  EXPECT_EQ(dark.borderWidth, light.borderWidth);
+  EXPECT_EQ(dark.focusBorderWidth, light.focusBorderWidth);
+  EXPECT_EQ(dark.separatorWidth, light.separatorWidth);
+  EXPECT_EQ(dark.controlHeight, light.controlHeight);
+  EXPECT_EQ(dark.controlPadding, light.controlPadding);
+}
+
 // ── reload() suppression (tested at resolver level) ──────────────────────────
 
 TEST(ThemeResolver, SameConfigProducesEqualTokens) {
@@ -245,8 +297,10 @@ TEST(ThemeResolver, SameConfigProducesEqualTokens) {
 }
 
 TEST(ThemeResolver, DifferentModeProducesUnequalTokens) {
-  const Holonight::ColorTokens dark = Holonight::ThemeResolver::resolve(makeConfig(Holonight::AppearanceMode::Dark));
-  const Holonight::ColorTokens light = Holonight::ThemeResolver::resolve(makeConfig(Holonight::AppearanceMode::Light));
+  const Holonight::ColorTokens dark =
+      Holonight::ThemeResolver::resolve(makeConfig(Holonight::AppearanceMode::Dark, QStringLiteral("cyan")));
+  const Holonight::ColorTokens light =
+      Holonight::ThemeResolver::resolve(makeConfig(Holonight::AppearanceMode::Light, QStringLiteral("cyan")));
   EXPECT_FALSE(dark == light);
 }
 

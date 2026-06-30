@@ -3,9 +3,12 @@
 
 #include "../platformtheme/holonighttheme.h"
 #include "holonight/palette.h"
+#include "themeresolver.h"
 
 #include <QByteArray>
+#include <QFile>
 #include <QFont>
+#include <QTemporaryDir>
 #include <QVariant>
 
 #include <gtest/gtest.h>
@@ -38,6 +41,13 @@ class EnvGuard {
   QByteArray old_value_;
 };
 
+void writeFile(const QString& path, const QByteArray& contents) {
+  QFile file = QFile{path};
+  const bool opened = file.open(QIODevice::WriteOnly | QIODevice::Truncate | QIODevice::Text);
+  ASSERT_TRUE(opened);
+  ASSERT_EQ(file.write(contents), contents.size());
+}
+
 }  // namespace
 
 TEST(PlatformThemeSmoke, InstantiatesWithoutCrash) {
@@ -54,7 +64,7 @@ TEST(PlatformThemeSmoke, HighlightMatchesPrimary) {
   HoloniightTheme theme;
   const QPalette* pal = theme.palette(QPlatformTheme::SystemPalette);
   ASSERT_NE(pal, nullptr);
-  const Holonight::ColorTokens tokens = Holonight::darkTokens();
+  const Holonight::ColorTokens tokens = Holonight::ThemeResolver::resolve(Holonight::ThemeConfig::defaults());
   EXPECT_EQ(pal->color(QPalette::Active, QPalette::Highlight), tokens.primary);
 }
 
@@ -79,10 +89,46 @@ TEST(PlatformThemeSmoke, LightAppearanceUsesLightPaletteAndScheme) {
   HoloniightTheme theme;
   const QPalette* pal = theme.palette(QPlatformTheme::SystemPalette);
   ASSERT_NE(pal, nullptr);
-  const Holonight::ColorTokens tokens = Holonight::lightTokens();
+  Holonight::ThemeConfig config = Holonight::ThemeConfig::defaults();
+  config.appearance_mode = Holonight::AppearanceMode::Light;
+  const Holonight::ColorTokens tokens = Holonight::ThemeResolver::resolve(config);
   EXPECT_EQ(pal->color(QPalette::Active, QPalette::Window), tokens.background);
   EXPECT_EQ(pal->color(QPalette::Active, QPalette::Highlight), tokens.primary);
   EXPECT_EQ(theme.colorScheme(), Qt::ColorScheme::Light);
+}
+
+TEST(PlatformThemeSmoke, LightSchemeUsesLightPaletteWhenModeIsStaleDark) {
+  EnvGuard configGuard = EnvGuard{"HOLONIGHT_CONFIG_FILE"};
+  EnvGuard appearanceGuard = EnvGuard{"HOLONIGHT_APPEARANCE_MODE"};
+  qunsetenv("HOLONIGHT_APPEARANCE_MODE");
+
+  QTemporaryDir dir;
+  ASSERT_TRUE(dir.isValid());
+  const QString path = dir.filePath(QStringLiteral("theme.conf"));
+  writeFile(path, "[appearance]\nscheme=holonight-light\naccent=yellow\nmode=dark\n");
+  qputenv("HOLONIGHT_CONFIG_FILE", path.toLocal8Bit());
+
+  HoloniightTheme theme;
+  const QPalette* pal = theme.palette(QPlatformTheme::SystemPalette);
+  ASSERT_NE(pal, nullptr);
+  EXPECT_EQ(theme.colorScheme(), Qt::ColorScheme::Light);
+  EXPECT_EQ(pal->color(QPalette::Active, QPalette::Window), Holonight::lightTokens().background);
+  EXPECT_EQ(pal->color(QPalette::Active, QPalette::Highlight), QColor(QStringLiteral("#e0af68")));
+}
+
+TEST(PlatformThemeSmoke, DarkSchemeUsesDarkColorScheme) {
+  EnvGuard configGuard = EnvGuard{"HOLONIGHT_CONFIG_FILE"};
+  EnvGuard appearanceGuard = EnvGuard{"HOLONIGHT_APPEARANCE_MODE"};
+  qunsetenv("HOLONIGHT_APPEARANCE_MODE");
+
+  QTemporaryDir dir;
+  ASSERT_TRUE(dir.isValid());
+  const QString path = dir.filePath(QStringLiteral("theme.conf"));
+  writeFile(path, "[appearance]\nscheme=tokyonight-storm\nmode=light\n");
+  qputenv("HOLONIGHT_CONFIG_FILE", path.toLocal8Bit());
+
+  HoloniightTheme theme;
+  EXPECT_EQ(theme.colorScheme(), Qt::ColorScheme::Dark);
 }
 
 TEST(PlatformThemeSmoke, FontIsInterTwelvePt) {

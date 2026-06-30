@@ -4,6 +4,7 @@
 #include "holonighttheme.h"
 
 #include "holonight/palette.h"
+#include "themeresolver.h"
 
 #include <QIcon>
 #include <QStandardPaths>
@@ -12,7 +13,7 @@
 HoloniightTheme::HoloniightTheme()
     : config_{Holonight::ThemeConfig::load()},
       color_mode_{config_.resolvedColorMode()},
-      palette_{Holonight::buildPalette(Holonight::tokensForMode(color_mode_))},
+      palette_{Holonight::buildPalette(Holonight::ThemeResolver::resolve(config_))},
       font_system_{config_.ui_font, config_.bodySize()},
       font_title_{config_.ui_font, config_.titleSize()},
       font_fixed_{config_.fixed_font, config_.bodySize()},

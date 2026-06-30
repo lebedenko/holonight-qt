@@ -5,7 +5,7 @@
 
 namespace Holonight {
 
-ColorTokens ThemeResolver::resolveBase(ColorMode mode) { return tokensForMode(mode); }
+ColorTokens ThemeResolver::resolveBase(ThemeSchemeKind scheme) { return tokensForMode(colorModeForScheme(scheme)); }
 
 void ThemeResolver::applyAccent(ColorTokens& tok, const QString& accent) {
   if (accent == QStringLiteral("cyan")) {
@@ -49,14 +49,11 @@ void ThemeResolver::applyAccent(ColorTokens& tok, const QString& accent) {
     tok.glowBlueSoft = QColor{QStringLiteral("#e0af6818")};
     tok.glowVioletSoft = QColor{QStringLiteral("#e0af6812")};
   }
-  // empty or unrecognised accent: base tokens unchanged
 }
 
 ColorTokens ThemeResolver::resolve(const ThemeConfig& config) {
-  ColorTokens tok = resolveBase(config.resolvedColorMode());
-  if (!config.accent.isEmpty()) {
-    applyAccent(tok, config.accent.toLower());
-  }
+  ColorTokens tok = resolveBase(config.resolvedThemeScheme());
+  applyAccent(tok, config.resolvedAccent());
   return tok;
 }
 

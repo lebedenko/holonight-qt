@@ -16,6 +16,13 @@ enum class AppearanceMode {
   System,
 };
 
+enum class ThemeSchemeKind {
+  HoloNightDark,
+  HoloNightLight,
+  TokyoNightStorm,
+  TokyoNightDay,
+};
+
 struct ThemeConfig {
   AppearanceMode appearance_mode = AppearanceMode::Dark;
   QString scheme;
@@ -32,11 +39,15 @@ struct ThemeConfig {
   [[nodiscard]] int bodySize() const;
   [[nodiscard]] int titleSize() const;
   [[nodiscard]] int headingSize() const;
+  [[nodiscard]] ThemeSchemeKind resolvedThemeScheme() const;
   [[nodiscard]] ColorMode resolvedColorMode() const;
+  [[nodiscard]] QString resolvedAccent() const;
 
   [[nodiscard]] static ThemeConfig defaults();
   [[nodiscard]] static ThemeConfig load();
   [[nodiscard]] static QString configFilePath();
 };
+
+[[nodiscard]] ColorMode colorModeForScheme(ThemeSchemeKind scheme);
 
 }  // namespace Holonight

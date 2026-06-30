@@ -3,6 +3,7 @@
 
 #include "../style/holonightstyle.h"
 #include "holonight/palette.h"
+#include "themeresolver.h"
 
 #include <QApplication>
 #include <QImage>
@@ -31,6 +32,10 @@ class DrawPrimitiveTest : public ::testing::Test {
     return opt;
   }
 };
+
+Holonight::ColorTokens resolvedDefaultTokens() {
+  return Holonight::ThemeResolver::resolve(Holonight::ThemeConfig::defaults());
+}
 
 TEST_F(DrawPrimitiveTest, PanelButtonCommand_Normal) {
   auto opt = makeOpt(QStyle::State_Enabled);
@@ -205,7 +210,7 @@ TEST_F(DrawPrimitiveTest, FocusedTextEditFrameUsesFocusColor) {
   style_.drawPrimitive(QStyle::PE_Frame, &opt, &painter, &edit);
   painter.end();
 
-  const QColor focusColor = Holonight::darkTokens().borderFocus;
+  const QColor focusColor = resolvedDefaultTokens().borderFocus;
   EXPECT_EQ(image.pixelColor(image.width() / 2, 1), focusColor);
 }
 
@@ -363,7 +368,7 @@ TEST_F(DrawPrimitiveTest, PanelLineEditFocusedBorderUsesInsetStroke) {
   style_.drawPrimitive(QStyle::PE_PanelLineEdit, &opt, &painter);
   painter.end();
 
-  const QColor focusColor = Holonight::darkTokens().borderFocus;
+  const QColor focusColor = resolvedDefaultTokens().borderFocus;
   const QColor fillColor = Holonight::darkTokens().surface;
   EXPECT_EQ(image.pixelColor(image.width() / 2, 1), focusColor);
   EXPECT_EQ(image.pixelColor(image.rect().center()), fillColor);

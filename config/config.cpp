@@ -6,15 +6,14 @@
 #include <QDebug>
 #include <QFile>
 #include <QFileInfo>
-#include <QGuiApplication>
 #include <QJsonDocument>
 #include <QJsonObject>
 #include <QSettings>
 #include <QStandardPaths>
-#include <QStyleHints>
 #include <QtGlobal>
 
 #include <algorithm>
+#include <optional>
 
 namespace {
 
@@ -26,6 +25,8 @@ constexpr qint64 kMaxConfigFileSize = 64 * 1024;
 constexpr int kConfigSchemaVersion = 1;
 
 [[nodiscard]] QString cleanString(const QString& value) { return value.trimmed(); }
+
+[[nodiscard]] QString normalizedString(const QString& value) { return cleanString(value).toLower(); }
 
 void setStringIfPresent(QString* target, const QString& value) {
   const QString cleaned = cleanString(value);
@@ -53,7 +54,7 @@ void setTransparencyIfValid(qreal* target, qreal value) {
 }
 
 void setAppearanceModeIfValid(Holonight::AppearanceMode* target, const QString& value) {
-  const QString cleaned = cleanString(value).toLower();
+  const QString cleaned = normalizedString(value);
   if (cleaned == QStringLiteral("dark")) {
     *target = Holonight::AppearanceMode::Dark;
   } else if (cleaned == QStringLiteral("light")) {
@@ -64,6 +65,29 @@ void setAppearanceModeIfValid(Holonight::AppearanceMode* target, const QString& 
 }
 
 [[nodiscard]] QString envString(const char* name) { return cleanString(QString::fromLocal8Bit(qgetenv(name))); }
+
+[[nodiscard]] std::optional<Holonight::ThemeSchemeKind> schemeKindFromString(const QString& value) {
+  const QString normalized = normalizedString(value);
+  if (normalized == QStringLiteral("holonight-dark")) {
+    return Holonight::ThemeSchemeKind::HoloNightDark;
+  }
+  if (normalized == QStringLiteral("holonight-light")) {
+    return Holonight::ThemeSchemeKind::HoloNightLight;
+  }
+  if (normalized == QStringLiteral("tokyonight-storm")) {
+    return Holonight::ThemeSchemeKind::TokyoNightStorm;
+  }
+  if (normalized == QStringLiteral("tokyonight-day")) {
+    return Holonight::ThemeSchemeKind::TokyoNightDay;
+  }
+  return std::nullopt;
+}
+
+[[nodiscard]] bool isValidAccent(const QString& value) {
+  const QString normalized = normalizedString(value);
+  return normalized == QStringLiteral("cyan") || normalized == QStringLiteral("blue") ||
+         normalized == QStringLiteral("violet") || normalized == QStringLiteral("yellow");
+}
 
 [[nodiscard]] bool envInt(const char* name, int* value) {
   bool ok = false;
@@ -216,29 +240,29 @@ int ThemeConfig::titleSize() const { return (std::min)(kMaxFontSize, base_font_s
 
 int ThemeConfig::headingSize() const { return (std::min)(kMaxFontSize, base_font_size + 6); }
 
-ColorMode ThemeConfig::resolvedColorMode() const {
+ThemeSchemeKind ThemeConfig::resolvedThemeScheme() const {
+  if (const std::optional<ThemeSchemeKind> parsed = schemeKindFromString(scheme); parsed.has_value()) {
+    return *parsed;
+  }
+
   switch (appearance_mode) {
     case AppearanceMode::Dark:
-      return ColorMode::Dark;
+      return ThemeSchemeKind::HoloNightDark;
     case AppearanceMode::Light:
-      return ColorMode::Light;
+      return ThemeSchemeKind::HoloNightLight;
     case AppearanceMode::System:
-      break;
+      return ThemeSchemeKind::HoloNightDark;
   }
+  return ThemeSchemeKind::HoloNightDark;
+}
 
-  const QGuiApplication* application = qobject_cast<const QGuiApplication*>(QGuiApplication::instance());
-  if (application == nullptr || application->styleHints() == nullptr) {
-    return ColorMode::Dark;
-  }
+ColorMode ThemeConfig::resolvedColorMode() const { return colorModeForScheme(resolvedThemeScheme()); }
 
-  switch (application->styleHints()->colorScheme()) {
-    case Qt::ColorScheme::Light:
-      return ColorMode::Light;
-    case Qt::ColorScheme::Dark:
-    case Qt::ColorScheme::Unknown:
-      return ColorMode::Dark;
+QString ThemeConfig::resolvedAccent() const {
+  if (isValidAccent(accent)) {
+    return normalizedString(accent);
   }
-  return ColorMode::Dark;
+  return QStringLiteral("cyan");
 }
 
 ThemeConfig ThemeConfig::defaults() {
@@ -277,6 +301,18 @@ ThemeConfig ThemeConfig::load() {
   readConfigFile(&config, configFilePath());
   applyEnvironment(&config);
   return config;
+}
+
+ColorMode colorModeForScheme(ThemeSchemeKind scheme) {
+  switch (scheme) {
+    case ThemeSchemeKind::HoloNightLight:
+    case ThemeSchemeKind::TokyoNightDay:
+      return ColorMode::Light;
+    case ThemeSchemeKind::HoloNightDark:
+    case ThemeSchemeKind::TokyoNightStorm:
+      return ColorMode::Dark;
+  }
+  return ColorMode::Dark;
 }
 
 }  // namespace Holonight

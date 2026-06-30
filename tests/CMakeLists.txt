@@ -45,6 +45,7 @@ target_include_directories(holonight_tests PRIVATE
 )
 
 target_link_libraries(holonight_tests PRIVATE
+    holonight_theme
     holonight_config
     holonight_palette
     Qt6::Gui
@@ -77,6 +78,7 @@ target_include_directories(holonight_style_primitive_tests PRIVATE
 )
 
 target_link_libraries(holonight_style_primitive_tests PRIVATE
+    holonight_theme
     holonight_config
     holonight_palette
     Qt6::Gui
@@ -107,6 +109,7 @@ target_include_directories(holonight_style_complex_tests PRIVATE
 )
 
 target_link_libraries(holonight_style_complex_tests PRIVATE
+    holonight_theme
     holonight_config
     holonight_palette
     Qt6::Gui

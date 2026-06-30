@@ -3,6 +3,8 @@
 
 #include "holonightstyle.h"
 
+#include "themeresolver.h"
+
 #include <QAbstractItemView>
 #include <QDockWidget>
 #include <QFrame>
@@ -231,7 +233,7 @@ bool drawFlatButtonPanelIfNeeded(const QStyleOption* option, QPainter* painter, 
 HoloniightStyle::HoloniightStyle()
     : QProxyStyle(QStringLiteral("fusion")),
       config_{Holonight::ThemeConfig::load()},
-      tokens_{Holonight::tokensForMode(config_.resolvedColorMode())},
+      tokens_{Holonight::ThemeResolver::resolve(config_)},
       palette_{Holonight::buildPalette(tokens_)} {}
 
 QPalette HoloniightStyle::standardPalette() const { return palette_; }

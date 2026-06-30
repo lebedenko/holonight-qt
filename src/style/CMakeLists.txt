@@ -15,6 +15,7 @@ set_target_properties(holonight PROPERTIES
 )
 
 target_link_libraries(holonight PRIVATE
+    holonight_theme
     holonight_config
     holonight_palette
     Qt6::Widgets

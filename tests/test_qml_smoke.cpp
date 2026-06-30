@@ -3,9 +3,11 @@
 
 #include <QByteArray>
 #include <QColor>
+#include <QFile>
 #include <QQmlComponent>
 #include <QQmlEngine>
 #include <QString>
+#include <QTemporaryDir>
 #include <QVariant>
 
 #include <gtest/gtest.h>
@@ -38,6 +40,13 @@ class EnvGuard {
   bool had_value_;
   QByteArray old_value_;
 };
+
+void writeFile(const QString& path, const QByteArray& contents) {
+  QFile file = QFile{path};
+  const bool opened = file.open(QIODevice::WriteOnly | QIODevice::Truncate | QIODevice::Text);
+  ASSERT_TRUE(opened);
+  ASSERT_EQ(file.write(contents), contents.size());
+}
 
 }  // namespace
 
@@ -86,7 +95,8 @@ TEST_F(QmlSmoke, ComboBox_InstantiatesAndOpensPopup) {
     ComboBox {
       model: ["item1", "item2", "item3"]
     }
-  )", QUrl{});
+  )",
+               QUrl{});
   ASSERT_EQ(comp.status(), QQmlComponent::Ready) << comp.errorString().toStdString();
   std::unique_ptr<QObject> object{comp.create()};
   ASSERT_NE(object, nullptr);
@@ -120,7 +130,8 @@ TEST_F(QmlSmoke, Menu_InstantiatesAndOpens) {
       MenuItem { text: "Item 1" }
       MenuItem { text: "Item 2" }
     }
-  )", QUrl{});
+  )",
+               QUrl{});
   ASSERT_EQ(comp.status(), QQmlComponent::Ready) << comp.errorString().toStdString();
   std::unique_ptr<QObject> object{comp.create()};
   ASSERT_NE(object, nullptr);
@@ -215,8 +226,7 @@ TEST_F(QmlSmoke, HoloniightPalette_ReloadEmitsNotificationOnChange) {
   // Force singleton creation in dark mode first.
   {
     QQmlComponent init = QQmlComponent{&engine_};
-    init.setData(R"(import QtQuick; import Holonight; Item { property color c: HoloniightPalette.primary })",
-                 QUrl{});
+    init.setData(R"(import QtQuick; import Holonight; Item { property color c: HoloniightPalette.primary })", QUrl{});
     std::unique_ptr<QObject> tmp{init.create()};
     ASSERT_NE(tmp, nullptr);
   }
@@ -266,6 +276,39 @@ TEST_F(QmlSmoke, HoloniightPalette_ReloadUsesLightAppearanceMode) {
   std::unique_ptr<QObject> object{comp.create()};
   ASSERT_NE(object, nullptr);
   EXPECT_EQ(object->property("background").value<QColor>(), QColor(0xf4, 0xf7, 0xfb));
+}
+
+TEST_F(QmlSmoke, HoloniightPalette_ReloadUsesSchemeBeforeModeAndAppliesAccent) {
+  EnvGuard configGuard = EnvGuard{"HOLONIGHT_CONFIG_FILE"};
+  EnvGuard appearanceGuard = EnvGuard{"HOLONIGHT_APPEARANCE_MODE"};
+  qunsetenv("HOLONIGHT_APPEARANCE_MODE");
+
+  QTemporaryDir dir;
+  ASSERT_TRUE(dir.isValid());
+  const QString path = dir.filePath(QStringLiteral("theme.conf"));
+  writeFile(path, "[appearance]\nscheme=holonight-light\naccent=blue\nmode=dark\n");
+  qputenv("HOLONIGHT_CONFIG_FILE", path.toLocal8Bit());
+
+  QQmlComponent comp = QQmlComponent{&engine_};
+  comp.setData(R"(
+    import QtQuick
+    import Holonight
+    Item {
+      property color background: "transparent"
+      property color primary: "transparent"
+      Component.onCompleted: {
+        HoloniightPalette.reload()
+        background = HoloniightPalette.background
+        primary = HoloniightPalette.primary
+      }
+    }
+  )",
+               QUrl{});
+  ASSERT_EQ(comp.status(), QQmlComponent::Ready) << comp.errorString().toStdString();
+  std::unique_ptr<QObject> object{comp.create()};
+  ASSERT_NE(object, nullptr);
+  EXPECT_EQ(object->property("background").value<QColor>(), QColor(0xf4, 0xf7, 0xfb));
+  EXPECT_EQ(object->property("primary").value<QColor>(), QColor(QStringLiteral("#7aa2f7")));
 }
 
 TEST_F(QmlSmoke, HolonightTheme_ConfigPropertiesAreValid) {

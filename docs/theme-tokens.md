@@ -13,6 +13,9 @@ The palette layer is the canonical source for resolved theme values. `Holonight:
 | Eclipse | Planned | Planned | No | Lower-chroma dark variant. Not parsed or exported yet. |
 | Neon | Planned | Planned | No | Higher-accent dark variant. Not parsed or exported yet. |
 
+Current scheme IDs are `holonight-dark`, `holonight-light`, `tokyonight-storm`, and `tokyonight-day`.
+`holonight-dark` and `tokyonight-storm` currently resolve to `darkTokens()`; `holonight-light` and `tokyonight-day` currently resolve to `lightTokens()`.
+
 ## Canonical Roles
 
 Surface roles:
@@ -120,13 +123,22 @@ Current implemented precedence is:
 2. Config file selected from `HOLONIGHT_CONFIG_FILE` when set; otherwise user config from `~/.config/holonight/theme.conf`, or legacy `~/.config/holonight/theme.json` if INI is absent.
 3. Environment value overrides such as `HOLONIGHT_APPEARANCE_MODE`, `HOLONIGHT_ICON_THEME`, `HOLONIGHT_FONT`, and `HOLONIGHT_SCALE_FACTOR`.
 
-Appearance mode is configured as `dark`, `light`, or `system`. Invalid or missing values resolve to dark. `system` reads `QGuiApplication::styleHints()->colorScheme()` at startup; `Unknown` or no application instance resolves to dark.
+Appearance scheme is configured with `appearance/scheme`. It is the canonical selector.
+Supported values are `holonight-dark`, `holonight-light`, `tokyonight-storm`, and `tokyonight-day`.
+Values are trimmed and matched case-insensitively.
+
+Legacy `appearance/mode` remains fallback metadata for older configs. If `scheme` is missing or invalid, `mode=light` resolves to `holonight-light`; `mode=dark`, `mode=system`, missing, or invalid values resolve to `holonight-dark`.
+`system` no longer queries Qt's system color-scheme hint.
+
+`appearance/accent` supports `cyan`, `blue`, `violet`, and `yellow`. Missing or invalid accents resolve to `cyan`.
 
 JSON shape:
 
 ```json
 {
   "appearance": {
+    "scheme": "holonight-dark",
+    "accent": "cyan",
     "mode": "dark"
   }
 }
@@ -136,6 +148,8 @@ INI shape:
 
 ```ini
 [appearance]
+scheme=holonight-dark
+accent=cyan
 mode=dark
 ```
 

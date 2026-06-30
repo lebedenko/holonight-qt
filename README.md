@@ -118,6 +118,8 @@ Default JSON:
 ```json
 {
   "appearance": {
+    "scheme": "holonight-dark",
+    "accent": "cyan",
     "mode": "dark"
   },
   "icons": {
@@ -137,10 +139,14 @@ For INI config, use:
 
 ```ini
 [appearance]
+scheme=holonight-dark
+accent=cyan
 mode=dark
 ```
 
-Supported appearance modes are `dark`, `light`, and `system`. `system` reads Qt's startup color-scheme hint and falls back to dark when Qt reports no preference.
+Supported appearance schemes are `holonight-dark`, `holonight-light`, `tokyonight-storm`, and `tokyonight-day`.
+The `scheme` value is the canonical selector. `mode` remains supported as legacy fallback metadata: `light` resolves to `holonight-light`, while `dark`, `system`, missing, or invalid values resolve to `holonight-dark` when no valid `scheme` is present.
+Supported accents are `cyan`, `blue`, `violet`, and `yellow`; missing or invalid accents resolve to `cyan`.
 
 `baseSize` is the body font size. Derived sizes are `caption = baseSize - 1`, `title = baseSize + 3`, and `heading = baseSize + 6`.
 

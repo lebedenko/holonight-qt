@@ -3,12 +3,15 @@
 
 #include "../style/holonightstyle.h"
 #include "holonight/palette.h"
+#include "themeresolver.h"
 
 #include <QByteArray>
 #include <QDockWidget>
+#include <QFile>
 #include <QListView>
 #include <QSplitter>
 #include <QStatusBar>
+#include <QTemporaryDir>
 #include <QTextEdit>
 
 #include <gtest/gtest.h>
@@ -41,6 +44,13 @@ class EnvGuard {
   QByteArray old_value_;
 };
 
+void writeFile(const QString& path, const QByteArray& contents) {
+  QFile file = QFile{path};
+  const bool opened = file.open(QIODevice::WriteOnly | QIODevice::Truncate | QIODevice::Text);
+  ASSERT_TRUE(opened);
+  ASSERT_EQ(file.write(contents), contents.size());
+}
+
 }  // namespace
 
 TEST(StyleSmoke, InstantiatesWithoutCrash) {
@@ -61,9 +71,28 @@ TEST(StyleSmoke, StandardPaletteUsesLightAppearanceMode) {
 
   HoloniightStyle style;
   const QPalette pal = style.standardPalette();
-  const Holonight::ColorTokens tok = Holonight::lightTokens();
+  Holonight::ThemeConfig config = Holonight::ThemeConfig::defaults();
+  config.appearance_mode = Holonight::AppearanceMode::Light;
+  const Holonight::ColorTokens tok = Holonight::ThemeResolver::resolve(config);
   EXPECT_EQ(pal.color(QPalette::Active, QPalette::Window), tok.background);
   EXPECT_EQ(pal.color(QPalette::Active, QPalette::Highlight), tok.primary);
+}
+
+TEST(StyleSmoke, StandardPaletteUsesLightSchemeWhenModeIsStaleDark) {
+  EnvGuard configGuard = EnvGuard{"HOLONIGHT_CONFIG_FILE"};
+  EnvGuard appearanceGuard = EnvGuard{"HOLONIGHT_APPEARANCE_MODE"};
+  qunsetenv("HOLONIGHT_APPEARANCE_MODE");
+
+  QTemporaryDir dir;
+  ASSERT_TRUE(dir.isValid());
+  const QString path = dir.filePath(QStringLiteral("theme.conf"));
+  writeFile(path, "[appearance]\nscheme=tokyonight-day\naccent=violet\nmode=dark\n");
+  qputenv("HOLONIGHT_CONFIG_FILE", path.toLocal8Bit());
+
+  HoloniightStyle style;
+  const QPalette pal = style.standardPalette();
+  EXPECT_EQ(pal.color(QPalette::Active, QPalette::Window), Holonight::lightTokens().background);
+  EXPECT_EQ(pal.color(QPalette::Active, QPalette::Highlight), QColor(QStringLiteral("#bb9af7")));
 }
 
 TEST(StyleSmoke, ScrollBarExtentIsEight) {

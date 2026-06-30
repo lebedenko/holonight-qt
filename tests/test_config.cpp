@@ -5,8 +5,6 @@
 
 #include <QDir>
 #include <QFile>
-#include <QGuiApplication>
-#include <QStyleHints>
 #include <QTemporaryDir>
 
 #include <gtest/gtest.h>
@@ -84,7 +82,7 @@ TEST(ThemeConfig, LoadsJsonConfigFile) {
   const QString path = dir.filePath(QStringLiteral("theme.json"));
   writeFile(path, R"({
     "icons": { "theme": "Papirus-Dark", "fallback": "Adwaita" },
-    "appearance": { "mode": "light" },
+    "appearance": { "scheme": "tokyonight-day", "accent": "violet", "mode": "light" },
     "fonts": { "ui": "Noto Sans", "fixed": "Iosevka", "baseSize": 11 },
     "scaleFactor": 1.25
   })");
@@ -98,7 +96,11 @@ TEST(ThemeConfig, LoadsJsonConfigFile) {
   EXPECT_EQ(config.base_font_size, 11);
   EXPECT_DOUBLE_EQ(config.scale_factor, 1.25);
   EXPECT_EQ(config.appearance_mode, Holonight::AppearanceMode::Light);
+  EXPECT_EQ(config.scheme, QStringLiteral("tokyonight-day"));
+  EXPECT_EQ(config.accent, QStringLiteral("violet"));
+  EXPECT_EQ(config.resolvedThemeScheme(), Holonight::ThemeSchemeKind::TokyoNightDay);
   EXPECT_EQ(config.resolvedColorMode(), Holonight::ColorMode::Light);
+  EXPECT_EQ(config.resolvedAccent(), QStringLiteral("violet"));
 }
 
 TEST(ThemeConfig, EnvironmentOverridesConfigFile) {
@@ -157,6 +159,39 @@ mode=light
 
   const Holonight::ThemeConfig config = Holonight::ThemeConfig::load();
   EXPECT_EQ(config.appearance_mode, Holonight::AppearanceMode::Light);
+  EXPECT_EQ(config.resolvedColorMode(), Holonight::ColorMode::Light);
+}
+
+TEST(ThemeConfig, LoadsIniSchemeAndAccent) {
+  EnvGuard configFileGuard = EnvGuard{"HOLONIGHT_CONFIG_FILE"};
+  EnvGuard appearanceGuard = EnvGuard{"HOLONIGHT_APPEARANCE_MODE"};
+  qunsetenv("HOLONIGHT_APPEARANCE_MODE");
+
+  QTemporaryDir dir;
+  ASSERT_TRUE(dir.isValid());
+  const QString path = dir.filePath(QStringLiteral("theme.conf"));
+  writeFile(path, R"(
+[appearance]
+scheme=  TokyoNight-Storm
+accent=  Blue
+mode=light
+)");
+  qputenv("HOLONIGHT_CONFIG_FILE", path.toLocal8Bit());
+
+  const Holonight::ThemeConfig config = Holonight::ThemeConfig::load();
+  EXPECT_EQ(config.scheme, QStringLiteral("TokyoNight-Storm"));
+  EXPECT_EQ(config.accent, QStringLiteral("Blue"));
+  EXPECT_EQ(config.resolvedThemeScheme(), Holonight::ThemeSchemeKind::TokyoNightStorm);
+  EXPECT_EQ(config.resolvedColorMode(), Holonight::ColorMode::Dark);
+  EXPECT_EQ(config.resolvedAccent(), QStringLiteral("blue"));
+}
+
+TEST(ThemeConfig, ValidSchemeOverridesStaleMode) {
+  Holonight::ThemeConfig config = Holonight::ThemeConfig::defaults();
+  config.scheme = QStringLiteral("holonight-light");
+  config.appearance_mode = Holonight::AppearanceMode::Dark;
+
+  EXPECT_EQ(config.resolvedThemeScheme(), Holonight::ThemeSchemeKind::HoloNightLight);
   EXPECT_EQ(config.resolvedColorMode(), Holonight::ColorMode::Light);
 }
 
@@ -247,16 +282,42 @@ TEST(ThemeConfig, UnsupportedConfigVersionFallsBackToDefaults) {
 TEST(ThemeConfig, DefaultsToDarkAppearance) {
   const Holonight::ThemeConfig config = Holonight::ThemeConfig::defaults();
   EXPECT_EQ(config.appearance_mode, Holonight::AppearanceMode::Dark);
+  EXPECT_EQ(config.resolvedThemeScheme(), Holonight::ThemeSchemeKind::HoloNightDark);
+  EXPECT_EQ(config.resolvedColorMode(), Holonight::ColorMode::Dark);
+  EXPECT_EQ(config.resolvedAccent(), QStringLiteral("cyan"));
+}
+
+TEST(ThemeConfig, InvalidOrMissingSchemeFallsBackFromLegacyMode) {
+  Holonight::ThemeConfig config = Holonight::ThemeConfig::defaults();
+
+  config.scheme = QStringLiteral("missing");
+  config.appearance_mode = Holonight::AppearanceMode::Light;
+  EXPECT_EQ(config.resolvedThemeScheme(), Holonight::ThemeSchemeKind::HoloNightLight);
+  EXPECT_EQ(config.resolvedColorMode(), Holonight::ColorMode::Light);
+
+  config.scheme.clear();
+  config.appearance_mode = Holonight::AppearanceMode::Dark;
+  EXPECT_EQ(config.resolvedThemeScheme(), Holonight::ThemeSchemeKind::HoloNightDark);
+  EXPECT_EQ(config.resolvedColorMode(), Holonight::ColorMode::Dark);
+
+  config.appearance_mode = Holonight::AppearanceMode::System;
+  EXPECT_EQ(config.resolvedThemeScheme(), Holonight::ThemeSchemeKind::HoloNightDark);
   EXPECT_EQ(config.resolvedColorMode(), Holonight::ColorMode::Dark);
 }
 
-TEST(ThemeConfig, SystemAppearanceWithoutPreferenceFallsBackToDark) {
+TEST(ThemeConfig, SystemAppearanceFallsBackToDark) {
   Holonight::ThemeConfig config = Holonight::ThemeConfig::defaults();
   config.appearance_mode = Holonight::AppearanceMode::System;
-  const QGuiApplication* application = qobject_cast<const QGuiApplication*>(QGuiApplication::instance());
-  if (application != nullptr && application->styleHints()->colorScheme() == Qt::ColorScheme::Light) {
-    EXPECT_EQ(config.resolvedColorMode(), Holonight::ColorMode::Light);
-  } else {
-    EXPECT_EQ(config.resolvedColorMode(), Holonight::ColorMode::Dark);
-  }
+  EXPECT_EQ(config.resolvedThemeScheme(), Holonight::ThemeSchemeKind::HoloNightDark);
+  EXPECT_EQ(config.resolvedColorMode(), Holonight::ColorMode::Dark);
+}
+
+TEST(ThemeConfig, InvalidAccentResolvesToCyan) {
+  Holonight::ThemeConfig config = Holonight::ThemeConfig::defaults();
+
+  config.accent.clear();
+  EXPECT_EQ(config.resolvedAccent(), QStringLiteral("cyan"));
+
+  config.accent = QStringLiteral("magenta");
+  EXPECT_EQ(config.resolvedAccent(), QStringLiteral("cyan"));
 }
