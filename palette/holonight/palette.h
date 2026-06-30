@@ -8,7 +8,7 @@
 
 namespace Holonight {
 
-enum class ColorMode {
+enum class ColorMode : uint8_t {
   Dark,
   Light,
 };
