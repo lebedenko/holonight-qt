@@ -29,7 +29,7 @@ ApplicationWindow {
             Layout.leftMargin: 40
         }
         Label {
-            text: "Dark Qt6 theme for tiling window managers"
+            text: "Qt6 theme variants for tiling window managers"
             font.pixelSize: 13
             color: palette.placeholderText
             Layout.leftMargin: 40

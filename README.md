@@ -188,6 +188,7 @@ task verify
 
 # Visual demo app
 task demo
+task demo -- --theme=tokyonight-day
 ```
 
 Manual equivalents:
