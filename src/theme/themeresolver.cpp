@@ -3,6 +3,8 @@
 
 #include "themeresolver.h"
 
+#include "holonight/theme_catalog.h"
+
 namespace Holonight {
 
 ColorTokens ThemeResolver::resolveBase(ThemeSchemeKind scheme) { return tokensForScheme(scheme); }
@@ -76,6 +78,10 @@ void applyCatppuccinAccent(ColorTokens& tok, const AccentOverride& colors) {
 }  // namespace
 
 void ThemeResolver::applyAccent(ColorTokens& tok, const QString& accent, ThemeSchemeKind scheme) {
+  if (accent == defaultAccentId()) {
+    return;
+  }
+
   AccentOverride catppuccin;
   if (catppuccinAccent(accent, scheme, &catppuccin)) {
     applyCatppuccinAccent(tok, catppuccin);

@@ -15,24 +15,15 @@
 #include <QQuickStyle>
 #include <QTemporaryDir>
 
+#include <holonight/theme_catalog.h>
+
 namespace {
 
 QString normalizedThemeValue(const QString& value) { return value.trimmed().toLower(); }
 
-bool isThemeValue(const QString& value) {
-  const QString theme = normalizedThemeValue(value);
-  return theme == QStringLiteral("holonight-dark") || theme == QStringLiteral("holonight-light") ||
-         theme == QStringLiteral("holonight-mocha") || theme == QStringLiteral("holonight-latte") ||
-         theme == QStringLiteral("tokyonight-storm") || theme == QStringLiteral("tokyonight-day");
-}
+bool isThemeValue(const QString& value) { return !Holonight::normalizeSchemeId(value).isEmpty(); }
 
-QString legacyModeForTheme(const QString& value) {
-  const QString theme = normalizedThemeValue(value);
-  return theme == QStringLiteral("holonight-light") || theme == QStringLiteral("holonight-latte") ||
-                 theme == QStringLiteral("tokyonight-day")
-             ? QStringLiteral("light")
-             : QStringLiteral("dark");
-}
+QString legacyModeForTheme(const QString& value) { return Holonight::modeNameForScheme(value); }
 
 QString findThemeArgument(int argc, char* argv[]) {
   for (int i = 1; i < argc; ++i) {
@@ -65,8 +56,9 @@ bool writeThemeConfig(const QTemporaryDir& dir, const QString& theme) {
     return false;
   }
 
-  const QByteArray contents =
-      QStringLiteral("[appearance]\nscheme=%1\naccent=cyan\nmode=%2\n").arg(theme, legacyModeForTheme(theme)).toUtf8();
+  const QByteArray contents = QStringLiteral("[appearance]\nscheme=%1\naccent=default\nmode=%2\n")
+                                  .arg(theme, legacyModeForTheme(theme))
+                                  .toUtf8();
   if (file.write(contents) != contents.size()) {
     qWarning() << "Error: Could not write complete temporary theme config" << path << file.errorString();
     return false;
@@ -110,9 +102,12 @@ int main(int argc, char* argv[]) {
   if (parser.isSet(themeOption)) {
     const QString selectedTheme = normalizedThemeValue(parser.value(themeOption));
     if (!isThemeValue(selectedTheme)) {
-      qWarning() << "Error: Invalid theme" << selectedTheme
-                 << "(must be 'holonight-dark', 'holonight-light', 'holonight-mocha', 'holonight-latte', "
-                    "'tokyonight-storm', or 'tokyonight-day')";
+      QStringList validThemes;
+      for (const Holonight::ThemeVariantCatalogEntry& variant : Holonight::themeVariants()) {
+        validThemes.append(variant.id);
+      }
+      qWarning() << "Error: Invalid theme" << selectedTheme << "(must be one of"
+                 << validThemes.join(QStringLiteral(", ")) << ")";
       return 1;
     }
   }

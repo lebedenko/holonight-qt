@@ -2,6 +2,7 @@
 // SPDX-FileCopyrightText: 2026 Andrii L <lebeden@gmail.com>
 
 #include "holonight/config.h"
+#include "holonight/theme_catalog.h"
 
 #include <QDir>
 #include <QFile>
@@ -294,7 +295,7 @@ TEST(ThemeConfig, DefaultsToDarkAppearance) {
   EXPECT_EQ(config.appearance_mode, Holonight::AppearanceMode::Dark);
   EXPECT_EQ(config.resolvedThemeScheme(), Holonight::ThemeSchemeKind::HoloNightDark);
   EXPECT_EQ(config.resolvedColorMode(), Holonight::ColorMode::Dark);
-  EXPECT_EQ(config.resolvedAccent(), QStringLiteral("cyan"));
+  EXPECT_EQ(config.resolvedAccent(), QStringLiteral("default"));
 }
 
 TEST(ThemeConfig, KdeActiveColorSchemeSuppliesMissingScheme) {
@@ -404,12 +405,36 @@ TEST(ThemeConfig, SystemAppearanceFallsBackToDark) {
   EXPECT_EQ(config.resolvedColorMode(), Holonight::ColorMode::Dark);
 }
 
-TEST(ThemeConfig, InvalidAccentResolvesToCyan) {
+TEST(ThemeConfig, InvalidAccentResolvesToDefault) {
   Holonight::ThemeConfig config = Holonight::ThemeConfig::defaults();
 
   config.accent.clear();
-  EXPECT_EQ(config.resolvedAccent(), QStringLiteral("cyan"));
+  EXPECT_EQ(config.resolvedAccent(), QStringLiteral("default"));
 
   config.accent = QStringLiteral("magenta");
-  EXPECT_EQ(config.resolvedAccent(), QStringLiteral("cyan"));
+  EXPECT_EQ(config.resolvedAccent(), QStringLiteral("default"));
+}
+
+TEST(ThemeCatalog, ListsFamiliesVariantsAndDefaultAccentOptions) {
+  ASSERT_EQ(Holonight::themeFamilies().size(), 3);
+  ASSERT_EQ(Holonight::themeVariants().size(), 6);
+
+  for (const Holonight::ThemeFamilyCatalogEntry& family : Holonight::themeFamilies()) {
+    EXPECT_FALSE(family.id.isEmpty());
+    EXPECT_FALSE(family.name.isEmpty());
+    EXPECT_EQ(family.variant_ids.size(), 2);
+  }
+
+  for (const Holonight::ThemeVariantCatalogEntry& variant : Holonight::themeVariants()) {
+    EXPECT_FALSE(variant.id.isEmpty());
+    EXPECT_FALSE(variant.name.isEmpty());
+    EXPECT_FALSE(variant.family_id.isEmpty());
+    EXPECT_TRUE(variant.default_accent_color.isValid());
+
+    const QVector<Holonight::AccentCatalogEntry> accents = Holonight::accentOptionsForScheme(variant.id);
+    ASSERT_FALSE(accents.isEmpty());
+    EXPECT_EQ(accents.first().id, QStringLiteral("default"));
+    EXPECT_TRUE(accents.first().is_default);
+    EXPECT_EQ(accents.first().color, variant.default_accent_color);
+  }
 }

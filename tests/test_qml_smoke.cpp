@@ -373,3 +373,26 @@ TEST_F(QmlSmoke, HolonightTheme_ConfigPropertiesAreValid) {
                QUrl{});
   ASSERT_EQ(comp.status(), QQmlComponent::Ready) << comp.errorString().toStdString();
 }
+
+TEST_F(QmlSmoke, HolonightTheme_CatalogPropertiesAreReadable) {
+  QQmlComponent comp = QQmlComponent{&engine_};
+  comp.setData(R"(
+    import QtQuick
+    import Holonight
+    Item {
+      property int familyCount: HolonightTheme.themeFamilies.length
+      property int variantCount: HolonightTheme.themeVariants.length
+      property var accents: HolonightTheme.accentOptionsForScheme("holonight-latte")
+      property string firstAccentId: accents[0].id
+      property color firstAccentColor: accents[0].color
+    }
+  )",
+               QUrl{});
+  ASSERT_EQ(comp.status(), QQmlComponent::Ready) << comp.errorString().toStdString();
+  std::unique_ptr<QObject> object{comp.create()};
+  ASSERT_NE(object, nullptr);
+  EXPECT_EQ(object->property("familyCount").toInt(), 3);
+  EXPECT_EQ(object->property("variantCount").toInt(), 6);
+  EXPECT_EQ(object->property("firstAccentId").toString(), QStringLiteral("default"));
+  EXPECT_TRUE(object->property("firstAccentColor").value<QColor>().isValid());
+}

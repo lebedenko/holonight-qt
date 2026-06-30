@@ -17,6 +17,7 @@ target_include_directories(holonight_demo PRIVATE
 )
 
 target_link_libraries(holonight_demo PRIVATE
+    holonight_config
     Qt6::Quick
     Qt6::QuickControls2
 )

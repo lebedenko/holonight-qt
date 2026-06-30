@@ -3,6 +3,7 @@
 
 #include "holonight/config.h"
 #include "holonight/palette.h"
+#include "holonight/theme_catalog.h"
 #include "themeloader.h"
 #include "themeresolver.h"
 
@@ -107,8 +108,9 @@ TEST(ThemeLoader, ExplicitDarkMode) {
   const Holonight::ThemeConfig cfg = Holonight::ThemeLoader::load();
   EXPECT_EQ(cfg.appearance_mode, Holonight::AppearanceMode::Dark);
   const Holonight::ColorTokens tok = Holonight::ThemeResolver::resolve(cfg);
-  EXPECT_EQ(tok.background, Holonight::tokensForScheme(Holonight::ThemeSchemeKind::HoloNightDark).background);
-  expectCyanAccent(tok);
+  const Holonight::ColorTokens base = Holonight::tokensForScheme(Holonight::ThemeSchemeKind::HoloNightDark);
+  EXPECT_EQ(tok.background, base.background);
+  EXPECT_EQ(tok.primary, base.primary);
 }
 
 TEST(ThemeLoader, ExplicitLightMode) {
@@ -126,8 +128,9 @@ TEST(ThemeLoader, ExplicitLightMode) {
   const Holonight::ThemeConfig cfg = Holonight::ThemeLoader::load();
   EXPECT_EQ(cfg.appearance_mode, Holonight::AppearanceMode::Light);
   const Holonight::ColorTokens tok = Holonight::ThemeResolver::resolve(cfg);
-  EXPECT_EQ(tok.background, Holonight::tokensForScheme(Holonight::ThemeSchemeKind::HoloNightLight).background);
-  expectCyanAccent(tok);
+  const Holonight::ColorTokens base = Holonight::tokensForScheme(Holonight::ThemeSchemeKind::HoloNightLight);
+  EXPECT_EQ(tok.background, base.background);
+  EXPECT_EQ(tok.primary, base.primary);
 }
 
 TEST(ThemeLoader, SystemModeFallsBackToDark) {
@@ -145,8 +148,9 @@ TEST(ThemeLoader, SystemModeFallsBackToDark) {
   const Holonight::ThemeConfig cfg = Holonight::ThemeLoader::load();
   EXPECT_EQ(cfg.appearance_mode, Holonight::AppearanceMode::System);
   const Holonight::ColorTokens tok = Holonight::ThemeResolver::resolve(cfg);
-  EXPECT_EQ(tok.background, Holonight::tokensForScheme(Holonight::ThemeSchemeKind::HoloNightDark).background);
-  expectCyanAccent(tok);
+  const Holonight::ColorTokens base = Holonight::tokensForScheme(Holonight::ThemeSchemeKind::HoloNightDark);
+  EXPECT_EQ(tok.background, base.background);
+  EXPECT_EQ(tok.primary, base.primary);
 }
 
 TEST(ThemeLoader, NewFieldsAreParsedFromIni) {
@@ -169,17 +173,30 @@ TEST(ThemeLoader, NewFieldsAreParsedFromIni) {
 
 // ── Accent override ───────────────────────────────────────────────────────────
 
-TEST(ThemeResolver, EmptyAccentProducesCyanTokens) {
+TEST(ThemeResolver, EmptyAccentKeepsNativeSchemePrimary) {
   const Holonight::ColorTokens tok = Holonight::ThemeResolver::resolve(makeConfig(Holonight::AppearanceMode::Dark));
-  EXPECT_EQ(tok.background, Holonight::tokensForScheme(Holonight::ThemeSchemeKind::HoloNightDark).background);
-  expectCyanAccent(tok);
+  const Holonight::ColorTokens base = Holonight::tokensForScheme(Holonight::ThemeSchemeKind::HoloNightDark);
+  EXPECT_EQ(tok.background, base.background);
+  EXPECT_EQ(tok.primary, base.primary);
+  EXPECT_EQ(tok.primaryHover, base.primaryHover);
+  EXPECT_EQ(tok.primaryPressed, base.primaryPressed);
 }
 
-TEST(ThemeResolver, InvalidAccentProducesCyanTokens) {
+TEST(ThemeResolver, InvalidAccentKeepsNativeSchemePrimary) {
   const Holonight::ColorTokens tok =
       Holonight::ThemeResolver::resolve(makeConfig(Holonight::AppearanceMode::Dark, QStringLiteral("magenta")));
-  EXPECT_EQ(tok.background, Holonight::tokensForScheme(Holonight::ThemeSchemeKind::HoloNightDark).background);
-  expectCyanAccent(tok);
+  const Holonight::ColorTokens base = Holonight::tokensForScheme(Holonight::ThemeSchemeKind::HoloNightDark);
+  EXPECT_EQ(tok.background, base.background);
+  EXPECT_EQ(tok.primary, base.primary);
+}
+
+TEST(ThemeResolver, DefaultAccentKeepsNativeSchemePrimary) {
+  const Holonight::ColorTokens tok = Holonight::ThemeResolver::resolve(
+      makeConfig(Holonight::AppearanceMode::Dark, QStringLiteral("default"), QStringLiteral("holonight-mocha")));
+  const Holonight::ColorTokens base = Holonight::tokensForScheme(Holonight::ThemeSchemeKind::HoloNightMocha);
+  EXPECT_EQ(tok.primary, base.primary);
+  EXPECT_EQ(tok.primaryHover, base.primaryHover);
+  EXPECT_EQ(tok.primaryPressed, base.primaryPressed);
 }
 
 TEST(ThemeResolver, AccentCyanOverridesCorrectSlots) {

@@ -1,5 +1,6 @@
 add_library(holonight_config STATIC
     config.cpp
+    theme_catalog.cpp
 )
 
 target_include_directories(holonight_config
@@ -13,7 +14,11 @@ target_link_libraries(holonight_config PUBLIC holonight_palette Qt6::Core Qt6::G
 set_target_properties(holonight_config PROPERTIES
     CXX_STANDARD 23
     POSITION_INDEPENDENT_CODE ON
+    EXPORT_NAME Config
 )
 
-install(TARGETS holonight_config ARCHIVE DESTINATION lib)
-install(FILES holonight/config.h DESTINATION include/holonight)
+install(TARGETS holonight_config
+    EXPORT HolonightQtTargets
+    ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
+)
+install(FILES holonight/config.h holonight/theme_catalog.h DESTINATION include/holonight)

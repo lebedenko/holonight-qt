@@ -3,6 +3,8 @@
 
 #include "holonight/config.h"
 
+#include "holonight/theme_catalog.h"
+
 #include <QDebug>
 #include <QFile>
 #include <QFileInfo>
@@ -27,14 +29,6 @@ constexpr int kConfigSchemaVersion = 1;
 [[nodiscard]] QString cleanString(const QString& value) { return value.trimmed(); }
 
 [[nodiscard]] QString normalizedString(const QString& value) { return cleanString(value).toLower(); }
-
-[[nodiscard]] QString compactThemeName(const QString& value) {
-  QString normalized = normalizedString(value);
-  normalized.remove(QLatin1Char(' '));
-  normalized.remove(QLatin1Char('-'));
-  normalized.remove(QLatin1Char('_'));
-  return normalized;
-}
 
 void setStringIfPresent(QString* target, const QString& value) {
   const QString cleaned = cleanString(value);
@@ -73,68 +67,6 @@ void setAppearanceModeIfValid(Holonight::AppearanceMode* target, const QString& 
 }
 
 [[nodiscard]] QString envString(const char* name) { return cleanString(QString::fromLocal8Bit(qgetenv(name))); }
-
-[[nodiscard]] std::optional<Holonight::ThemeSchemeKind> schemeKindFromString(const QString& value) {
-  const QString normalized = normalizedString(value);
-  if (normalized == QStringLiteral("holonight-dark")) {
-    return Holonight::ThemeSchemeKind::HoloNightDark;
-  }
-  if (normalized == QStringLiteral("holonight-light")) {
-    return Holonight::ThemeSchemeKind::HoloNightLight;
-  }
-  if (normalized == QStringLiteral("holonight-mocha")) {
-    return Holonight::ThemeSchemeKind::HoloNightMocha;
-  }
-  if (normalized == QStringLiteral("holonight-latte")) {
-    return Holonight::ThemeSchemeKind::HoloNightLatte;
-  }
-  if (normalized == QStringLiteral("tokyonight-storm")) {
-    return Holonight::ThemeSchemeKind::TokyoNightStorm;
-  }
-  if (normalized == QStringLiteral("tokyonight-day")) {
-    return Holonight::ThemeSchemeKind::TokyoNightDay;
-  }
-  return std::nullopt;
-}
-
-[[nodiscard]] std::optional<QString> schemeIdFromKdeColorSchemeName(const QString& value) {
-  const QString compact = compactThemeName(value);
-  if (compact == QStringLiteral("holonightdark")) {
-    return QStringLiteral("holonight-dark");
-  }
-  if (compact == QStringLiteral("holonightlight")) {
-    return QStringLiteral("holonight-light");
-  }
-  if (compact == QStringLiteral("holonightmocha")) {
-    return QStringLiteral("holonight-mocha");
-  }
-  if (compact == QStringLiteral("holonightlatte")) {
-    return QStringLiteral("holonight-latte");
-  }
-  if (compact == QStringLiteral("tokyonightstorm")) {
-    return QStringLiteral("tokyonight-storm");
-  }
-  if (compact == QStringLiteral("tokyonightday")) {
-    return QStringLiteral("tokyonight-day");
-  }
-
-  // Legacy names shipped before all four catalog variants had dedicated
-  // KDE color-scheme files.
-  if (compact == QStringLiteral("holonight")) {
-    return QStringLiteral("tokyonight-storm");
-  }
-  if (compact == QStringLiteral("holonightday")) {
-    return QStringLiteral("tokyonight-day");
-  }
-
-  return std::nullopt;
-}
-
-[[nodiscard]] bool isValidAccent(const QString& value) {
-  const QString normalized = normalizedString(value);
-  return normalized == QStringLiteral("cyan") || normalized == QStringLiteral("blue") ||
-         normalized == QStringLiteral("violet") || normalized == QStringLiteral("yellow");
-}
 
 [[nodiscard]] bool envInt(const char* name, int* value) {
   bool ok = false;
@@ -310,8 +242,8 @@ void applyEnvironment(Holonight::ThemeConfig* config) {
         continue;
       }
 
-      if (const std::optional<QString> scheme = schemeIdFromKdeColorSchemeName(line.sliced(12).trimmed());
-          scheme.has_value()) {
+      const QString scheme = Holonight::schemeIdForKdeColorSchemeName(line.sliced(12).trimmed());
+      if (!scheme.isEmpty()) {
         return scheme;
       }
     }
@@ -320,7 +252,7 @@ void applyEnvironment(Holonight::ThemeConfig* config) {
 }
 
 void applyKdeColorSchemeFallback(Holonight::ThemeConfig* config) {
-  if (schemeKindFromString(config->scheme).has_value() || qEnvironmentVariableIsSet("HOLONIGHT_CONFIG_FILE") ||
+  if (!Holonight::normalizeSchemeId(config->scheme).isEmpty() || qEnvironmentVariableIsSet("HOLONIGHT_CONFIG_FILE") ||
       qEnvironmentVariableIsSet("HOLONIGHT_APPEARANCE_MODE")) {
     return;
   }
@@ -343,8 +275,9 @@ int ThemeConfig::titleSize() const { return (std::min)(kMaxFontSize, base_font_s
 int ThemeConfig::headingSize() const { return (std::min)(kMaxFontSize, base_font_size + 6); }
 
 ThemeSchemeKind ThemeConfig::resolvedThemeScheme() const {
-  if (const std::optional<ThemeSchemeKind> parsed = schemeKindFromString(scheme); parsed.has_value()) {
-    return *parsed;
+  const QString normalized_scheme = normalizeSchemeId(scheme);
+  if (!normalized_scheme.isEmpty()) {
+    return schemeKindForSchemeId(normalized_scheme);
   }
 
   switch (appearance_mode) {
@@ -360,12 +293,7 @@ ThemeSchemeKind ThemeConfig::resolvedThemeScheme() const {
 
 ColorMode ThemeConfig::resolvedColorMode() const { return colorModeForScheme(resolvedThemeScheme()); }
 
-QString ThemeConfig::resolvedAccent() const {
-  if (isValidAccent(accent)) {
-    return normalizedString(accent);
-  }
-  return QStringLiteral("cyan");
-}
+QString ThemeConfig::resolvedAccent() const { return normalizeAccentId(accent); }
 
 ThemeConfig ThemeConfig::defaults() {
   return ThemeConfig{.appearance_mode = AppearanceMode::Dark,
@@ -407,15 +335,9 @@ ThemeConfig ThemeConfig::load() {
 }
 
 ColorMode colorModeForScheme(ThemeSchemeKind scheme) {
-  switch (scheme) {
-    case ThemeSchemeKind::HoloNightLight:
-    case ThemeSchemeKind::HoloNightLatte:
-    case ThemeSchemeKind::TokyoNightDay:
-      return ColorMode::Light;
-    case ThemeSchemeKind::HoloNightDark:
-    case ThemeSchemeKind::HoloNightMocha:
-    case ThemeSchemeKind::TokyoNightStorm:
-      return ColorMode::Dark;
+  const ThemeVariantCatalogEntry* variant = themeVariantForSchemeId(schemeIdForKind(scheme));
+  if (variant != nullptr) {
+    return variant->mode;
   }
   return ColorMode::Dark;
 }

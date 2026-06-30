@@ -177,6 +177,8 @@ target_link_libraries(holonight_qml_smoke_tests PRIVATE
     GTest::gtest
 )
 
+add_dependencies(holonight_qml_smoke_tests holonight_qml)
+
 add_test(NAME holonight_qml_smoke_tests COMMAND holonight_qml_smoke_tests
     WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
 )

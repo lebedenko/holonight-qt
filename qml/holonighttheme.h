@@ -6,6 +6,7 @@
 #include "holonight/config.h"
 
 #include <QObject>
+#include <QVariantList>
 #include <QtQml/qqml.h>
 
 class HolonightTheme : public QObject {
@@ -23,6 +24,8 @@ class HolonightTheme : public QObject {
   Q_PROPERTY(int bodySize READ bodySize CONSTANT)
   Q_PROPERTY(int titleSize READ titleSize CONSTANT)
   Q_PROPERTY(int headingSize READ headingSize CONSTANT)
+  Q_PROPERTY(QVariantList themeFamilies READ themeFamilies CONSTANT)
+  Q_PROPERTY(QVariantList themeVariants READ themeVariants CONSTANT)
 
  public:
   explicit HolonightTheme(QObject* parent = nullptr);
@@ -38,6 +41,10 @@ class HolonightTheme : public QObject {
   [[nodiscard]] int bodySize() const { return config_.bodySize(); }
   [[nodiscard]] int titleSize() const { return config_.titleSize(); }
   [[nodiscard]] int headingSize() const { return config_.headingSize(); }
+  [[nodiscard]] QVariantList themeFamilies() const;
+  [[nodiscard]] QVariantList themeVariants() const;
+
+  Q_INVOKABLE QVariantList accentOptionsForScheme(const QString& scheme_id) const;
 
  private:
   Holonight::ThemeConfig config_;
