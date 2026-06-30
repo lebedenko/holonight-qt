@@ -70,6 +70,8 @@ QT_QPA_PLATFORM=offscreen ctest --test-dir build --output-on-failure
 - For system-level testing (not unit tests), install with `sudo cmake --install build --prefix /usr` and use `Release` builds — debug plugins have `"debug": true` metadata which differs from system Qt plugins.
 
 - All colors originate in `palette/holonight/palette.h` (`ColorTokens` struct → `tokensForScheme(ThemeSchemeKind)` → `buildPalette()`). Change colors there, nowhere else.
+- **Adding theme variants** — add schemes through the full pipeline, not only the palette table: extend `ThemeSchemeKind`, `tokensForScheme()`, `colorModeForScheme()`, config scheme parsing, KDE color-scheme name fallback, and `tools/generate_holonight_colors.cpp`; generate `data/<scheme-id>.colors`; update `docs/theme-tokens.md`; add tests for token values, aliases, color mode, resolver/config parsing, KDE fallback names, generated color files, and WCAG contrast.
+- **External palette mapping** — when importing palettes such as Catppuccin, use official palette colors for base roles and document derived HoloNight-only roles (`primaryHover`, `primaryPressed`, border tiers, focus, overlays, glows, workspace fills, and ANSI bright colors). Keep scheme IDs lowercase kebab-case (`holonight-mocha`) and display names title-cased (`HoloNight Mocha`).
 - Class names use three i's: `HoloniightStyle`, `HoloniightTheme` — this is intentional.
 - Tests compile plugin source directly (not via Qt plugin-loading) so `QApplication` + `QT_QPA_PLATFORM=offscreen` is sufficient; no actual plugin install needed for tests.
 - WCAG AA contrast (4.5:1) is enforced by `tests/test_palette_contrast.cpp` — if you add color tokens or modify existing ones, update the contrast test.

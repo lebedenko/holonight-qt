@@ -34,6 +34,12 @@ The project uses C++23 with `.clang-format` based on Google style: 2-space inden
 
 Tests are GTest binaries registered with CTest. Add new C++ tests under `tests/test_*.cpp` and register them in `tests/CMakeLists.txt`. Keep Qt UI tests headless by setting `QT_QPA_PLATFORM=offscreen` and clearing theme/style overrides unless a test explicitly needs them. Palette changes must keep WCAG contrast tests passing or update the documented design deviations.
 
+## Adding Theme Variants
+
+New built-in themes must be added through the full scheme pipeline, not only by adding colors. Extend `ThemeSchemeKind`, `tokensForScheme()`, `colorModeForScheme()`, config scheme parsing, KDE color-scheme name fallback, and `tools/generate_holonight_colors.cpp`. Add generated `data/<scheme-id>.colors` files for KDE integration and update `docs/theme-tokens.md` with the new scheme IDs and display names. Keep public scheme IDs lowercase kebab-case, for example `holonight-mocha`, and display names title-cased, for example `HoloNight Mocha`.
+
+When mapping external palettes such as Catppuccin, use official palette colors for base roles and document any derived HoloNight-only semantic roles such as hover, pressed, focus, overlay, glow, workspace, and ANSI bright colors. Add focused tests for exact documented token values, alias consistency, color-mode classification, resolver/config parsing, KDE fallback names, generated color files, and WCAG contrast.
+
 ## Commit & Pull Request Guidelines
 
 Recent history uses conventional commits, for example `feat: semantic border & surface tokens`, `docs: add demo screenshots to README`, and `build(demo): add install target`. Use the same style: `type(scope): summary` when a scope helps. Pull requests should describe the behavior change, list validation commands run, link related issues or docs, and include screenshots when visual output changes.
