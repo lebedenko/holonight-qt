@@ -3,6 +3,8 @@
 
 #include <QByteArray>
 #include <QColor>
+#include <QCoreApplication>
+#include <QElapsedTimer>
 #include <QFile>
 #include <QQmlComponent>
 #include <QQmlEngine>
@@ -46,6 +48,18 @@ void writeFile(const QString& path, const QByteArray& contents) {
   const bool opened = file.open(QIODevice::WriteOnly | QIODevice::Truncate | QIODevice::Text);
   ASSERT_TRUE(opened);
   ASSERT_EQ(file.write(contents), contents.size());
+}
+
+bool waitForPropertyColor(QObject* object, const char* propertyName, const QColor& expected) {
+  QElapsedTimer timer;
+  timer.start();
+  while (timer.elapsed() < 2000) {
+    QCoreApplication::processEvents(QEventLoop::AllEvents, 50);
+    if (object->property(propertyName).value<QColor>() == expected) {
+      return true;
+    }
+  }
+  return object->property(propertyName).value<QColor>() == expected;
 }
 
 }  // namespace
@@ -309,6 +323,39 @@ TEST_F(QmlSmoke, HoloniightPalette_ReloadUsesSchemeBeforeModeAndAppliesAccent) {
   ASSERT_NE(object, nullptr);
   EXPECT_EQ(object->property("background").value<QColor>(), QColor(QStringLiteral("#F3F7FB")));
   EXPECT_EQ(object->property("primary").value<QColor>(), QColor(QStringLiteral("#7aa2f7")));
+}
+
+TEST_F(QmlSmoke, HoloniightPalette_WatchesThemeConfigChanges) {
+  EnvGuard configGuard = EnvGuard{"HOLONIGHT_CONFIG_FILE"};
+  EnvGuard appearanceGuard = EnvGuard{"HOLONIGHT_APPEARANCE_MODE"};
+  qunsetenv("HOLONIGHT_APPEARANCE_MODE");
+
+  QTemporaryDir dir;
+  ASSERT_TRUE(dir.isValid());
+  const QString path = dir.filePath(QStringLiteral("theme.conf"));
+  writeFile(path, "[appearance]\nscheme=holonight-dark\nmode=dark\n");
+  qputenv("HOLONIGHT_CONFIG_FILE", path.toLocal8Bit());
+
+  QQmlComponent comp = QQmlComponent{&engine_};
+  comp.setData(R"(
+    import QtQuick
+    import Holonight
+    Item {
+      property color background: HoloniightPalette.background
+      Connections {
+        target: HoloniightPalette
+        function onPaletteChanged() { background = HoloniightPalette.background }
+      }
+    }
+  )",
+               QUrl{});
+  ASSERT_EQ(comp.status(), QQmlComponent::Ready) << comp.errorString().toStdString();
+  std::unique_ptr<QObject> object{comp.create()};
+  ASSERT_NE(object, nullptr);
+  EXPECT_EQ(object->property("background").value<QColor>(), QColor(QStringLiteral("#0C1118")));
+
+  writeFile(path, "[appearance]\nscheme=holonight-light\nmode=light\n");
+  EXPECT_TRUE(waitForPropertyColor(object.get(), "background", QColor(QStringLiteral("#F3F7FB"))));
 }
 
 TEST_F(QmlSmoke, HolonightTheme_ConfigPropertiesAreValid) {

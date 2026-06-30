@@ -36,7 +36,13 @@ if(BUILD_DEMO)
   add_subdirectory(demo)
 endif()
 
-install(FILES data/holonight.colors data/holonight-day.colors DESTINATION share/color-schemes)
+install(FILES
+    data/holonight-dark.colors
+    data/holonight-light.colors
+    data/tokyonight-storm.colors
+    data/tokyonight-day.colors
+    DESTINATION share/color-schemes
+)
 
 # --- Tidy target ---
 find_program(CLANG_TIDY clang-tidy)

@@ -8,11 +8,19 @@ set_target_properties(generate_holonight_colors PROPERTIES
 
 if(BUILD_TESTS)
     add_test(
-        NAME generated_holonight_colors_current
-        COMMAND generate_holonight_colors --check ${CMAKE_SOURCE_DIR}/data/holonight.colors
+        NAME generated_holonight_dark_colors_current
+        COMMAND generate_holonight_colors --scheme holonight-dark --check ${CMAKE_SOURCE_DIR}/data/holonight-dark.colors
     )
     add_test(
-        NAME generated_holonight_day_colors_current
-        COMMAND generate_holonight_colors --mode light --check ${CMAKE_SOURCE_DIR}/data/holonight-day.colors
+        NAME generated_holonight_light_colors_current
+        COMMAND generate_holonight_colors --scheme holonight-light --check ${CMAKE_SOURCE_DIR}/data/holonight-light.colors
+    )
+    add_test(
+        NAME generated_tokyonight_storm_colors_current
+        COMMAND generate_holonight_colors --scheme tokyonight-storm --check ${CMAKE_SOURCE_DIR}/data/tokyonight-storm.colors
+    )
+    add_test(
+        NAME generated_tokyonight_day_colors_current
+        COMMAND generate_holonight_colors --scheme tokyonight-day --check ${CMAKE_SOURCE_DIR}/data/tokyonight-day.colors
     )
 endif()

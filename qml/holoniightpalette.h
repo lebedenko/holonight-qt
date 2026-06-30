@@ -6,6 +6,7 @@
 #include "holonight/palette.h"
 
 #include <QColor>
+#include <QFileSystemWatcher>
 #include <QObject>
 #include <QtQml/qqml.h>
 
@@ -203,5 +204,11 @@ class HoloniightPalette : public QObject {
   void paletteChanged();
 
  private:
+  void armThemeConfigWatch();
+  void onThemeConfigPathChanged(const QString& path);
+
   Holonight::ColorTokens tok_;
+  QString theme_config_path_;
+  QString theme_config_dir_path_;
+  QFileSystemWatcher theme_config_watcher_;
 };

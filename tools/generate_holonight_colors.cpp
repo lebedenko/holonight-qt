@@ -34,15 +34,55 @@ void writeCommonForegrounds(std::ostringstream& out, const Holonight::ColorToken
   out << "DecorationHover=" << rgb(tok.primaryHover) << '\n';
 }
 
-std::string schemeName(Holonight::ColorMode mode) {
-  return mode == Holonight::ColorMode::Light ? "Holonight Day" : "Holonight";
+Holonight::ThemeSchemeKind parseScheme(std::string_view value) {
+  if (value == "holonight-dark") {
+    return Holonight::ThemeSchemeKind::HoloNightDark;
+  }
+  if (value == "holonight-light") {
+    return Holonight::ThemeSchemeKind::HoloNightLight;
+  }
+  if (value == "tokyonight-storm") {
+    return Holonight::ThemeSchemeKind::TokyoNightStorm;
+  }
+  if (value == "tokyonight-day") {
+    return Holonight::ThemeSchemeKind::TokyoNightDay;
+  }
+  throw std::runtime_error{"invalid scheme '" + std::string{value} +
+                           "'; expected holonight-dark, holonight-light, tokyonight-storm, or tokyonight-day"};
 }
 
-std::string generatedColors(Holonight::ColorMode mode) {
-  const auto tok =
-      Holonight::tokensForScheme(mode == Holonight::ColorMode::Light ? Holonight::ThemeSchemeKind::TokyoNightDay
-                                                                     : Holonight::ThemeSchemeKind::TokyoNightStorm);
-  const std::string name = schemeName(mode);
+std::string schemeName(Holonight::ThemeSchemeKind scheme) {
+  switch (scheme) {
+    case Holonight::ThemeSchemeKind::HoloNightDark:
+      return "HoloNight Dark";
+    case Holonight::ThemeSchemeKind::HoloNightLight:
+      return "HoloNight Light";
+    case Holonight::ThemeSchemeKind::TokyoNightStorm:
+      return "TokyoNight Storm";
+    case Holonight::ThemeSchemeKind::TokyoNightDay:
+      return "TokyoNight Day";
+  }
+  return "HoloNight Dark";
+}
+
+std::string schemeId(Holonight::ThemeSchemeKind scheme) {
+  switch (scheme) {
+    case Holonight::ThemeSchemeKind::HoloNightDark:
+      return "holonight-dark";
+    case Holonight::ThemeSchemeKind::HoloNightLight:
+      return "holonight-light";
+    case Holonight::ThemeSchemeKind::TokyoNightStorm:
+      return "tokyonight-storm";
+    case Holonight::ThemeSchemeKind::TokyoNightDay:
+      return "tokyonight-day";
+  }
+  return "holonight-dark";
+}
+
+std::string generatedColors(Holonight::ThemeSchemeKind scheme) {
+  const auto tok = Holonight::tokensForScheme(scheme);
+  const std::string name = schemeName(scheme);
+  const std::string id = schemeId(scheme);
   std::ostringstream out;
 
   out << "[ColorScheme]\n";
@@ -52,6 +92,7 @@ std::string generatedColors(Holonight::ColorMode mode) {
   out << "[General]\n";
   out << "ColorScheme=" << name << '\n';
   out << "Name=" << name << '\n';
+  out << "X-HoloNight-Scheme=" << id << '\n';
   out << "shadeSortColumn=true\n\n";
 
   out << "[Colors:Window]\n";
@@ -129,18 +170,8 @@ void writeFile(const std::filesystem::path& path, std::string_view content) {
   }
 }
 
-Holonight::ColorMode parseMode(std::string_view value) {
-  if (value == "dark") {
-    return Holonight::ColorMode::Dark;
-  }
-  if (value == "light") {
-    return Holonight::ColorMode::Light;
-  }
-  throw std::runtime_error{"invalid mode '" + std::string{value} + "'; expected dark or light"};
-}
-
 struct Arguments {
-  Holonight::ColorMode mode = Holonight::ColorMode::Dark;
+  Holonight::ThemeSchemeKind scheme = Holonight::ThemeSchemeKind::HoloNightDark;
   bool check = false;
   std::filesystem::path output;
 };
@@ -149,11 +180,23 @@ Arguments parseArguments(int argc, char** argv) {
   Arguments arguments;
   for (int index = 1; index < argc; ++index) {
     const std::string_view arg{argv[index]};
-    if (arg == "--mode") {
+    if (arg == "--scheme") {
+      if (index + 1 >= argc) {
+        throw std::runtime_error{"--scheme requires a scheme ID"};
+      }
+      arguments.scheme = parseScheme(argv[++index]);
+    } else if (arg == "--mode") {
       if (index + 1 >= argc) {
         throw std::runtime_error{"--mode requires dark or light"};
       }
-      arguments.mode = parseMode(argv[++index]);
+      const std::string_view mode = argv[++index];
+      if (mode == "dark") {
+        arguments.scheme = Holonight::ThemeSchemeKind::TokyoNightStorm;
+      } else if (mode == "light") {
+        arguments.scheme = Holonight::ThemeSchemeKind::TokyoNightDay;
+      } else {
+        throw std::runtime_error{"invalid mode '" + std::string{mode} + "'; expected dark or light"};
+      }
     } else if (arg == "--check") {
       arguments.check = true;
     } else if (arguments.output.empty()) {
@@ -170,14 +213,14 @@ Arguments parseArguments(int argc, char** argv) {
 int main(int argc, char** argv) {
   try {
     const Arguments arguments = parseArguments(argc, argv);
-    const std::string content = generatedColors(arguments.mode);
+    const std::string content = generatedColors(arguments.scheme);
     if (arguments.check) {
       if (arguments.output.empty()) {
         throw std::runtime_error{"--check requires OUTPUT"};
       }
       if (readFile(arguments.output) != content) {
-        std::cerr << arguments.output << " is stale; regenerate it with generate_holonight_colors --mode "
-                  << (arguments.mode == Holonight::ColorMode::Light ? "light" : "dark") << '\n';
+        std::cerr << arguments.output << " is stale; regenerate it with generate_holonight_colors --scheme "
+                  << schemeId(arguments.scheme) << '\n';
         return 1;
       }
       return 0;
@@ -190,8 +233,9 @@ int main(int argc, char** argv) {
     return 0;
   } catch (const std::exception& error) {
     std::cerr << error.what() << "\n"
-              << "usage: generate_holonight_colors [--mode dark|light] [OUTPUT]\n"
-              << "       generate_holonight_colors [--mode dark|light] --check OUTPUT\n";
+              << "usage: generate_holonight_colors [--scheme SCHEME_ID] [OUTPUT]\n"
+              << "       generate_holonight_colors [--scheme SCHEME_ID] --check OUTPUT\n"
+              << "       generate_holonight_colors [--mode dark|light] [OUTPUT]\n";
     return 2;
   }
 }

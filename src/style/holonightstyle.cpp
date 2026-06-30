@@ -6,7 +6,9 @@
 #include "themeresolver.h"
 
 #include <QAbstractItemView>
+#include <QApplication>
 #include <QDockWidget>
+#include <QFileInfo>
 #include <QFrame>
 #include <QMenu>
 #include <QPainter>
@@ -234,7 +236,14 @@ HoloniightStyle::HoloniightStyle()
     : QProxyStyle(QStringLiteral("fusion")),
       config_{Holonight::ThemeConfig::load()},
       tokens_{Holonight::ThemeResolver::resolve(config_)},
-      palette_{Holonight::buildPalette(tokens_)} {}
+      palette_{Holonight::buildPalette(tokens_)},
+      theme_config_path_{Holonight::ThemeConfig::configFilePath()},
+      theme_config_dir_path_{QFileInfo{theme_config_path_}.absolutePath()} {
+  connect(&theme_config_watcher_, &QFileSystemWatcher::fileChanged, this, &HoloniightStyle::onThemeConfigPathChanged);
+  connect(&theme_config_watcher_, &QFileSystemWatcher::directoryChanged, this,
+          &HoloniightStyle::onThemeConfigPathChanged);
+  armThemeConfigWatch();
+}
 
 QPalette HoloniightStyle::standardPalette() const { return palette_; }
 
@@ -670,6 +679,51 @@ void HoloniightStyle::drawHeaderImpl(const QStyleOption* option, QPainter* paint
 // ── Helpers ──────────────────────────────────────────────────────────────────
 
 const Holonight::ColorTokens& HoloniightStyle::tokens() const { return tokens_; }
+
+void HoloniightStyle::armThemeConfigWatch() {
+  if (QFileInfo::exists(theme_config_dir_path_) &&
+      !theme_config_watcher_.directories().contains(theme_config_dir_path_)) {
+    theme_config_watcher_.addPath(theme_config_dir_path_);
+  }
+  if (QFileInfo::exists(theme_config_path_) && !theme_config_watcher_.files().contains(theme_config_path_)) {
+    theme_config_watcher_.addPath(theme_config_path_);
+  }
+}
+
+void HoloniightStyle::reloadTheme() {
+  const Holonight::ThemeConfig newConfig = Holonight::ThemeConfig::load();
+  const Holonight::ColorTokens newTokens = Holonight::ThemeResolver::resolve(newConfig);
+  if (newTokens == tokens_ && newConfig.resolvedColorMode() == config_.resolvedColorMode()) {
+    return;
+  }
+
+  config_ = newConfig;
+  tokens_ = newTokens;
+  palette_ = Holonight::buildPalette(tokens_);
+
+  if (qApp == nullptr) {
+    return;
+  }
+
+  qApp->setPalette(palette_);
+  const QWidgetList widgets = qApp->allWidgets();
+  for (QWidget* widget : widgets) {
+    if (widget == nullptr) {
+      continue;
+    }
+    unpolish(widget);
+    polish(widget);
+    widget->update();
+  }
+}
+
+void HoloniightStyle::onThemeConfigPathChanged(const QString& path) {
+  if (path != theme_config_path_ && path != theme_config_dir_path_) {
+    return;
+  }
+  armThemeConfigWatch();
+  reloadTheme();
+}
 
 void HoloniightStyle::paintArrow(QPainter* painter, const QRect& rect, ArrowDirection direction, const QColor& color) {
   painter->save();

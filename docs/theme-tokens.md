@@ -160,7 +160,9 @@ Environment override:
 HOLONIGHT_APPEARANCE_MODE=light
 ```
 
-Generated KDE schemes are `data/holonight.colors` (`Holonight`) and `data/holonight-day.colors` (`Holonight Day`).
+Generated KDE schemes are `data/holonight-dark.colors` (`HoloNight Dark`),
+`data/holonight-light.colors` (`HoloNight Light`), `data/tokyonight-storm.colors` (`TokyoNight Storm`),
+and `data/tokyonight-day.colors` (`TokyoNight Day`).
 
 Future shared config will use `~/.config/holonight/config.toml`, but TOML parsing is not implemented in this pass and no new dependency is introduced.
 

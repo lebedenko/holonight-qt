@@ -13,6 +13,7 @@
 #include <QStatusBar>
 #include <QTemporaryDir>
 #include <QTextEdit>
+#include <QtTest/QTest>
 
 #include <gtest/gtest.h>
 
@@ -94,6 +95,26 @@ TEST(StyleSmoke, StandardPaletteUsesLightSchemeWhenModeIsStaleDark) {
   EXPECT_EQ(pal.color(QPalette::Active, QPalette::Window),
             Holonight::tokensForScheme(Holonight::ThemeSchemeKind::TokyoNightDay).background);
   EXPECT_EQ(pal.color(QPalette::Active, QPalette::Highlight), QColor(QStringLiteral("#bb9af7")));
+}
+
+TEST(StyleSmoke, ThemeConfigChangeReloadsStandardPalette) {
+  EnvGuard configGuard = EnvGuard{"HOLONIGHT_CONFIG_FILE"};
+  EnvGuard appearanceGuard = EnvGuard{"HOLONIGHT_APPEARANCE_MODE"};
+  qunsetenv("HOLONIGHT_APPEARANCE_MODE");
+
+  QTemporaryDir dir;
+  ASSERT_TRUE(dir.isValid());
+  const QString path = dir.filePath(QStringLiteral("theme.conf"));
+  writeFile(path, "[appearance]\nscheme=holonight-dark\nmode=dark\n");
+  qputenv("HOLONIGHT_CONFIG_FILE", path.toLocal8Bit());
+
+  HoloniightStyle style;
+  EXPECT_EQ(style.standardPalette().color(QPalette::Active, QPalette::Window),
+            Holonight::tokensForScheme(Holonight::ThemeSchemeKind::HoloNightDark).background);
+
+  writeFile(path, "[appearance]\nscheme=holonight-light\nmode=light\n");
+  QTRY_COMPARE(style.standardPalette().color(QPalette::Active, QPalette::Window),
+               Holonight::tokensForScheme(Holonight::ThemeSchemeKind::HoloNightLight).background);
 }
 
 TEST(StyleSmoke, ScrollBarExtentIsEight) {

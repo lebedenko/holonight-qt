@@ -28,6 +28,14 @@ constexpr int kConfigSchemaVersion = 1;
 
 [[nodiscard]] QString normalizedString(const QString& value) { return cleanString(value).toLower(); }
 
+[[nodiscard]] QString compactThemeName(const QString& value) {
+  QString normalized = normalizedString(value);
+  normalized.remove(QLatin1Char(' '));
+  normalized.remove(QLatin1Char('-'));
+  normalized.remove(QLatin1Char('_'));
+  return normalized;
+}
+
 void setStringIfPresent(QString* target, const QString& value) {
   const QString cleaned = cleanString(value);
   if (!cleaned.isEmpty()) {
@@ -80,6 +88,33 @@ void setAppearanceModeIfValid(Holonight::AppearanceMode* target, const QString& 
   if (normalized == QStringLiteral("tokyonight-day")) {
     return Holonight::ThemeSchemeKind::TokyoNightDay;
   }
+  return std::nullopt;
+}
+
+[[nodiscard]] std::optional<QString> schemeIdFromKdeColorSchemeName(const QString& value) {
+  const QString compact = compactThemeName(value);
+  if (compact == QStringLiteral("holonightdark")) {
+    return QStringLiteral("holonight-dark");
+  }
+  if (compact == QStringLiteral("holonightlight")) {
+    return QStringLiteral("holonight-light");
+  }
+  if (compact == QStringLiteral("tokyonightstorm")) {
+    return QStringLiteral("tokyonight-storm");
+  }
+  if (compact == QStringLiteral("tokyonightday")) {
+    return QStringLiteral("tokyonight-day");
+  }
+
+  // Legacy names shipped before all four catalog variants had dedicated
+  // KDE color-scheme files.
+  if (compact == QStringLiteral("holonight")) {
+    return QStringLiteral("tokyonight-storm");
+  }
+  if (compact == QStringLiteral("holonightday")) {
+    return QStringLiteral("tokyonight-day");
+  }
+
   return std::nullopt;
 }
 
@@ -228,6 +263,61 @@ void applyEnvironment(Holonight::ThemeConfig* config) {
   }
 }
 
+[[nodiscard]] std::optional<QString> kdeActiveSchemeId() {
+  QStringList configDirs;
+  const QString xdgConfigHome = envString("XDG_CONFIG_HOME");
+  if (!xdgConfigHome.isEmpty()) {
+    configDirs << xdgConfigHome;
+  }
+  configDirs << QStandardPaths::standardLocations(QStandardPaths::ConfigLocation);
+  configDirs.removeDuplicates();
+
+  for (const QString& dir : configDirs) {
+    const QString path = dir + QStringLiteral("/kdeglobals");
+    if (!QFile::exists(path)) {
+      continue;
+    }
+
+    QFile file{path};
+    if (!file.open(QIODevice::ReadOnly | QIODevice::Text)) {
+      continue;
+    }
+
+    bool inGeneralGroup = false;
+    const QStringList lines = QString::fromUtf8(file.readAll()).split(QLatin1Char('\n'));
+    for (const QString& rawLine : lines) {
+      const QString line = rawLine.trimmed();
+      if (line.isEmpty() || line.startsWith(QLatin1Char('#')) || line.startsWith(QLatin1Char(';'))) {
+        continue;
+      }
+      if (line.startsWith(QLatin1Char('[')) && line.endsWith(QLatin1Char(']'))) {
+        inGeneralGroup = line.sliced(1, line.size() - 2).trimmed() == QStringLiteral("General");
+        continue;
+      }
+      if (!inGeneralGroup || !line.startsWith(QStringLiteral("ColorScheme="))) {
+        continue;
+      }
+
+      if (const std::optional<QString> scheme = schemeIdFromKdeColorSchemeName(line.sliced(12).trimmed());
+          scheme.has_value()) {
+        return scheme;
+      }
+    }
+  }
+  return std::nullopt;
+}
+
+void applyKdeColorSchemeFallback(Holonight::ThemeConfig* config) {
+  if (schemeKindFromString(config->scheme).has_value() || qEnvironmentVariableIsSet("HOLONIGHT_CONFIG_FILE") ||
+      qEnvironmentVariableIsSet("HOLONIGHT_APPEARANCE_MODE")) {
+    return;
+  }
+
+  if (const std::optional<QString> scheme = kdeActiveSchemeId(); scheme.has_value()) {
+    config->scheme = *scheme;
+  }
+}
+
 }  // namespace
 
 namespace Holonight {
@@ -300,6 +390,7 @@ ThemeConfig ThemeConfig::load() {
   ThemeConfig config = defaults();
   readConfigFile(&config, configFilePath());
   applyEnvironment(&config);
+  applyKdeColorSchemeFallback(&config);
   return config;
 }
 
