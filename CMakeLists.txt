@@ -46,6 +46,8 @@ install(FILES
     data/holonight-latte.colors
     data/tokyonight-storm.colors
     data/tokyonight-day.colors
+    data/holonight-ember.colors
+    data/holonight-sol.colors
     DESTINATION share/color-schemes
 )
 
