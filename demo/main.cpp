@@ -22,12 +22,14 @@ QString normalizedThemeValue(const QString& value) { return value.trimmed().toLo
 bool isThemeValue(const QString& value) {
   const QString theme = normalizedThemeValue(value);
   return theme == QStringLiteral("holonight-dark") || theme == QStringLiteral("holonight-light") ||
+         theme == QStringLiteral("holonight-mocha") || theme == QStringLiteral("holonight-latte") ||
          theme == QStringLiteral("tokyonight-storm") || theme == QStringLiteral("tokyonight-day");
 }
 
 QString legacyModeForTheme(const QString& value) {
   const QString theme = normalizedThemeValue(value);
-  return theme == QStringLiteral("holonight-light") || theme == QStringLiteral("tokyonight-day")
+  return theme == QStringLiteral("holonight-light") || theme == QStringLiteral("holonight-latte") ||
+                 theme == QStringLiteral("tokyonight-day")
              ? QStringLiteral("light")
              : QStringLiteral("dark");
 }
@@ -109,7 +111,8 @@ int main(int argc, char* argv[]) {
     const QString selectedTheme = normalizedThemeValue(parser.value(themeOption));
     if (!isThemeValue(selectedTheme)) {
       qWarning() << "Error: Invalid theme" << selectedTheme
-                 << "(must be 'holonight-dark', 'holonight-light', 'tokyonight-storm', or 'tokyonight-day')";
+                 << "(must be 'holonight-dark', 'holonight-light', 'holonight-mocha', 'holonight-latte', "
+                    "'tokyonight-storm', or 'tokyonight-day')";
       return 1;
     }
   }

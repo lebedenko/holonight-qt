@@ -240,6 +240,42 @@ TEST(ThemeResolver, AccentYellowOverridesCorrectSlots) {
   EXPECT_EQ(tok.glowVioletSoft, QColor(QStringLiteral("#e0af6812")));
 }
 
+TEST(ThemeResolver, CatppuccinAccentCyanUsesSchemeNativeColors) {
+  const Holonight::ColorTokens mocha = Holonight::ThemeResolver::resolve(
+      makeConfig(Holonight::AppearanceMode::Light, QStringLiteral("cyan"), QStringLiteral("holonight-mocha")));
+  EXPECT_EQ(mocha.primary, QColor(QStringLiteral("#89DCEB")));
+  EXPECT_EQ(mocha.primaryHover, QColor(QStringLiteral("#94E2D5")));
+  EXPECT_EQ(mocha.primaryPressed, QColor(QStringLiteral("#74C7EC")));
+  EXPECT_EQ(mocha.borderFocus, QColor(QStringLiteral("#89DCEB")));
+  EXPECT_EQ(mocha.borderActive, QColor(QStringLiteral("#89DCEB")));
+  EXPECT_EQ(mocha.focusRing.rgb(), QColor(QStringLiteral("#89DCEB")).rgb());
+  EXPECT_EQ(mocha.focusRing.alpha(), 0x55);
+
+  const Holonight::ColorTokens latte = Holonight::ThemeResolver::resolve(
+      makeConfig(Holonight::AppearanceMode::Dark, QStringLiteral("cyan"), QStringLiteral("holonight-latte")));
+  EXPECT_EQ(latte.primary, QColor(QStringLiteral("#04A5E5")));
+  EXPECT_EQ(latte.primaryHover, QColor(QStringLiteral("#179299")));
+  EXPECT_EQ(latte.primaryPressed, QColor(QStringLiteral("#209FB5")));
+  EXPECT_EQ(latte.borderFocus, QColor(QStringLiteral("#04A5E5")));
+  EXPECT_EQ(latte.borderActive, QColor(QStringLiteral("#04A5E5")));
+  EXPECT_EQ(latte.focusRing.rgb(), QColor(QStringLiteral("#04A5E5")).rgb());
+  EXPECT_EQ(latte.focusRing.alpha(), 0x55);
+}
+
+TEST(ThemeResolver, CatppuccinAccentOverridesUseAdjacentCompanions) {
+  const Holonight::ColorTokens mochaViolet = Holonight::ThemeResolver::resolve(
+      makeConfig(Holonight::AppearanceMode::Dark, QStringLiteral("violet"), QStringLiteral("holonight-mocha")));
+  EXPECT_EQ(mochaViolet.primary, QColor(QStringLiteral("#CBA6F7")));
+  EXPECT_EQ(mochaViolet.primaryHover, QColor(QStringLiteral("#F5C2E7")));
+  EXPECT_EQ(mochaViolet.primaryPressed, QColor(QStringLiteral("#B4BEFE")));
+
+  const Holonight::ColorTokens latteYellow = Holonight::ThemeResolver::resolve(
+      makeConfig(Holonight::AppearanceMode::Dark, QStringLiteral("yellow"), QStringLiteral("holonight-latte")));
+  EXPECT_EQ(latteYellow.primary, QColor(QStringLiteral("#DF8E1D")));
+  EXPECT_EQ(latteYellow.primaryHover, QColor(QStringLiteral("#FE640B")));
+  EXPECT_EQ(latteYellow.primaryPressed, QColor(QStringLiteral("#E64553")));
+}
+
 TEST(ThemeResolver, AccentIsCaseInsensitive) {
   const Holonight::ColorTokens lower =
       Holonight::ThemeResolver::resolve(makeConfig(Holonight::AppearanceMode::Dark, QStringLiteral("cyan")));
@@ -255,6 +291,10 @@ TEST(ThemeResolver, SchemesResolveToConcreteCatalogEntries) {
       makeConfig(Holonight::AppearanceMode::Light, QStringLiteral("cyan"), QStringLiteral("tokyonight-storm")));
   const Holonight::ColorTokens holonightLight = Holonight::ThemeResolver::resolve(
       makeConfig(Holonight::AppearanceMode::Dark, QStringLiteral("cyan"), QStringLiteral("holonight-light")));
+  const Holonight::ColorTokens holonightMocha = Holonight::ThemeResolver::resolve(
+      makeConfig(Holonight::AppearanceMode::Light, QStringLiteral("cyan"), QStringLiteral("holonight-mocha")));
+  const Holonight::ColorTokens holonightLatte = Holonight::ThemeResolver::resolve(
+      makeConfig(Holonight::AppearanceMode::Dark, QStringLiteral("cyan"), QStringLiteral("holonight-latte")));
   const Holonight::ColorTokens tokyoDay = Holonight::ThemeResolver::resolve(
       makeConfig(Holonight::AppearanceMode::Dark, QStringLiteral("cyan"), QStringLiteral("tokyonight-day")));
 
@@ -262,9 +302,17 @@ TEST(ThemeResolver, SchemesResolveToConcreteCatalogEntries) {
   EXPECT_EQ(tokyoStorm.background, Holonight::tokensForScheme(Holonight::ThemeSchemeKind::TokyoNightStorm).background);
   EXPECT_EQ(holonightLight.background,
             Holonight::tokensForScheme(Holonight::ThemeSchemeKind::HoloNightLight).background);
+  EXPECT_EQ(holonightMocha.background,
+            Holonight::tokensForScheme(Holonight::ThemeSchemeKind::HoloNightMocha).background);
+  EXPECT_EQ(holonightLatte.background,
+            Holonight::tokensForScheme(Holonight::ThemeSchemeKind::HoloNightLatte).background);
   EXPECT_EQ(tokyoDay.background, Holonight::tokensForScheme(Holonight::ThemeSchemeKind::TokyoNightDay).background);
   EXPECT_NE(holonightDark.background, tokyoStorm.background);
+  EXPECT_NE(holonightDark.background, holonightMocha.background);
+  EXPECT_NE(tokyoStorm.background, holonightMocha.background);
   EXPECT_NE(holonightLight.background, tokyoDay.background);
+  EXPECT_NE(holonightLight.background, holonightLatte.background);
+  EXPECT_NE(tokyoDay.background, holonightLatte.background);
 }
 
 TEST(ThemeResolver, ValidSchemeWinsWhenModeDisagrees) {

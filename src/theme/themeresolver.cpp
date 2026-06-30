@@ -7,7 +7,81 @@ namespace Holonight {
 
 ColorTokens ThemeResolver::resolveBase(ThemeSchemeKind scheme) { return tokensForScheme(scheme); }
 
-void ThemeResolver::applyAccent(ColorTokens& tok, const QString& accent) {
+namespace {
+
+struct AccentOverride {
+  QColor primary;
+  QColor hover;
+  QColor pressed;
+};
+
+bool catppuccinAccent(const QString& accent, ThemeSchemeKind scheme, AccentOverride* out) {
+  if (scheme == ThemeSchemeKind::HoloNightMocha) {
+    if (accent == QStringLiteral("cyan")) {
+      *out = {QColor{QStringLiteral("#89DCEB")}, QColor{QStringLiteral("#94E2D5")}, QColor{QStringLiteral("#74C7EC")}};
+      return true;
+    }
+    if (accent == QStringLiteral("blue")) {
+      *out = {QColor{QStringLiteral("#89B4FA")}, QColor{QStringLiteral("#89DCEB")}, QColor{QStringLiteral("#74C7EC")}};
+      return true;
+    }
+    if (accent == QStringLiteral("violet")) {
+      *out = {QColor{QStringLiteral("#CBA6F7")}, QColor{QStringLiteral("#F5C2E7")}, QColor{QStringLiteral("#B4BEFE")}};
+      return true;
+    }
+    if (accent == QStringLiteral("yellow")) {
+      *out = {QColor{QStringLiteral("#F9E2AF")}, QColor{QStringLiteral("#FAB387")}, QColor{QStringLiteral("#EBA0AC")}};
+      return true;
+    }
+  }
+
+  if (scheme == ThemeSchemeKind::HoloNightLatte) {
+    if (accent == QStringLiteral("cyan")) {
+      *out = {QColor{QStringLiteral("#04A5E5")}, QColor{QStringLiteral("#179299")}, QColor{QStringLiteral("#209FB5")}};
+      return true;
+    }
+    if (accent == QStringLiteral("blue")) {
+      *out = {QColor{QStringLiteral("#1E66F5")}, QColor{QStringLiteral("#04A5E5")}, QColor{QStringLiteral("#209FB5")}};
+      return true;
+    }
+    if (accent == QStringLiteral("violet")) {
+      *out = {QColor{QStringLiteral("#8839EF")}, QColor{QStringLiteral("#EA76CB")}, QColor{QStringLiteral("#7287FD")}};
+      return true;
+    }
+    if (accent == QStringLiteral("yellow")) {
+      *out = {QColor{QStringLiteral("#DF8E1D")}, QColor{QStringLiteral("#FE640B")}, QColor{QStringLiteral("#E64553")}};
+      return true;
+    }
+  }
+
+  return false;
+}
+
+void applyCatppuccinAccent(ColorTokens& tok, const AccentOverride& colors) {
+  tok.primary = colors.primary;
+  tok.primaryHover = colors.hover;
+  tok.primaryPressed = colors.pressed;
+  tok.borderFocus = colors.primary;
+  tok.borderActive = colors.primary;
+  tok.focusRing = colors.primary;
+  tok.focusRing.setAlpha(0x55);
+  tok.glowCyanSoft = colors.primary;
+  tok.glowCyanSoft.setAlpha(0x22);
+  tok.glowBlueSoft = colors.primary;
+  tok.glowBlueSoft.setAlpha(0x18);
+  tok.glowVioletSoft = colors.primary;
+  tok.glowVioletSoft.setAlpha(0x12);
+}
+
+}  // namespace
+
+void ThemeResolver::applyAccent(ColorTokens& tok, const QString& accent, ThemeSchemeKind scheme) {
+  AccentOverride catppuccin;
+  if (catppuccinAccent(accent, scheme, &catppuccin)) {
+    applyCatppuccinAccent(tok, catppuccin);
+    return;
+  }
+
   if (accent == QStringLiteral("cyan")) {
     tok.primary = QColor{QStringLiteral("#7dcfff")};
     tok.primaryHover = QColor{QStringLiteral("#a3d8ff")};
@@ -52,8 +126,9 @@ void ThemeResolver::applyAccent(ColorTokens& tok, const QString& accent) {
 }
 
 ColorTokens ThemeResolver::resolve(const ThemeConfig& config) {
-  ColorTokens tok = resolveBase(config.resolvedThemeScheme());
-  applyAccent(tok, config.resolvedAccent());
+  const ThemeSchemeKind scheme = config.resolvedThemeScheme();
+  ColorTokens tok = resolveBase(scheme);
+  applyAccent(tok, config.resolvedAccent(), scheme);
   return tok;
 }
 

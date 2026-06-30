@@ -16,6 +16,14 @@ if(BUILD_TESTS)
         COMMAND generate_holonight_colors --scheme holonight-light --check ${CMAKE_SOURCE_DIR}/data/holonight-light.colors
     )
     add_test(
+        NAME generated_holonight_mocha_colors_current
+        COMMAND generate_holonight_colors --scheme holonight-mocha --check ${CMAKE_SOURCE_DIR}/data/holonight-mocha.colors
+    )
+    add_test(
+        NAME generated_holonight_latte_colors_current
+        COMMAND generate_holonight_colors --scheme holonight-latte --check ${CMAKE_SOURCE_DIR}/data/holonight-latte.colors
+    )
+    add_test(
         NAME generated_tokyonight_storm_colors_current
         COMMAND generate_holonight_colors --scheme tokyonight-storm --check ${CMAKE_SOURCE_DIR}/data/tokyonight-storm.colors
     )

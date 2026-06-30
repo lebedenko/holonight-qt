@@ -82,6 +82,12 @@ void setAppearanceModeIfValid(Holonight::AppearanceMode* target, const QString& 
   if (normalized == QStringLiteral("holonight-light")) {
     return Holonight::ThemeSchemeKind::HoloNightLight;
   }
+  if (normalized == QStringLiteral("holonight-mocha")) {
+    return Holonight::ThemeSchemeKind::HoloNightMocha;
+  }
+  if (normalized == QStringLiteral("holonight-latte")) {
+    return Holonight::ThemeSchemeKind::HoloNightLatte;
+  }
   if (normalized == QStringLiteral("tokyonight-storm")) {
     return Holonight::ThemeSchemeKind::TokyoNightStorm;
   }
@@ -98,6 +104,12 @@ void setAppearanceModeIfValid(Holonight::AppearanceMode* target, const QString& 
   }
   if (compact == QStringLiteral("holonightlight")) {
     return QStringLiteral("holonight-light");
+  }
+  if (compact == QStringLiteral("holonightmocha")) {
+    return QStringLiteral("holonight-mocha");
+  }
+  if (compact == QStringLiteral("holonightlatte")) {
+    return QStringLiteral("holonight-latte");
   }
   if (compact == QStringLiteral("tokyonightstorm")) {
     return QStringLiteral("tokyonight-storm");
@@ -397,9 +409,11 @@ ThemeConfig ThemeConfig::load() {
 ColorMode colorModeForScheme(ThemeSchemeKind scheme) {
   switch (scheme) {
     case ThemeSchemeKind::HoloNightLight:
+    case ThemeSchemeKind::HoloNightLatte:
     case ThemeSchemeKind::TokyoNightDay:
       return ColorMode::Light;
     case ThemeSchemeKind::HoloNightDark:
+    case ThemeSchemeKind::HoloNightMocha:
     case ThemeSchemeKind::TokyoNightStorm:
       return ColorMode::Dark;
   }

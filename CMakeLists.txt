@@ -39,6 +39,8 @@ endif()
 install(FILES
     data/holonight-dark.colors
     data/holonight-light.colors
+    data/holonight-mocha.colors
+    data/holonight-latte.colors
     data/tokyonight-storm.colors
     data/tokyonight-day.colors
     DESTINATION share/color-schemes

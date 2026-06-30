@@ -16,6 +16,8 @@ enum class ColorMode : uint8_t {
 enum class ThemeSchemeKind {
   HoloNightDark,
   HoloNightLight,
+  HoloNightMocha,
+  HoloNightLatte,
   TokyoNightStorm,
   TokyoNightDay,
 };

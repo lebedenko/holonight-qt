@@ -68,6 +68,8 @@ tasks:
     cmds:
       - ./{{.BUILD_DIR}}/tools/generate_holonight_colors --scheme holonight-dark data/holonight-dark.colors
       - ./{{.BUILD_DIR}}/tools/generate_holonight_colors --scheme holonight-light data/holonight-light.colors
+      - ./{{.BUILD_DIR}}/tools/generate_holonight_colors --scheme holonight-mocha data/holonight-mocha.colors
+      - ./{{.BUILD_DIR}}/tools/generate_holonight_colors --scheme holonight-latte data/holonight-latte.colors
       - ./{{.BUILD_DIR}}/tools/generate_holonight_colors --scheme tokyonight-storm data/tokyonight-storm.colors
       - ./{{.BUILD_DIR}}/tools/generate_holonight_colors --scheme tokyonight-day data/tokyonight-day.colors
 

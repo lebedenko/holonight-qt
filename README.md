@@ -27,11 +27,11 @@ This repository contains only the Qt theme implementation. The shell, icon theme
 Using `QT_QPA_PLATFORMTHEME=holonight` is the recommended activation method — it loads the style and QML layers automatically.
 
 KDE color schemes are also installed to `share/color-schemes`: `HoloNight Dark`, `HoloNight Light`,
-`TokyoNight Storm`, and `TokyoNight Day`.
+`HoloNight Mocha`, `HoloNight Latte`, `TokyoNight Storm`, and `TokyoNight Day`.
 
 ## Palette
 
-HoloNight ships a scheme catalog selected with `tokensForScheme(ThemeSchemeKind)`: **HoloNight Dark**, **HoloNight Light**, **TokyoNight Storm**, and **TokyoNight Day**. `appearance/scheme` is the canonical config selector; legacy `appearance/mode` is only used as a fallback when no valid scheme is present. All resolved colors and metrics originate in `palette/holonight/palette.h`, and downstream layers consume that token model rather than hard-coded color values.
+HoloNight ships a scheme catalog selected with `tokensForScheme(ThemeSchemeKind)`: **HoloNight Dark**, **HoloNight Light**, **HoloNight Mocha**, **HoloNight Latte**, **TokyoNight Storm**, and **TokyoNight Day**. `appearance/scheme` is the canonical config selector; legacy `appearance/mode` is only used as a fallback when no valid scheme is present. All resolved colors and metrics originate in `palette/holonight/palette.h`, and downstream layers consume that token model rather than hard-coded color values.
 
 The preferred public token roles are canonical names such as `background`, `surface`, `surfaceElevated`, `surfaceRaised`, `textPrimary`, `textMuted`, `borderPassive`, `borderActive`, and `borderFocus`. Older names such as `surfaceVariant`, `surfaceContainer`, `onSurface`, `outline`, and `textSubtle` remain available as deprecated compatibility aliases.
 
@@ -144,9 +144,9 @@ accent=cyan
 mode=dark
 ```
 
-Supported appearance schemes are `holonight-dark`, `holonight-light`, `tokyonight-storm`, and `tokyonight-day`.
+Supported appearance schemes are `holonight-dark`, `holonight-light`, `holonight-mocha`, `holonight-latte`, `tokyonight-storm`, and `tokyonight-day`.
 The `scheme` value is the canonical selector. `mode` remains supported as legacy fallback metadata: `light` resolves to `holonight-light`, while `dark`, `system`, missing, or invalid values resolve to `holonight-dark` when no valid `scheme` is present.
-When no valid `scheme` is configured and `HOLONIGHT_APPEARANCE_MODE` is not set, the loader also recognizes the active KDE color scheme from `~/.config/kdeglobals` for the four installed HoloNight/TokyoNight variants.
+When no valid `scheme` is configured and `HOLONIGHT_APPEARANCE_MODE` is not set, the loader also recognizes the active KDE color scheme from `~/.config/kdeglobals` for the installed HoloNight/TokyoNight variants.
 Supported accents are `cyan`, `blue`, `violet`, and `yellow`; missing or invalid accents resolve to `cyan`.
 
 `baseSize` is the body font size. Derived sizes are `caption = baseSize - 1`, `title = baseSize + 3`, and `heading = baseSize + 6`.

@@ -15,7 +15,7 @@ class ThemeResolver {
 
  private:
   [[nodiscard]] static ColorTokens resolveBase(ThemeSchemeKind scheme);
-  static void applyAccent(ColorTokens& tok, const QString& accent);
+  static void applyAccent(ColorTokens& tok, const QString& accent, ThemeSchemeKind scheme);
 };
 
 }  // namespace Holonight

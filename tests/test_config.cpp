@@ -193,6 +193,16 @@ TEST(ThemeConfig, ValidSchemeOverridesStaleMode) {
 
   EXPECT_EQ(config.resolvedThemeScheme(), Holonight::ThemeSchemeKind::HoloNightLight);
   EXPECT_EQ(config.resolvedColorMode(), Holonight::ColorMode::Light);
+
+  config.scheme = QStringLiteral("holonight-mocha");
+  config.appearance_mode = Holonight::AppearanceMode::Light;
+  EXPECT_EQ(config.resolvedThemeScheme(), Holonight::ThemeSchemeKind::HoloNightMocha);
+  EXPECT_EQ(config.resolvedColorMode(), Holonight::ColorMode::Dark);
+
+  config.scheme = QStringLiteral("holonight-latte");
+  config.appearance_mode = Holonight::AppearanceMode::Dark;
+  EXPECT_EQ(config.resolvedThemeScheme(), Holonight::ThemeSchemeKind::HoloNightLatte);
+  EXPECT_EQ(config.resolvedColorMode(), Holonight::ColorMode::Light);
 }
 
 TEST(ThemeConfig, ConfigFilePathPrefersIniOverLegacyJson) {
@@ -303,6 +313,30 @@ TEST(ThemeConfig, KdeActiveColorSchemeSuppliesMissingScheme) {
   EXPECT_EQ(config.scheme, QStringLiteral("tokyonight-storm"));
   EXPECT_EQ(config.resolvedThemeScheme(), Holonight::ThemeSchemeKind::TokyoNightStorm);
   EXPECT_EQ(config.resolvedColorMode(), Holonight::ColorMode::Dark);
+}
+
+TEST(ThemeConfig, KdeActiveColorSchemeRecognizesCatppuccinNames) {
+  EnvGuard configFileGuard = EnvGuard{"HOLONIGHT_CONFIG_FILE"};
+  EnvGuard appearanceGuard = EnvGuard{"HOLONIGHT_APPEARANCE_MODE"};
+  EnvGuard xdgConfigGuard = EnvGuard{"XDG_CONFIG_HOME"};
+  qunsetenv("HOLONIGHT_CONFIG_FILE");
+  qunsetenv("HOLONIGHT_APPEARANCE_MODE");
+
+  QTemporaryDir dir;
+  ASSERT_TRUE(dir.isValid());
+  qputenv("XDG_CONFIG_HOME", dir.path().toLocal8Bit());
+  writeFile(dir.filePath(QStringLiteral("kdeglobals")), "[General]\nColorScheme=HoloNight Mocha\n");
+
+  Holonight::ThemeConfig config = Holonight::ThemeConfig::load();
+  EXPECT_EQ(config.scheme, QStringLiteral("holonight-mocha"));
+  EXPECT_EQ(config.resolvedThemeScheme(), Holonight::ThemeSchemeKind::HoloNightMocha);
+  EXPECT_EQ(config.resolvedColorMode(), Holonight::ColorMode::Dark);
+
+  writeFile(dir.filePath(QStringLiteral("kdeglobals")), "[General]\nColorScheme=HoloNight Latte\n");
+  config = Holonight::ThemeConfig::load();
+  EXPECT_EQ(config.scheme, QStringLiteral("holonight-latte"));
+  EXPECT_EQ(config.resolvedThemeScheme(), Holonight::ThemeSchemeKind::HoloNightLatte);
+  EXPECT_EQ(config.resolvedColorMode(), Holonight::ColorMode::Light);
 }
 
 TEST(ThemeConfig, KdeActiveColorSchemeDoesNotOverrideExplicitConfigScheme) {

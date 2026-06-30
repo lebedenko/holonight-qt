@@ -41,14 +41,22 @@ Holonight::ThemeSchemeKind parseScheme(std::string_view value) {
   if (value == "holonight-light") {
     return Holonight::ThemeSchemeKind::HoloNightLight;
   }
+  if (value == "holonight-mocha") {
+    return Holonight::ThemeSchemeKind::HoloNightMocha;
+  }
+  if (value == "holonight-latte") {
+    return Holonight::ThemeSchemeKind::HoloNightLatte;
+  }
   if (value == "tokyonight-storm") {
     return Holonight::ThemeSchemeKind::TokyoNightStorm;
   }
   if (value == "tokyonight-day") {
     return Holonight::ThemeSchemeKind::TokyoNightDay;
   }
-  throw std::runtime_error{"invalid scheme '" + std::string{value} +
-                           "'; expected holonight-dark, holonight-light, tokyonight-storm, or tokyonight-day"};
+  throw std::runtime_error{
+      "invalid scheme '" + std::string{value} +
+      "'; expected holonight-dark, holonight-light, holonight-mocha, holonight-latte, tokyonight-storm, or "
+      "tokyonight-day"};
 }
 
 std::string schemeName(Holonight::ThemeSchemeKind scheme) {
@@ -57,6 +65,10 @@ std::string schemeName(Holonight::ThemeSchemeKind scheme) {
       return "HoloNight Dark";
     case Holonight::ThemeSchemeKind::HoloNightLight:
       return "HoloNight Light";
+    case Holonight::ThemeSchemeKind::HoloNightMocha:
+      return "HoloNight Mocha";
+    case Holonight::ThemeSchemeKind::HoloNightLatte:
+      return "HoloNight Latte";
     case Holonight::ThemeSchemeKind::TokyoNightStorm:
       return "TokyoNight Storm";
     case Holonight::ThemeSchemeKind::TokyoNightDay:
@@ -71,6 +83,10 @@ std::string schemeId(Holonight::ThemeSchemeKind scheme) {
       return "holonight-dark";
     case Holonight::ThemeSchemeKind::HoloNightLight:
       return "holonight-light";
+    case Holonight::ThemeSchemeKind::HoloNightMocha:
+      return "holonight-mocha";
+    case Holonight::ThemeSchemeKind::HoloNightLatte:
+      return "holonight-latte";
     case Holonight::ThemeSchemeKind::TokyoNightStorm:
       return "tokyonight-storm";
     case Holonight::ThemeSchemeKind::TokyoNightDay:

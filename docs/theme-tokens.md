@@ -7,15 +7,16 @@ The palette layer is the canonical source for resolved theme values. `Holonight:
 | Variant | Status | Dark | Light | Notes |
 | --- | --- | --- | --- | --- |
 | HoloNight Dark / Light | Implemented | Yes | Yes | Default HoloNight schemes selected by legacy mode fallback. |
+| HoloNight Mocha / Latte | Implemented | Yes | Yes | Catppuccin-based schemes selected by explicit scheme ID. |
 | TokyoNight Storm / Day | Implemented | Yes | Yes | Bundled Tokyo Night inspired compatibility schemes. |
 | Aurora | Planned | Planned | No | Nord inspired. Not parsed or exported yet. |
-| Mocha | Planned | Planned | No | Catppuccin inspired. Not parsed or exported yet. |
 | Ember | Planned | Planned | No | Warm dark variant. Not parsed or exported yet. |
 | Eclipse | Planned | Planned | No | Lower-chroma dark variant. Not parsed or exported yet. |
 | Neon | Planned | Planned | No | Higher-accent dark variant. Not parsed or exported yet. |
 
-Current scheme IDs are `holonight-dark`, `holonight-light`, `tokyonight-storm`, and `tokyonight-day`.
-`holonight-dark`, `holonight-light`, `tokyonight-storm`, and `tokyonight-day` resolve to distinct built-in token sets.
+Current scheme IDs are `holonight-dark`, `holonight-light`, `holonight-mocha`, `holonight-latte`,
+`tokyonight-storm`, and `tokyonight-day`.
+All current scheme IDs resolve to distinct built-in token sets.
 
 ## Canonical Roles
 
@@ -125,7 +126,8 @@ Current implemented precedence is:
 3. Environment value overrides such as `HOLONIGHT_APPEARANCE_MODE`, `HOLONIGHT_ICON_THEME`, `HOLONIGHT_FONT`, and `HOLONIGHT_SCALE_FACTOR`.
 
 Appearance scheme is configured with `appearance/scheme`. It is the canonical selector.
-Supported values are `holonight-dark`, `holonight-light`, `tokyonight-storm`, and `tokyonight-day`.
+Supported values are `holonight-dark`, `holonight-light`, `holonight-mocha`, `holonight-latte`,
+`tokyonight-storm`, and `tokyonight-day`.
 Values are trimmed and matched case-insensitively.
 
 Legacy `appearance/mode` remains fallback metadata for older configs. If `scheme` is missing or invalid, `mode=light` resolves to `holonight-light`; `mode=dark`, `mode=system`, missing, or invalid values resolve to `holonight-dark`.
@@ -161,7 +163,8 @@ HOLONIGHT_APPEARANCE_MODE=light
 ```
 
 Generated KDE schemes are `data/holonight-dark.colors` (`HoloNight Dark`),
-`data/holonight-light.colors` (`HoloNight Light`), `data/tokyonight-storm.colors` (`TokyoNight Storm`),
+`data/holonight-light.colors` (`HoloNight Light`), `data/holonight-mocha.colors` (`HoloNight Mocha`),
+`data/holonight-latte.colors` (`HoloNight Latte`), `data/tokyonight-storm.colors` (`TokyoNight Storm`),
 and `data/tokyonight-day.colors` (`TokyoNight Day`).
 
 Future shared config will use `~/.config/holonight/config.toml`, but TOML parsing is not implemented in this pass and no new dependency is introduced.

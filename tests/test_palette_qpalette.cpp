@@ -128,8 +128,8 @@ TEST_P(PaletteTest, LinkAndVisitedLinkUseCanonicalTokens) {
   EXPECT_EQ(palette_.color(QPalette::Active, QPalette::LinkVisited), tok.error);
 }
 
-INSTANTIATE_TEST_SUITE_P(AllSchemes, PaletteTest,
-                         ::testing::Values(Holonight::ThemeSchemeKind::HoloNightDark,
-                                           Holonight::ThemeSchemeKind::HoloNightLight,
-                                           Holonight::ThemeSchemeKind::TokyoNightStorm,
-                                           Holonight::ThemeSchemeKind::TokyoNightDay));
+INSTANTIATE_TEST_SUITE_P(
+    AllSchemes, PaletteTest,
+    ::testing::Values(Holonight::ThemeSchemeKind::HoloNightDark, Holonight::ThemeSchemeKind::HoloNightLight,
+                      Holonight::ThemeSchemeKind::HoloNightMocha, Holonight::ThemeSchemeKind::HoloNightLatte,
+                      Holonight::ThemeSchemeKind::TokyoNightStorm, Holonight::ThemeSchemeKind::TokyoNightDay));
