@@ -59,10 +59,16 @@ Holonight::ThemeSchemeKind parseScheme(std::string_view value) {
   if (value == "holonight-sol") {
     return Holonight::ThemeSchemeKind::HoloNightSol;
   }
+  if (value == "holonight-cyber-d") {
+    return Holonight::ThemeSchemeKind::HoloNightCyberD;
+  }
+  if (value == "holonight-cyber-l") {
+    return Holonight::ThemeSchemeKind::HoloNightCyberL;
+  }
   throw std::runtime_error{
       "invalid scheme '" + std::string{value} +
       "'; expected holonight-dark, holonight-light, holonight-mocha, holonight-latte, tokyonight-storm, "
-      "tokyonight-day, holonight-ember, or holonight-sol"};
+      "tokyonight-day, holonight-ember, holonight-sol, holonight-cyber-d, or holonight-cyber-l"};
 }
 
 std::string schemeName(Holonight::ThemeSchemeKind scheme) {
@@ -83,6 +89,10 @@ std::string schemeName(Holonight::ThemeSchemeKind scheme) {
       return "HoloNight Ember";
     case Holonight::ThemeSchemeKind::HoloNightSol:
       return "HoloNight Sol";
+    case Holonight::ThemeSchemeKind::HoloNightCyberD:
+      return "HoloNight Cyber D";
+    case Holonight::ThemeSchemeKind::HoloNightCyberL:
+      return "HoloNight Cyber L";
   }
   return "HoloNight Dark";
 }
@@ -105,6 +115,10 @@ std::string schemeId(Holonight::ThemeSchemeKind scheme) {
       return "holonight-ember";
     case Holonight::ThemeSchemeKind::HoloNightSol:
       return "holonight-sol";
+    case Holonight::ThemeSchemeKind::HoloNightCyberD:
+      return "holonight-cyber-d";
+    case Holonight::ThemeSchemeKind::HoloNightCyberL:
+      return "holonight-cyber-l";
   }
   return "holonight-dark";
 }

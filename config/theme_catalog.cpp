@@ -77,6 +77,20 @@ namespace {
        .mode = Holonight::ColorMode::Light,
        .default_accent_color = defaultAccentColor(Holonight::ThemeSchemeKind::HoloNightSol),
        .kde_color_scheme_name = QStringLiteral("HoloNight Sol")},
+      {.id = QStringLiteral("holonight-cyber-d"),
+       .name = QStringLiteral("HoloNight Cyber D"),
+       .family_id = QStringLiteral("cyber"),
+       .scheme = Holonight::ThemeSchemeKind::HoloNightCyberD,
+       .mode = Holonight::ColorMode::Dark,
+       .default_accent_color = defaultAccentColor(Holonight::ThemeSchemeKind::HoloNightCyberD),
+       .kde_color_scheme_name = QStringLiteral("HoloNight Cyber D")},
+      {.id = QStringLiteral("holonight-cyber-l"),
+       .name = QStringLiteral("HoloNight Cyber L"),
+       .family_id = QStringLiteral("cyber"),
+       .scheme = Holonight::ThemeSchemeKind::HoloNightCyberL,
+       .mode = Holonight::ColorMode::Light,
+       .default_accent_color = defaultAccentColor(Holonight::ThemeSchemeKind::HoloNightCyberL),
+       .kde_color_scheme_name = QStringLiteral("HoloNight Cyber L")},
   };
   return entries;
 }
@@ -99,6 +113,9 @@ const QVector<ThemeFamilyCatalogEntry>& themeFamilies() {
       {.id = QStringLiteral("gruvbox"),
        .name = QStringLiteral("Gruvbox"),
        .variant_ids = {QStringLiteral("holonight-ember"), QStringLiteral("holonight-sol")}},
+      {.id = QStringLiteral("cyber"),
+       .name = QStringLiteral("Cyber"),
+       .variant_ids = {QStringLiteral("holonight-cyber-d"), QStringLiteral("holonight-cyber-l")}},
   };
   return entries;
 }

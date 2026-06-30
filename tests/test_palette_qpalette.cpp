@@ -132,4 +132,6 @@ INSTANTIATE_TEST_SUITE_P(
     AllSchemes, PaletteTest,
     ::testing::Values(Holonight::ThemeSchemeKind::HoloNightDark, Holonight::ThemeSchemeKind::HoloNightLight,
                       Holonight::ThemeSchemeKind::HoloNightMocha, Holonight::ThemeSchemeKind::HoloNightLatte,
-                      Holonight::ThemeSchemeKind::TokyoNightStorm, Holonight::ThemeSchemeKind::TokyoNightDay));
+                      Holonight::ThemeSchemeKind::TokyoNightStorm, Holonight::ThemeSchemeKind::TokyoNightDay,
+                      Holonight::ThemeSchemeKind::HoloNightEmber, Holonight::ThemeSchemeKind::HoloNightSol,
+                      Holonight::ThemeSchemeKind::HoloNightCyberD, Holonight::ThemeSchemeKind::HoloNightCyberL));

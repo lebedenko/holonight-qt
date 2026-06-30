@@ -39,4 +39,12 @@ if(BUILD_TESTS)
         NAME generated_holonight_sol_colors_current
         COMMAND generate_holonight_colors --scheme holonight-sol --check ${CMAKE_SOURCE_DIR}/data/holonight-sol.colors
     )
+    add_test(
+        NAME generated_holonight_cyber_d_colors_current
+        COMMAND generate_holonight_colors --scheme holonight-cyber-d --check ${CMAKE_SOURCE_DIR}/data/holonight-cyber-d.colors
+    )
+    add_test(
+        NAME generated_holonight_cyber_l_colors_current
+        COMMAND generate_holonight_colors --scheme holonight-cyber-l --check ${CMAKE_SOURCE_DIR}/data/holonight-cyber-l.colors
+    )
 endif()

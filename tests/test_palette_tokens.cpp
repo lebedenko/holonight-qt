@@ -537,4 +537,77 @@ TEST(SchemeCatalog, SchemesDifferWithinSameMode) {
             Holonight::tokensForScheme(Holonight::ThemeSchemeKind::HoloNightLatte));
   EXPECT_NE(Holonight::tokensForScheme(Holonight::ThemeSchemeKind::TokyoNightDay),
             Holonight::tokensForScheme(Holonight::ThemeSchemeKind::HoloNightLatte));
+  EXPECT_NE(Holonight::tokensForScheme(Holonight::ThemeSchemeKind::HoloNightDark),
+            Holonight::tokensForScheme(Holonight::ThemeSchemeKind::HoloNightCyberD));
+  EXPECT_NE(Holonight::tokensForScheme(Holonight::ThemeSchemeKind::HoloNightLight),
+            Holonight::tokensForScheme(Holonight::ThemeSchemeKind::HoloNightCyberL));
 }
+
+TEST(SchemeCatalog, CyberDMatchesFileValues) {
+  const Holonight::ColorTokens tok = Holonight::tokensForScheme(Holonight::ThemeSchemeKind::HoloNightCyberD);
+  EXPECT_EQ(tok.background, QColor(QStringLiteral("#080B12")));
+  EXPECT_EQ(tok.surface, QColor(QStringLiteral("#0B0F17")));
+  EXPECT_EQ(tok.surfaceElevated, QColor(QStringLiteral("#11161F")));
+  EXPECT_EQ(tok.surfaceRaised, QColor(QStringLiteral("#1A2031")));
+  EXPECT_EQ(tok.surfaceHover, QColor(QStringLiteral("#151B2B")));
+  EXPECT_EQ(tok.textPrimary, QColor(QStringLiteral("#E6ECFF")));
+  EXPECT_EQ(tok.textSecondary, QColor(QStringLiteral("#A0A8C8")));
+  EXPECT_EQ(tok.textMuted, QColor(QStringLiteral("#6B7596")));
+  EXPECT_EQ(tok.textDisabled, QColor(QStringLiteral("#424A63")));
+  EXPECT_EQ(tok.primary, QColor(QStringLiteral("#39D5FF")));
+  EXPECT_EQ(tok.primaryHover, QColor(QStringLiteral("#6BE4FF")));
+  EXPECT_EQ(tok.primaryPressed, QColor(QStringLiteral("#1FAEDB")));
+  EXPECT_EQ(tok.borderFocus, QColor(QStringLiteral("#00E1FF")));
+  EXPECT_EQ(tok.error, QColor(QStringLiteral("#F92838")));
+  EXPECT_EQ(tok.warning, QColor(QStringLiteral("#FEA257")));
+  EXPECT_EQ(tok.success, QColor(QStringLiteral("#10E169")));
+  EXPECT_EQ(tok.accentCyan, QColor(QStringLiteral("#39D5FF")));
+  EXPECT_EQ(tok.accentBlue, QColor(QStringLiteral("#6B4FE8")));
+  EXPECT_EQ(tok.accentViolet, QColor(QStringLiteral("#B26CFF")));
+  EXPECT_EQ(tok.accentYellow, QColor(QStringLiteral("#F4C56B")));
+}
+
+TEST(SchemeCatalog, CyberLMatchesFileValues) {
+  const Holonight::ColorTokens tok = Holonight::tokensForScheme(Holonight::ThemeSchemeKind::HoloNightCyberL);
+  EXPECT_EQ(tok.background, QColor(QStringLiteral("#EEF1F8")));
+  EXPECT_EQ(tok.surface, QColor(QStringLiteral("#FFFFFF")));
+  EXPECT_EQ(tok.surfaceElevated, QColor(QStringLiteral("#F4F6FC")));
+  EXPECT_EQ(tok.surfaceRaised, QColor(QStringLiteral("#E6EAF4")));
+  EXPECT_EQ(tok.surfaceHover, QColor(QStringLiteral("#DCE2F0")));
+  EXPECT_EQ(tok.textPrimary, QColor(QStringLiteral("#1A2138")));
+  EXPECT_EQ(tok.textSecondary, QColor(QStringLiteral("#4A5578")));
+  EXPECT_EQ(tok.textMuted, QColor(QStringLiteral("#7A85A8")));
+  EXPECT_EQ(tok.textDisabled, QColor(QStringLiteral("#AEB6CE")));
+  EXPECT_EQ(tok.primary, QColor(QStringLiteral("#0E9BD6")));
+  EXPECT_EQ(tok.primaryHover, QColor(QStringLiteral("#12B4F2")));
+  EXPECT_EQ(tok.primaryPressed, QColor(QStringLiteral("#0A7AAA")));
+  EXPECT_EQ(tok.borderFocus, QColor(QStringLiteral("#008FC4")));
+  EXPECT_EQ(tok.error, QColor(QStringLiteral("#E11D48")));
+  EXPECT_EQ(tok.warning, QColor(QStringLiteral("#C2710C")));
+  EXPECT_EQ(tok.success, QColor(QStringLiteral("#0E9C56")));
+  EXPECT_EQ(tok.accentCyan, QColor(QStringLiteral("#0E9BD6")));
+  EXPECT_EQ(tok.accentBlue, QColor(QStringLiteral("#5538D6")));
+  EXPECT_EQ(tok.accentViolet, QColor(QStringLiteral("#8B3FE0")));
+  EXPECT_EQ(tok.accentYellow, QColor(QStringLiteral("#B8862A")));
+}
+
+TEST(SchemeCatalog, CyberAliasesMatchCanonicalRoles) {
+  for (const Holonight::ThemeSchemeKind scheme :
+       {Holonight::ThemeSchemeKind::HoloNightCyberD, Holonight::ThemeSchemeKind::HoloNightCyberL}) {
+    const Holonight::ColorTokens tok = Holonight::tokensForScheme(scheme);
+    EXPECT_EQ(tok.surfaceVariant, tok.surface);
+    EXPECT_EQ(tok.surfaceContainer, tok.surfaceElevated);
+    EXPECT_EQ(tok.onSurface, tok.textPrimary);
+    EXPECT_EQ(tok.onSurfaceVariant, tok.textMuted);
+    EXPECT_EQ(tok.onSurfaceDisabled, tok.textDisabled);
+    EXPECT_EQ(tok.onSurfaceInverse, tok.textInverse);
+    EXPECT_EQ(tok.secondary, tok.surfaceRaised);
+    EXPECT_EQ(tok.onSecondary, tok.textPrimary);
+    EXPECT_EQ(tok.hover, tok.hoverOverlay);
+    EXPECT_EQ(tok.pressed, tok.pressedOverlay);
+    EXPECT_EQ(tok.textSubtle, tok.textSecondary);
+    EXPECT_EQ(tok.ansi0, tok.ansiBlack);
+    EXPECT_EQ(tok.ansi15, tok.ansiBrightWhite);
+  }
+}
+

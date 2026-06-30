@@ -22,6 +22,8 @@ enum class ThemeSchemeKind {
   TokyoNightDay,
   HoloNightEmber,
   HoloNightSol,
+  HoloNightCyberD,
+  HoloNightCyberL,
 };
 
 struct ColorTokens {

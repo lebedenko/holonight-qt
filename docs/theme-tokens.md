@@ -10,12 +10,13 @@ The palette layer is the canonical source for resolved theme values. `Holonight:
 | HoloNight Mocha / Latte | Implemented | Yes | Yes | Catppuccin-based schemes selected by explicit scheme ID. |
 | TokyoNight Storm / Day | Implemented | Yes | Yes | Bundled Tokyo Night inspired compatibility schemes. |
 | HoloNight Ember / Sol | Implemented | Yes | Yes | Gruvbox-based high contrast schemes. |
+| HoloNight Cyber D / L | Implemented | Yes | Yes | Cyberpunk-inspired neon schemes from palette.cpp. |
 | Aurora | Planned | Planned | No | Nord inspired. Not parsed or exported yet. |
 | Eclipse | Planned | Planned | No | Lower-chroma dark variant. Not parsed or exported yet. |
 | Neon | Planned | Planned | No | Higher-accent dark variant. Not parsed or exported yet. |
 
 Current scheme IDs are `holonight-dark`, `holonight-light`, `holonight-mocha`, `holonight-latte`,
-`tokyonight-storm`, `tokyonight-day`, `holonight-ember`, and `holonight-sol`.
+`tokyonight-storm`, `tokyonight-day`, `holonight-ember`, `holonight-sol`, `holonight-cyber-d`, and `holonight-cyber-l`.
 All current scheme IDs resolve to distinct built-in token sets.
 
 ## Canonical Roles
@@ -127,7 +128,7 @@ Current implemented precedence is:
 
 Appearance scheme is configured with `appearance/scheme`. It is the canonical selector.
 Supported values are `holonight-dark`, `holonight-light`, `holonight-mocha`, `holonight-latte`,
-`tokyonight-storm`, and `tokyonight-day`.
+`tokyonight-storm`, `tokyonight-day`, `holonight-ember`, `holonight-sol`, `holonight-cyber-d`, and `holonight-cyber-l`.
 Values are trimmed and matched case-insensitively.
 
 Legacy `appearance/mode` remains fallback metadata for older configs. If `scheme` is missing or invalid, `mode=light` resolves to `holonight-light`; `mode=dark`, `mode=system`, missing, or invalid values resolve to `holonight-dark`.
@@ -165,7 +166,9 @@ HOLONIGHT_APPEARANCE_MODE=light
 Generated KDE schemes are `data/holonight-dark.colors` (`HoloNight Dark`),
 `data/holonight-light.colors` (`HoloNight Light`), `data/holonight-mocha.colors` (`HoloNight Mocha`),
 `data/holonight-latte.colors` (`HoloNight Latte`), `data/tokyonight-storm.colors` (`TokyoNight Storm`),
-and `data/tokyonight-day.colors` (`TokyoNight Day`).
+`data/tokyonight-day.colors` (`TokyoNight Day`), `data/holonight-ember.colors` (`HoloNight Ember`),
+`data/holonight-sol.colors` (`HoloNight Sol`), `data/holonight-cyber-d.colors` (`HoloNight Cyber D`),
+and `data/holonight-cyber-l.colors` (`HoloNight Cyber L`).
 
 Future shared config will use `~/.config/holonight/config.toml`, but TOML parsing is not implemented in this pass and no new dependency is introduced.
 

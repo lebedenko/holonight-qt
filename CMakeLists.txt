@@ -48,6 +48,8 @@ install(FILES
     data/tokyonight-day.colors
     data/holonight-ember.colors
     data/holonight-sol.colors
+    data/holonight-cyber-d.colors
+    data/holonight-cyber-l.colors
     DESTINATION share/color-schemes
 )
 

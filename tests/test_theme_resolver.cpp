@@ -318,6 +318,10 @@ TEST(ThemeResolver, SchemesResolveToConcreteCatalogEntries) {
       makeConfig(Holonight::AppearanceMode::Light, QStringLiteral("cyan"), QStringLiteral("holonight-ember")));
   const Holonight::ColorTokens holonightSol = Holonight::ThemeResolver::resolve(
       makeConfig(Holonight::AppearanceMode::Dark, QStringLiteral("cyan"), QStringLiteral("holonight-sol")));
+  const Holonight::ColorTokens holonightCyberD = Holonight::ThemeResolver::resolve(
+      makeConfig(Holonight::AppearanceMode::Light, QStringLiteral("cyan"), QStringLiteral("holonight-cyber-d")));
+  const Holonight::ColorTokens holonightCyberL = Holonight::ThemeResolver::resolve(
+      makeConfig(Holonight::AppearanceMode::Dark, QStringLiteral("cyan"), QStringLiteral("holonight-cyber-l")));
 
   EXPECT_EQ(holonightDark.background, Holonight::tokensForScheme(Holonight::ThemeSchemeKind::HoloNightDark).background);
   EXPECT_EQ(tokyoStorm.background, Holonight::tokensForScheme(Holonight::ThemeSchemeKind::TokyoNightStorm).background);
@@ -331,12 +335,30 @@ TEST(ThemeResolver, SchemesResolveToConcreteCatalogEntries) {
   EXPECT_EQ(holonightEmber.background,
             Holonight::tokensForScheme(Holonight::ThemeSchemeKind::HoloNightEmber).background);
   EXPECT_EQ(holonightSol.background, Holonight::tokensForScheme(Holonight::ThemeSchemeKind::HoloNightSol).background);
+  EXPECT_EQ(holonightCyberD.background, Holonight::tokensForScheme(Holonight::ThemeSchemeKind::HoloNightCyberD).background);
+  EXPECT_EQ(holonightCyberL.background, Holonight::tokensForScheme(Holonight::ThemeSchemeKind::HoloNightCyberL).background);
   EXPECT_NE(holonightDark.background, tokyoStorm.background);
   EXPECT_NE(holonightDark.background, holonightMocha.background);
   EXPECT_NE(tokyoStorm.background, holonightMocha.background);
   EXPECT_NE(holonightLight.background, tokyoDay.background);
   EXPECT_NE(holonightLight.background, holonightLatte.background);
   EXPECT_NE(tokyoDay.background, holonightLatte.background);
+  EXPECT_NE(holonightDark.background, holonightCyberD.background);
+  EXPECT_NE(holonightLight.background, holonightCyberL.background);
+}
+
+TEST(ThemeResolver, CyberAccentCyanUsesSchemeNativeColors) {
+  const Holonight::ColorTokens cyberD = Holonight::ThemeResolver::resolve(
+      makeConfig(Holonight::AppearanceMode::Light, QStringLiteral("cyan"), QStringLiteral("holonight-cyber-d")));
+  EXPECT_EQ(cyberD.primary, QColor(QStringLiteral("#39D5FF")));
+  EXPECT_EQ(cyberD.primaryHover, QColor(QStringLiteral("#6BE4FF")));
+  EXPECT_EQ(cyberD.primaryPressed, QColor(QStringLiteral("#1FAEDB")));
+
+  const Holonight::ColorTokens cyberL = Holonight::ThemeResolver::resolve(
+      makeConfig(Holonight::AppearanceMode::Dark, QStringLiteral("cyan"), QStringLiteral("holonight-cyber-l")));
+  EXPECT_EQ(cyberL.primary, QColor(QStringLiteral("#0E9BD6")));
+  EXPECT_EQ(cyberL.primaryHover, QColor(QStringLiteral("#12B4F2")));
+  EXPECT_EQ(cyberL.primaryPressed, QColor(QStringLiteral("#0A7AAA")));
 }
 
 TEST(ThemeResolver, GruvboxAccentCyanUsesSchemeNativeColors) {
