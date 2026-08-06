@@ -1,0 +1,16 @@
+set(holonight_qml_install_dir "@QT6_INSTALL_QML@")
+if(IS_ABSOLUTE "${holonight_qml_install_dir}")
+  set(holonight_effective_qml_root "$ENV{DESTDIR}${holonight_qml_install_dir}")
+else()
+  set(holonight_effective_qml_root "$ENV{DESTDIR}${CMAKE_INSTALL_PREFIX}/${holonight_qml_install_dir}")
+endif()
+
+set(holonight_legacy_qml_dir "${holonight_effective_qml_root}/holonight")
+if(EXISTS "${holonight_legacy_qml_dir}")
+  message(WARNING
+    "Stale lowercase HoloNight QML module detected at ${holonight_legacy_qml_dir}. "
+    "The supported case-sensitive module is Holonight and will be installed at "
+    "${holonight_effective_qml_root}/Holonight. The stale tree can shadow or confuse QML module "
+    "discovery; inspect it and remove it manually when safe. This installer will not modify it."
+  )
+endif()

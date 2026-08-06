@@ -1,0 +1,83 @@
+// SPDX-License-Identifier: GPL-3.0-or-later
+// SPDX-FileCopyrightText: 2026 Andrii L <lebeden@gmail.com>
+
+#pragma once
+
+#include "holonight/config.h"
+#include "holonight/palette.h"
+
+#include <QFileSystemWatcher>
+#include <QProxyStyle>
+
+#include <cstdint>
+
+class HoloniightStyle : public QProxyStyle {
+  Q_OBJECT
+ public:
+  explicit HoloniightStyle();
+  Q_DISABLE_COPY_MOVE(HoloniightStyle)
+
+  void polish(QPalette& palette) override;
+  void polish(QWidget* widget) override;
+
+  void drawControl(ControlElement element, const QStyleOption* option, QPainter* painter,
+                   const QWidget* widget = nullptr) const override;
+
+  void drawPrimitive(PrimitiveElement element, const QStyleOption* option, QPainter* painter,
+                     const QWidget* widget = nullptr) const override;
+
+  void drawComplexControl(ComplexControl control, const QStyleOptionComplex* option, QPainter* painter,
+                          const QWidget* widget = nullptr) const override;
+
+  [[nodiscard]] QRect subControlRect(ComplexControl control, const QStyleOptionComplex* option, SubControl subControl,
+                                     const QWidget* widget = nullptr) const override;
+
+  [[nodiscard]] QSize sizeFromContents(ContentsType type, const QStyleOption* option, const QSize& size,
+                                       const QWidget* widget = nullptr) const override;
+
+  [[nodiscard]] QRect subElementRect(SubElement element, const QStyleOption* option,
+                                     const QWidget* widget = nullptr) const override;
+
+  int pixelMetric(PixelMetric metric, const QStyleOption* option = nullptr,
+                  const QWidget* widget = nullptr) const override;
+
+  [[nodiscard]] QPalette standardPalette() const override;
+
+ private:
+  [[nodiscard]] int scaledMetric(int value) const;
+  void armThemeConfigWatch();
+  void reloadTheme();
+  void onThemeConfigPathChanged(const QString& path);
+
+  enum class ArrowDirection : uint8_t {
+    Down,
+    Up,
+    Left,
+    Right,
+  };
+
+  static void paintArrow(QPainter* painter, const QRect& rect, ArrowDirection direction, const QColor& color);
+
+  [[nodiscard]] const Holonight::ColorTokens& tokens() const;
+
+  void drawPushButtonBevelImpl(const QStyleOption* option, QPainter* painter) const;
+  void drawItemViewItemImpl(const QStyleOption* option, QPainter* painter, const QWidget* widget) const;
+  void drawCheckBoxImpl(const QStyleOption* option, QPainter* painter, const QWidget* widget) const;
+  void drawRadioButtonImpl(const QStyleOption* option, QPainter* painter, const QWidget* widget) const;
+  void drawTabBarTabImpl(const QStyleOption* option, QPainter* painter, const QWidget* widget) const;
+  void drawHeaderImpl(const QStyleOption* option, QPainter* painter, const QWidget* widget) const;
+  void drawPanelButtonImpl(const QStyleOption* option, QPainter* painter) const;
+  void drawPanelItemViewImpl(const QStyleOption* option, QPainter* painter) const;
+  void drawScrollBarImpl(const QStyleOptionComplex* option, QPainter* painter, const QWidget* widget) const;
+  void drawSliderImpl(const QStyleOption* option, QPainter* painter, const QWidget* widget) const;
+  void drawSpinBoxImpl(const QStyleOption* option, QPainter* painter, const QWidget* widget) const;
+  void drawToolButtonImpl(const QStyleOption* option, QPainter* painter, const QWidget* widget) const;
+  void drawGroupBoxImpl(const QStyleOption* option, QPainter* painter, const QWidget* widget) const;
+
+  Holonight::ThemeConfig config_;
+  Holonight::ColorTokens tokens_;
+  QPalette palette_;
+  QString theme_config_path_;
+  QString theme_config_dir_path_;
+  QFileSystemWatcher theme_config_watcher_;
+};

@@ -1,0 +1,40 @@
+set(test_root "@CMAKE_CURRENT_BINARY_DIR@/qml-import-policy-test")
+file(REMOVE_RECURSE "${test_root}")
+file(MAKE_DIRECTORY "${test_root}/positive" "${test_root}/negative")
+
+file(WRITE "${test_root}/positive/Runtime.qml"
+  "import QtQuick.Controls\nButton { text: \"runtime\" }\n")
+file(WRITE "${test_root}/positive/Explicit.qml"
+  "import Holonight\nButton { text: \"compile-time\" }\n")
+file(WRITE "${test_root}/positive/Basic.qml"
+  "import QtQuick.Controls.Basic as Basic\nBasic.Button { text: \"basic\" }\n")
+
+execute_process(
+  COMMAND bash "@CMAKE_SOURCE_DIR@/scripts/check-qml-import-policy.sh" "${test_root}/positive"
+  RESULT_VARIABLE positive_result
+  OUTPUT_VARIABLE positive_output
+  ERROR_VARIABLE positive_error
+)
+if(NOT positive_result EQUAL 0)
+  message(FATAL_ERROR "Valid QML import-policy fixtures failed:\n${positive_output}\n${positive_error}")
+endif()
+
+file(WRITE "${test_root}/negative/Missing.qml" "import QtQuick\nButton {}\n")
+file(WRITE "${test_root}/negative/Parent.qml" "import Holonight\nItem {}\n")
+file(WRITE "${test_root}/negative/Child.qml" "import QtQuick\nButton {}\n")
+
+execute_process(
+  COMMAND bash "@CMAKE_SOURCE_DIR@/scripts/check-qml-import-policy.sh" "${test_root}/negative"
+  RESULT_VARIABLE negative_result
+  OUTPUT_VARIABLE negative_output
+  ERROR_VARIABLE negative_error
+)
+if(negative_result EQUAL 0)
+  message(FATAL_ERROR "Invalid QML import-policy fixtures unexpectedly passed")
+endif()
+foreach(expected "Missing.qml" "Parent.qml" "Child.qml")
+  string(FIND "${negative_error}" "${expected}" expected_index)
+  if(expected_index EQUAL -1)
+    message(FATAL_ERROR "Import-policy failure did not identify ${expected}:\n${negative_error}")
+  endif()
+endforeach()

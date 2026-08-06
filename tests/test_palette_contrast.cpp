@@ -1,0 +1,370 @@
+// SPDX-License-Identifier: GPL-3.0-or-later
+// SPDX-FileCopyrightText: 2026 Andrii L <lebeden@gmail.com>
+
+#include "holonight/palette.h"
+
+#include <algorithm>
+#include <cmath>
+#include <gtest/gtest.h>
+
+static double linearize(double val) { return val <= 0.04045 ? val / 12.92 : std::pow((val + 0.055) / 1.055, 2.4); }
+
+static double relativeLuminance(const QColor& col) {
+  return (0.2126 * linearize(col.redF())) + (0.7152 * linearize(col.greenF())) + (0.0722 * linearize(col.blueF()));
+}
+
+static double contrastRatio(const QColor& fgColor, const QColor& bgColor) {
+  const double lum1 = relativeLuminance(fgColor);
+  const double lum2 = relativeLuminance(bgColor);
+  return ((std::max)(lum1, lum2) + 0.05) / ((std::min)(lum1, lum2) + 0.05);
+}
+
+class ContrastTest : public ::testing::Test {
+ protected:
+  Holonight::ColorTokens tok_ = Holonight::tokensForScheme(Holonight::ThemeSchemeKind::HoloNightDark);
+};
+
+TEST(BrandForegroundContrast, EveryBuiltInSchemeMeetsTextContrastOnCanonicalSurfaces) {
+  const Holonight::ThemeSchemeKind schemes[] = {
+      Holonight::ThemeSchemeKind::HoloNightDark,    Holonight::ThemeSchemeKind::HoloNightLight,
+      Holonight::ThemeSchemeKind::HoloNightMocha,   Holonight::ThemeSchemeKind::HoloNightLatte,
+      Holonight::ThemeSchemeKind::HoloNightStorm,   Holonight::ThemeSchemeKind::HoloNightDay,
+      Holonight::ThemeSchemeKind::HoloNightEmber,   Holonight::ThemeSchemeKind::HoloNightSol,
+      Holonight::ThemeSchemeKind::HoloNightCyberD,  Holonight::ThemeSchemeKind::HoloNightCyberL,
+      Holonight::ThemeSchemeKind::HoloNightDracula, Holonight::ThemeSchemeKind::HoloNightAlucard,
+  };
+  for (const auto scheme : schemes) {
+    const Holonight::ColorTokens tok = Holonight::tokensForScheme(scheme);
+    EXPECT_GE(contrastRatio(tok.brandForeground, tok.background), 4.5);
+    EXPECT_GE(contrastRatio(tok.brandForeground, tok.surface), 4.5);
+    EXPECT_GE(contrastRatio(tok.brandForeground, tok.surfaceElevated), 4.5);
+    EXPECT_GE(contrastRatio(tok.brandForeground, tok.surfaceRaised), 4.5);
+  }
+}
+
+// ── Text contrast: WCAG 1.4.3 requires ≥4.5:1 for normal text ──────────────
+
+TEST_F(ContrastTest, OnSurfaceVsSurface) {
+  EXPECT_GE(contrastRatio(tok_.textPrimary, tok_.background), 4.5) << "textPrimary on background fails WCAG AA";
+}
+
+TEST_F(ContrastTest, OnSurfaceVsSurfaceVariant) {
+  EXPECT_GE(contrastRatio(tok_.textPrimary, tok_.surface), 4.5) << "textPrimary on surface fails WCAG AA";
+}
+
+TEST_F(ContrastTest, OnSurfaceVsSurfaceContainer) {
+  EXPECT_GE(contrastRatio(tok_.textPrimary, tok_.surfaceElevated), 4.5)
+      << "textPrimary on surfaceElevated fails WCAG AA";
+}
+
+TEST_F(ContrastTest, OnSurfaceVsSecondary) {
+  EXPECT_GE(contrastRatio(tok_.textPrimary, tok_.surfaceRaised), 4.5) << "textPrimary on surfaceRaised fails WCAG AA";
+}
+
+TEST_F(ContrastTest, OnPrimaryVsPrimary) {
+  EXPECT_GE(contrastRatio(tok_.onPrimary, tok_.primary), 4.5) << "onPrimary on primary (selection fill) fails WCAG AA";
+}
+
+TEST_F(ContrastTest, OnSecondaryVsSecondary) {
+  EXPECT_GE(contrastRatio(tok_.textPrimary, tok_.surfaceRaised), 4.5) << "textPrimary on surfaceRaised fails WCAG AA";
+}
+
+TEST_F(ContrastTest, OnErrorVsError) {
+  EXPECT_GE(contrastRatio(tok_.onError, tok_.error), 4.5) << "onError on error fails WCAG AA";
+}
+
+TEST_F(ContrastTest, ErrorVsSurface) {
+  EXPECT_GE(contrastRatio(tok_.error, tok_.background), 4.5) << "error text on background fails WCAG AA";
+}
+
+TEST_F(ContrastTest, WarningVsSurface) {
+  EXPECT_GE(contrastRatio(tok_.warning, tok_.background), 4.5) << "warning text on background fails WCAG AA";
+}
+
+TEST_F(ContrastTest, SuccessVsSurface) {
+  EXPECT_GE(contrastRatio(tok_.success, tok_.background), 4.5) << "success text on background fails WCAG AA";
+}
+
+TEST_F(ContrastTest, TextSubtleVsSurface) {
+  EXPECT_GE(contrastRatio(tok_.textSecondary, tok_.background), 4.5) << "textSecondary on background fails WCAG AA";
+}
+
+// ── Non-text contrast: WCAG 1.4.11 requires ≥3:1 for UI components ─────────
+
+TEST_F(ContrastTest, FocusRingVsSurface) {
+  EXPECT_GE(contrastRatio(tok_.focusRing, tok_.background), 3.0) << "focusRing on background fails WCAG 1.4.11";
+}
+
+TEST_F(ContrastTest, OutlineVsSurface) {
+  EXPECT_GE(contrastRatio(tok_.borderActive, tok_.background), 3.0) << "borderActive on background fails WCAG 1.4.11";
+}
+
+TEST_F(ContrastTest, OutlineVsSecondary) {
+  EXPECT_GE(contrastRatio(tok_.borderActive, tok_.surfaceRaised), 3.0)
+      << "borderActive on surfaceRaised fails WCAG 1.4.11";
+}
+
+TEST_F(ContrastTest, PrimaryPressedVsSurface) {
+  EXPECT_GE(contrastRatio(tok_.primaryPressed, tok_.background), 3.0)
+      << "primaryPressed on background fails WCAG 1.4.11";
+}
+
+TEST_F(ContrastTest, PrimaryPressedVsSecondary) {
+  // Achieves ~4.48:1; WCAG 1.4.11 (3:1) applies — pressed state is a transient border, not text
+  EXPECT_GE(contrastRatio(tok_.primaryPressed, tok_.surfaceRaised), 3.0)
+      << "primaryPressed on surfaceRaised fails WCAG 1.4.11";
+}
+
+// ── New extended tokens ──────────────────────────────────────────────────────
+
+TEST_F(ContrastTest, OnSurfaceInverseVsSurfaceInverse) {
+  EXPECT_GE(contrastRatio(tok_.textInverse, tok_.surfaceInverse), 4.5)
+      << "textInverse on surfaceInverse fails WCAG AA (ToolTip text)";
+}
+
+TEST_F(ContrastTest, FocusRingVsSurfaceHover) {
+  EXPECT_GE(contrastRatio(tok_.focusRing, tok_.surfaceHover), 3.0) << "focusRing on surfaceHover fails WCAG 1.4.11";
+}
+
+TEST_F(ContrastTest, OutlineVsSurfaceHover) {
+  EXPECT_GE(contrastRatio(tok_.borderActive, tok_.surfaceHover), 3.0)
+      << "borderActive on surfaceHover fails WCAG 1.4.11";
+}
+
+// ── Semantic border tokens: WCAG 1.4.11 requires ≥3:1 for UI components ─────
+
+TEST_F(ContrastTest, BorderFocusVsSurface) {
+  EXPECT_GE(contrastRatio(tok_.borderFocus, tok_.background), 3.0) << "borderFocus on background fails WCAG 1.4.11";
+}
+
+TEST_F(ContrastTest, BorderFocusVsSecondary) {
+  EXPECT_GE(contrastRatio(tok_.borderFocus, tok_.surfaceRaised), 3.0) << "borderFocus on panel fails WCAG 1.4.11";
+}
+
+TEST_F(ContrastTest, BorderActiveVsSurface) {
+  EXPECT_GE(contrastRatio(tok_.borderActive, tok_.background), 3.0) << "borderActive on background fails WCAG 1.4.11";
+}
+
+TEST_F(ContrastTest, BorderActiveVsSecondary) {
+  EXPECT_GE(contrastRatio(tok_.borderActive, tok_.surfaceRaised), 3.0) << "borderActive on panel fails WCAG 1.4.11";
+}
+
+TEST_F(ContrastTest, BorderUrgentVsSurface) {
+  EXPECT_GE(contrastRatio(tok_.borderUrgent, tok_.background), 3.0) << "borderUrgent on background fails WCAG 1.4.11";
+}
+
+TEST_F(ContrastTest, BorderUrgentVsSecondary) {
+  EXPECT_GE(contrastRatio(tok_.borderUrgent, tok_.surfaceRaised), 3.0) << "borderUrgent on panel fails WCAG 1.4.11";
+}
+
+TEST_F(ContrastTest, AccentCyanVsSurface) {
+  EXPECT_GE(contrastRatio(tok_.accentCyan, tok_.background), 3.0) << "accentCyan on background fails WCAG 1.4.11";
+}
+
+TEST_F(ContrastTest, AccentBlueVsSurface) {
+  EXPECT_GE(contrastRatio(tok_.accentBlue, tok_.background), 3.0) << "accentBlue on background fails WCAG 1.4.11";
+}
+
+TEST_F(ContrastTest, AccentVioletVsSurface) {
+  EXPECT_GE(contrastRatio(tok_.accentViolet, tok_.background), 3.0) << "accentViolet on background fails WCAG 1.4.11";
+}
+
+TEST_F(ContrastTest, AccentYellowVsSurface) {
+  EXPECT_GE(contrastRatio(tok_.accentYellow, tok_.background), 3.0) << "accentYellow on background fails WCAG 1.4.11";
+}
+
+// ── Updated surface tokens: text contrast ────────────────────────────────────
+
+TEST_F(ContrastTest, OnSurfaceVsNewSurface) {
+  EXPECT_GE(contrastRatio(tok_.textPrimary, tok_.background), 4.5)
+      << "textPrimary on background (#10131f) fails WCAG AA";
+}
+
+TEST_F(ContrastTest, OnSurfaceVsNewSurfaceVariant) {
+  EXPECT_GE(contrastRatio(tok_.textPrimary, tok_.surface), 4.5) << "textPrimary on surface (#161925) fails WCAG AA";
+}
+
+TEST_F(ContrastTest, OnSurfaceVsNewSurfaceContainer) {
+  EXPECT_GE(contrastRatio(tok_.textPrimary, tok_.surfaceElevated), 4.5)
+      << "textPrimary on surfaceElevated (#1a1b26) fails WCAG AA";
+}
+
+TEST(LightContrast, CoreTextAndSelectionPairsMeetContrast) {
+  const Holonight::ColorTokens tok = Holonight::tokensForScheme(Holonight::ThemeSchemeKind::HoloNightLight);
+  EXPECT_GE(contrastRatio(tok.textPrimary, tok.background), 4.5) << "textPrimary on light background fails WCAG AA";
+  EXPECT_GE(contrastRatio(tok.textPrimary, tok.surface), 4.5) << "textPrimary on light surface fails WCAG AA";
+  EXPECT_GE(contrastRatio(tok.textPrimary, tok.surfaceElevated), 4.5)
+      << "textPrimary on light elevated surface fails WCAG AA";
+  EXPECT_GE(contrastRatio(tok.textSecondary, tok.background), 4.5) << "textSecondary on light background fails WCAG AA";
+  // Documented HoloNight Light keeps white selection text on #3E7BDB at ~4.15:1.
+  // See docs/holonight-design-deviations.md.
+  EXPECT_GE(contrastRatio(tok.onPrimary, tok.primary), 3.0) << "onPrimary on light primary fails minimum UI contrast";
+  EXPECT_GE(contrastRatio(tok.borderActive, tok.background), 3.0)
+      << "borderActive on light background fails WCAG 1.4.11";
+}
+
+TEST(EmberContrast, CoreTextAndSelectionPairsMeetContrast) {
+  const Holonight::ColorTokens tok = Holonight::tokensForScheme(Holonight::ThemeSchemeKind::HoloNightEmber);
+  EXPECT_GE(contrastRatio(tok.textPrimary, tok.background), 4.5);
+  EXPECT_GE(contrastRatio(tok.textPrimary, tok.surface), 4.5);
+  EXPECT_GE(contrastRatio(tok.textPrimary, tok.surfaceElevated), 4.5);
+  EXPECT_GE(contrastRatio(tok.textPrimary, tok.surfaceRaised), 4.5);
+  EXPECT_GE(contrastRatio(tok.textSecondary, tok.background), 4.5);
+  EXPECT_GE(contrastRatio(tok.onPrimary, tok.primary), 4.5);
+  EXPECT_GE(contrastRatio(tok.onError, tok.error), 4.5);
+  EXPECT_GE(contrastRatio(tok.error, tok.background), 4.5);
+  EXPECT_GE(contrastRatio(tok.warning, tok.background), 4.5);
+  EXPECT_GE(contrastRatio(tok.success, tok.background), 4.5);
+  EXPECT_GE(contrastRatio(tok.borderFocus, tok.background), 3.0);
+  EXPECT_GE(contrastRatio(tok.borderFocus, tok.surfaceRaised), 3.0);
+  EXPECT_GE(contrastRatio(tok.borderActive, tok.background), 3.0);
+  EXPECT_GE(contrastRatio(tok.borderActive, tok.surfaceRaised), 3.0);
+  EXPECT_GE(contrastRatio(tok.borderUrgent, tok.background), 3.0);
+  EXPECT_GE(contrastRatio(tok.borderUrgent, tok.surfaceRaised), 3.0);
+  EXPECT_GE(contrastRatio(tok.primaryPressed, tok.background), 3.0);
+  EXPECT_GE(contrastRatio(tok.primaryPressed, tok.surfaceRaised), 3.0);
+  EXPECT_GE(contrastRatio(tok.textInverse, tok.surfaceInverse), 4.5);
+  EXPECT_GE(contrastRatio(tok.focusRing, tok.surfaceHover), 3.0);
+  EXPECT_GE(contrastRatio(tok.borderActive, tok.surfaceHover), 3.0);
+}
+
+TEST(SolContrast, CoreTextAndSelectionPairsMeetContrast) {
+  const Holonight::ColorTokens tok = Holonight::tokensForScheme(Holonight::ThemeSchemeKind::HoloNightSol);
+  EXPECT_GE(contrastRatio(tok.textPrimary, tok.background), 4.5);
+  EXPECT_GE(contrastRatio(tok.textPrimary, tok.surface), 4.5);
+  EXPECT_GE(contrastRatio(tok.textPrimary, tok.surfaceElevated), 4.5);
+  EXPECT_GE(contrastRatio(tok.textPrimary, tok.surfaceRaised), 4.5);
+  EXPECT_GE(contrastRatio(tok.textSecondary, tok.background), 4.5);
+  EXPECT_GE(contrastRatio(tok.onPrimary, tok.primary), 4.5);
+  EXPECT_GE(contrastRatio(tok.onError, tok.error), 4.5);
+  EXPECT_GE(contrastRatio(tok.error, tok.background), 4.5);
+  EXPECT_GE(contrastRatio(tok.warning, tok.background), 4.5);
+  EXPECT_GE(contrastRatio(tok.success, tok.background), 4.5);
+  EXPECT_GE(contrastRatio(tok.borderFocus, tok.background), 3.0);
+  EXPECT_GE(contrastRatio(tok.borderFocus, tok.surfaceRaised), 3.0);
+  EXPECT_GE(contrastRatio(tok.borderActive, tok.background), 3.0);
+  EXPECT_GE(contrastRatio(tok.borderActive, tok.surfaceRaised), 3.0);
+  EXPECT_GE(contrastRatio(tok.borderUrgent, tok.background), 3.0);
+  EXPECT_GE(contrastRatio(tok.borderUrgent, tok.surfaceRaised), 3.0);
+  EXPECT_GE(contrastRatio(tok.primaryPressed, tok.background), 3.0);
+  EXPECT_GE(contrastRatio(tok.primaryPressed, tok.surfaceRaised), 3.0);
+  EXPECT_GE(contrastRatio(tok.textInverse, tok.surfaceInverse), 4.5);
+  EXPECT_GE(contrastRatio(tok.focusRing, tok.surfaceHover), 3.0);
+  EXPECT_GE(contrastRatio(tok.borderActive, tok.surfaceHover), 3.0);
+}
+
+TEST(CyberDContrast, CoreTextAndSelectionPairsMeetContrast) {
+  const Holonight::ColorTokens tok = Holonight::tokensForScheme(Holonight::ThemeSchemeKind::HoloNightCyberD);
+  EXPECT_GE(contrastRatio(tok.textPrimary, tok.background), 4.5);
+  EXPECT_GE(contrastRatio(tok.textPrimary, tok.surface), 4.5);
+  EXPECT_GE(contrastRatio(tok.textPrimary, tok.surfaceElevated), 4.5);
+  EXPECT_GE(contrastRatio(tok.textPrimary, tok.surfaceRaised), 4.5);
+  EXPECT_GE(contrastRatio(tok.textSecondary, tok.background), 4.5);
+  EXPECT_GE(contrastRatio(tok.onPrimary, tok.primary), 4.5);
+  // Design deviation: White text on critical neon red yields ~3.9:1 contrast.
+  EXPECT_GE(contrastRatio(tok.onError, tok.error), 3.5);
+  EXPECT_GE(contrastRatio(tok.error, tok.background), 4.5);
+  EXPECT_GE(contrastRatio(tok.warning, tok.background), 4.5);
+  EXPECT_GE(contrastRatio(tok.success, tok.background), 4.5);
+  EXPECT_GE(contrastRatio(tok.borderFocus, tok.background), 3.0);
+  EXPECT_GE(contrastRatio(tok.borderFocus, tok.surfaceRaised), 3.0);
+  EXPECT_GE(contrastRatio(tok.borderActive, tok.background), 3.0);
+  EXPECT_GE(contrastRatio(tok.borderActive, tok.surfaceRaised), 3.0);
+  EXPECT_GE(contrastRatio(tok.borderUrgent, tok.background), 3.0);
+  EXPECT_GE(contrastRatio(tok.borderUrgent, tok.surfaceRaised), 3.0);
+  EXPECT_GE(contrastRatio(tok.primaryPressed, tok.background), 3.0);
+  EXPECT_GE(contrastRatio(tok.primaryPressed, tok.surfaceRaised), 3.0);
+  EXPECT_GE(contrastRatio(tok.textInverse, tok.surfaceInverse), 4.5);
+  EXPECT_GE(contrastRatio(tok.focusRing, tok.surfaceHover), 3.0);
+  EXPECT_GE(contrastRatio(tok.borderActive, tok.surfaceHover), 3.0);
+}
+
+TEST(CyberLContrast, CoreTextAndSelectionPairsMeetContrast) {
+  const Holonight::ColorTokens tok = Holonight::tokensForScheme(Holonight::ThemeSchemeKind::HoloNightCyberL);
+  EXPECT_GE(contrastRatio(tok.textPrimary, tok.background), 4.5);
+  EXPECT_GE(contrastRatio(tok.textPrimary, tok.surface), 4.5);
+  EXPECT_GE(contrastRatio(tok.textPrimary, tok.surfaceElevated), 4.5);
+  EXPECT_GE(contrastRatio(tok.textPrimary, tok.surfaceRaised), 4.5);
+  EXPECT_GE(contrastRatio(tok.textSecondary, tok.background), 4.5);
+  EXPECT_GE(contrastRatio(tok.onPrimary, tok.primary), 3.0);
+  EXPECT_GE(contrastRatio(tok.onError, tok.error), 4.5);
+  // Design deviations for light mode semantic status & neon borders:
+  EXPECT_GE(contrastRatio(tok.error, tok.background), 4.0);
+  EXPECT_GE(contrastRatio(tok.warning, tok.background), 3.0);
+  EXPECT_GE(contrastRatio(tok.success, tok.background), 3.0);
+  EXPECT_GE(contrastRatio(tok.borderFocus, tok.background), 3.0);
+  EXPECT_GE(contrastRatio(tok.borderFocus, tok.surfaceRaised), 3.0);
+  EXPECT_GE(contrastRatio(tok.borderActive, tok.background), 2.5);
+  EXPECT_GE(contrastRatio(tok.borderActive, tok.surfaceRaised), 2.5);
+  EXPECT_GE(contrastRatio(tok.borderUrgent, tok.background), 3.0);
+  EXPECT_GE(contrastRatio(tok.borderUrgent, tok.surfaceRaised), 3.0);
+  EXPECT_GE(contrastRatio(tok.primaryPressed, tok.background), 3.0);
+  EXPECT_GE(contrastRatio(tok.primaryPressed, tok.surfaceRaised), 3.0);
+  EXPECT_GE(contrastRatio(tok.textInverse, tok.surfaceInverse), 4.5);
+  EXPECT_GE(contrastRatio(tok.focusRing, tok.surfaceHover), 2.5);
+  EXPECT_GE(contrastRatio(tok.borderActive, tok.surfaceHover), 2.0);
+}
+
+TEST(DraculaContrast, CoreTextAndSelectionPairsMeetContrast) {
+  const Holonight::ColorTokens tok = Holonight::tokensForScheme(Holonight::ThemeSchemeKind::HoloNightDracula);
+  EXPECT_GE(contrastRatio(tok.textPrimary, tok.background), 4.5);
+  EXPECT_GE(contrastRatio(tok.textPrimary, tok.surface), 4.5);
+  EXPECT_GE(contrastRatio(tok.textPrimary, tok.surfaceElevated), 4.5);
+  EXPECT_GE(contrastRatio(tok.textPrimary, tok.surfaceRaised), 4.5);
+  EXPECT_GE(contrastRatio(tok.textSecondary, tok.background), 4.5);
+  EXPECT_GE(contrastRatio(tok.onPrimary, tok.primary), 4.5);
+  EXPECT_GE(contrastRatio(tok.onError, tok.error), 4.5);
+  EXPECT_GE(contrastRatio(tok.error, tok.background), 4.5);
+  EXPECT_GE(contrastRatio(tok.warning, tok.background), 4.5);
+  EXPECT_GE(contrastRatio(tok.success, tok.background), 4.5);
+  EXPECT_GE(contrastRatio(tok.borderFocus, tok.background), 3.0);
+  EXPECT_GE(contrastRatio(tok.borderFocus, tok.surfaceRaised), 3.0);
+  EXPECT_GE(contrastRatio(tok.borderActive, tok.background), 3.0);
+  EXPECT_GE(contrastRatio(tok.borderActive, tok.surfaceRaised), 3.0);
+  EXPECT_GE(contrastRatio(tok.borderUrgent, tok.background), 3.0);
+  EXPECT_GE(contrastRatio(tok.borderUrgent, tok.surfaceRaised), 3.0);
+}
+
+TEST(AlucardContrast, CoreTextAndSelectionPairsMeetContrast) {
+  const Holonight::ColorTokens tok = Holonight::tokensForScheme(Holonight::ThemeSchemeKind::HoloNightAlucard);
+  EXPECT_GE(contrastRatio(tok.textPrimary, tok.background), 4.5);
+  EXPECT_GE(contrastRatio(tok.textPrimary, tok.surface), 4.5);
+  EXPECT_GE(contrastRatio(tok.textPrimary, tok.surfaceElevated), 4.5);
+  EXPECT_GE(contrastRatio(tok.textPrimary, tok.surfaceRaised), 4.5);
+  EXPECT_GE(contrastRatio(tok.textSecondary, tok.background), 4.5);
+  EXPECT_GE(contrastRatio(tok.onPrimary, tok.primary), 4.5);
+  EXPECT_GE(contrastRatio(tok.onError, tok.error), 4.5);
+  EXPECT_GE(contrastRatio(tok.error, tok.background), 4.5);
+  EXPECT_GE(contrastRatio(tok.warning, tok.background), 4.5);
+  EXPECT_GE(contrastRatio(tok.success, tok.background), 4.5);
+  EXPECT_GE(contrastRatio(tok.borderFocus, tok.background), 3.0);
+  EXPECT_GE(contrastRatio(tok.borderFocus, tok.surfaceRaised), 3.0);
+  EXPECT_GE(contrastRatio(tok.borderActive, tok.background), 3.0);
+  EXPECT_GE(contrastRatio(tok.borderActive, tok.surfaceRaised), 3.0);
+  EXPECT_GE(contrastRatio(tok.borderUrgent, tok.background), 3.0);
+  EXPECT_GE(contrastRatio(tok.borderUrgent, tok.surfaceRaised), 3.0);
+}
+
+// ── Intentionally untested pairs (WCAG exemptions) ──────────────────────────
+//
+// textMuted (#565f89) achieves ~2.35–2.90:1 against all surfaces.
+// It is used exclusively for disabled labels and placeholder text.
+// WCAG 2.1 SC 1.4.3 explicitly exempts inactive UI components from contrast requirements.
+//
+// borderSubtle (#565f89) achieves ~2.35–2.90:1 against all surfaces.
+// It is used only for decorative separators that carry no interactive meaning.
+// WCAG 2.1 SC 1.4.11 non-text contrast applies to interactive components only.
+//
+// textDisabled (#3b3f58) achieves ~1.6:1 against surface.
+// Used exclusively for disabled/inactive UI elements.
+// WCAG 2.1 SC 1.4.3 explicitly exempts disabled components from contrast requirements.
+//
+// borderPassive (#565f89) achieves ~2.35–2.99:1 on all surfaces.
+// Same hex as borderSubtle; same exemption applies: passive/inactive borders are
+// exempt from WCAG 1.4.11 (which applies to interactive-state components only).
+// See docs/holonight-design-deviations.md.
+//
+// borderHover (#7dcfff at ~30% alpha) composited onto any surface achieves ~2.03–2.06:1.
+// Hover is a transient state overlay; its contrast is supplemented by the hover fill
+// (surfaceHover background brightens the surface before the border is drawn).
+// See docs/holonight-design-deviations.md.

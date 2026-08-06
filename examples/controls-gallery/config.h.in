@@ -1,0 +1,3 @@
+#pragma once
+
+#define HOLONIGHT_QML_IMPORT_PATH "@CMAKE_BINARY_DIR@/qml"

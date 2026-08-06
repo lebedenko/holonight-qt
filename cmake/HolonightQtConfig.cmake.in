@@ -1,0 +1,18 @@
+@PACKAGE_INIT@
+
+include(CMakeFindDependencyMacro)
+find_dependency(Qt6 REQUIRED COMPONENTS Core Gui Qml Quick QuickControls2 Svg)
+
+include("${CMAKE_CURRENT_LIST_DIR}/HolonightQtTargets.cmake")
+
+foreach(component IN LISTS HolonightQt_FIND_COMPONENTS)
+  if(component STREQUAL "Core" AND TARGET HolonightQt::Core)
+    set(HolonightQt_Core_FOUND TRUE)
+  elseif(component STREQUAL "Controls" AND TARGET HolonightQt::Controls)
+    set(HolonightQt_Controls_FOUND TRUE)
+  else()
+    set(HolonightQt_${component}_FOUND FALSE)
+  endif()
+endforeach()
+
+check_required_components(HolonightQt)

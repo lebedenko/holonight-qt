@@ -1,0 +1,46 @@
+// SPDX-License-Identifier: GPL-3.0-or-later
+// SPDX-FileCopyrightText: 2026 Andrii L <lebeden@gmail.com>
+
+import QtQuick
+import QtQuick.Templates as T
+import Holonight.Core
+
+T.ToolTip {
+    id: root
+
+    font.family: HolonightTheme.uiFont
+    font.pointSize: HolonightTheme.captionSize
+
+    x: parent ? (parent.width - implicitWidth) / 2 : 0
+    y: -implicitHeight - 4
+
+    implicitWidth: Math.max(implicitBackgroundWidth + leftInset + rightInset,
+                            implicitContentWidth + leftPadding + rightPadding)
+    implicitHeight: Math.max(implicitBackgroundHeight + topInset + bottomInset,
+                             implicitContentHeight + topPadding + bottomPadding)
+
+    margins: 8
+    padding: 8
+
+    delay: 500
+    timeout: 5000
+
+    contentItem: Text {
+        text: root.text
+        font: root.font
+        color: HoloniightPalette.textInverse
+        wrapMode: Text.Wrap
+        textFormat: Text.PlainText
+    }
+
+    background: Rectangle {
+        readonly property real semanticRadius: HnAppearance.roundedRadius(HnSurfaceRole.Tooltip,
+                                                                          width, height,
+                                                                          HnAppearance.revision)
+
+        color: HoloniightPalette.surfaceInverse
+        border.color: HoloniightPalette.borderPassive
+        border.width: HoloniightPalette.borderWidth
+        radius: semanticRadius
+    }
+}
