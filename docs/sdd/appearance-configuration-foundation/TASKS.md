@@ -15,7 +15,7 @@ and exact provider revision `holonight-config@81b01d3ae8433f3a4b017db2feb588a1ee
 - [x] ACF4-09: Remove INI/JSON schema code, writers, legacy watchers, KDE selection fallback, persisted mode and
   transparency, field environment overrides, duplicated defaults, and obsolete tests.
 - [x] ACF4-10: Add startup/reload/rollback/QML/package regression tests and perform full automated verification.
-- [ ] ACF4-11: Perform manual Qt/QML dark/light, accent, typography, icon, layout, and shape checks; record results and
+- [x] ACF4-11: Perform manual Qt/QML dark/light, accent, typography, icon, layout, and shape checks; record results and
   publish the verified commit for umbrella handoff.
 
 ## Completion evidence
@@ -29,5 +29,16 @@ Automated verification on 2026-08-07:
 - `task lint`: passed.
 - `git diff --check`: passed.
 
-ACF4-11 remains open until the interactive visual matrix is completed and the resulting commit is published. A
-local or unpublished commit is not a repository handoff.
+Manual verification on 2026-08-07 under Hyprland/Wayland:
+
+- Light matrix: `holonight-light`, violet accent, 14 pt UI typography, HoloNight/Papirus icons, 1.1 layout scale,
+  and 1.25-scale chamfered shapes. Scheme, accent, typography, icons, layout, and shape projection accepted.
+- Initial light review found mismatched ComboBox edge radii, a transient icon-button hover flash, missing menu hover
+  and submenu cascading, inverse tooltip colors, inconsistent menu-item radius, and immediate tooltips.
+- Corrective review accepted concentric ComboBox row radii, immediate stable icon-button hover color, hover-opened
+  submenus, normal tooltip colors, menu-radius hover backgrounds, and delayed tooltips.
+- Dark matrix: `holonight-dark`, cyan accent, 12 pt canonical typography, HoloNight/Papirus icons, 1.0 layout scale,
+  and rounded shapes. The same controls and all six appearance dimensions were accepted.
+
+The verified follow-up commit must be published before this repository handoff is accepted by the umbrella. A local
+or unpublished commit is not a repository handoff.

@@ -55,6 +55,7 @@ HnSelectableDelegate {
     }
 
     ToolTip.text: root.title
+    ToolTip.delay: 500
     ToolTip.visible: root.showTitleToolTipWhenElided && root.hovered
                      && root.title.length > 0 && titleLabel.truncated
 }

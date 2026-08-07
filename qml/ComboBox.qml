@@ -143,10 +143,18 @@ T.ComboBox {
         ItemDelegate {
             required property int index
 
+            readonly property real popupInnerRadius: Math.max(0,
+                                                              root.popup.background.semanticRadius
+                                                              - root.popup.padding)
+
             width: root.popup.availableWidth
             height: 28
             text: root.textAt(index)
             highlighted: root.highlightedIndex === index
+            topLeftRadius: index === 0 ? popupInnerRadius : 0
+            topRightRadius: index === 0 ? popupInnerRadius : 0
+            bottomLeftRadius: index === root.count - 1 ? popupInnerRadius : 0
+            bottomRightRadius: index === root.count - 1 ? popupInnerRadius : 0
         }
     }
 }

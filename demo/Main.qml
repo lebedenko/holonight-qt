@@ -393,21 +393,17 @@ Controls.HnApplicationWindow {
                             id: immediateTooltipButton
 
                             text: "Hover me"
-                            ToolTip {
-                                visible: immediateTooltipButton.hovered
-                                text: "This is a tooltip"
-                                delay: 0
-                            }
+                            ToolTip.visible: immediateTooltipButton.hovered
+                            ToolTip.text: "This is a tooltip"
+                            ToolTip.delay: 500
                         }
                         Button {
                             id: delayedTooltipButton
 
-                            text: "Delayed tooltip"
-                            ToolTip {
-                                visible: delayedTooltipButton.hovered
-                                text: "Tooltip with 500ms delay"
-                                delay: 500
-                            }
+                            text: "Longer-delay tooltip"
+                            ToolTip.visible: delayedTooltipButton.hovered
+                            ToolTip.text: "Tooltip with 750ms delay"
+                            ToolTip.delay: 750
                         }
                     }
 

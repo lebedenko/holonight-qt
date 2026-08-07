@@ -28,7 +28,7 @@ T.ToolTip {
     contentItem: Text {
         text: root.text
         font: root.font
-        color: HoloniightPalette.textInverse
+        color: HoloniightPalette.textPrimary
         wrapMode: Text.Wrap
         textFormat: Text.PlainText
     }
@@ -38,7 +38,7 @@ T.ToolTip {
                                                                           width, height,
                                                                           HnAppearance.revision)
 
-        color: HoloniightPalette.surfaceInverse
+        color: HoloniightPalette.surfaceRaised
         border.color: HoloniightPalette.borderPassive
         border.width: HnMetrics.borderWidth
         radius: semanticRadius

@@ -10,6 +10,11 @@ import Holonight.Core
 T.ItemDelegate {
     id: root
 
+    property real topLeftRadius: -1
+    property real topRightRadius: -1
+    property real bottomLeftRadius: -1
+    property real bottomRightRadius: -1
+
     font.family: HolonightTheme.uiFont
     font.pointSize: HolonightTheme.bodySize
 
@@ -47,7 +52,10 @@ T.ItemDelegate {
             anchors.fill: parent
             color: root.down ? HoloniightPalette.surfaceElevated
                              : (!parent.isSelected && root.hovered ? HoloniightPalette.surfaceHover : "transparent")
-            radius: parent.semanticRadius
+            topLeftRadius: root.topLeftRadius >= 0 ? root.topLeftRadius : parent.semanticRadius
+            topRightRadius: root.topRightRadius >= 0 ? root.topRightRadius : parent.semanticRadius
+            bottomLeftRadius: root.bottomLeftRadius >= 0 ? root.bottomLeftRadius : parent.semanticRadius
+            bottomRightRadius: root.bottomRightRadius >= 0 ? root.bottomRightRadius : parent.semanticRadius
             Accessible.ignored: true
         }
         Rectangle {
@@ -55,14 +63,20 @@ T.ItemDelegate {
             anchors.fill: parent
             color: root.hovered ? HoloniightPalette.surfaceSelectedHover
                                 : HoloniightPalette.surfaceSelected
-            radius: parent.semanticRadius
+            topLeftRadius: root.topLeftRadius >= 0 ? root.topLeftRadius : parent.semanticRadius
+            topRightRadius: root.topRightRadius >= 0 ? root.topRightRadius : parent.semanticRadius
+            bottomLeftRadius: root.bottomLeftRadius >= 0 ? root.bottomLeftRadius : parent.semanticRadius
+            bottomRightRadius: root.bottomRightRadius >= 0 ? root.bottomRightRadius : parent.semanticRadius
             visible: parent.isSelected && !root.down
             Accessible.ignored: true
         }
         Rectangle {
             anchors.fill: parent
             color: "transparent"
-            radius: parent.semanticRadius
+            topLeftRadius: root.topLeftRadius >= 0 ? root.topLeftRadius : parent.semanticRadius
+            topRightRadius: root.topRightRadius >= 0 ? root.topRightRadius : parent.semanticRadius
+            bottomLeftRadius: root.bottomLeftRadius >= 0 ? root.bottomLeftRadius : parent.semanticRadius
+            bottomRightRadius: root.bottomRightRadius >= 0 ? root.bottomRightRadius : parent.semanticRadius
             border.width: root.visualFocus ? HnMetrics.focusBorderWidth : 0
             border.color: HoloniightPalette.borderFocus
             Accessible.ignored: true

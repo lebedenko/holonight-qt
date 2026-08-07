@@ -49,8 +49,5 @@ T.AbstractButton {
         border.color: root.visualFocus ? HoloniightPalette.borderFocus : "transparent"
         border.width: root.visualFocus ? HnMetrics.focusBorderWidth : 0
 
-        Behavior on color {
-            ColorAnimation { duration: 80 }
-        }
     }
 }

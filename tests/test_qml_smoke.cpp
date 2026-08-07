@@ -1049,6 +1049,55 @@ TEST_F(QmlSmoke, ComboBox_InstantiatesAndOpensPopup) {
   EXPECT_GT(object->property("popupHeight").toReal(), 0.0);
 }
 
+TEST_F(QmlSmoke, ComboBox_DelegateCornersFollowPopupInnerRadius) {
+  QQmlComponent comp = QQmlComponent{&engine_};
+  comp.setData(R"(
+    import QtQuick
+    import Holonight
+    Window {
+      width: 320
+      height: 240
+      visible: true
+      property var combo: combo
+      function openPopup() { combo.popup.open() }
+      function delegateRadius(index, propertyName) {
+        const delegate = combo.popup.contentItem.itemAtIndex(index)
+        return delegate ? delegate[propertyName] : -1
+      }
+      ComboBox { id: combo; model: ["first", "middle", "last"] }
+    }
+  )",
+               QUrl{});
+  ASSERT_EQ(comp.status(), QQmlComponent::Ready) << comp.errorString().toStdString();
+  std::unique_ptr<QObject> object{comp.create()};
+  ASSERT_NE(object, nullptr);
+  ASSERT_TRUE(QMetaObject::invokeMethod(object.get(), "openPopup", Qt::DirectConnection));
+  QCoreApplication::processEvents(QEventLoop::AllEvents, 50);
+
+  const auto radius = [&](int index, const char* property_name) {
+    QVariant result;
+    EXPECT_TRUE(QMetaObject::invokeMethod(object.get(), "delegateRadius", Qt::DirectConnection,
+                                          Q_RETURN_ARG(QVariant, result), Q_ARG(QVariant, index),
+                                          Q_ARG(QVariant, QString::fromLatin1(property_name))));
+    return result.toReal();
+  };
+  QObject* combo = object->property("combo").value<QObject*>();
+  ASSERT_NE(combo, nullptr);
+  QObject* popup = combo->property("popup").value<QObject*>();
+  ASSERT_NE(popup, nullptr);
+  QObject* background = popup->property("background").value<QObject*>();
+  ASSERT_NE(background, nullptr);
+  const qreal inner_radius =
+      (std::max)(0.0, background->property("semanticRadius").toReal() - popup->property("padding").toReal());
+
+  EXPECT_DOUBLE_EQ(radius(0, "topLeftRadius"), inner_radius);
+  EXPECT_DOUBLE_EQ(radius(0, "bottomLeftRadius"), 0.0);
+  EXPECT_DOUBLE_EQ(radius(1, "topLeftRadius"), 0.0);
+  EXPECT_DOUBLE_EQ(radius(1, "bottomRightRadius"), 0.0);
+  EXPECT_DOUBLE_EQ(radius(2, "topRightRadius"), 0.0);
+  EXPECT_DOUBLE_EQ(radius(2, "bottomRightRadius"), inner_radius);
+}
+
 TEST_F(QmlSmoke, ComboBox_BoundsPopupByModelAndMaximumVisibleItems) {
   QQmlComponent comp = QQmlComponent{&engine_};
   comp.setData(R"(
@@ -1344,12 +1393,72 @@ TEST_F(QmlSmoke, MenuItem_LoadsWithoutError) {
   checkComponent(engine_, R"(import Holonight; MenuItem { text: "Action" })");
 }
 
+TEST_F(QmlSmoke, MenuItemTracksHoverAndOpensSubmenuOnHover) {
+  QQmlComponent comp = QQmlComponent{&engine_};
+  comp.setData(R"(
+    import QtQuick
+    import Holonight
+    Window {
+      width: 400
+      height: 300
+      visible: true
+      property var menu: menu
+      property var subMenu: subMenu
+      function openMenu() { menu.popup(20, 20) }
+      function submenuDelegateCenter() {
+        const delegate = menu.contentItem.itemAtIndex(1)
+        return delegate ? delegate.mapToItem(contentItem, delegate.width / 2, delegate.height / 2) : Qt.point(-1, -1)
+      }
+      function submenuDelegateObject() { return menu.contentItem.itemAtIndex(1) }
+      Menu {
+        id: menu
+        MenuItem { text: "Plain" }
+        Menu {
+          id: subMenu
+          title: "Submenu"
+          MenuItem { text: "Nested" }
+        }
+      }
+    }
+  )",
+               QUrl{});
+  ASSERT_EQ(comp.status(), QQmlComponent::Ready) << comp.errorString().toStdString();
+  std::unique_ptr<QObject> object{comp.create()};
+  ASSERT_NE(object, nullptr);
+  auto* window = qobject_cast<QQuickWindow*>(object.get());
+  ASSERT_NE(window, nullptr);
+  ASSERT_TRUE(QMetaObject::invokeMethod(object.get(), "openMenu", Qt::DirectConnection));
+  QCoreApplication::processEvents(QEventLoop::AllEvents, 50);
+
+  QVariant center_value;
+  ASSERT_TRUE(QMetaObject::invokeMethod(object.get(), "submenuDelegateCenter", Qt::DirectConnection,
+                                        Q_RETURN_ARG(QVariant, center_value)));
+  const QPointF center = center_value.toPointF();
+  ASSERT_GE(center.x(), 0);
+  ASSERT_GE(center.y(), 0);
+  QTest::mouseMove(window, center.toPoint());
+
+  QVariant delegate_value;
+  ASSERT_TRUE(QMetaObject::invokeMethod(object.get(), "submenuDelegateObject", Qt::DirectConnection,
+                                        Q_RETURN_ARG(QVariant, delegate_value)));
+  QObject* delegate = delegate_value.value<QObject*>();
+  ASSERT_NE(delegate, nullptr);
+  EXPECT_TRUE(delegate->property("hoverEnabled").toBool());
+  QTRY_VERIFY_WITH_TIMEOUT(delegate->property("hovered").toBool(), 500);
+  QObject* submenu = object->property("subMenu").value<QObject*>();
+  ASSERT_NE(submenu, nullptr);
+  QTRY_VERIFY_WITH_TIMEOUT(submenu->property("visible").toBool(), 1000);
+}
+
 TEST_F(QmlSmoke, MenuItem_RendersStandardIconAndIndependentCheckmark) {
   QQmlComponent comp = QQmlComponent{&engine_};
   comp.setData(R"(
     import QtQuick
     import Holonight
+    import Holonight.Core
     Item {
+      property real expectedMenuRadius: HnAppearance.roundedRadius(HnSurfaceRole.Menu, highlighted.width,
+                                                                   highlighted.height, HnAppearance.revision)
       property alias plain: plain
       property alias checkedIcon: checkedIcon
       property alias highlighted: highlighted
@@ -1402,10 +1511,24 @@ TEST_F(QmlSmoke, MenuItem_RendersStandardIconAndIndependentCheckmark) {
             tok.primaryPressed);
   EXPECT_EQ(highlighted->findChild<QObject*>(QStringLiteral("hnMenuItemLabel"))->property("color").value<QColor>(),
             tok.onPrimary);
+  EXPECT_DOUBLE_EQ(highlighted->property("background").value<QObject*>()->property("semanticRadius").toReal(),
+                   root->property("expectedMenuRadius").toReal());
 }
 
 TEST_F(QmlSmoke, ToolTip_LoadsWithoutError) {
-  checkComponent(engine_, R"(import Holonight; ToolTip { text: "hint" })");
+  QQmlComponent comp = QQmlComponent{&engine_};
+  comp.setData(R"(
+    import Holonight
+    ToolTip { text: "hint" }
+  )",
+               QUrl{});
+  ASSERT_EQ(comp.status(), QQmlComponent::Ready) << comp.errorString().toStdString();
+  std::unique_ptr<QObject> tooltip{comp.create()};
+  ASSERT_NE(tooltip, nullptr);
+  const Holonight::ColorTokens tok = canonicalDefaultTokens();
+  EXPECT_EQ(tooltip->property("delay").toInt(), 500);
+  EXPECT_EQ(tooltip->property("contentItem").value<QObject*>()->property("color").value<QColor>(), tok.textPrimary);
+  EXPECT_EQ(tooltip->property("background").value<QObject*>()->property("color").value<QColor>(), tok.surfaceRaised);
 }
 
 TEST_F(QmlSmoke, Controls_IconButtonUsesSemanticMetricsAndStandardIconApi) {
@@ -1487,6 +1610,37 @@ TEST_F(QmlSmoke, Controls_IconButtonUsesSemanticMetricsAndStandardIconApi) {
   EXPECT_EQ(normal->property("background").value<QObject*>()->property("color").value<QColor>(),
             QColor{Qt::transparent});
   EXPECT_TRUE(normal->property("hoverEnabled").toBool());
+}
+
+TEST_F(QmlSmoke, Controls_IconButtonAppliesHoverColorWithoutTransition) {
+  QQmlComponent comp = QQmlComponent{&engine_};
+  comp.setData(R"(
+    import QtQuick
+    import Holonight.Controls
+    Window {
+      width: 100
+      height: 100
+      visible: true
+      property var button: button
+      HnIconButton { id: button; anchors.centerIn: parent }
+    }
+  )",
+               QUrl{});
+  ASSERT_EQ(comp.status(), QQmlComponent::Ready) << comp.errorString().toStdString();
+  std::unique_ptr<QObject> object{comp.create()};
+  ASSERT_NE(object, nullptr);
+  auto* window = qobject_cast<QQuickWindow*>(object.get());
+  ASSERT_NE(window, nullptr);
+  QObject* button = object->property("button").value<QObject*>();
+  ASSERT_NE(button, nullptr);
+
+  QCoreApplication::processEvents(QEventLoop::AllEvents, 50);
+  QTest::mouseMove(window, QPoint{1, 1});
+  QTest::mouseMove(window, QPoint{50, 50});
+  QCoreApplication::processEvents(QEventLoop::AllEvents, 50);
+  EXPECT_TRUE(button->property("hovered").toBool());
+  EXPECT_EQ(button->property("background").value<QObject*>()->property("color").value<QColor>(),
+            canonicalDefaultTokens().surfaceHover);
 }
 
 TEST_F(QmlSmoke, Controls_NavigationTitleReportsActualTruncationForTooltipPolicy) {

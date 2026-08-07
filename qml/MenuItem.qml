@@ -29,6 +29,7 @@ T.MenuItem {
     leftPadding: 12
     rightPadding: 12 + (root.subMenu ? 16 + root.spacing : 0)
     spacing: 6
+    hoverEnabled: true
 
     contentItem: RowLayout {
         spacing: root.spacing
@@ -94,7 +95,7 @@ T.MenuItem {
 
     background: Rectangle {
         objectName: "hnMenuItemBackground"
-        readonly property real semanticRadius: HnAppearance.roundedRadius(HnSurfaceRole.Control,
+        readonly property real semanticRadius: HnAppearance.roundedRadius(HnSurfaceRole.Menu,
                                                                           width, height,
                                                                           HnAppearance.revision)
 

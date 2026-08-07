@@ -79,11 +79,18 @@ H.ComboBox {
             readonly property url iconSource: rowModel && rowModel[root.iconRole] !== undefined
                                                 ? rowModel[root.iconRole]
                                                 : root.roleValue(index, root.iconRole)
+            readonly property real popupInnerRadius: Math.max(0,
+                                                              root.popup.background.semanticRadius
+                                                              - root.popup.padding)
 
             width: root.popup.availableWidth
             height: HnMetrics.controlHeight(root.resolvedSizeRole)
             text: root.textAt(index)
             highlighted: root.highlightedIndex === index
+            topLeftRadius: index === 0 ? popupInnerRadius : 0
+            topRightRadius: index === 0 ? popupInnerRadius : 0
+            bottomLeftRadius: index === root.count - 1 ? popupInnerRadius : 0
+            bottomRightRadius: index === root.count - 1 ? popupInnerRadius : 0
             leftPadding: HnMetrics.horizontalPadding(root.resolvedSizeRole)
                          + (delegateIcon.visible
                             ? delegateIcon.width + HnMetrics.internalSpacing(root.resolvedSizeRole)
