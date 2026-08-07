@@ -32,8 +32,8 @@ T.Control {
     property bool autoUpdateSelectedColor: true
     property int sizeRole: HnControlSize.Normal
     property int focusedIndex: 0
-    readonly property int resolvedSizeRole: HnControlMetrics.normalizedSizeRole(root.sizeRole)
-    readonly property real swatchDiameter: HnControlMetrics.controlHeight(root.resolvedSizeRole)
+    readonly property int resolvedSizeRole: HnMetrics.normalizedSizeRole(root.sizeRole)
+    readonly property real swatchDiameter: HnMetrics.controlHeight(root.resolvedSizeRole)
     readonly property real ringExtra: 10
     readonly property real swatchBoxSize: root.swatchDiameter + root.ringExtra
 
@@ -74,7 +74,7 @@ T.Control {
         Row {
             id: row
 
-            spacing: HnControlMetrics.internalSpacing(root.resolvedSizeRole)
+            spacing: HnMetrics.internalSpacing(root.resolvedSizeRole)
 
             Repeater {
                 id: repeater
@@ -127,7 +127,7 @@ T.Control {
                             height: width
                             radius: width / 2
                             color: "transparent"
-                            border.width: HoloniightPalette.focusBorderWidth
+                            border.width: HnMetrics.focusBorderWidth
                             border.color: HoloniightPalette.borderFocus
                         }
                         Rectangle {

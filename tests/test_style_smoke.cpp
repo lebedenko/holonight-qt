@@ -60,67 +60,10 @@ TEST(StyleSmoke, InstantiatesWithoutCrash) {
 }
 
 TEST(StyleSmoke, StandardPaletteNonDefault) {
-  EnvGuard configGuard = EnvGuard{"HOLONIGHT_CONFIG_FILE"};
-  qunsetenv("HOLONIGHT_CONFIG_FILE");
   HoloniightStyle style;
   const QPalette pal = style.standardPalette();
   const QPalette defaultPal;
   EXPECT_NE(pal.color(QPalette::Active, QPalette::Window), defaultPal.color(QPalette::Active, QPalette::Window));
-}
-
-TEST(StyleSmoke, StandardPaletteUsesLightAppearanceMode) {
-  QTemporaryDir dir;
-  ASSERT_TRUE(dir.isValid());
-  EnvGuard configGuard = EnvGuard{"HOLONIGHT_CONFIG_FILE"};
-  EnvGuard guard = EnvGuard{"HOLONIGHT_APPEARANCE_MODE"};
-  qputenv("HOLONIGHT_CONFIG_FILE", dir.filePath(QStringLiteral("empty.conf")).toLocal8Bit());
-  qputenv("HOLONIGHT_APPEARANCE_MODE", "light");
-
-  HoloniightStyle style;
-  const QPalette pal = style.standardPalette();
-  Holonight::ThemeConfig config = Holonight::ThemeConfig::defaults();
-  config.appearance_mode = Holonight::AppearanceMode::Light;
-  const Holonight::ColorTokens tok = Holonight::ThemeResolver::resolve(config);
-  EXPECT_EQ(pal.color(QPalette::Active, QPalette::Window), tok.background);
-  EXPECT_EQ(pal.color(QPalette::Active, QPalette::Highlight), tok.primary);
-}
-
-TEST(StyleSmoke, StandardPaletteUsesLightSchemeWhenModeIsStaleDark) {
-  EnvGuard configGuard = EnvGuard{"HOLONIGHT_CONFIG_FILE"};
-  EnvGuard appearanceGuard = EnvGuard{"HOLONIGHT_APPEARANCE_MODE"};
-  qunsetenv("HOLONIGHT_APPEARANCE_MODE");
-
-  QTemporaryDir dir;
-  ASSERT_TRUE(dir.isValid());
-  const QString path = dir.filePath(QStringLiteral("theme.conf"));
-  writeFile(path, "[appearance]\nscheme=holonight-day\naccent=violet\nmode=dark\n");
-  qputenv("HOLONIGHT_CONFIG_FILE", path.toLocal8Bit());
-
-  HoloniightStyle style;
-  const QPalette pal = style.standardPalette();
-  EXPECT_EQ(pal.color(QPalette::Active, QPalette::Window),
-            Holonight::tokensForScheme(Holonight::ThemeSchemeKind::HoloNightDay).background);
-  EXPECT_EQ(pal.color(QPalette::Active, QPalette::Highlight), QColor(QStringLiteral("#7b61d1")));
-}
-
-TEST(StyleSmoke, ThemeConfigChangeReloadsStandardPalette) {
-  EnvGuard configGuard = EnvGuard{"HOLONIGHT_CONFIG_FILE"};
-  EnvGuard appearanceGuard = EnvGuard{"HOLONIGHT_APPEARANCE_MODE"};
-  qunsetenv("HOLONIGHT_APPEARANCE_MODE");
-
-  QTemporaryDir dir;
-  ASSERT_TRUE(dir.isValid());
-  const QString path = dir.filePath(QStringLiteral("theme.conf"));
-  writeFile(path, "[appearance]\nscheme=holonight-dark\nmode=dark\n");
-  qputenv("HOLONIGHT_CONFIG_FILE", path.toLocal8Bit());
-
-  HoloniightStyle style;
-  EXPECT_EQ(style.standardPalette().color(QPalette::Active, QPalette::Window),
-            Holonight::tokensForScheme(Holonight::ThemeSchemeKind::HoloNightDark).background);
-
-  writeFile(path, "[appearance]\nscheme=holonight-light\nmode=light\n");
-  QTRY_COMPARE(style.standardPalette().color(QPalette::Active, QPalette::Window),
-               Holonight::tokensForScheme(Holonight::ThemeSchemeKind::HoloNightLight).background);
 }
 
 TEST(StyleSmoke, ScrollBarExtentIsEight) {

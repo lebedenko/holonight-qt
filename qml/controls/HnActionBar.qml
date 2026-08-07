@@ -27,7 +27,7 @@ Item {
             color: HoloniightPalette.borderPassive
             visible: root.dividerVisible
             Layout.fillWidth: true
-            Layout.preferredHeight: visible ? HoloniightPalette.separatorWidth : 0
+            Layout.preferredHeight: visible ? HnMetrics.separatorWidth : 0
         }
         Item {
             id: contentRow

@@ -35,8 +35,8 @@ T.MenuItem {
         LayoutMirroring.enabled: root.mirrored
 
         Item {
-            Layout.preferredWidth: HnControlMetrics.iconSize(HnControlSize.Compact)
-            Layout.preferredHeight: HnControlMetrics.iconSize(HnControlSize.Compact)
+            Layout.preferredWidth: HnMetrics.iconSize(HnControlSize.Compact)
+            Layout.preferredHeight: HnMetrics.iconSize(HnControlSize.Compact)
             Layout.alignment: Qt.AlignVCenter
 
             Text {
@@ -50,15 +50,15 @@ T.MenuItem {
         }
 
         Item {
-            Layout.preferredWidth: HnControlMetrics.iconSize(HnControlSize.Compact)
-            Layout.preferredHeight: HnControlMetrics.iconSize(HnControlSize.Compact)
+            Layout.preferredWidth: HnMetrics.iconSize(HnControlSize.Compact)
+            Layout.preferredHeight: HnMetrics.iconSize(HnControlSize.Compact)
             Layout.alignment: Qt.AlignVCenter
 
             HnIcon {
                 objectName: "hnMenuItemIcon"
                 anchors.centerIn: parent
                 source: root.icon.source
-                size: HnControlMetrics.iconSize(HnControlSize.Compact)
+                size: HnMetrics.iconSize(HnControlSize.Compact)
                 iconState: root.enabled ? HnIcon.Normal : HnIcon.Disabled
                 normalColor: root.foregroundColor
                 disabledColor: root.foregroundColor

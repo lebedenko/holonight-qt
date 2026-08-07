@@ -40,7 +40,7 @@ T.Slider {
             radius: width / 2
             color: Qt.rgba(0, 0, 0, 0)
             border.color: HoloniightPalette.borderFocus
-            border.width: HoloniightPalette.borderWidth
+            border.width: HnMetrics.borderWidth
         }
     }
 

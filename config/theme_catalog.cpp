@@ -182,6 +182,11 @@ QString schemeIdForKind(ThemeSchemeKind scheme) {
   return defaultSchemeId();
 }
 
+ColorMode colorModeForScheme(ThemeSchemeKind scheme) {
+  const ThemeVariantCatalogEntry* variant = themeVariantForSchemeId(schemeIdForKind(scheme));
+  return variant != nullptr ? variant->mode : ColorMode::Dark;
+}
+
 QString schemeIdForKdeColorSchemeName(const QString& kde_color_scheme_name) {
   const QString compact = compactThemeName(kde_color_scheme_name);
   for (const ThemeVariantCatalogEntry& variant : variants()) {

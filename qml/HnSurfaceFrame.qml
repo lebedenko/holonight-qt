@@ -17,7 +17,7 @@ Item {
     property int chamferedCornersOverride: HnCornerMask.Inherit
     property color fillColor: root.semanticFillColor(root.surfaceRole)
     property color borderColor: HoloniightPalette.borderPassive
-    property real borderWidth: HoloniightPalette.borderWidth
+    property real borderWidth: HnMetrics.borderWidth
 
     readonly property real normalizedBorderWidth: Math.max(0, root.borderWidth)
     readonly property real frameInset: root.normalizedBorderWidth / 2

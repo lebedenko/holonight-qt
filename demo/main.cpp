@@ -8,13 +8,13 @@
 #include <QCoreApplication>
 #include <QDebug>
 #include <QDir>
-#include <QFile>
 #include <QFileInfo>
 #include <QGuiApplication>
 #include <QQmlApplicationEngine>
 #include <QQuickStyle>
 #include <QTemporaryDir>
 
+#include <holonight/config/config.h>
 #include <holonight/theme_catalog.h>
 
 namespace {
@@ -22,8 +22,6 @@ namespace {
 QString normalizedThemeValue(const QString& value) { return value.trimmed().toLower(); }
 
 bool isThemeValue(const QString& value) { return !Holonight::normalizeSchemeId(value).isEmpty(); }
-
-QString legacyModeForTheme(const QString& value) { return Holonight::modeNameForScheme(value); }
 
 QString findThemeArgument(int argc, char* argv[]) {
   for (int i = 1; i < argc; ++i) {
@@ -43,28 +41,22 @@ QString findThemeArgument(int argc, char* argv[]) {
   return {};
 }
 
-bool writeThemeConfig(const QTemporaryDir& dir, const QString& theme) {
+bool writeAppearance(const QTemporaryDir& dir, const QString& theme) {
   if (!dir.isValid()) {
     qWarning() << "Error: Could not create temporary theme config directory";
     return false;
   }
 
-  const QString path = dir.filePath(QStringLiteral("theme.conf"));
-  QFile file = QFile{path};
-  if (!file.open(QIODevice::WriteOnly | QIODevice::Truncate | QIODevice::Text)) {
-    qWarning() << "Error: Could not write temporary theme config" << path << file.errorString();
+  const QString path = dir.filePath(QStringLiteral("appearance.toml"));
+  HoloNight::Config::Appearance appearance = HoloNight::Config::defaults();
+  appearance.theme.scheme = theme.toStdString();
+  appearance.theme.accent = "default";
+  if (!HoloNight::Config::writeAtomically(appearance, std::filesystem::path{path.toStdString()})) {
+    qWarning() << "Error: Could not write temporary appearance" << path;
     return false;
   }
 
-  const QByteArray contents = QStringLiteral("[appearance]\nscheme=%1\naccent=default\nmode=%2\n")
-                                  .arg(theme, legacyModeForTheme(theme))
-                                  .toUtf8();
-  if (file.write(contents) != contents.size()) {
-    qWarning() << "Error: Could not write complete temporary theme config" << path << file.errorString();
-    return false;
-  }
-
-  qputenv("HOLONIGHT_CONFIG_FILE", path.toLocal8Bit());
+  qputenv("HOLONIGHT_APPEARANCE_FILE", path.toLocal8Bit());
   return true;
 }
 
@@ -82,7 +74,7 @@ int main(int argc, char* argv[]) {
   // platform theme plugin is initialized in its constructor.
   QTemporaryDir themeConfigDir;
   const QString theme = findThemeArgument(argc, argv);
-  if (!theme.isEmpty() && !writeThemeConfig(themeConfigDir, theme)) {
+  if (!theme.isEmpty() && !writeAppearance(themeConfigDir, theme)) {
     return 1;
   }
 

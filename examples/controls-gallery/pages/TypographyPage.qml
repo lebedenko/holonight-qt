@@ -129,8 +129,8 @@ ScrollView {
 
             HnLabel {
                 role: HnTypographyRole.Display
-                rawText: "Display • " + Math.round(HolonightTheme.displaySize * root.scaleFactor) + " pt (14°C)"
-                font.pointSize: HolonightTheme.displaySize * root.scaleFactor
+                rawText: "Display • " + Math.round(HolonightTheme.displayFontSize * root.scaleFactor) + " pt (14°C)"
+                font.pointSize: HolonightTheme.displayFontSize * root.scaleFactor
             }
 
             HnLabel {
@@ -141,8 +141,8 @@ ScrollView {
 
             HnLabel {
                 role: HnTypographyRole.Title
-                rawText: "Title • " + Math.round(HolonightTheme.titleSize * root.scaleFactor) + " pt (Theme Settings)"
-                font.pointSize: HolonightTheme.titleSize * root.scaleFactor
+                rawText: "Title • " + Math.round(HolonightTheme.titleFontSize * root.scaleFactor) + " pt (Theme Settings)"
+                font.pointSize: HolonightTheme.titleFontSize * root.scaleFactor
             }
 
             HnLabel {
@@ -173,7 +173,7 @@ ScrollView {
             HnLabel {
                 role: HnTypographyRole.Code
                 rawText: "Code • ~/.config/holonight/config.toml"
-                font.pointSize: HolonightTheme.fixedFontSize * root.scaleFactor
+                font.pointSize: HolonightTheme.monospaceFontSize * root.scaleFactor
             }
         }
 
@@ -187,7 +187,7 @@ ScrollView {
 
         HnLabel {
             role: HnTypographyRole.Caption
-            rawText: qsTr("Run with QT_SCALE_FACTOR=1.25 to inspect fractional scaling. Set HOLONIGHT_CONFIG_FILE to inspect each installed palette variant.")
+            rawText: qsTr("Run with QT_SCALE_FACTOR=1.25 to inspect fractional scaling. Set HOLONIGHT_APPEARANCE_FILE to inspect each installed palette variant.")
             color: HoloniightPalette.textMuted
             wrapMode: Text.WordWrap
             Layout.fillWidth: true

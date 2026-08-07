@@ -40,13 +40,13 @@ Item {
             visible: iconAvailable
             sourceComponent: iconComponent
             Layout.alignment: Qt.AlignVCenter
-            Layout.preferredWidth: visible ? HnControlMetrics.appTitleIconSize : 0
-            Layout.preferredHeight: visible ? HnControlMetrics.appTitleIconSize : 0
+            Layout.preferredWidth: visible ? HnMetrics.appTitleIconSize : 0
+            Layout.preferredHeight: visible ? HnMetrics.appTitleIconSize : 0
         }
 
         Item {
             visible: iconLoader.iconAvailable
-            Layout.preferredWidth: visible ? HnControlMetrics.appTitleIconSpacing : 0
+            Layout.preferredWidth: visible ? HnMetrics.appTitleIconSpacing : 0
             Layout.preferredHeight: 1
         }
 
@@ -64,7 +64,7 @@ Item {
 
         Item {
             visible: !root.skipBranding
-            Layout.preferredWidth: visible ? HnControlMetrics.appTitleTextSpacing : 0
+            Layout.preferredWidth: visible ? HnMetrics.appTitleTextSpacing : 0
             Layout.preferredHeight: 1
         }
 
@@ -89,7 +89,7 @@ Item {
             objectName: "appTitleIcon"
             readonly property bool accessibilityIgnored: Accessible.ignored
             source: root.iconSource
-            size: HnControlMetrics.appTitleIconSize
+            size: HnMetrics.appTitleIconSize
             tinted: root.iconTinted
             Accessible.ignored: true
         }

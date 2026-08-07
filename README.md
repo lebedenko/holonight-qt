@@ -22,7 +22,7 @@ This repository contains only the Qt theme implementation. The shell, icon theme
 | `src/platformtheme/` | `libqholonight.so` — QPlatformTheme plugin | `QT_QPA_PLATFORMTHEME=holonight` |
 | `qml/` | QQC2 style components, design-system primitives, and reusable composites | `import Holonight`, `import Holonight.Core`, `import Holonight.Controls` |
 | `palette/` | `libholonight_palette.a` — shared color tokens | static dependency |
-| `config/` | `libholonight_config.a` — shared theme configuration loader | consumed by platform theme, style, and QML |
+| `config/` | Qt appearance projection, reader, and theme catalog | consumed by platform theme, style, and QML |
 
 System-wide activation uses the platform theme for Qt Widgets and Qt Quick Controls' own runtime
 style selector for QML controls.
@@ -130,47 +130,42 @@ QT_STYLE_OVERRIDE=holonight widgets-only-app
 HoloNight loads user-facing theme configuration from:
 
 ```text
-~/.config/holonight/theme.conf
+~/.config/holonight/appearance.toml
 ```
 
-`HOLONIGHT_CONFIG_FILE` can point at another file for testing. Environment variables override file values and are intended for development/debugging.
-The canonical token schema, Qt palette mapping, variant status, and future `config.toml` shape are documented in [`docs/theme-tokens.md`](docs/theme-tokens.md).
+`HOLONIGHT_APPEARANCE_FILE` can point at another file for testing. It is the only supported configuration override.
+The canonical token schema and Qt palette mapping are documented in [`docs/theme-tokens.md`](docs/theme-tokens.md).
 
-Use INI syntax:
+Use the versioned canonical TOML schema:
 
-```ini
-[appearance]
-scheme=holonight-dark
-accent=cyan
-mode=dark
+```toml
+version = 1
 
-[fonts]
-ui=Inter
-fixed=JetBrains Mono
-baseSize=10
-fixedSize=10
+[theme]
+scheme = "holonight-dark"
+accent = "blue"
+
+[typography]
+ui_family = "Inter"
+ui_size = 12
+monospace_family = "JetBrains Mono"
+monospace_size = 12
+title_family = "Audiowide"
+title_size = 10
+display_family = "Rajdhani"
+display_size = 24
 ```
 
 Supported appearance schemes are `holonight-dark`, `holonight-light`, `holonight-mocha`, `holonight-latte`,
 `holonight-storm`, `holonight-day`, `holonight-ember`, `holonight-sol`, `holonight-cyber-d`, `holonight-cyber-l`,
 `holonight-dracula`, and `holonight-alucard`.
-The `scheme` value is the canonical selector. `mode` remains supported as legacy fallback metadata: `light` resolves to `holonight-light`, while `dark`, `system`, missing, or invalid values resolve to `holonight-dark` when no valid `scheme` is present.
-When no valid `scheme` is configured and `HOLONIGHT_APPEARANCE_MODE` is not set, the loader also recognizes the active KDE color scheme from `~/.config/kdeglobals` for the installed HoloNight/TokyoNight variants.
-Supported accents are `cyan`, `blue`, `violet`, and `yellow`; missing or invalid accents resolve to `cyan`.
+The selected scheme determines dark/light mode. Supported accents are `default`, `cyan`, `blue`, `violet`, and
+`yellow`. Invalid canonical documents are rejected as a unit; live consumers retain their last known good state.
 
-`baseSize` is the body font size. Derived sizes are `caption = baseSize - 1`, `title = baseSize + 3`, and `heading = baseSize + 6`.
-
-Supported environment overrides:
+The supported environment override is:
 
 ```bash
-HOLONIGHT_CONFIG_FILE=/path/to/theme.conf
-HOLONIGHT_ICON_THEME=Papirus-Dark
-HOLONIGHT_FALLBACK_ICON_THEME=Papirus
-HOLONIGHT_FONT="Noto Sans"
-HOLONIGHT_FIXED_FONT="JetBrains Mono"
-HOLONIGHT_FONT_SIZE=10
-HOLONIGHT_SCALE_FACTOR=1.0
-HOLONIGHT_APPEARANCE_MODE=dark
+HOLONIGHT_APPEARANCE_FILE=/path/to/appearance.toml
 ```
 
 The same loaded values are exposed to QML through the `HolonightTheme` singleton:
@@ -216,7 +211,7 @@ QT_QPA_PLATFORM=offscreen ctest --test-dir build --output-on-failure
 ## Architecture
 
 - **All colors** originate in `palette/holonight/palette.h` (`tokensForScheme(ThemeSchemeKind)` → `buildPalette()`). Change colors there, nowhere else.
-- **Configuration** is loaded once per consumer through `holonight_config`: defaults, config file, then environment overrides.
+- **Appearance** is validated by `HoloNight::Config`, projected once per consumer, and published atomically.
 - **QML module URIs** are `Holonight` for styled Qt Quick Controls, `Holonight.Core` for design-system primitives,
   and `Holonight.Controls` for reusable composites.
 - **Platform theme** reads configured icon theme, fallback icon theme, UI font, fixed font, and base font size. Defaults are HoloNight/Papirus icons, Inter UI font, JetBrains Mono fixed font, and 10pt body size.

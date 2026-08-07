@@ -46,7 +46,7 @@ HnSelectableDelegate {
             color: "transparent"
             radius: parent.semanticRadius
             border.width: root.visualFocus || root.selected
-                          ? HoloniightPalette.focusBorderWidth : HoloniightPalette.borderWidth
+                          ? HnMetrics.focusBorderWidth : HnMetrics.borderWidth
             border.color: root.visualFocus ? HoloniightPalette.borderFocus
                                            : (root.selected ? HoloniightPalette.selectionIndicator
                                                             : HoloniightPalette.borderPassive)

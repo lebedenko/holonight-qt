@@ -275,38 +275,33 @@ zero resolves both dimensions to zero. Negative, infinite, and `NaN` component o
 The default configuration path is:
 
 ```text
-~/.config/holonight/appearance.json
+~/.config/holonight/appearance.toml
 ```
 
-Set `HOLONIGHT_APPEARANCE_FILE` to use another file. The implemented JSON format is:
+Set `HOLONIGHT_APPEARANCE_FILE` to use another file. Shape values are part of the canonical TOML document:
 
-```json
-{
-  "version": 1,
-  "cornerStyle": "inherit",
-  "shapeScale": 1.0
-}
+```toml
+[shape]
+style = "inherit"
+scale = 1.0
 ```
 
 Optional advanced values:
 
-```json
-{
-  "version": 1,
-  "cornerStyle": "hybrid",
-  "shapeScale": 1.0,
-  "baseRadius": 8,
-  "baseChamfer": 10
-}
+```toml
+[shape]
+style = "hybrid"
+scale = 1.0
+base_radius = 8
+base_chamfer = 10
 ```
 
 | Field | Accepted values | Default |
 | --- | --- | --- |
-| `version` | `1`; another explicit version rejects the file | No version requirement when omitted |
-| `cornerStyle` | `inherit`, `hybrid`, `rounded`, `chamfered` | `inherit` |
-| `shapeScale` | `0.25`–`4.0` | `1.0` |
-| `baseRadius` | `0`–`128` | Unset |
-| `baseChamfer` | `0`–`128` | Unset |
+| `style` | `inherit`, `hybrid`, `rounded`, `chamfered` | `inherit` |
+| `scale` | `0.25`–`4.0` | `1.0` |
+| `base_radius` | `0`–`128` | Unset |
+| `base_chamfer` | `0`–`128` | Unset |
 
 `HnAppearance` watches the file and its directories and emits live changes. `HnSurfaceFrame` includes the
 appearance revision in its binding, so existing instances re-resolve automatically. Applications may call

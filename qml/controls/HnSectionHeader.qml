@@ -22,8 +22,8 @@ Item {
     property Component trailingContent
     readonly property alias leadingItem: leadingLoader.item
     readonly property alias trailingItem: trailingLoader.item
-    readonly property int resolvedSizeRole: HnControlMetrics.normalizedSizeRole(root.sizeRole)
-    readonly property real semanticSpacing: HnControlMetrics.internalSpacing(root.resolvedSizeRole)
+    readonly property int resolvedSizeRole: HnMetrics.normalizedSizeRole(root.sizeRole)
+    readonly property real semanticSpacing: HnMetrics.internalSpacing(root.resolvedSizeRole)
 
     implicitWidth: content.implicitWidth
     implicitHeight: content.implicitHeight

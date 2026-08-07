@@ -23,12 +23,12 @@ FocusScope {
     readonly property alias leadingItem: leadingLoader.item
     readonly property alias controlItem: controlLoader.item
     readonly property alias trailingItem: trailingLoader.item
-    readonly property int resolvedSizeRole: HnControlMetrics.normalizedSizeRole(root.sizeRole)
-    readonly property real semanticSpacing: HnControlMetrics.internalSpacing(root.resolvedSizeRole)
+    readonly property int resolvedSizeRole: HnMetrics.normalizedSizeRole(root.sizeRole)
+    readonly property real semanticSpacing: HnMetrics.internalSpacing(root.resolvedSizeRole)
 
     implicitWidth: content.implicitWidth
     implicitHeight: Math.max(content.implicitHeight + root.semanticSpacing * 2,
-                             HnControlMetrics.controlHeight(root.resolvedSizeRole))
+                             HnMetrics.controlHeight(root.resolvedSizeRole))
     activeFocusOnTab: controlLoader.status === Loader.Ready && controlLoader.loadedControl.activeFocusOnTab
     onActiveFocusChanged: {
         if (root.activeFocus && controlLoader.status === Loader.Ready

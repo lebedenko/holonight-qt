@@ -26,23 +26,23 @@ Label {
 
     font.family: {
         switch (role) {
-        case HnTypographyRole.MicroHeader: return HolonightTheme.headerFont
+        case HnTypographyRole.MicroHeader: return HolonightTheme.titleFont
         case HnTypographyRole.Display: return HolonightTheme.displayFont
-        case HnTypographyRole.Code: return HolonightTheme.fixedFont
+        case HnTypographyRole.Code: return HolonightTheme.monospaceFont
         default: return HolonightTheme.uiFont
         }
     }
 
     font.pointSize: {
         switch (role) {
-        case HnTypographyRole.Display: return HolonightTheme.displaySize
+        case HnTypographyRole.Display: return HolonightTheme.displayFontSize
         case HnTypographyRole.Heading: return HolonightTheme.headingSize
-        case HnTypographyRole.Title: return HolonightTheme.titleSize
+        case HnTypographyRole.Title: return HolonightTheme.titleFontSize
         case HnTypographyRole.Subheading: return HolonightTheme.subheadingSize
         case HnTypographyRole.Body: return HolonightTheme.bodySize
         case HnTypographyRole.Caption:
         case HnTypographyRole.MicroHeader: return HolonightTheme.microSize
-        case HnTypographyRole.Code: return HolonightTheme.fixedFontSize
+        case HnTypographyRole.Code: return HolonightTheme.monospaceFontSize
         default: return HolonightTheme.bodySize
         }
     }

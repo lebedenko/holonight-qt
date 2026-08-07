@@ -23,13 +23,13 @@ T.Button {
     implicitHeight: Math.max(implicitBackgroundHeight + topInset + bottomInset,
                              implicitContentHeight + topPadding + bottomPadding)
 
-    icon.width: HnControlMetrics.iconSize(HnControlSize.Normal)
-    icon.height: HnControlMetrics.iconSize(HnControlSize.Normal)
+    icon.width: HnMetrics.iconSize(HnControlSize.Normal)
+    icon.height: HnMetrics.iconSize(HnControlSize.Normal)
     icon.color: foregroundColor
 
     padding: 6
     horizontalPadding: display === T.AbstractButton.IconOnly
-                       ? HnControlMetrics.horizontalPadding(HnControlSize.Normal)
+                       ? HnMetrics.horizontalPadding(HnControlSize.Normal)
                        : 12
     spacing: 4
 
@@ -49,7 +49,7 @@ T.Button {
                                                                           HnAppearance.revision)
 
         implicitWidth: 80
-        implicitHeight: HoloniightPalette.controlHeight
+        implicitHeight: HnMetrics.controlHeight(HnControlSize.Normal)
         radius: semanticRadius
 
         color: {
@@ -65,7 +65,7 @@ T.Button {
         }
 
         border.color: root.visualFocus ? HoloniightPalette.borderFocus : HoloniightPalette.borderPassive
-        border.width: root.visualFocus ? HoloniightPalette.focusBorderWidth : HoloniightPalette.borderWidth
+        border.width: root.visualFocus ? HnMetrics.focusBorderWidth : HnMetrics.borderWidth
 
         opacity: root.enabled ? 1.0 : 0.5
 

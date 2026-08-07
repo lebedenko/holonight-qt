@@ -61,7 +61,7 @@ T.TextField {
         color: HoloniightPalette.surface
         radius: semanticRadius
 
-        border.width: (root.activeFocus || root.hasError) ? HoloniightPalette.focusBorderWidth : HoloniightPalette.borderWidth
+        border.width: (root.activeFocus || root.hasError) ? HnMetrics.focusBorderWidth : HnMetrics.borderWidth
         border.color: {
             if (root.hasError)       return HoloniightPalette.borderUrgent
             if (root.activeFocus)    return HoloniightPalette.borderFocus

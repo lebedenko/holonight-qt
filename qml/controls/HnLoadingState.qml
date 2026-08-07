@@ -19,9 +19,9 @@ Item {
     property real progress: -1
     property Component actionContent
     readonly property alias actionItem: actionLoader.item
-    readonly property int resolvedSizeRole: HnControlMetrics.normalizedSizeRole(root.sizeRole)
+    readonly property int resolvedSizeRole: HnMetrics.normalizedSizeRole(root.sizeRole)
     readonly property real normalizedProgress: root.progress < 0 ? -1 : Math.min(1, Math.max(0, root.progress))
-    readonly property real semanticSpacing: HnControlMetrics.internalSpacing(root.resolvedSizeRole)
+    readonly property real semanticSpacing: HnMetrics.internalSpacing(root.resolvedSizeRole)
 
     implicitWidth: content.implicitWidth
     implicitHeight: content.implicitHeight

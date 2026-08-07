@@ -2,10 +2,10 @@
 
 **Initiative:** ACF-004
 **Date:** 2026-08-07
-**Status:** Proposed
-**Repository baseline:** `0cf5fa7e4af092ddc48cb56f1369a521e0cf3eea`
-**Umbrella contract:** `cba179e0dcaa691e454b4f7d43c7c1d42e66c571`
-**Provider contract:** `holonight-config` `c0e4aa2dd38906684848fde0ba9eef325eb47b8b`
+**Status:** In Progress
+**Repository baseline:** `767cf3d1640e6957455b0146d28f6ce233ff5f51`
+**Umbrella contract:** `c66c5274eb4e7d906cc99c4719de709188046577`
+**Provider contract:** `holonight-config` `81b01d3ae8433f3a4b017db2feb588a1ee62b714`
 
 ## Goal
 

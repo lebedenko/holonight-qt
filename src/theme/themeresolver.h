@@ -3,7 +3,7 @@
 
 #pragma once
 
-#include "holonight/config.h"
+#include "holonight/appearance.h"
 #include "holonight/palette.h"
 
 namespace Holonight {
@@ -11,7 +11,7 @@ namespace Holonight {
 class ThemeResolver {
  public:
   ThemeResolver() = delete;
-  [[nodiscard]] static ColorTokens resolve(const ThemeConfig& config);
+  [[nodiscard]] static ColorTokens resolve(const ResolvedAppearance& appearance);
 
  private:
   [[nodiscard]] static ColorTokens resolveBase(ThemeSchemeKind scheme);

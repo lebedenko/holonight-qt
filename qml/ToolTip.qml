@@ -40,7 +40,7 @@ T.ToolTip {
 
         color: HoloniightPalette.surfaceInverse
         border.color: HoloniightPalette.borderPassive
-        border.width: HoloniightPalette.borderWidth
+        border.width: HnMetrics.borderWidth
         radius: semanticRadius
     }
 }

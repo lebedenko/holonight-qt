@@ -15,8 +15,9 @@ set_target_properties(qholonight PROPERTIES
 )
 
 target_link_libraries(qholonight PRIVATE
+    holonight_appearance
     holonight_theme
-    holonight_config
+    holonight_theme_catalog
     holonight_palette
     Qt6::Gui
     Qt6::GuiPrivate

@@ -77,8 +77,8 @@ Overlay, radius, metric, and ANSI roles:
 | `glowCyanSoft`, `glowBlueSoft`, `glowVioletSoft` | Soft effect overlays. |
 | `scrim`, `glassTint`, `hoverOverlay`, `pressedOverlay`, `disabledOverlay` | State and composition overlays with intentional alpha. |
 | `borderWidth`, `focusBorderWidth`, `separatorWidth`, `controlHeight`, `controlPadding` | Shared control metrics. |
-| `HnControlMetrics.appTitleIconSize`, `appTitleIconSpacing`, `appTitleTextSpacing` | Shared application-title icon and spacing metrics. |
-| `HnControlMetrics.headerHeight` | Canonical 56-pixel application header-region height. |
+| `HnMetrics.appTitleIconSize`, `appTitleIconSpacing`, `appTitleTextSpacing` | Shared application-title icon and spacing metrics. |
+| `HnMetrics.headerHeight` | Canonical 56-pixel application header-region height. |
 | `ansiBlack` through `ansiBrightWhite` | Semantic ANSI terminal colors. |
 
 ## QPalette Mapping
@@ -113,46 +113,21 @@ Startup-only platform integration values remain on `HolonightTheme` as constants
 
 Current implemented precedence is:
 
-1. Built-in defaults from `ThemeConfig::defaults()`.
-2. Config file selected from `HOLONIGHT_CONFIG_FILE` when set; otherwise user config from `~/.config/holonight/theme.conf`.
-3. Environment value overrides such as `HOLONIGHT_APPEARANCE_MODE`, `HOLONIGHT_ICON_THEME`, `HOLONIGHT_FONT`, and `HOLONIGHT_SCALE_FACTOR`.
+1. Canonical defaults owned by `HoloNight::Config`.
+2. The versioned TOML document selected by `HOLONIGHT_APPEARANCE_FILE`, or
+   `~/.config/holonight/appearance.toml` by default.
 
-Appearance scheme is configured with `appearance/scheme`. It is the canonical selector.
+Appearance scheme is configured with `theme.scheme` and determines dark/light mode.
 Supported values are `holonight-dark`, `holonight-light`, `holonight-mocha`, `holonight-latte`,
 `holonight-storm`, `holonight-day`, `holonight-ember`, `holonight-sol`, `holonight-cyber-d`, `holonight-cyber-l`,
 `holonight-dracula`, and `holonight-alucard`.
-Values are trimmed and matched case-insensitively.
+`theme.accent` supports `default`, `cyan`, `blue`, `violet`, and `yellow`. The provider validates and normalizes the
+complete document before Qt publishes it.
 
-Legacy `appearance/mode` remains fallback metadata for older configs. If `scheme` is missing or invalid, `mode=light` resolves to `holonight-light`; `mode=dark`, `mode=system`, missing, or invalid values resolve to `holonight-dark`.
-`system` no longer queries Qt's system color-scheme hint.
-
-`appearance/accent` supports `cyan`, `blue`, `violet`, and `yellow`. Missing or invalid accents resolve to `cyan`.
-
-JSON shape:
-
-```json
-{
-  "appearance": {
-    "scheme": "holonight-dark",
-    "accent": "cyan",
-    "mode": "dark"
-  }
-}
-```
-
-INI shape:
-
-```ini
-[appearance]
-scheme=holonight-dark
-accent=cyan
-mode=dark
-```
-
-Environment override:
+Path override:
 
 ```bash
-HOLONIGHT_APPEARANCE_MODE=light
+HOLONIGHT_APPEARANCE_FILE=/path/to/appearance.toml
 ```
 
 Generated KDE schemes are `data/holonight-dark.colors` (`HoloNight Dark`),

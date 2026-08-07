@@ -32,27 +32,28 @@ HoloNight Shell decorates a desktop workspace and requires distinct typographic 
 | Role | Property (`HolonightTheme`) | Primary Purpose | Default / Fallback Cascade |
 | --- | --- | --- | --- |
 | **Interface Font** | `uiFont` | Standard UI controls, buttons, list delegates, form text. | `"Inter"` $\rightarrow$ `"Noto Sans"` $\rightarrow$ System Sans-Serif |
-| **Monospace Font** | `fixedFont` | Code snippets, terminal, file paths, keyhint badges. | `"JetBrains Mono"` $\rightarrow$ `"monospace"` |
-| **Micro-Header Font** | `headerFont` | Tracked uppercase category headers (`// CALENDAR`, `BEST MATCH`). | `header_font` $\rightarrow$ `uiFont` |
+| **Monospace Font** | `monospaceFont` | Code snippets, terminal, file paths, keyhint badges. | `"JetBrains Mono"` $\rightarrow$ `"monospace"` |
+| **Micro-Header Font** | `titleFont` | Tracked uppercase category headers (`// CALENDAR`, `BEST MATCH`). | `header_font` $\rightarrow$ `uiFont` |
 | **Display / Hero Font** | `displayFont` | Tab bar clock, weather temp (`14°C`), hero numbers, big widgets. | `display_font` $\rightarrow$ `uiFont` |
 
 ---
 
 ## Typography Scale Tokens
 
-Font sizes are derived dynamically from `baseFontSize` (default: 10pt) and `fixedFontSize` (default: 10pt) in `ThemeConfig`:
+Font sizes use canonical typography values from `appearance.toml`. Semantic UI roles are derived from `ui_size`
+(default: 12pt); title, display, and monospace sizes are configured directly.
 
 | Size Role | Property (`HolonightTheme`) | Formula | Point Size (at 10pt base) | Usage |
 | --- | --- | --- | --- | --- |
-| **Display** | `displaySize` | `base + 14` | 24 pt | Clock displays, weather temp (`14°C`), hero numbers |
-| **Heading** | `headingSize` | `base + 6` | 16 pt | Main window / page titles ("Appearance") |
-| **App Title** | `appTitleSize` | `base + 4` | 14 pt | Brand app bar headers ("HoloNight Settings") |
-| **Title** | `titleSize` | `base + 3` | 13 pt | Card titles, group section headers |
-| **Subheading** | `subheadingSize` | `base + 1` | 11 pt | Setting labels, card subtitles |
-| **Body** | `bodySize` | `base` | 10 pt | Regular body text, inputs, buttons |
-| **Caption** | `captionSize` | `base - 1` | 9 pt | Muted subtext, metadata, timestamps |
-| **Micro Header** | `microSize` | `base - 1` | 9 pt | Tracked all-caps headers (`// CALENDAR`) |
-| **Code** | `fixedFontSize` | `fixed_font_size` | 10 pt | Monospace code, keyhint badges, terminal |
+| **Display** | `displayFontSize` | configured | 24 pt | Clock displays, weather temp (`14°C`), hero numbers |
+| **Heading** | `headingSize` | `ui + 6` | 18 pt | Main window / page titles ("Appearance") |
+| **App Title** | `appTitleSize` | `ui + 4` | 16 pt | Brand app bar headers ("HoloNight Settings") |
+| **Title** | `titleFontSize` | configured | 10 pt | Branded title-family text |
+| **Subheading** | `subheadingSize` | `ui + 1` | 13 pt | Setting labels, card subtitles |
+| **Body** | `bodySize` | `ui` | 12 pt | Regular body text, inputs, buttons |
+| **Caption** | `captionSize` | `ui - 1` | 11 pt | Muted subtext, metadata, timestamps |
+| **Micro Header** | `microSize` | `ui - 1` | 11 pt | Tracked all-caps headers (`// CALENDAR`) |
+| **Code** | `monospaceFontSize` | configured | 12 pt | Monospace code, keyhint badges, terminal |
 
 ---
 
@@ -61,30 +62,24 @@ Font sizes are derived dynamically from `baseFontSize` (default: 10pt) and `fixe
 ### 1. User-Facing Settings GUI (Tier 1)
 Exposes simple, essential readability controls:
 - **Interface font** (`uiFont`)
-- **Interface font size** (`baseFontSize`, range 8–18pt)
-- **Monospace font** (`fixedFont`)
-- **Monospace font size** (`fixedFontSize`, range 8–18pt)
+- **Interface font size** (`uiFontSize`, range 8–18pt)
+- **Monospace font** (`monospaceFont`)
+- **Monospace font size** (`monospaceFontSize`, range 8–18pt)
 
-### 2. Advanced `config.toml` & Environment Variables (Tier 2)
-Desktop power users and theme creators can override specialized shell fonts in `~/.config/holonight/config.toml`:
+### 2. Advanced canonical configuration (Tier 2)
+Desktop power users and theme creators can override typography in `~/.config/holonight/appearance.toml`:
 
 ```toml
-[fonts]
-ui = "Inter"
-fixed = "JetBrainsMono Nerd Font"
-header = "Space Grotesk"
-display = "Outfit"
-baseSize = 12
-fixedSize = 14
+[typography]
+ui_family = "Inter"
+ui_size = 12
+monospace_family = "JetBrainsMono Nerd Font"
+monospace_size = 14
+title_family = "Space Grotesk"
+title_size = 10
+display_family = "Outfit"
+display_size = 24
 ```
-
-Environment variables:
-- `HOLONIGHT_FONT` or `HOLONIGHT_UI_FONT`
-- `HOLONIGHT_FIXED_FONT`
-- `HOLONIGHT_HEADER_FONT`
-- `HOLONIGHT_DISPLAY_FONT`
-- `HOLONIGHT_FONT_SIZE` or `HOLONIGHT_BASE_FONT_SIZE`
-- `HOLONIGHT_FIXED_FONT_SIZE` or `HOLONIGHT_FIXED_SIZE`
 
 ---
 

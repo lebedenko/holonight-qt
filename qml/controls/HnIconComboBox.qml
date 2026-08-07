@@ -14,7 +14,7 @@ H.ComboBox {
     property int sizeRole: HnControlSize.Normal
     property string iconRole: "icon"
 
-    readonly property int resolvedSizeRole: HnControlMetrics.normalizedSizeRole(root.sizeRole)
+    readonly property int resolvedSizeRole: HnMetrics.normalizedSizeRole(root.sizeRole)
     readonly property url currentIconSource: root.roleValue(root.currentIndex, root.iconRole)
 
     function roleValue(index: int, role: string): var {
@@ -32,16 +32,16 @@ H.ComboBox {
         return ""
     }
 
-    implicitHeight: HnControlMetrics.controlHeight(root.resolvedSizeRole)
-    leftPadding: HnControlMetrics.horizontalPadding(root.resolvedSizeRole)
-    rightPadding: HnControlMetrics.horizontalPadding(root.resolvedSizeRole) + root.indicator.width
+    implicitHeight: HnMetrics.controlHeight(root.resolvedSizeRole)
+    leftPadding: HnMetrics.horizontalPadding(root.resolvedSizeRole)
+    rightPadding: HnMetrics.horizontalPadding(root.resolvedSizeRole) + root.indicator.width
     topPadding: 0
     bottomPadding: 0
 
     delegate: iconDelegate
 
     contentItem: T.TextField {
-        rightPadding: HnControlMetrics.internalSpacing(root.resolvedSizeRole)
+        rightPadding: HnMetrics.internalSpacing(root.resolvedSizeRole)
         text: root.editable ? root.editText : root.displayText
         enabled: root.editable
         autoScroll: root.editable
@@ -57,13 +57,13 @@ H.ComboBox {
             anchors.left: parent.left
             anchors.verticalCenter: parent.verticalCenter
             source: root.currentIconSource
-            size: HnControlMetrics.iconSize(root.resolvedSizeRole)
+            size: HnMetrics.iconSize(root.resolvedSizeRole)
             iconState: root.enabled ? HnIcon.Normal : HnIcon.Disabled
             visible: source.toString().length > 0 && !selectedIcon.hasError
         }
 
         leftPadding: selectedIcon.visible
-                     ? selectedIcon.width + HnControlMetrics.internalSpacing(root.resolvedSizeRole)
+                     ? selectedIcon.width + HnMetrics.internalSpacing(root.resolvedSizeRole)
                      : 0
     }
 
@@ -81,22 +81,22 @@ H.ComboBox {
                                                 : root.roleValue(index, root.iconRole)
 
             width: root.popup.availableWidth
-            height: HnControlMetrics.controlHeight(root.resolvedSizeRole)
+            height: HnMetrics.controlHeight(root.resolvedSizeRole)
             text: root.textAt(index)
             highlighted: root.highlightedIndex === index
-            leftPadding: HnControlMetrics.horizontalPadding(root.resolvedSizeRole)
+            leftPadding: HnMetrics.horizontalPadding(root.resolvedSizeRole)
                          + (delegateIcon.visible
-                            ? delegateIcon.width + HnControlMetrics.internalSpacing(root.resolvedSizeRole)
+                            ? delegateIcon.width + HnMetrics.internalSpacing(root.resolvedSizeRole)
                             : 0)
 
             HnIcon {
                 id: delegateIcon
 
                 anchors.left: parent.left
-                anchors.leftMargin: HnControlMetrics.horizontalPadding(root.resolvedSizeRole)
+                anchors.leftMargin: HnMetrics.horizontalPadding(root.resolvedSizeRole)
                 anchors.verticalCenter: parent.verticalCenter
                 source: delegateRoot.iconSource
-                size: HnControlMetrics.iconSize(root.resolvedSizeRole)
+                size: HnMetrics.iconSize(root.resolvedSizeRole)
                 iconState: delegateRoot.enabled ? HnIcon.Normal : HnIcon.Disabled
                 visible: source.toString().length > 0 && !delegateIcon.hasError
             }

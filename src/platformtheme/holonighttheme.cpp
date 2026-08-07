@@ -11,12 +11,12 @@
 #include <QVariant>
 
 HoloniightTheme::HoloniightTheme()
-    : config_{Holonight::ThemeConfig::load()},
-      color_mode_{config_.resolvedColorMode()},
+    : config_{appearance_reader_.appearance()},
+      color_mode_{config_.color_mode},
       palette_{Holonight::buildPalette(Holonight::ThemeResolver::resolve(config_))},
       font_system_{config_.ui_font, config_.bodySize()},
-      font_title_{config_.ui_font, config_.titleSize()},
-      font_fixed_{config_.fixed_font, config_.fixedFontSize()},
+      font_title_{config_.title_font, config_.title_font_size},
+      font_fixed_{config_.monospace_font, config_.monospace_font_size},
       font_small_{config_.ui_font, config_.captionSize()},
       font_mini_{config_.ui_font, (std::max)(6, config_.bodySize() - 2)} {
   QIcon::setThemeName(config_.icon_theme);

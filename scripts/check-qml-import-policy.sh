@@ -6,7 +6,7 @@ qml_root=${1:?usage: check-qml-import-policy.sh <qml-root>}
 failed=0
 style_types='Button|CheckBox|ComboBox|ItemDelegate|Menu|MenuItem|ProgressBar|RadioButton|ScrollBar|ScrollView|Slider|SpinBox|Switch|TabBar|TabButton|TextArea|TextField|ToolTip'
 style_use="(^|[^.[:alnum:]_])(${style_types})[[:space:]]*\\{"
-core_types='HoloniightPalette|HolonightTheme|HnAppearance|HnShapeProfile|HnSurfaceRole|HnCornerStyle|HnShapeKind|HnCornerMask|HnIconProvider|HnIcon|HnControlSize|HnControlMetrics|HnTypographyRole|HnLabel'
+core_types='HoloniightPalette|HolonightTheme|HnAppearance|HnShapeProfile|HnSurfaceRole|HnCornerStyle|HnShapeKind|HnCornerMask|HnIconProvider|HnIcon|HnControlSize|HnMetrics|HnTypographyRole|HnLabel'
 
 while IFS= read -r qml_file; do
   has_style_use=0

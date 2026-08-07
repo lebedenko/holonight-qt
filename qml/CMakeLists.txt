@@ -30,13 +30,11 @@ set_target_properties(holonight_qml PROPERTIES AUTOMOC ON)
 
 set_source_files_properties(
     core/HnControlSize.qml
-    core/HnControlMetrics.qml
     core/HnTypographyRole.qml
     PROPERTIES
         QT_QML_SINGLETON_TYPE TRUE
 )
 set_source_files_properties(core/HnControlSize.qml PROPERTIES QT_RESOURCE_ALIAS HnControlSize.qml)
-set_source_files_properties(core/HnControlMetrics.qml PROPERTIES QT_RESOURCE_ALIAS HnControlMetrics.qml)
 set_source_files_properties(core/HnTypographyRole.qml PROPERTIES QT_RESOURCE_ALIAS HnTypographyRole.qml)
 set_source_files_properties(core/HnLabel.qml PROPERTIES QT_RESOURCE_ALIAS HnLabel.qml)
 
@@ -46,6 +44,10 @@ qt_add_qml_module(holonight_core_qml
     PLUGIN_TARGET holonight_core_qml
     OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/Holonight/Core
     SOURCES
+        appearancecontext.h
+        appearancecontext.cpp
+        hnmetrics.h
+        hnmetrics.cpp
         hnappearance.h
         hnappearance.cpp
         hnshapeprofile.h
@@ -59,7 +61,6 @@ qt_add_qml_module(holonight_core_qml
         ${CMAKE_SOURCE_DIR}/src/icons/hniconprovider.cpp
     QML_FILES
         core/HnControlSize.qml
-        core/HnControlMetrics.qml
         core/HnTypographyRole.qml
         core/HnLabel.qml
         HnIcon.qml
@@ -70,8 +71,10 @@ set_target_properties(holonight_core_qml PROPERTIES
 )
 
 target_link_libraries(holonight_core_qml PRIVATE
+    holonight_appearance
+    holonight_metrics
     holonight_theme
-    holonight_config
+    holonight_theme_catalog
     holonight_icons
     holonight_palette
     Qt6::Qml
@@ -228,7 +231,6 @@ install(FILES
     ${CMAKE_CURRENT_BINARY_DIR}/Holonight/Core/qmldir
     ${CMAKE_CURRENT_BINARY_DIR}/Holonight/Core/holonight_core_qml.qmltypes
     core/HnControlSize.qml
-    core/HnControlMetrics.qml
     core/HnTypographyRole.qml
     core/HnLabel.qml
     HnIcon.qml

@@ -8,25 +8,14 @@ set(HOLONIGHT_TEST_ENV
     "QT_QPA_PLATFORM=offscreen"
     "QT_QPA_PLATFORMTHEME="
     "QT_STYLE_OVERRIDE="
-    "HOLONIGHT_CONFIG_FILE=/tmp/holonight-tests-missing-theme.conf"
-    "HOLONIGHT_ICON_THEME="
-    "HOLONIGHT_FALLBACK_ICON_THEME="
-    "HOLONIGHT_ICON_FALLBACK_THEME="
-    "HOLONIGHT_FONT="
-    "HOLONIGHT_UI_FONT="
-    "HOLONIGHT_FIXED_FONT="
-    "HOLONIGHT_FONT_SIZE="
-    "HOLONIGHT_BASE_FONT_SIZE="
-    "HOLONIGHT_SCALE_FACTOR="
-    "HOLONIGHT_APPEARANCE_MODE="
-    "HOLONIGHT_APPEARANCE_FILE=/tmp/holonight-tests-missing-appearance.json"
+    "HOLONIGHT_APPEARANCE_FILE=/tmp/holonight-tests-missing-appearance.toml"
 )
 
 add_executable(holonight_tests
     main.cpp
-    test_config.cpp
-    test_appearance_config.cpp
+    test_resolved_appearance.cpp
     test_palette_tokens.cpp
+    test_metric_tokens.cpp
     test_palette_qpalette.cpp
     test_palette_contrast.cpp
     test_shape_resolver.cpp
@@ -50,14 +39,17 @@ target_include_directories(holonight_tests PRIVATE
 
 target_link_libraries(holonight_tests PRIVATE
     holonight_theme
-    holonight_config
+    holonight_appearance
+    holonight_theme_catalog
     holonight_icons
     holonight_palette
+    holonight_metrics
     Qt6::Gui
     Qt6::GuiPrivate
     Qt6::Test
     Qt6::Widgets
     GTest::gtest
+    HoloNight::Config
 )
 
 add_test(NAME holonight_tests COMMAND holonight_tests
@@ -84,7 +76,7 @@ target_include_directories(holonight_style_primitive_tests PRIVATE
 
 target_link_libraries(holonight_style_primitive_tests PRIVATE
     holonight_theme
-    holonight_config
+    holonight_theme_catalog
     holonight_palette
     Qt6::Gui
     Qt6::Widgets
@@ -115,7 +107,7 @@ target_include_directories(holonight_style_complex_tests PRIVATE
 
 target_link_libraries(holonight_style_complex_tests PRIVATE
     holonight_theme
-    holonight_config
+    holonight_theme_catalog
     holonight_palette
     Qt6::Gui
     Qt6::Widgets
@@ -145,7 +137,7 @@ target_include_directories(holonight_theme_resolver_tests PRIVATE
 
 target_link_libraries(holonight_theme_resolver_tests PRIVATE
     holonight_theme
-    holonight_config
+    holonight_theme_catalog
     holonight_palette
     Qt6::Gui
     Qt6::Widgets
@@ -180,8 +172,9 @@ target_include_directories(holonight_qml_smoke_tests PRIVATE
 
 target_link_libraries(holonight_qml_smoke_tests PRIVATE
     holonight_theme
-    holonight_config
+    holonight_theme_catalog
     holonight_palette
+    holonight_metrics
     Qt6::Gui
     Qt6::Qml
     Qt6::Quick
@@ -189,6 +182,7 @@ target_link_libraries(holonight_qml_smoke_tests PRIVATE
     Qt6::Test
     Qt6::Widgets
     GTest::gtest
+    HoloNight::Config
 )
 
 add_dependencies(holonight_qml_smoke_tests

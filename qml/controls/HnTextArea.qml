@@ -31,14 +31,14 @@ FocusScope {
     readonly property alias selectedText: editor.selectedText
     property alias font: editor.font
 
-    readonly property int resolvedSizeRole: HnControlMetrics.normalizedSizeRole(root.sizeRole)
+    readonly property int resolvedSizeRole: HnMetrics.normalizedSizeRole(root.sizeRole)
     readonly property int resolvedMinimumVisibleLines: Math.max(1, root.minimumVisibleLines)
     readonly property int resolvedMaximumVisibleLines: Math.max(root.resolvedMinimumVisibleLines,
                                                                  root.maximumVisibleLines)
     readonly property real fontHeight: editor.font.pixelSize > 0 ? editor.font.pixelSize : (editor.font.pointSize * 1.33)
     readonly property real lineHeight: Math.max(editor.contentHeight / Math.max(1, editor.lineCount),
                                                 root.fontHeight * 1.2)
-    readonly property real editorVerticalPadding: HnControlMetrics.internalSpacing(root.resolvedSizeRole) * 2
+    readonly property real editorVerticalPadding: HnMetrics.internalSpacing(root.resolvedSizeRole) * 2
     readonly property real minimumEditorHeight: root.resolvedMinimumVisibleLines * root.lineHeight
                                                 + root.editorVerticalPadding
     readonly property real maximumEditorHeight: root.resolvedMaximumVisibleLines * root.lineHeight
@@ -49,7 +49,7 @@ FocusScope {
     implicitWidth: 240
     implicitHeight: editorScroll.implicitHeight + (footerLoader.active
                                                     ? footerLoader.implicitHeight
-                                                      + HnControlMetrics.internalSpacing(root.resolvedSizeRole) * 2
+                                                      + HnMetrics.internalSpacing(root.resolvedSizeRole) * 2
                                                     : 0)
     activeFocusOnTab: true
     onActiveFocusChanged: {
@@ -81,8 +81,8 @@ FocusScope {
         radius: HnAppearance.roundedRadius(HnSurfaceRole.Control, width, height,
                                             HnAppearance.revision)
         border.width: (editor.activeFocus || root.hasError)
-                      ? HoloniightPalette.focusBorderWidth
-                      : HoloniightPalette.borderWidth
+                      ? HnMetrics.focusBorderWidth
+                      : HnMetrics.borderWidth
         border.color: root.hasError ? HoloniightPalette.borderUrgent
                                     : editor.activeFocus ? HoloniightPalette.borderFocus
                                                          : HoloniightPalette.borderPassive
@@ -114,10 +114,10 @@ FocusScope {
             hasError: root.hasError
             enabled: root.enabled
             wrapMode: TextEdit.Wrap
-            topPadding: HnControlMetrics.internalSpacing(root.resolvedSizeRole)
-            bottomPadding: HnControlMetrics.internalSpacing(root.resolvedSizeRole)
-            leftPadding: HnControlMetrics.horizontalPadding(root.resolvedSizeRole)
-            rightPadding: HnControlMetrics.horizontalPadding(root.resolvedSizeRole)
+            topPadding: HnMetrics.internalSpacing(root.resolvedSizeRole)
+            bottomPadding: HnMetrics.internalSpacing(root.resolvedSizeRole)
+            leftPadding: HnMetrics.horizontalPadding(root.resolvedSizeRole)
+            rightPadding: HnMetrics.horizontalPadding(root.resolvedSizeRole)
             background: Item {}
             Accessible.name: root.accessibleName
             Accessible.description: root.accessibleDescription
@@ -129,11 +129,11 @@ FocusScope {
 
         objectName: "hnTextAreaFooter"
         anchors.left: parent.left
-        anchors.leftMargin: HnControlMetrics.horizontalPadding(root.resolvedSizeRole)
+        anchors.leftMargin: HnMetrics.horizontalPadding(root.resolvedSizeRole)
         anchors.right: parent.right
-        anchors.rightMargin: HnControlMetrics.horizontalPadding(root.resolvedSizeRole)
+        anchors.rightMargin: HnMetrics.horizontalPadding(root.resolvedSizeRole)
         anchors.top: editorScroll.bottom
-        anchors.topMargin: active ? HnControlMetrics.internalSpacing(root.resolvedSizeRole) : 0
+        anchors.topMargin: active ? HnMetrics.internalSpacing(root.resolvedSizeRole) : 0
         active: root.footerContent !== null
         sourceComponent: root.footerContent
     }

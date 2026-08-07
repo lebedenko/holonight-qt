@@ -1,10 +1,6 @@
 add_library(holonight_theme STATIC
-    appearanceconfig.h
-    appearanceconfig.cpp
     shaperesolver.h
     shaperesolver.cpp
-    themeloader.h
-    themeloader.cpp
     themeresolver.h
     themeresolver.cpp
 )
@@ -16,7 +12,8 @@ target_include_directories(holonight_theme
 )
 
 target_link_libraries(holonight_theme PUBLIC
-    holonight_config
+    holonight_appearance
+    holonight_theme_catalog
     holonight_palette
     Qt6::Gui
 )
@@ -29,4 +26,4 @@ install(TARGETS holonight_theme
     EXPORT HolonightQtTargets
     ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
 )
-install(FILES appearanceconfig.h shaperesolver.h themeloader.h themeresolver.h DESTINATION include/holonight/theme)
+install(FILES shaperesolver.h themeresolver.h DESTINATION include/holonight/theme)

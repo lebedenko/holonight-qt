@@ -58,7 +58,7 @@ T.RadioButton {
             radius: (parent.width + 4) / 2
             color: Qt.rgba(0, 0, 0, 0)
             border.color: HoloniightPalette.borderFocus
-            border.width: HoloniightPalette.focusBorderWidth
+            border.width: HnMetrics.focusBorderWidth
         }
     }
 

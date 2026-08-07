@@ -7,7 +7,6 @@
 #include <QString>
 
 #include <exception>
-#include <holonight/config.h>
 #include <holonight/palette.h>
 #include <holonight/theme_catalog.h>
 #include <iostream>

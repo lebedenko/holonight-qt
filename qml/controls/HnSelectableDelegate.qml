@@ -17,15 +17,15 @@ T.ItemDelegate {
 
     property int sizeRole: HnControlSize.Normal
     property int selectionStyle: HnSelectableDelegate.Fill
-    readonly property int resolvedSizeRole: HnControlMetrics.normalizedSizeRole(root.sizeRole)
+    readonly property int resolvedSizeRole: HnMetrics.normalizedSizeRole(root.sizeRole)
     readonly property bool selected: root.highlighted || root.checked
                                      || (root.ListView ? root.ListView.isCurrentItem : false)
-    readonly property real semanticSpacing: HnControlMetrics.internalSpacing(root.resolvedSizeRole)
+    readonly property real semanticSpacing: HnMetrics.internalSpacing(root.resolvedSizeRole)
 
     implicitWidth: Math.max(160, implicitContentWidth + leftPadding + rightPadding)
-    implicitHeight: Math.max(HnControlMetrics.controlHeight(root.resolvedSizeRole),
+    implicitHeight: Math.max(HnMetrics.controlHeight(root.resolvedSizeRole),
                              implicitContentHeight + topPadding + bottomPadding)
-    padding: HnControlMetrics.horizontalPadding(root.resolvedSizeRole)
+    padding: HnMetrics.horizontalPadding(root.resolvedSizeRole)
     spacing: root.semanticSpacing
     hoverEnabled: true
 
@@ -52,7 +52,7 @@ T.ItemDelegate {
             radius: parent.semanticRadius
             visible: root.selected && !root.down
             Accessible.ignored: true
-            readonly property real accentWidth: Math.max(2, HoloniightPalette.borderWidth * 2)
+            readonly property real accentWidth: Math.max(2, HnMetrics.borderWidth * 2)
             readonly property real accentStop: width > 0 ? Math.min(1, accentWidth / width) : 0
             readonly property real hardStopOffset: 0.25 / Math.max(1, width)
 
@@ -90,7 +90,7 @@ T.ItemDelegate {
             radius: parent.semanticRadius
             border.width: root.visualFocus
                           || (root.selected && root.selectionStyle === HnSelectableDelegate.Outline)
-                          ? HoloniightPalette.focusBorderWidth : 0
+                          ? HnMetrics.focusBorderWidth : 0
             border.color: root.visualFocus ? HoloniightPalette.borderFocus
                                            : HoloniightPalette.selectionIndicator
             Accessible.ignored: true

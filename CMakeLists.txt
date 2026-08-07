@@ -13,6 +13,16 @@ include(CMakePackageConfigHelpers)
 
 find_package(Qt6 6.11 REQUIRED COMPONENTS Core Gui Widgets Quick QuickControls2 QuickShapes Svg)
 find_package(Qt6 REQUIRED COMPONENTS GuiPrivate)
+find_package(HoloNightConfig CONFIG REQUIRED)
+
+get_target_property(HOLONIGHT_CONFIG_RUNTIME_LIBRARY HoloNight::Config IMPORTED_LOCATION_DEBUG)
+if(NOT HOLONIGHT_CONFIG_RUNTIME_LIBRARY)
+  get_target_property(HOLONIGHT_CONFIG_RUNTIME_LIBRARY HoloNight::Config IMPORTED_LOCATION_RELEASE)
+endif()
+if(NOT HOLONIGHT_CONFIG_RUNTIME_LIBRARY)
+  get_target_property(HOLONIGHT_CONFIG_RUNTIME_LIBRARY HoloNight::Config IMPORTED_LOCATION_NOCONFIG)
+endif()
+get_filename_component(HOLONIGHT_CONFIG_RUNTIME_DIR "${HOLONIGHT_CONFIG_RUNTIME_LIBRARY}" DIRECTORY)
 
 qt_policy(SET QTP0001 NEW)
 

@@ -3,7 +3,7 @@
 
 #include "iconthemeresolver.h"
 
-#include "holonight/config.h"
+#include "holonight/appearance_reader.h"
 
 #include <QDirIterator>
 #include <QFile>
@@ -62,7 +62,8 @@ QHash<QString, QByteArray> themeIconCache;
 }
 
 [[nodiscard]] QStringList iconThemeNames() {
-  const ThemeConfig config = ThemeConfig::load();
+  const AppearanceReader reader;
+  const ResolvedAppearance& config = reader.appearance();
   QStringList names;
   if (!config.icon_theme.isEmpty()) {
     names << config.icon_theme;

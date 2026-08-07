@@ -53,7 +53,7 @@ T.TabButton {
             anchors.fill: parent
             color: Qt.rgba(0, 0, 0, 0)
             border.color: HoloniightPalette.borderFocus
-            border.width: HoloniightPalette.borderWidth
+            border.width: HnMetrics.borderWidth
             visible: root.visualFocus
         }
     }

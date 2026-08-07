@@ -3,9 +3,10 @@
 
 #include "hnappearance.h"
 
+#include "appearancecontext.h"
 #include "hnshapetypes.h"
+#include "shaperesolver.h"
 
-#include <QFileInfo>
 #include <QSizeF>
 
 namespace {
@@ -24,33 +25,62 @@ Holonight::CornerStyle parsedCornerStyle(int style) {
   return static_cast<Holonight::CornerStyle>(style);
 }
 
+Holonight::CornerStyle globalCornerStyle(const Holonight::ResolvedAppearance& appearance) {
+  switch (appearance.shape_style) {
+    case Holonight::ResolvedShapeStyle::Hybrid:
+      return Holonight::CornerStyle::Hybrid;
+    case Holonight::ResolvedShapeStyle::Rounded:
+      return Holonight::CornerStyle::Rounded;
+    case Holonight::ResolvedShapeStyle::Chamfered:
+      return Holonight::CornerStyle::Chamfered;
+    case Holonight::ResolvedShapeStyle::Inherit:
+      return Holonight::CornerStyle::Inherit;
+  }
+  return Holonight::CornerStyle::Inherit;
+}
+
+Holonight::ShapeTokens shapeTokens(const Holonight::ResolvedAppearance& appearance) {
+  Holonight::ShapeTokens tokens = Holonight::ShapeResolver::defaultTokens();
+  tokens.radius_xs *= appearance.shape_scale;
+  tokens.radius_sm *= appearance.shape_scale;
+  tokens.radius_md *= appearance.shape_scale;
+  tokens.radius_lg *= appearance.shape_scale;
+  tokens.chamfer_xs *= appearance.shape_scale;
+  tokens.chamfer_sm *= appearance.shape_scale;
+  tokens.chamfer_md *= appearance.shape_scale;
+  tokens.chamfer_lg *= appearance.shape_scale;
+  if (appearance.base_radius.has_value()) {
+    tokens.radius_xs = tokens.radius_sm = tokens.radius_md = tokens.radius_lg = *appearance.base_radius;
+  }
+  if (appearance.base_chamfer.has_value()) {
+    tokens.chamfer_xs = tokens.chamfer_sm = tokens.chamfer_md = tokens.chamfer_lg = *appearance.base_chamfer;
+  }
+  return tokens;
+}
+
 }  // namespace
 
-HnAppearance::HnAppearance(QObject* parent)
-    : QObject{parent},
-      config_{Holonight::AppearanceConfig::load()},
-      config_file_{Holonight::AppearanceConfig::configFilePath()},
-      config_directory_{QFileInfo{config_file_}.absolutePath()},
-      config_parent_directory_{QFileInfo{config_directory_}.absolutePath()} {
-  connect(&watcher_, &QFileSystemWatcher::fileChanged, this, &HnAppearance::onPathChanged);
-  connect(&watcher_, &QFileSystemWatcher::directoryChanged, this, &HnAppearance::onPathChanged);
-  armWatch();
+HnAppearance::HnAppearance(Holonight::AppearanceReader* reader, QObject* parent) : QObject{parent}, reader_{reader} {
+  connect(reader_, &Holonight::AppearanceReader::appearanceChanged, this, &HnAppearance::appearanceChanged);
 }
 
-void HnAppearance::reload() {
-  const Holonight::AppearanceConfig new_config = Holonight::AppearanceConfig::load(config_file_);
-  if (new_config == config_) {
-    return;
-  }
-  config_ = new_config;
-  ++revision_;
-  Q_EMIT appearanceChanged();
+HnAppearance* HnAppearance::create(QQmlEngine* engine, QJSEngine* script_engine) {
+  Q_UNUSED(script_engine)
+  return new HnAppearance{Holonight::appearanceReaderForEngine(engine), engine};
 }
+
+int HnAppearance::cornerStyle() const { return static_cast<int>(globalCornerStyle(reader_->appearance())); }
+
+qreal HnAppearance::baseRadius() const { return reader_->appearance().base_radius.value_or(qQNaN()); }
+
+qreal HnAppearance::baseChamfer() const { return reader_->appearance().base_chamfer.value_or(qQNaN()); }
+
+void HnAppearance::reload() { reader_->reload(); }
 
 qreal HnAppearance::roundedRadius(int role, qreal width, qreal height, int revision_dependency) const {
   Q_UNUSED(revision_dependency)
   return Holonight::ShapeResolver::resolve(surfaceRole(role), Holonight::CornerStyle::Rounded, QSizeF{width, height},
-                                           qQNaN(), qQNaN(), config_.shapeTokens())
+                                           qQNaN(), qQNaN(), shapeTokens(reader_->appearance()))
       .radius;
 }
 
@@ -65,32 +95,15 @@ QVariantMap HnAppearance::resolve(int role, int style, qreal width, qreal height
                                   int revision_dependency) const {
   Q_UNUSED(revision_dependency)
   const Holonight::ResolvedShape shape = Holonight::ShapeResolver::resolve(
-      surfaceRole(role), config_.effectiveStyle(parsedCornerStyle(style)), QSizeF{width, height}, radius_override,
-      chamfer_override, chamfered_corners_override, config_.shapeTokens());
+      surfaceRole(role),
+      parsedCornerStyle(style) == Holonight::CornerStyle::Inherit ? globalCornerStyle(reader_->appearance())
+                                                                  : parsedCornerStyle(style),
+      QSizeF{width, height}, radius_override, chamfer_override, chamfered_corners_override,
+      shapeTokens(reader_->appearance()));
   return {
       {QStringLiteral("kind"), static_cast<int>(shape.kind)},
       {QStringLiteral("radius"), shape.radius},
       {QStringLiteral("chamfer"), shape.chamfer},
       {QStringLiteral("corners"), shape.chamfered_corners.toInt()},
   };
-}
-
-void HnAppearance::armWatch() {
-  if (QFileInfo::exists(config_parent_directory_) && !watcher_.directories().contains(config_parent_directory_)) {
-    watcher_.addPath(config_parent_directory_);
-  }
-  if (QFileInfo::exists(config_directory_) && !watcher_.directories().contains(config_directory_)) {
-    watcher_.addPath(config_directory_);
-  }
-  if (QFileInfo::exists(config_file_) && !watcher_.files().contains(config_file_)) {
-    watcher_.addPath(config_file_);
-  }
-}
-
-void HnAppearance::onPathChanged(const QString& path) {
-  if (path != config_file_ && path != config_directory_ && path != config_parent_directory_) {
-    return;
-  }
-  armWatch();
-  reload();
 }

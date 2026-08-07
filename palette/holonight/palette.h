@@ -92,13 +92,6 @@ struct ColorTokens {
   QColor workspaceOccupied;  // #1f2335  Occupied / urgent workspace pill fill
   QColor workspaceActive;    // #20263a  Active workspace pill fill (slightly elevated)
 
-  // Metric tokens
-  int borderWidth = 1;
-  int focusBorderWidth = 1;
-  int separatorWidth = 1;
-  int controlHeight = 32;
-  int controlPadding = 6;
-
   // ANSI terminal palette
   QColor ansiBlack;
   QColor ansiRed;

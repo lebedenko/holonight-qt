@@ -72,7 +72,7 @@ T.CheckDelegate {
             color: "transparent"
             radius: HnAppearance.roundedRadius(HnSurfaceRole.Control, width, height, HnAppearance.revision)
             border.width: root.visualFocus || root.checked
-                          ? HoloniightPalette.focusBorderWidth : HoloniightPalette.borderWidth
+                          ? HnMetrics.focusBorderWidth : HnMetrics.borderWidth
             border.color: root.visualFocus ? HoloniightPalette.borderFocus
                                            : (root.checked ? HoloniightPalette.selectionIndicator
                                                            : HoloniightPalette.borderPassive)

@@ -246,10 +246,9 @@ void ThemeResolver::applyAccent(ColorTokens& tok, const QString& accent, ThemeSc
   }
 }
 
-ColorTokens ThemeResolver::resolve(const ThemeConfig& config) {
-  const ThemeSchemeKind scheme = config.resolvedThemeScheme();
-  ColorTokens tok = resolveBase(scheme);
-  applyAccent(tok, config.resolvedAccent(), scheme);
+ColorTokens ThemeResolver::resolve(const ResolvedAppearance& appearance) {
+  ColorTokens tok = resolveBase(appearance.theme_scheme);
+  applyAccent(tok, appearance.accent, appearance.theme_scheme);
   tok.textAccent = tok.primary;
   return tok;
 }

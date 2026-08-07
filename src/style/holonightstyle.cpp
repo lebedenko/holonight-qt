@@ -9,7 +9,6 @@
 #include <QAbstractItemView>
 #include <QApplication>
 #include <QDockWidget>
-#include <QFileInfo>
 #include <QFrame>
 #include <QMenu>
 #include <QPainter>
@@ -294,15 +293,11 @@ bool drawFlatButtonPanelIfNeeded(const QStyleOption* option, QPainter* painter, 
 
 HoloniightStyle::HoloniightStyle()
     : QProxyStyle(QStringLiteral("fusion")),
-      config_{Holonight::ThemeConfig::load()},
+      appearance_reader_{this},
+      config_{appearance_reader_.appearance()},
       tokens_{Holonight::ThemeResolver::resolve(config_)},
-      palette_{Holonight::buildPalette(tokens_)},
-      theme_config_path_{Holonight::ThemeConfig::configFilePath()},
-      theme_config_dir_path_{QFileInfo{theme_config_path_}.absolutePath()} {
-  connect(&theme_config_watcher_, &QFileSystemWatcher::fileChanged, this, &HoloniightStyle::onThemeConfigPathChanged);
-  connect(&theme_config_watcher_, &QFileSystemWatcher::directoryChanged, this,
-          &HoloniightStyle::onThemeConfigPathChanged);
-  armThemeConfigWatch();
+      palette_{Holonight::buildPalette(tokens_)} {
+  connect(&appearance_reader_, &Holonight::AppearanceReader::appearanceChanged, this, &HoloniightStyle::reloadTheme);
 }
 
 QPalette HoloniightStyle::standardPalette() const { return palette_; }
@@ -440,7 +435,7 @@ int HoloniightStyle::pixelMetric(PixelMetric metric, const QStyleOption* option,
 }
 
 int HoloniightStyle::scaledMetric(int value) const {
-  return (std::max)(1, static_cast<int>(std::lround(static_cast<qreal>(value) * config_.scale_factor)));
+  return (std::max)(1, static_cast<int>(std::lround(static_cast<qreal>(value) * config_.layout_scale)));
 }
 
 void HoloniightStyle::drawControl(ControlElement element, const QStyleOption* option, QPainter* painter,
@@ -732,20 +727,11 @@ void HoloniightStyle::drawHeaderImpl(const QStyleOption* option, QPainter* paint
 
 const Holonight::ColorTokens& HoloniightStyle::tokens() const { return tokens_; }
 
-void HoloniightStyle::armThemeConfigWatch() {
-  if (QFileInfo::exists(theme_config_dir_path_) &&
-      !theme_config_watcher_.directories().contains(theme_config_dir_path_)) {
-    theme_config_watcher_.addPath(theme_config_dir_path_);
-  }
-  if (QFileInfo::exists(theme_config_path_) && !theme_config_watcher_.files().contains(theme_config_path_)) {
-    theme_config_watcher_.addPath(theme_config_path_);
-  }
-}
-
 void HoloniightStyle::reloadTheme() {
-  const Holonight::ThemeConfig newConfig = Holonight::ThemeConfig::load();
+  const Holonight::ResolvedAppearance newConfig = appearance_reader_.appearance();
   const Holonight::ColorTokens newTokens = Holonight::ThemeResolver::resolve(newConfig);
-  if (newTokens == tokens_ && newConfig.resolvedColorMode() == config_.resolvedColorMode()) {
+  if (newTokens == tokens_ && newConfig.color_mode == config_.color_mode &&
+      newConfig.layout_scale == config_.layout_scale) {
     return;
   }
 
@@ -767,14 +753,6 @@ void HoloniightStyle::reloadTheme() {
     polish(widget);
     widget->update();
   }
-}
-
-void HoloniightStyle::onThemeConfigPathChanged(const QString& path) {
-  if (path != theme_config_path_ && path != theme_config_dir_path_) {
-    return;
-  }
-  armThemeConfigWatch();
-  reloadTheme();
 }
 
 void HoloniightStyle::paintArrow(QPainter* painter, const QRect& rect, ArrowDirection direction, const QColor& color) {

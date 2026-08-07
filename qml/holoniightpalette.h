@@ -6,9 +6,14 @@
 #include "holonight/palette.h"
 
 #include <QColor>
-#include <QFileSystemWatcher>
+#include <QJSEngine>
 #include <QObject>
+#include <QQmlEngine>
 #include <QtQml/qqml.h>
+
+namespace Holonight {
+class AppearanceReader;
+}
 
 class HoloniightPalette : public QObject {
   Q_OBJECT
@@ -75,12 +80,6 @@ class HoloniightPalette : public QObject {
   Q_PROPERTY(QColor workspaceOccupied READ workspaceOccupied NOTIFY paletteChanged)
   Q_PROPERTY(QColor workspaceActive READ workspaceActive NOTIFY paletteChanged)
 
-  Q_PROPERTY(int borderWidth READ borderWidth NOTIFY paletteChanged)
-  Q_PROPERTY(int focusBorderWidth READ focusBorderWidth NOTIFY paletteChanged)
-  Q_PROPERTY(int separatorWidth READ separatorWidth NOTIFY paletteChanged)
-  Q_PROPERTY(int controlHeight READ controlHeight NOTIFY paletteChanged)
-  Q_PROPERTY(int controlPadding READ controlPadding NOTIFY paletteChanged)
-
   Q_PROPERTY(QColor ansiBlack READ ansiBlack NOTIFY paletteChanged)
   Q_PROPERTY(QColor ansiRed READ ansiRed NOTIFY paletteChanged)
   Q_PROPERTY(QColor ansiGreen READ ansiGreen NOTIFY paletteChanged)
@@ -100,8 +99,8 @@ class HoloniightPalette : public QObject {
   Q_PROPERTY(int revision READ revision NOTIFY paletteChanged)
 
  public:
-  explicit HoloniightPalette(QObject* parent = nullptr);
   Q_DISABLE_COPY_MOVE(HoloniightPalette)
+  [[nodiscard]] static HoloniightPalette* create(QQmlEngine* engine, QJSEngine* script_engine);
 
   Q_INVOKABLE void reload();
 
@@ -152,11 +151,6 @@ class HoloniightPalette : public QObject {
   [[nodiscard]] QColor accentYellow() const { return tok_.accentYellow; }
   [[nodiscard]] QColor workspaceOccupied() const { return tok_.workspaceOccupied; }
   [[nodiscard]] QColor workspaceActive() const { return tok_.workspaceActive; }
-  [[nodiscard]] int borderWidth() const { return tok_.borderWidth; }
-  [[nodiscard]] int focusBorderWidth() const { return tok_.focusBorderWidth; }
-  [[nodiscard]] int separatorWidth() const { return tok_.separatorWidth; }
-  [[nodiscard]] int controlHeight() const { return tok_.controlHeight; }
-  [[nodiscard]] int controlPadding() const { return tok_.controlPadding; }
   [[nodiscard]] QColor ansiBlack() const { return tok_.ansiBlack; }
   [[nodiscard]] QColor ansiRed() const { return tok_.ansiRed; }
   [[nodiscard]] QColor ansiGreen() const { return tok_.ansiGreen; }
@@ -180,12 +174,9 @@ class HoloniightPalette : public QObject {
   void paletteChanged();
 
  private:
-  void armThemeConfigWatch();
-  void onThemeConfigPathChanged(const QString& path);
+  explicit HoloniightPalette(Holonight::AppearanceReader* reader, QObject* parent);
 
+  Holonight::AppearanceReader* reader_ = nullptr;
   Holonight::ColorTokens tok_;
   int revision_ = 0;
-  QString theme_config_path_;
-  QString theme_config_dir_path_;
-  QFileSystemWatcher theme_config_watcher_;
 };

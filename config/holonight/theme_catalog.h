@@ -43,6 +43,7 @@ struct AccentCatalogEntry {
 [[nodiscard]] QString normalizeSchemeId(const QString& scheme_id);
 [[nodiscard]] QString normalizeAccentId(const QString& accent_id);
 [[nodiscard]] QString schemeIdForKind(ThemeSchemeKind scheme);
+[[nodiscard]] ColorMode colorModeForScheme(ThemeSchemeKind scheme);
 [[nodiscard]] QString schemeIdForKdeColorSchemeName(const QString& kde_color_scheme_name);
 [[nodiscard]] QString modeNameForScheme(const QString& scheme_id);
 [[nodiscard]] const ThemeVariantCatalogEntry* themeVariantForSchemeId(const QString& scheme_id);

@@ -18,7 +18,7 @@ TEST(PlatformThemeFonts, SystemFontProperties) {
   ASSERT_NE(fnt, nullptr);
   EXPECT_EQ(fnt->family(), QStringLiteral("Inter"));
   EXPECT_EQ(fnt->weight(), QFont::Normal);
-  EXPECT_EQ(fnt->pointSize(), 10);
+  EXPECT_EQ(fnt->pointSize(), 12);
 }
 
 TEST(PlatformThemeFonts, TitleBarFontNonNull) {
@@ -30,9 +30,9 @@ TEST(PlatformThemeFonts, TitleBarFontProperties) {
   HoloniightTheme theme;
   const QFont* fnt = theme.font(QPlatformTheme::TitleBarFont);
   ASSERT_NE(fnt, nullptr);
-  EXPECT_EQ(fnt->family(), QStringLiteral("Inter"));
+  EXPECT_EQ(fnt->family(), QStringLiteral("Audiowide"));
   EXPECT_EQ(fnt->weight(), QFont::Normal);
-  EXPECT_EQ(fnt->pointSize(), 13);
+  EXPECT_EQ(fnt->pointSize(), 10);
 }
 
 TEST(PlatformThemeFonts, FixedFontNonNull) {
@@ -46,7 +46,7 @@ TEST(PlatformThemeFonts, FixedFontProperties) {
   ASSERT_NE(fnt, nullptr);
   EXPECT_EQ(fnt->family(), QStringLiteral("JetBrains Mono"));
   EXPECT_EQ(fnt->weight(), QFont::Normal);
-  EXPECT_EQ(fnt->pointSize(), 10);
+  EXPECT_EQ(fnt->pointSize(), 12);
 }
 
 TEST(PlatformThemeFonts, SmallFontNonNull) {
@@ -60,7 +60,7 @@ TEST(PlatformThemeFonts, SmallFontProperties) {
   ASSERT_NE(fnt, nullptr);
   EXPECT_EQ(fnt->family(), QStringLiteral("Inter"));
   EXPECT_EQ(fnt->weight(), QFont::Normal);
-  EXPECT_EQ(fnt->pointSize(), 9);
+  EXPECT_EQ(fnt->pointSize(), 11);
 }
 
 TEST(PlatformThemeFonts, MiniFontNonNull) {
@@ -74,7 +74,7 @@ TEST(PlatformThemeFonts, MiniFontProperties) {
   ASSERT_NE(fnt, nullptr);
   EXPECT_EQ(fnt->family(), QStringLiteral("Inter"));
   EXPECT_EQ(fnt->weight(), QFont::Normal);
-  EXPECT_EQ(fnt->pointSize(), 8);
+  EXPECT_EQ(fnt->pointSize(), 10);
 }
 
 TEST(PlatformThemeFonts, MenuBarFontReturnsNull) {

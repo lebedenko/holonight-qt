@@ -90,7 +90,7 @@ execute_process(
   COMMAND "@CMAKE_COMMAND@"
           -S "${consumer_source}"
           -B "${consumer_build}"
-          "-DCMAKE_PREFIX_PATH=${install_prefix}"
+          "-DCMAKE_PREFIX_PATH=${install_prefix};@CMAKE_PREFIX_PATH@"
   RESULT_VARIABLE configure_result
   OUTPUT_VARIABLE configure_output
   ERROR_VARIABLE configure_error
@@ -114,7 +114,6 @@ foreach(relative_path
     "Holonight/Core/holonight_core_qml.qmltypes"
     "Holonight/Core/@CMAKE_SHARED_MODULE_PREFIX@holonight_core_qml@CMAKE_SHARED_MODULE_SUFFIX@"
     "Holonight/Core/HnControlSize.qml"
-    "Holonight/Core/HnControlMetrics.qml"
     "Holonight/Core/HnIcon.qml"
     "Holonight/Controls/qmldir"
     "Holonight/Controls/holonight_controls_qml.qmltypes"
@@ -224,6 +223,7 @@ Item {
 
 execute_process(
   COMMAND "@CMAKE_COMMAND@" -E env
+          "LD_LIBRARY_PATH=@HOLONIGHT_CONFIG_RUNTIME_DIR@:$ENV{LD_LIBRARY_PATH}"
           "QT_QPA_PLATFORM=offscreen"
           "QT_QPA_PLATFORMTHEME="
           "QT_STYLE_OVERRIDE="
@@ -245,6 +245,7 @@ endif()
 
 execute_process(
   COMMAND "@CMAKE_COMMAND@" -E env
+          "LD_LIBRARY_PATH=@HOLONIGHT_CONFIG_RUNTIME_DIR@:$ENV{LD_LIBRARY_PATH}"
           "QT_QPA_PLATFORM=offscreen"
           "QT_QPA_PLATFORMTHEME=holonight"
           "QT_QUICK_CONTROLS_STYLE=Holonight"

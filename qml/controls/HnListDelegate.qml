@@ -82,7 +82,7 @@ HnSelectableDelegate {
         anchors.left: parent.left
         anchors.right: parent.right
         anchors.bottom: parent.bottom
-        height: root.dividerVisible ? HoloniightPalette.separatorWidth : 0
+        height: root.dividerVisible ? HnMetrics.separatorWidth : 0
         color: HoloniightPalette.borderSubtle
         visible: root.dividerVisible
         Accessible.ignored: true

@@ -11,10 +11,10 @@ T.AbstractButton {
 
     property int sizeRole: HnControlSize.Normal
     property int iconState: root.enabled ? (root.down ? HnIcon.Active : HnIcon.Normal) : HnIcon.Disabled
-    readonly property int resolvedSizeRole: HnControlMetrics.normalizedSizeRole(root.sizeRole)
+    readonly property int resolvedSizeRole: HnMetrics.normalizedSizeRole(root.sizeRole)
 
-    implicitWidth: HnControlMetrics.controlHeight(root.resolvedSizeRole)
-    implicitHeight: HnControlMetrics.controlHeight(root.resolvedSizeRole)
+    implicitWidth: HnMetrics.controlHeight(root.resolvedSizeRole)
+    implicitHeight: HnMetrics.controlHeight(root.resolvedSizeRole)
     hoverEnabled: true
     Accessible.role: Accessible.Button
 
@@ -23,7 +23,7 @@ T.AbstractButton {
             objectName: "hnIconButtonIcon"
             anchors.centerIn: parent
             source: root.icon.source
-            size: HnControlMetrics.iconSize(root.resolvedSizeRole)
+            size: HnMetrics.iconSize(root.resolvedSizeRole)
             iconState: root.iconState
             normalColor: root.icon.color.a > 0 ? root.icon.color : HoloniightPalette.textSecondary
             mutedColor: root.icon.color.a > 0 ? root.icon.color : HoloniightPalette.textMuted
@@ -47,7 +47,7 @@ T.AbstractButton {
         }
         radius: semanticRadius
         border.color: root.visualFocus ? HoloniightPalette.borderFocus : "transparent"
-        border.width: root.visualFocus ? HoloniightPalette.focusBorderWidth : 0
+        border.width: root.visualFocus ? HnMetrics.focusBorderWidth : 0
 
         Behavior on color {
             ColorAnimation { duration: 80 }

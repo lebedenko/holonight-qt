@@ -8,7 +8,7 @@ add_executable(holonight-theme-generator
 
 target_link_libraries(holonight-theme-generator PRIVATE
     holonight_palette
-    holonight_config
+    holonight_theme_catalog
     Qt6::Gui
     KF6::SyntaxHighlighting
 )

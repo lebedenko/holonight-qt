@@ -319,7 +319,7 @@ Controls.HnApplicationWindow {
                         color: Core.HoloniightPalette.surface
                         radius: Core.HnAppearance.roundedRadius(Core.HnSurfaceRole.Control, width, height, Core.HnAppearance.revision)
                         border.color: Core.HoloniightPalette.borderPassive
-                        border.width: Core.HoloniightPalette.borderWidth
+                        border.width: Core.HnMetrics.borderWidth
                         Layout.fillWidth: true
                         Layout.leftMargin: 40
                         Layout.rightMargin: 40
@@ -555,7 +555,7 @@ Controls.HnApplicationWindow {
                         color: Core.HoloniightPalette.surface
                         radius: Core.HnAppearance.roundedRadius(Core.HnSurfaceRole.Control, width, height, Core.HnAppearance.revision)
                         border.color: Core.HoloniightPalette.borderPassive
-                        border.width: Core.HoloniightPalette.borderWidth
+                        border.width: Core.HnMetrics.borderWidth
                         Layout.fillWidth: true
                         Layout.leftMargin: 40
                         Layout.rightMargin: 40

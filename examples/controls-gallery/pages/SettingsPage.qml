@@ -266,7 +266,7 @@ ScrollView {
             HnSeparator {
                 orientation: Qt.Vertical
                 color: HoloniightPalette.borderPassive
-                thickness: HoloniightPalette.separatorWidth * 2
+                thickness: HnMetrics.separatorWidth * 2
                 Layout.fillHeight: true
             }
 
@@ -313,7 +313,7 @@ ScrollView {
                 graphicContent: HnLabel {
                     role: HnTypographyRole.Display
                     rawText: qsTr("◇")
-                    font.pointSize: HolonightTheme.displaySize
+                    font.pointSize: HolonightTheme.displayFontSize
                 }
                 actionContent: Button { text: qsTr("Disabled action") }
             }

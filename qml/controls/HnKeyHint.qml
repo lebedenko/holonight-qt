@@ -9,8 +9,8 @@ Control {
 
     property string text
 
-    font.family: HolonightTheme.fixedFont
-    font.pointSize: HolonightTheme.fixedFontSize
+    font.family: HolonightTheme.monospaceFont
+    font.pointSize: HolonightTheme.monospaceFontSize
 
     padding: 4
     leftPadding: 6
@@ -27,7 +27,7 @@ Control {
     background: Rectangle {
         color: HoloniightPalette.surfaceRaised
         radius: HnAppearance.roundedRadius(HnSurfaceRole.Badge, width, height, HnAppearance.revision)
-        border.width: HoloniightPalette.borderWidth
+        border.width: HnMetrics.borderWidth
         border.color: HoloniightPalette.borderPassive
     }
 }

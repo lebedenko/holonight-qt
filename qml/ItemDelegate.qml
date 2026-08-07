@@ -63,7 +63,7 @@ T.ItemDelegate {
             anchors.fill: parent
             color: "transparent"
             radius: parent.semanticRadius
-            border.width: root.visualFocus ? HoloniightPalette.focusBorderWidth : 0
+            border.width: root.visualFocus ? HnMetrics.focusBorderWidth : 0
             border.color: HoloniightPalette.borderFocus
             Accessible.ignored: true
         }

@@ -11,6 +11,13 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: Checkout canonical configuration dependency
+        uses: actions/checkout@v4
+        with:
+          repository: lebedenko/holonight-config
+          ref: 81b01d3ae8433f3a4b017db2feb588a1ee62b714
+          path: holonight-config-dep
+
       - name: Install dependencies
         run: |
           sudo apt-get update -q
@@ -22,6 +29,12 @@ jobs:
           version: '6.11.*'
           arch: linux_gcc_64
           cache: true
+
+      - name: Build and install canonical configuration dependency
+        run: |
+          cmake -S holonight-config-dep -B holonight-config-dep/build -G Ninja -DCMAKE_BUILD_TYPE=Release -DBUILD_TESTING=OFF
+          cmake --build holonight-config-dep/build --parallel
+          sudo cmake --install holonight-config-dep/build --prefix /usr
 
       - name: Configure
         run: >

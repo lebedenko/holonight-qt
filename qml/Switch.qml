@@ -12,7 +12,7 @@ T.Switch {
     font.pointSize: HolonightTheme.bodySize
 
     property int sizeRole: HnControlSize.Normal
-    readonly property int resolvedSizeRole: HnControlMetrics.normalizedSizeRole(root.sizeRole)
+    readonly property int resolvedSizeRole: HnMetrics.normalizedSizeRole(root.sizeRole)
 
     readonly property real indicatorTrackWidth: {
         switch (root.resolvedSizeRole) {
@@ -61,7 +61,7 @@ T.Switch {
         default: return 4
         }
     }
-    spacing: HnControlMetrics.internalSpacing(root.resolvedSizeRole)
+    spacing: HnMetrics.internalSpacing(root.resolvedSizeRole)
 
     indicator: Item {
         implicitWidth: root.indicatorTrackWidth
@@ -107,7 +107,7 @@ T.Switch {
                 radius: (parent.width + 4) / 2
                 color: Qt.rgba(0, 0, 0, 0)
                 border.color: HoloniightPalette.borderFocus
-                border.width: HoloniightPalette.borderWidth
+                border.width: HnMetrics.borderWidth
             }
         }
     }

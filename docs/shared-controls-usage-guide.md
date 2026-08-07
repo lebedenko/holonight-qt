@@ -15,7 +15,7 @@ import Holonight.Controls
 ```
 
 `Holonight.Core` supplies `HoloniightPalette`, `HolonightTheme`,
-`HnAppearance`, `HnControlSize`, `HnControlMetrics`, and `HnIcon`.
+`HnAppearance`, `HnControlSize`, `HnMetrics`, and `HnIcon`.
 
 ## Sizing and composition
 

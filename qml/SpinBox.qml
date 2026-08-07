@@ -66,7 +66,7 @@ T.SpinBox {
 
             anchors {
                 fill: parent
-                margins: root.activeFocus ? HoloniightPalette.focusBorderWidth : HoloniightPalette.borderWidth
+                margins: root.activeFocus ? HnMetrics.focusBorderWidth : HnMetrics.borderWidth
             }
 
             // Flatten left corners so the inner edge against text area is straight
@@ -127,7 +127,7 @@ T.SpinBox {
 
             anchors {
                 fill: parent
-                margins: root.activeFocus ? HoloniightPalette.focusBorderWidth : HoloniightPalette.borderWidth
+                margins: root.activeFocus ? HnMetrics.focusBorderWidth : HnMetrics.borderWidth
             }
 
             // Flatten right corners so the inner edge against text area is straight
@@ -182,7 +182,7 @@ T.SpinBox {
         color: HoloniightPalette.surface
         radius: semanticRadius
 
-        border.width: root.activeFocus ? HoloniightPalette.focusBorderWidth : HoloniightPalette.borderWidth
+        border.width: root.activeFocus ? HnMetrics.focusBorderWidth : HnMetrics.borderWidth
         border.color: root.activeFocus ? HoloniightPalette.borderFocus : HoloniightPalette.borderPassive
 
         opacity: root.enabled ? 1.0 : 0.5

@@ -3,7 +3,7 @@
 
 #pragma once
 
-#include "holonight/config.h"
+#include "holonight/appearance_reader.h"
 
 #include <QFont>
 #include <qpa/qplatformtheme.h>
@@ -19,7 +19,8 @@ class HoloniightTheme : public QPlatformTheme {
   [[nodiscard]] const QFont* font(Font type = SystemFont) const override;
 
  private:
-  Holonight::ThemeConfig config_;
+  Holonight::AppearanceReader appearance_reader_;
+  Holonight::ResolvedAppearance config_;
   Holonight::ColorMode color_mode_;
   QPalette palette_;
   QFont font_system_;

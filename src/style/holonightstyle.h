@@ -3,10 +3,9 @@
 
 #pragma once
 
-#include "holonight/config.h"
+#include "holonight/appearance_reader.h"
 #include "holonight/palette.h"
 
-#include <QFileSystemWatcher>
 #include <QProxyStyle>
 
 #include <cstdint>
@@ -45,9 +44,7 @@ class HoloniightStyle : public QProxyStyle {
 
  private:
   [[nodiscard]] int scaledMetric(int value) const;
-  void armThemeConfigWatch();
   void reloadTheme();
-  void onThemeConfigPathChanged(const QString& path);
 
   enum class ArrowDirection : uint8_t {
     Down,
@@ -74,10 +71,8 @@ class HoloniightStyle : public QProxyStyle {
   void drawToolButtonImpl(const QStyleOption* option, QPainter* painter, const QWidget* widget) const;
   void drawGroupBoxImpl(const QStyleOption* option, QPainter* painter, const QWidget* widget) const;
 
-  Holonight::ThemeConfig config_;
+  Holonight::AppearanceReader appearance_reader_;
+  Holonight::ResolvedAppearance config_;
   Holonight::ColorTokens tokens_;
   QPalette palette_;
-  QString theme_config_path_;
-  QString theme_config_dir_path_;
-  QFileSystemWatcher theme_config_watcher_;
 };

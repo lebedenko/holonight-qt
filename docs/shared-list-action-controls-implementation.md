@@ -59,8 +59,8 @@ HnIconButton {
 Required behavior:
 
 - `sizeRole` defaults to `HnControlSize.Normal`.
-- Width and height resolve from `HnControlMetrics.height(sizeRole)`.
-- Icon size resolves from `HnControlMetrics.iconSize(sizeRole)`.
+- Width and height resolve from `HnMetrics.height(sizeRole)`.
+- Icon size resolves from `HnMetrics.iconSize(sizeRole)`.
 - The normal background and border are transparent.
 - Hover displays `HoloniightPalette.surfaceHover`.
 - Pressed displays `HoloniightPalette.surface`.

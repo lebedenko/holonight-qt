@@ -15,15 +15,15 @@ H.TextField {
     property Component leadingContent
     property Component trailingContent
 
-    readonly property int resolvedSizeRole: HnControlMetrics.normalizedSizeRole(root.sizeRole)
+    readonly property int resolvedSizeRole: HnMetrics.normalizedSizeRole(root.sizeRole)
     readonly property bool clearButtonVisible: clearButton.visible
 
-    implicitHeight: HnControlMetrics.controlHeight(root.resolvedSizeRole)
-    leftPadding: HnControlMetrics.horizontalPadding(root.resolvedSizeRole)
-                 + leadingArea.width + HnControlMetrics.internalSpacing(root.resolvedSizeRole)
-    rightPadding: HnControlMetrics.horizontalPadding(root.resolvedSizeRole)
+    implicitHeight: HnMetrics.controlHeight(root.resolvedSizeRole)
+    leftPadding: HnMetrics.horizontalPadding(root.resolvedSizeRole)
+                 + leadingArea.width + HnMetrics.internalSpacing(root.resolvedSizeRole)
+    rightPadding: HnMetrics.horizontalPadding(root.resolvedSizeRole)
                   + trailingArea.width
-                  + (trailingArea.width > 0 ? HnControlMetrics.internalSpacing(root.resolvedSizeRole) : 0)
+                  + (trailingArea.width > 0 ? HnMetrics.internalSpacing(root.resolvedSizeRole) : 0)
 
     Keys.priority: Keys.BeforeItem
     Keys.onEscapePressed: event => {
@@ -40,19 +40,19 @@ H.TextField {
 
         objectName: "hnSearchLeadingArea"
         anchors.left: parent.left
-        anchors.leftMargin: HnControlMetrics.horizontalPadding(root.resolvedSizeRole)
+        anchors.leftMargin: HnMetrics.horizontalPadding(root.resolvedSizeRole)
         anchors.verticalCenter: parent.verticalCenter
         width: customLeadingLoader.active
                ? Math.max(customLeadingLoader.implicitWidth, customLeadingLoader.width)
-               : HnControlMetrics.iconSize(root.resolvedSizeRole)
-        height: Math.max(HnControlMetrics.iconSize(root.resolvedSizeRole),
+               : HnMetrics.iconSize(root.resolvedSizeRole)
+        height: Math.max(HnMetrics.iconSize(root.resolvedSizeRole),
                          customLeadingLoader.implicitHeight)
 
         HnIcon {
             objectName: "hnSearchDefaultIcon"
             anchors.centerIn: parent
             source: Qt.resolvedUrl("assets/search.svg")
-            size: HnControlMetrics.iconSize(root.resolvedSizeRole)
+            size: HnMetrics.iconSize(root.resolvedSizeRole)
             iconState: root.enabled ? HnIcon.Muted : HnIcon.Disabled
             visible: !customLeadingLoader.active
         }
@@ -72,9 +72,9 @@ H.TextField {
 
         objectName: "hnSearchTrailingArea"
         anchors.right: parent.right
-        anchors.rightMargin: HnControlMetrics.horizontalPadding(root.resolvedSizeRole)
+        anchors.rightMargin: HnMetrics.horizontalPadding(root.resolvedSizeRole)
         anchors.verticalCenter: parent.verticalCenter
-        spacing: HnControlMetrics.internalSpacing(root.resolvedSizeRole)
+        spacing: HnMetrics.internalSpacing(root.resolvedSizeRole)
 
         Loader {
             id: customTrailingLoader
@@ -92,8 +92,8 @@ H.TextField {
             property string accessibleName: qsTr("Clear search")
 
             anchors.verticalCenter: parent.verticalCenter
-            implicitWidth: HnControlMetrics.iconSize(root.resolvedSizeRole)
-            implicitHeight: HnControlMetrics.iconSize(root.resolvedSizeRole)
+            implicitWidth: HnMetrics.iconSize(root.resolvedSizeRole)
+            implicitHeight: HnMetrics.iconSize(root.resolvedSizeRole)
             visible: root.enabled && !root.readOnly && root.length > 0
             activeFocusOnTab: false
             Accessible.role: Accessible.Button
@@ -106,7 +106,7 @@ H.TextField {
 
             contentItem: HnIcon {
                 source: Qt.resolvedUrl("assets/clear.svg")
-                size: HnControlMetrics.iconSize(root.resolvedSizeRole)
+                size: HnMetrics.iconSize(root.resolvedSizeRole)
                 iconState: clearButton.down ? HnIcon.Active : HnIcon.Muted
             }
 

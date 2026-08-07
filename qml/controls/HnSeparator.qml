@@ -18,7 +18,7 @@ Item {
 
     property int orientation: Qt.Horizontal
     property color color: HoloniightPalette.borderSubtle
-    property real thickness: HoloniightPalette.separatorWidth
+    property real thickness: HnMetrics.separatorWidth
     property int fadeMode: HnSeparator.Solid
     property real centerOpacity: 1.0
     property real edgeOpacity: 0.0
@@ -51,7 +51,7 @@ Item {
         objectName: "separatorGeometry"
         orientation: root.effectiveOrientation
         requestedThickness: root.thickness
-        standardThickness: HoloniightPalette.separatorWidth
+        standardThickness: HnMetrics.separatorWidth
     }
 
     Rectangle {

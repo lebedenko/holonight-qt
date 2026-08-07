@@ -20,7 +20,7 @@ HnListDelegate {
         id: iconComponent
         HnIcon {
             source: root.iconSource
-            size: HnControlMetrics.iconSize(root.resolvedSizeRole)
+            size: HnMetrics.iconSize(root.resolvedSizeRole)
         }
     }
     Component {

@@ -2,6 +2,7 @@
 // SPDX-FileCopyrightText: 2026 Andrii L <lebeden@gmail.com>
 
 #include "hnseparatoralignment.h"
+#include "holonight/metrics.h"
 #include "holonight/palette.h"
 #include "themeresolver.h"
 
@@ -23,10 +24,30 @@
 
 #include <array>
 #include <cmath>
+#include <filesystem>
 #include <gtest/gtest.h>
+#include <holonight/config/config.h>
 #include <memory>
 
 namespace {
+
+void writeAppearance(const QString& path, const char* scheme = "holonight-dark", const char* accent = "blue",
+                     const char* ui_family = "Inter", int ui_size = 12,
+                     HoloNight::Config::ShapeStyle shape_style = HoloNight::Config::ShapeStyle::Inherit,
+                     double shape_scale = 1.0) {
+  HoloNight::Config::Appearance appearance = HoloNight::Config::defaults();
+  appearance.theme.scheme = scheme;
+  appearance.theme.accent = accent;
+  appearance.typography.ui_family = ui_family;
+  appearance.typography.ui_size = ui_size;
+  appearance.shape.style = shape_style;
+  appearance.shape.scale = shape_scale;
+  ASSERT_TRUE(HoloNight::Config::writeAtomically(appearance, std::filesystem::path{path.toStdString()}));
+}
+
+Holonight::ColorTokens canonicalDefaultTokens() {
+  return Holonight::ThemeResolver::resolve(*Holonight::resolveAppearance(HoloNight::Config::defaults()).value);
+}
 
 class EnvGuard {
  public:
@@ -249,7 +270,7 @@ TEST_F(QmlSmoke, Button_HoverEnabledAndStateColors) {
   EXPECT_TRUE(defaultBtn->property("hoverEnabled").toBool());
   EXPECT_TRUE(primaryBtn->property("hoverEnabled").toBool());
 
-  const Holonight::ColorTokens tok = Holonight::ThemeResolver::resolve(Holonight::ThemeConfig::defaults());
+  const Holonight::ColorTokens tok = canonicalDefaultTokens();
 
   // Default button colors
   EXPECT_EQ(defaultBtn->property("background").value<QObject*>()->property("color").value<QColor>(), tok.surfaceRaised);
@@ -277,28 +298,28 @@ TEST_F(QmlSmoke, Core_ControlSizeAndMetricsContract) {
       property int normal: HnControlSize.Normal
       property int large: HnControlSize.Large
       property int hero: HnControlSize.Hero
-      property var heights: [HnControlMetrics.controlHeight(compact),
-                             HnControlMetrics.controlHeight(normal),
-                             HnControlMetrics.controlHeight(large),
-                             HnControlMetrics.controlHeight(hero)]
-      property var paddings: [HnControlMetrics.horizontalPadding(compact),
-                              HnControlMetrics.horizontalPadding(normal),
-                              HnControlMetrics.horizontalPadding(large),
-                              HnControlMetrics.horizontalPadding(hero)]
-      property var icons: [HnControlMetrics.iconSize(compact),
-                           HnControlMetrics.iconSize(normal),
-                           HnControlMetrics.iconSize(large),
-                           HnControlMetrics.iconSize(hero)]
-      property var spacings: [HnControlMetrics.internalSpacing(compact),
-                              HnControlMetrics.internalSpacing(normal),
-                              HnControlMetrics.internalSpacing(large),
-                              HnControlMetrics.internalSpacing(hero)]
-      property int invalidRole: HnControlMetrics.normalizedSizeRole(999)
-      property int invalidHeight: HnControlMetrics.controlHeight(-1)
-      property int headerHeight: HnControlMetrics.headerHeight
-      property int appTitleIconSize: HnControlMetrics.appTitleIconSize
-      property int appTitleIconSpacing: HnControlMetrics.appTitleIconSpacing
-      property int appTitleTextSpacing: HnControlMetrics.appTitleTextSpacing
+      property var heights: [HnMetrics.controlHeight(compact),
+                             HnMetrics.controlHeight(normal),
+                             HnMetrics.controlHeight(large),
+                             HnMetrics.controlHeight(hero)]
+      property var paddings: [HnMetrics.horizontalPadding(compact),
+                              HnMetrics.horizontalPadding(normal),
+                              HnMetrics.horizontalPadding(large),
+                              HnMetrics.horizontalPadding(hero)]
+      property var icons: [HnMetrics.iconSize(compact),
+                           HnMetrics.iconSize(normal),
+                           HnMetrics.iconSize(large),
+                           HnMetrics.iconSize(hero)]
+      property var spacings: [HnMetrics.internalSpacing(compact),
+                              HnMetrics.internalSpacing(normal),
+                              HnMetrics.internalSpacing(large),
+                              HnMetrics.internalSpacing(hero)]
+      property int invalidRole: HnMetrics.normalizedSizeRole(999)
+      property int invalidHeight: HnMetrics.controlHeight(-1)
+      property int headerHeight: HnMetrics.headerHeight
+      property int appTitleIconSize: HnMetrics.appTitleIconSize
+      property int appTitleIconSpacing: HnMetrics.appTitleIconSpacing
+      property int appTitleTextSpacing: HnMetrics.appTitleTextSpacing
     }
   )",
                QUrl{});
@@ -391,7 +412,7 @@ TEST_F(QmlSmoke, Core_MigratedTypesExposeCanonicalContracts) {
     import Holonight.Core
     Item {
       property bool paletteValid: HoloniightPalette.background.valid
-      property bool themeValid: HolonightTheme.baseFontSize > 0
+      property bool themeValid: HolonightTheme.uiFontSize > 0
       property bool appearanceValid: HnAppearance.resolve(HnSurfaceRole.Card, HnCornerStyle.Inherit,
                                                           80, 40, NaN, NaN, HnCornerMask.Inherit,
                                                           HnAppearance.revision).radius >= 0
@@ -934,7 +955,7 @@ TEST_F(QmlSmoke, ItemDelegate_SelectionAndStateColors) {
   ASSERT_NE(highlightedDelegate, nullptr);
   ASSERT_NE(pressedDelegate, nullptr);
 
-  const Holonight::ColorTokens tok = Holonight::ThemeResolver::resolve(Holonight::ThemeConfig::defaults());
+  const Holonight::ColorTokens tok = canonicalDefaultTokens();
 
   // Highlighted delegates use a quiet surface while retaining primary text.
   QObject* highlightedBase = highlightedDelegate->findChild<QObject*>(QStringLiteral("hnItemDelegateBase"));
@@ -1375,7 +1396,7 @@ TEST_F(QmlSmoke, MenuItem_RendersStandardIconAndIndependentCheckmark) {
   EXPECT_DOUBLE_EQ(icon->property("size").toReal(), 16.0);
   EXPECT_FALSE(plain->findChild<QObject*>(QStringLiteral("hnMenuItemIcon"))->property("visible").toBool());
 
-  const Holonight::ColorTokens tok = Holonight::ThemeResolver::resolve(Holonight::ThemeConfig::defaults());
+  const Holonight::ColorTokens tok = canonicalDefaultTokens();
   EXPECT_EQ(highlighted->property("background").value<QObject*>()->property("color").value<QColor>(), tok.primary);
   EXPECT_EQ(pressed_highlighted->property("background").value<QObject*>()->property("color").value<QColor>(),
             tok.primaryPressed);
@@ -1461,7 +1482,7 @@ TEST_F(QmlSmoke, Controls_IconButtonUsesSemanticMetricsAndStandardIconApi) {
   EXPECT_EQ(normal->property("reportedAccessibleName").toString(), QStringLiteral("Edit"));
   EXPECT_EQ(normal_icon->property("resolvedColor").value<QColor>(), QColor{QStringLiteral("#ff3366")});
 
-  const Holonight::ColorTokens tok = Holonight::ThemeResolver::resolve(Holonight::ThemeConfig::defaults());
+  const Holonight::ColorTokens tok = canonicalDefaultTokens();
   EXPECT_EQ(disabled_icon->property("resolvedColor").value<QColor>(), tok.textDisabled);
   EXPECT_EQ(normal->property("background").value<QObject*>()->property("color").value<QColor>(),
             QColor{Qt::transparent});
@@ -1687,8 +1708,8 @@ TEST_F(QmlSmoke, HnAppearance_ReloadsExistingSurfaceFrame) {
   EnvGuard appearanceFileGuard = EnvGuard{"HOLONIGHT_APPEARANCE_FILE"};
   QTemporaryDir dir;
   ASSERT_TRUE(dir.isValid());
-  const QString path = dir.filePath(QStringLiteral("appearance.json"));
-  writeFile(path, R"({"version":1,"cornerStyle":"inherit","shapeScale":1})");
+  const QString path = dir.filePath(QStringLiteral("appearance.toml"));
+  writeAppearance(path);
   qputenv("HOLONIGHT_APPEARANCE_FILE", path.toLocal8Bit());
 
   QQmlComponent comp = QQmlComponent{&engine_};
@@ -1713,7 +1734,7 @@ TEST_F(QmlSmoke, HnAppearance_ReloadsExistingSurfaceFrame) {
   EXPECT_DOUBLE_EQ(object->property("effectiveRadius").toDouble(), 8.0);
   EXPECT_EQ(object->property("chamferedCorners").toInt(), 2);
 
-  writeFile(path, R"({"version":1,"cornerStyle":"chamfered","shapeScale":2})");
+  writeAppearance(path, "holonight-dark", "blue", "Inter", 12, HoloNight::Config::ShapeStyle::Chamfered, 2.0);
   ASSERT_TRUE(QMetaObject::invokeMethod(object.get(), "reloadAppearance"));
   QCoreApplication::processEvents();
 
@@ -1728,8 +1749,8 @@ TEST_F(QmlSmoke, Button_ReloadsSemanticRadiusFromAppearance) {
   EnvGuard appearanceFileGuard = EnvGuard{"HOLONIGHT_APPEARANCE_FILE"};
   QTemporaryDir dir;
   ASSERT_TRUE(dir.isValid());
-  const QString path = dir.filePath(QStringLiteral("appearance.json"));
-  writeFile(path, R"({"version":1,"shapeScale":1})");
+  const QString path = dir.filePath(QStringLiteral("appearance.toml"));
+  writeAppearance(path);
   qputenv("HOLONIGHT_APPEARANCE_FILE", path.toLocal8Bit());
 
   QQmlComponent comp = QQmlComponent{&engine_};
@@ -1750,7 +1771,7 @@ TEST_F(QmlSmoke, Button_ReloadsSemanticRadiusFromAppearance) {
   ASSERT_NE(object, nullptr);
   EXPECT_DOUBLE_EQ(object->property("backgroundRadius").toDouble(), 6.0);
 
-  writeFile(path, R"({"version":1,"shapeScale":2})");
+  writeAppearance(path, "holonight-dark", "blue", "Inter", 12, HoloNight::Config::ShapeStyle::Inherit, 2.0);
   ASSERT_TRUE(QMetaObject::invokeMethod(object.get(), "reloadAppearance"));
   QCoreApplication::processEvents();
 
@@ -2011,12 +2032,12 @@ TEST_F(QmlSmoke, HnIcon_ProviderUrlUpdatesWhenColorChanges) {
 }
 
 TEST_F(QmlSmoke, HnIcon_ProviderUrlUpdatesWhenPaletteReloads) {
-  EnvGuard guard = EnvGuard{"HOLONIGHT_CONFIG_FILE"};
+  EnvGuard guard = EnvGuard{"HOLONIGHT_APPEARANCE_FILE"};
   QTemporaryDir dir;
   ASSERT_TRUE(dir.isValid());
-  const QString path = dir.filePath(QStringLiteral("theme.conf"));
-  writeFile(path, "[appearance]\nscheme=holonight-dark\n");
-  qputenv("HOLONIGHT_CONFIG_FILE", path.toLocal8Bit());
+  const QString path = dir.filePath(QStringLiteral("appearance.toml"));
+  writeAppearance(path);
+  qputenv("HOLONIGHT_APPEARANCE_FILE", path.toLocal8Bit());
 
   QQmlComponent comp = QQmlComponent{&engine_};
   comp.setData(R"(
@@ -2042,7 +2063,7 @@ TEST_F(QmlSmoke, HnIcon_ProviderUrlUpdatesWhenPaletteReloads) {
   ASSERT_NE(object, nullptr);
 
   const QString initial = object->property("initialRenderSource").toString();
-  writeFile(path, "[appearance]\nscheme=holonight-light\n");
+  writeAppearance(path, "holonight-light");
   ASSERT_TRUE(QMetaObject::invokeMethod(object.get(), "reloadPalette", Qt::DirectConnection));
   QCoreApplication::processEvents(QEventLoop::AllEvents, 50);
 
@@ -2052,7 +2073,7 @@ TEST_F(QmlSmoke, HnIcon_ProviderUrlUpdatesWhenPaletteReloads) {
   EXPECT_TRUE(updated.startsWith(QStringLiteral("image://hnicons/")));
   EXPECT_NE(initial, updated);
 
-  writeFile(path, R"({"version":1,"appearance":{"scheme":"holonight-dark"}})");
+  writeAppearance(path);
   ASSERT_TRUE(QMetaObject::invokeMethod(object.get(), "reloadPalette", Qt::DirectConnection));
 }
 
@@ -2101,7 +2122,7 @@ TEST_F(QmlSmoke, HoloniightPalette_CanonicalPropertiesAreValid) {
       property color borderSubtle: HoloniightPalette.borderSubtle
       property color borderStrong: HoloniightPalette.borderStrong
       property color hoverOverlay: HoloniightPalette.hoverOverlay
-      property int focusBorderWidth: HoloniightPalette.focusBorderWidth
+      property int focusBorderWidth: HnMetrics.focusBorderWidth
       property color ansiBlue: HoloniightPalette.ansiBlue
       property color ansiBrightWhite: HoloniightPalette.ansiBrightWhite
     }
@@ -2110,9 +2131,14 @@ TEST_F(QmlSmoke, HoloniightPalette_CanonicalPropertiesAreValid) {
   ASSERT_EQ(comp.status(), QQmlComponent::Ready) << comp.errorString().toStdString();
 }
 
-
-
 TEST_F(QmlSmoke, HoloniightPalette_ReloadEmitsNotificationOnChange) {
+  EnvGuard guard = EnvGuard{"HOLONIGHT_APPEARANCE_FILE"};
+  QTemporaryDir dir;
+  ASSERT_TRUE(dir.isValid());
+  const QString path = dir.filePath(QStringLiteral("appearance.toml"));
+  writeAppearance(path);
+  qputenv("HOLONIGHT_APPEARANCE_FILE", path.toLocal8Bit());
+
   // Force singleton creation in dark mode first.
   {
     QQmlComponent init = QQmlComponent{&engine_};
@@ -2122,9 +2148,7 @@ TEST_F(QmlSmoke, HoloniightPalette_ReloadEmitsNotificationOnChange) {
     ASSERT_NE(tmp, nullptr);
   }
 
-  // Switching to light forces a token change → signal must fire.
-  EnvGuard guard = EnvGuard{"HOLONIGHT_APPEARANCE_MODE"};
-  qputenv("HOLONIGHT_APPEARANCE_MODE", "light");
+  writeAppearance(path, "holonight-light");
 
   QQmlComponent comp = QQmlComponent{&engine_};
   comp.setData(R"(
@@ -2146,9 +2170,13 @@ TEST_F(QmlSmoke, HoloniightPalette_ReloadEmitsNotificationOnChange) {
   EXPECT_GE(object->property("changedCount").toInt(), 1);
 }
 
-TEST_F(QmlSmoke, HoloniightPalette_ReloadUsesLightAppearanceMode) {
-  EnvGuard guard = EnvGuard{"HOLONIGHT_APPEARANCE_MODE"};
-  qputenv("HOLONIGHT_APPEARANCE_MODE", "light");
+TEST_F(QmlSmoke, HoloniightPalette_ReloadUsesCanonicalLightScheme) {
+  EnvGuard guard = EnvGuard{"HOLONIGHT_APPEARANCE_FILE"};
+  QTemporaryDir dir;
+  ASSERT_TRUE(dir.isValid());
+  const QString path = dir.filePath(QStringLiteral("appearance.toml"));
+  writeAppearance(path, "holonight-light");
+  qputenv("HOLONIGHT_APPEARANCE_FILE", path.toLocal8Bit());
 
   QQmlComponent comp = QQmlComponent{&engine_};
   comp.setData(R"(
@@ -2170,15 +2198,13 @@ TEST_F(QmlSmoke, HoloniightPalette_ReloadUsesLightAppearanceMode) {
 }
 
 TEST_F(QmlSmoke, HoloniightPalette_ReloadUsesSchemeBeforeModeAndAppliesAccent) {
-  EnvGuard configGuard = EnvGuard{"HOLONIGHT_CONFIG_FILE"};
-  EnvGuard appearanceGuard = EnvGuard{"HOLONIGHT_APPEARANCE_MODE"};
-  qunsetenv("HOLONIGHT_APPEARANCE_MODE");
+  EnvGuard configGuard = EnvGuard{"HOLONIGHT_APPEARANCE_FILE"};
 
   QTemporaryDir dir;
   ASSERT_TRUE(dir.isValid());
-  const QString path = dir.filePath(QStringLiteral("theme.conf"));
-  writeFile(path, "[appearance]\nscheme=holonight-light\naccent=blue\nmode=dark\n");
-  qputenv("HOLONIGHT_CONFIG_FILE", path.toLocal8Bit());
+  const QString path = dir.filePath(QStringLiteral("appearance.toml"));
+  writeAppearance(path, "holonight-light", "blue");
+  qputenv("HOLONIGHT_APPEARANCE_FILE", path.toLocal8Bit());
 
   QQmlComponent comp = QQmlComponent{&engine_};
   comp.setData(R"(
@@ -2205,16 +2231,14 @@ TEST_F(QmlSmoke, HoloniightPalette_ReloadUsesSchemeBeforeModeAndAppliesAccent) {
   EXPECT_EQ(object->property("brandForeground").value<QColor>(), QColor(QStringLiteral("#685BBD")));
 }
 
-TEST_F(QmlSmoke, HoloniightPalette_WatchesThemeConfigChanges) {
-  EnvGuard configGuard = EnvGuard{"HOLONIGHT_CONFIG_FILE"};
-  EnvGuard appearanceGuard = EnvGuard{"HOLONIGHT_APPEARANCE_MODE"};
-  qunsetenv("HOLONIGHT_APPEARANCE_MODE");
+TEST_F(QmlSmoke, HoloniightPalette_WatchesCanonicalAppearanceChanges) {
+  EnvGuard configGuard = EnvGuard{"HOLONIGHT_APPEARANCE_FILE"};
 
   QTemporaryDir dir;
   ASSERT_TRUE(dir.isValid());
-  const QString path = dir.filePath(QStringLiteral("theme.conf"));
-  writeFile(path, "[appearance]\nscheme=holonight-dark\nmode=dark\n");
-  qputenv("HOLONIGHT_CONFIG_FILE", path.toLocal8Bit());
+  const QString path = dir.filePath(QStringLiteral("appearance.toml"));
+  writeAppearance(path);
+  qputenv("HOLONIGHT_APPEARANCE_FILE", path.toLocal8Bit());
 
   QQmlComponent comp = QQmlComponent{&engine_};
   comp.setData(R"(
@@ -2234,8 +2258,43 @@ TEST_F(QmlSmoke, HoloniightPalette_WatchesThemeConfigChanges) {
   ASSERT_NE(object, nullptr);
   EXPECT_EQ(object->property("background").value<QColor>(), QColor(QStringLiteral("#0C1118")));
 
-  writeFile(path, "[appearance]\nscheme=holonight-light\nmode=light\n");
+  writeAppearance(path, "holonight-light");
   EXPECT_TRUE(waitForPropertyColor(object.get(), "background", QColor(QStringLiteral("#E7EEF5"))));
+}
+
+TEST_F(QmlSmoke, AppearanceSingletonsPublishOneEngineLocalRevision) {
+  EnvGuard guard = EnvGuard{"HOLONIGHT_APPEARANCE_FILE"};
+  QTemporaryDir dir;
+  ASSERT_TRUE(dir.isValid());
+  const QString path = dir.filePath(QStringLiteral("appearance.toml"));
+  writeAppearance(path);
+  qputenv("HOLONIGHT_APPEARANCE_FILE", path.toLocal8Bit());
+
+  QQmlComponent comp = QQmlComponent{&engine_};
+  comp.setData(R"(
+    import QtQuick
+    import Holonight.Core
+    Item {
+      property int appearanceRevision: HnAppearance.revision
+      property int paletteRevision: HoloniightPalette.revision
+      property color background: HoloniightPalette.background
+      property string uiFont: HolonightTheme.uiFont
+      function reloadAppearance() { HnAppearance.reload() }
+    }
+  )",
+               QUrl{});
+  ASSERT_EQ(comp.status(), QQmlComponent::Ready) << comp.errorString().toStdString();
+  std::unique_ptr<QObject> object{comp.create()};
+  ASSERT_NE(object, nullptr);
+
+  writeAppearance(path, "holonight-light", "blue", "Shared Sans", 14);
+  ASSERT_TRUE(QMetaObject::invokeMethod(object.get(), "reloadAppearance"));
+  QCoreApplication::processEvents();
+
+  EXPECT_EQ(object->property("appearanceRevision").toInt(), 1);
+  EXPECT_EQ(object->property("paletteRevision").toInt(), 1);
+  EXPECT_EQ(object->property("background").value<QColor>(), QColor(QStringLiteral("#E7EEF5")));
+  EXPECT_EQ(object->property("uiFont").toString(), QStringLiteral("Shared Sans"));
 }
 
 TEST_F(QmlSmoke, HolonightTheme_ConfigPropertiesAreValid) {
@@ -2256,17 +2315,17 @@ TEST_F(QmlSmoke, HolonightTheme_ConfigPropertiesAreValid) {
   ASSERT_EQ(comp.status(), QQmlComponent::Ready) << comp.errorString().toStdString();
   std::unique_ptr<QObject> object{comp.create()};
   ASSERT_NE(object, nullptr);
-  EXPECT_EQ(object->property("appTitleSize").toInt(), 14);
+  EXPECT_EQ(object->property("appTitleSize").toInt(), 16);
   EXPECT_EQ(object->property("brandForeground").value<QColor>(), QColor(QStringLiteral("#9A8CFF")));
 }
 
 TEST_F(QmlSmoke, HolonightTheme_ReloadUpdatesExistingLabelTypography) {
-  EnvGuard guard = EnvGuard{"HOLONIGHT_CONFIG_FILE"};
+  EnvGuard guard = EnvGuard{"HOLONIGHT_APPEARANCE_FILE"};
   QTemporaryDir dir;
   ASSERT_TRUE(dir.isValid());
-  const QString path = dir.filePath(QStringLiteral("theme.conf"));
-  writeFile(path, "[fonts]\nui=Initial Sans\nbaseSize=10\n");
-  qputenv("HOLONIGHT_CONFIG_FILE", path.toLocal8Bit());
+  const QString path = dir.filePath(QStringLiteral("appearance.toml"));
+  writeAppearance(path, "holonight-dark", "blue", "Initial Sans", 10);
+  qputenv("HOLONIGHT_APPEARANCE_FILE", path.toLocal8Bit());
 
   QQmlComponent comp = QQmlComponent{&engine_};
   comp.setData(R"(
@@ -2287,7 +2346,7 @@ TEST_F(QmlSmoke, HolonightTheme_ReloadUpdatesExistingLabelTypography) {
   EXPECT_EQ(object->property("labelFamily").toString(), QStringLiteral("Initial Sans"));
   EXPECT_EQ(object->property("labelSize").toInt(), 10);
 
-  writeFile(path, "[fonts]\nui=Reloaded Sans\nbaseSize=14\n");
+  writeAppearance(path, "holonight-dark", "blue", "Reloaded Sans", 14);
   ASSERT_TRUE(QMetaObject::invokeMethod(object.get(), "reloadTheme"));
   QCoreApplication::processEvents();
 
@@ -2296,12 +2355,12 @@ TEST_F(QmlSmoke, HolonightTheme_ReloadUpdatesExistingLabelTypography) {
 }
 
 TEST_F(QmlSmoke, HolonightTheme_ReloadUpdatesSharedControlsTypography) {
-  EnvGuard guard = EnvGuard{"HOLONIGHT_CONFIG_FILE"};
+  EnvGuard guard = EnvGuard{"HOLONIGHT_APPEARANCE_FILE"};
   QTemporaryDir dir;
   ASSERT_TRUE(dir.isValid());
-  const QString path = dir.filePath(QStringLiteral("theme.conf"));
-  writeFile(path, "[fonts]\nui=Initial Sans\nbaseSize=10\n");
-  qputenv("HOLONIGHT_CONFIG_FILE", path.toLocal8Bit());
+  const QString path = dir.filePath(QStringLiteral("appearance.toml"));
+  writeAppearance(path, "holonight-dark", "blue", "Initial Sans", 10);
+  qputenv("HOLONIGHT_APPEARANCE_FILE", path.toLocal8Bit());
 
   QQmlComponent comp = QQmlComponent{&engine_};
   comp.setData(R"(
@@ -2361,7 +2420,7 @@ TEST_F(QmlSmoke, HolonightTheme_ReloadUpdatesSharedControlsTypography) {
   EXPECT_EQ(check->property("font").value<QFont>().pointSize(), 10);
 
   // Update theme configuration file and reload
-  writeFile(path, "[fonts]\nui=Reloaded Sans\nbaseSize=14\n");
+  writeAppearance(path, "holonight-dark", "blue", "Reloaded Sans", 14);
   ASSERT_TRUE(QMetaObject::invokeMethod(object.get(), "reloadTheme"));
   QCoreApplication::processEvents();
 
@@ -2379,12 +2438,12 @@ TEST_F(QmlSmoke, HolonightTheme_ReloadUpdatesSharedControlsTypography) {
 }
 
 TEST_F(QmlSmoke, HolonightTheme_ExplicitFontOverridesPreservedOnReload) {
-  EnvGuard guard = EnvGuard{"HOLONIGHT_CONFIG_FILE"};
+  EnvGuard guard = EnvGuard{"HOLONIGHT_APPEARANCE_FILE"};
   QTemporaryDir dir;
   ASSERT_TRUE(dir.isValid());
-  const QString path = dir.filePath(QStringLiteral("theme.conf"));
-  writeFile(path, "[fonts]\nui=Initial Sans\nbaseSize=10\n");
-  qputenv("HOLONIGHT_CONFIG_FILE", path.toLocal8Bit());
+  const QString path = dir.filePath(QStringLiteral("appearance.toml"));
+  writeAppearance(path, "holonight-dark", "blue", "Initial Sans", 10);
+  qputenv("HOLONIGHT_APPEARANCE_FILE", path.toLocal8Bit());
 
   QQmlComponent comp = QQmlComponent{&engine_};
   comp.setData(R"(
@@ -2420,7 +2479,7 @@ TEST_F(QmlSmoke, HolonightTheme_ExplicitFontOverridesPreservedOnReload) {
   EXPECT_EQ(custom_card->property("font").value<QFont>().pointSize(), 18);
 
   // Reload theme
-  writeFile(path, "[fonts]\nui=Reloaded Sans\nbaseSize=14\n");
+  writeAppearance(path, "holonight-dark", "blue", "Reloaded Sans", 14);
   ASSERT_TRUE(QMetaObject::invokeMethod(object.get(), "reloadTheme"));
   QCoreApplication::processEvents();
 
@@ -2466,12 +2525,12 @@ TEST_F(QmlSmoke, Controls_AppTitleUsesSemanticPresentationAndAccessibility) {
   ASSERT_NE(application, nullptr);
   ASSERT_NE(icon, nullptr);
 
-  const Holonight::ColorTokens tok = Holonight::ThemeResolver::resolve(Holonight::ThemeConfig::defaults());
+  const Holonight::ColorTokens tok = canonicalDefaultTokens();
   EXPECT_EQ(brand->property("text").toString(), QStringLiteral("HoloNight"));
   EXPECT_EQ(brand->property("color").value<QColor>(), tok.brandForeground);
   EXPECT_EQ(application->property("color").value<QColor>(), tok.textPrimary);
   EXPECT_EQ(brand->property("font").value<QFont>().family(), QStringLiteral("Inter"));
-  EXPECT_EQ(brand->property("font").value<QFont>().pointSize(), 14);
+  EXPECT_EQ(brand->property("font").value<QFont>().pointSize(), 16);
   EXPECT_EQ(brand->property("font").value<QFont>().weight(), QFont::DemiBold);
   EXPECT_EQ(application->property("font").value<QFont>(), brand->property("font").value<QFont>());
   EXPECT_EQ(icon->property("size").toInt(), 32);
@@ -3043,7 +3102,7 @@ TEST_F(QmlSmoke, Controls_SectionHeaderCollapsesAndOwnsSlots) {
   ASSERT_NE(categoryTitle, nullptr);
   EXPECT_EQ(categoryTitle->property("rawText").toString(), QStringLiteral("// Theme"));
   EXPECT_EQ(categoryTitle->property("color").value<QColor>(), root->property("expectedCategoryColor").value<QColor>());
-  EXPECT_EQ(categoryTitle->property("font").value<QFont>().pointSizeF(), 9.0);
+  EXPECT_EQ(categoryTitle->property("font").value<QFont>().pointSizeF(), 11.0);
   EXPECT_EQ(categoryTitle->property("font").value<QFont>().letterSpacing(), 0.0);
 }
 
@@ -3271,11 +3330,11 @@ TEST_F(QmlSmoke, Controls_SelectionGradientClipsNavigationAccent) {
   ASSERT_NE(surface_start, nullptr);
   ASSERT_NE(surface_end, nullptr);
 
-  const Holonight::ColorTokens tok = Holonight::ThemeResolver::resolve(Holonight::ThemeConfig::defaults());
+  const Holonight::ColorTokens tok = canonicalDefaultTokens();
   EXPECT_EQ(gradient->property("orientation").toInt(), Qt::Horizontal);
   EXPECT_EQ(accent_start->property("color").value<QColor>(), tok.selectionIndicator);
   EXPECT_EQ(accent_end->property("color").value<QColor>(), tok.selectionIndicator);
-  const qreal expected_stop = (std::max)(2.0, tok.borderWidth * 2.0) / 160.0;
+  const qreal expected_stop = (std::max)(2.0, static_cast<qreal>(Holonight::metricTokens().border_width * 2)) / 160.0;
   EXPECT_DOUBLE_EQ(accent_end->property("position").toReal(), expected_stop);
   EXPECT_DOUBLE_EQ(surface_start->property("position").toReal(), expected_stop + 0.25 / 160.0);
   EXPECT_EQ(surface_start->property("color").value<QColor>(), tok.surfaceSelected);
@@ -3394,7 +3453,7 @@ TEST_F(QmlSmoke, Controls_PressedStatesMatchSegmentedControlSurface) {
   std::unique_ptr<QObject> root{comp.create()};
   ASSERT_NE(root, nullptr);
 
-  const Holonight::ColorTokens tok = Holonight::ThemeResolver::resolve(Holonight::ThemeConfig::defaults());
+  const Holonight::ColorTokens tok = canonicalDefaultTokens();
   const auto verify_state = [&tok](QObject* control, const QString& base_name, const QString& selection_name,
                                    const QColor& idle_base_color) {
     ASSERT_NE(control, nullptr);
@@ -3476,7 +3535,7 @@ TEST_F(QmlSmoke, Controls_ChoiceCardPressedRenderingDoesNotDependOnAncestorColor
   QTest::mousePress(window, Qt::LeftButton, Qt::NoModifier, QPoint{60, 60});
   EXPECT_TRUE(choice->property("down").toBool());
 
-  const Holonight::ColorTokens tok = Holonight::ThemeResolver::resolve(Holonight::ThemeConfig::defaults());
+  const Holonight::ColorTokens tok = canonicalDefaultTokens();
   const QColor expected = tok.surfaceElevated;
   const auto sample_center = [window]() {
     window->requestUpdate();
@@ -3533,8 +3592,9 @@ TEST_F(QmlSmoke, Controls_SegmentedControlSynchronizesValueAndActivation) {
   }
   ASSERT_NE(first_segment, nullptr);
   ASSERT_NE(last_segment, nullptr);
-  const Holonight::ColorTokens tok = Holonight::ThemeResolver::resolve(Holonight::ThemeConfig::defaults());
-  EXPECT_GE(control->property("implicitHeight").toReal(), tok.controlHeight);
+  const Holonight::ColorTokens tok = canonicalDefaultTokens();
+  EXPECT_GE(control->property("implicitHeight").toReal(),
+            Holonight::metricTokens().control(Holonight::ControlSize::Normal).height);
   EXPECT_GE(control->property("implicitWidth").toReal(), 160.0);
   EXPECT_GT(first_segment->property("width").toReal(), 0.0);
   EXPECT_GT(first_segment->property("height").toReal(), 0.0);
@@ -3604,18 +3664,18 @@ TEST_F(QmlSmoke, HnSeparator_ExposesDefaultsAndNormalizesSizing) {
   auto* separator = root->property("separator").value<QObject*>();
   ASSERT_NE(separator, nullptr);
 
-  const Holonight::ColorTokens tok = Holonight::ThemeResolver::resolve(Holonight::ThemeConfig::defaults());
+  const Holonight::ColorTokens tok = canonicalDefaultTokens();
   EXPECT_EQ(separator->property("orientation").toInt(), Qt::Horizontal);
   EXPECT_EQ(separator->property("fadeMode").toInt(), root->property("solid").toInt());
   EXPECT_EQ(root->property("fadeEnd").toInt(), 3);
   EXPECT_EQ(separator->property("color").value<QColor>(), tok.borderSubtle);
-  EXPECT_DOUBLE_EQ(separator->property("thickness").toDouble(), tok.separatorWidth);
+  EXPECT_DOUBLE_EQ(separator->property("thickness").toDouble(), Holonight::metricTokens().separator_width);
   EXPECT_DOUBLE_EQ(separator->property("implicitWidth").toDouble(), 0.0);
-  EXPECT_DOUBLE_EQ(separator->property("implicitHeight").toDouble(), tok.separatorWidth);
+  EXPECT_DOUBLE_EQ(separator->property("implicitHeight").toDouble(), Holonight::metricTokens().separator_width);
   EXPECT_TRUE(root->property("ignored").toBool());
 
   ASSERT_TRUE(separator->setProperty("orientation", Qt::Vertical));
-  EXPECT_DOUBLE_EQ(separator->property("implicitWidth").toDouble(), tok.separatorWidth);
+  EXPECT_DOUBLE_EQ(separator->property("implicitWidth").toDouble(), Holonight::metricTokens().separator_width);
   EXPECT_DOUBLE_EQ(separator->property("implicitHeight").toDouble(), 0.0);
   ASSERT_TRUE(separator->setProperty("orientation", 999));
   EXPECT_EQ(separator->property("effectiveOrientation").toInt(), Qt::Horizontal);
@@ -3733,7 +3793,7 @@ TEST_F(QmlSmoke, Controls_ColorPickerDefaultColorsMatchPalette) {
   std::unique_ptr<QObject> root{comp.create()};
   ASSERT_NE(root, nullptr);
 
-  const Holonight::ColorTokens tok = Holonight::ThemeResolver::resolve(Holonight::ThemeConfig::defaults());
+  const Holonight::ColorTokens tok = canonicalDefaultTokens();
   ASSERT_EQ(tok.warning, tok.accentYellow) << "warning is expected to alias accentYellow in every scheme; "
                                               "if this changes, restore warning as a distinct default swatch";
   const QVariantList colors = root->property("colors").toList();

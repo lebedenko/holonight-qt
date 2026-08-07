@@ -3,14 +3,17 @@ version: "3"
 vars:
   BUILD_DIR: build
   RELEASE_BUILD_DIR: build-release
+  HOLONIGHT_CONFIG_BUILD_DIR: ../holonight-config/build-provider
+  HOLONIGHT_CONFIG_PREFIX: /tmp/holonight-config-prefix
   NPROC:
     sh: nproc
 
 tasks:
   configure:
     desc: Configure (Debug + tests)
+    deps: [build:config-dependency]
     cmds:
-      - cmake -B {{.BUILD_DIR}} -G Ninja -DCMAKE_BUILD_TYPE=Debug -DBUILD_TESTS=ON
+      - cmake -B {{.BUILD_DIR}} -G Ninja -DCMAKE_BUILD_TYPE=Debug -DBUILD_TESTS=ON -DCMAKE_PREFIX_PATH={{.HOLONIGHT_CONFIG_PREFIX}}
     sources:
       - CMakeLists.txt
       - "*/CMakeLists.txt"
@@ -19,18 +22,27 @@ tasks:
 
   configure:release:
     desc: Configure (Release)
+    deps: [build:config-dependency]
     cmds:
       - |
         if [ -f "{{.RELEASE_BUILD_DIR}}/CMakeCache.txt" ] && ! grep -Fxq "CMAKE_HOME_DIRECTORY:INTERNAL={{.TASKFILE_DIR}}" "{{.RELEASE_BUILD_DIR}}/CMakeCache.txt"; then
           cmake -E echo "Removing stale {{.RELEASE_BUILD_DIR}} CMake cache from another source directory"
           cmake -E rm -rf "{{.RELEASE_BUILD_DIR}}"
         fi
-      - cmake -S . -B {{.RELEASE_BUILD_DIR}} -G Ninja -DCMAKE_BUILD_TYPE=Release -DBUILD_TESTS=ON
+      - cmake -S . -B {{.RELEASE_BUILD_DIR}} -G Ninja -DCMAKE_BUILD_TYPE=Release -DBUILD_TESTS=ON -DCMAKE_PREFIX_PATH={{.HOLONIGHT_CONFIG_PREFIX}}
+
+  build:config-dependency:
+    desc: Build and install the canonical appearance configuration provider
+    cmds:
+      - cmake -S ../holonight-config -B {{.HOLONIGHT_CONFIG_BUILD_DIR}} -G Ninja -DCMAKE_BUILD_TYPE=Debug -DBUILD_TESTING=OFF
+      - cmake --build {{.HOLONIGHT_CONFIG_BUILD_DIR}} --parallel
+      - cmake --install {{.HOLONIGHT_CONFIG_BUILD_DIR}} --prefix {{.HOLONIGHT_CONFIG_PREFIX}}
 
   configure:demo:
     desc: Configure (Debug + demo app)
+    deps: [build:config-dependency]
     cmds:
-      - cmake -B {{.BUILD_DIR}} -G Ninja -DCMAKE_BUILD_TYPE=Debug -DBUILD_DEMO=ON
+      - cmake -B {{.BUILD_DIR}} -G Ninja -DCMAKE_BUILD_TYPE=Debug -DBUILD_DEMO=ON -DCMAKE_PREFIX_PATH={{.HOLONIGHT_CONFIG_PREFIX}}
 
   build:
     desc: Build
@@ -101,21 +113,24 @@ tasks:
   demo:
     desc: Build and run the visual demo app (from build tree, no platform theme)
     cmds:
-      - cmake -B {{.BUILD_DIR}} -G Ninja -DCMAKE_BUILD_TYPE=Debug -DBUILD_DEMO=ON
+      - task: build:config-dependency
+      - cmake -B {{.BUILD_DIR}} -G Ninja -DCMAKE_BUILD_TYPE=Debug -DBUILD_DEMO=ON -DCMAKE_PREFIX_PATH={{.HOLONIGHT_CONFIG_PREFIX}}
       - cmake --build {{.BUILD_DIR}} -j{{.NPROC}} --target holonight_demo
       - QT_QPA_PLATFORMTHEME=holonight ./{{.BUILD_DIR}}/demo/holonight_demo {{.CLI_ARGS}}
 
   gallery:
     desc: Build and run the shared controls gallery
     cmds:
-      - cmake -B {{.BUILD_DIR}} -G Ninja -DCMAKE_BUILD_TYPE=Debug -DBUILD_CONTROLS_GALLERY=ON
+      - task: build:config-dependency
+      - cmake -B {{.BUILD_DIR}} -G Ninja -DCMAKE_BUILD_TYPE=Debug -DBUILD_CONTROLS_GALLERY=ON -DCMAKE_PREFIX_PATH={{.HOLONIGHT_CONFIG_PREFIX}}
       - cmake --build {{.BUILD_DIR}} -j{{.NPROC}} --target holonight_controls_gallery
       - QT_QPA_PLATFORMTHEME= ./{{.BUILD_DIR}}/examples/controls-gallery/holonight_controls_gallery {{.CLI_ARGS}}
 
   demo:install:
     desc: Build, install demo + theme to ~/.local, then run with full platform theme
     cmds:
-      - cmake -B {{.BUILD_DIR}} -G Ninja -DCMAKE_BUILD_TYPE=Debug -DBUILD_DEMO=ON
+      - task: build:config-dependency
+      - cmake -B {{.BUILD_DIR}} -G Ninja -DCMAKE_BUILD_TYPE=Debug -DBUILD_DEMO=ON -DCMAKE_PREFIX_PATH={{.HOLONIGHT_CONFIG_PREFIX}}
       - cmake --build {{.BUILD_DIR}} -j{{.NPROC}}
       - cmake --install {{.BUILD_DIR}} --prefix ~/.local
       - QT_QPA_PLATFORMTHEME=holonight ~/.local/bin/holonight_demo {{.CLI_ARGS}}

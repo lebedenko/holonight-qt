@@ -91,7 +91,7 @@ Qt/QML code must consume resolved tokens, not raw config decisions such as `mode
 The repository loads:
 
 ```text
-~/.config/holonight/theme.conf
+~/.config/holonight/appearance.toml
 ```
 
 The broader HoloNight system is expected to use:
@@ -102,7 +102,7 @@ The broader HoloNight system is expected to use:
 
 Requirements:
 
-- keep `theme.conf` as the single theme source
+- keep canonical `appearance.toml` as the single appearance source
 - define the future shared schema in a way that can coexist with the current config loader
 - avoid breaking existing environment overrides used for testing and development
 - document precedence between shared config, legacy config, and environment variables before implementation

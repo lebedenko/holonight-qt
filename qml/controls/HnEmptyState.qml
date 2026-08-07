@@ -19,8 +19,8 @@ Item {
     property Component actionContent
     readonly property alias graphicItem: graphicLoader.item
     readonly property alias actionItem: actionLoader.item
-    readonly property int resolvedSizeRole: HnControlMetrics.normalizedSizeRole(root.sizeRole)
-    readonly property real semanticSpacing: HnControlMetrics.internalSpacing(root.resolvedSizeRole)
+    readonly property int resolvedSizeRole: HnMetrics.normalizedSizeRole(root.sizeRole)
+    readonly property real semanticSpacing: HnMetrics.internalSpacing(root.resolvedSizeRole)
     readonly property bool hasDefaultIcon: root.graphicContent === null && String(root.iconSource).length > 0
                                            && !defaultIcon.hasError
 
@@ -49,7 +49,7 @@ Item {
             id: defaultIcon
 
             source: root.iconSource
-            size: HnControlMetrics.iconSize(root.resolvedSizeRole) * 2
+            size: HnMetrics.iconSize(root.resolvedSizeRole) * 2
             visible: root.hasDefaultIcon
             Layout.alignment: Qt.AlignHCenter
             Layout.preferredWidth: visible ? implicitWidth : 0

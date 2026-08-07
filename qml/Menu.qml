@@ -38,7 +38,7 @@ T.Menu {
         implicitWidth: 180
         color: HoloniightPalette.surfaceRaised
         border.color: HoloniightPalette.borderPassive
-        border.width: HoloniightPalette.borderWidth
+        border.width: HnMetrics.borderWidth
         radius: semanticRadius
     }
 }

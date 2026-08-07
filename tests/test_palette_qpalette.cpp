@@ -1,8 +1,8 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 // SPDX-FileCopyrightText: 2026 Andrii L <lebeden@gmail.com>
 
-#include "holonight/config.h"
 #include "holonight/palette.h"
+#include "holonight/theme_catalog.h"
 
 #include <gtest/gtest.h>
 

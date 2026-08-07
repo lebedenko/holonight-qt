@@ -34,7 +34,10 @@ class DrawPrimitiveTest : public ::testing::Test {
 };
 
 Holonight::ColorTokens resolvedDefaultTokens() {
-  return Holonight::ThemeResolver::resolve(Holonight::ThemeConfig::defaults());
+  Holonight::ResolvedAppearance appearance;
+  appearance.theme_scheme = Holonight::ThemeSchemeKind::HoloNightDark;
+  appearance.accent = QStringLiteral("blue");
+  return Holonight::ThemeResolver::resolve(appearance);
 }
 
 TEST_F(DrawPrimitiveTest, PanelButtonCommand_Normal) {

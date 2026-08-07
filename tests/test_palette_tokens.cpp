@@ -203,9 +203,6 @@ TEST(HoloNightStormTokens, SurfaceValues) {
 
 TEST(HoloNightStormTokens, MetricAndAnsiTokens) {
   const Holonight::ColorTokens tok = Holonight::tokensForScheme(Holonight::ThemeSchemeKind::HoloNightStorm);
-  EXPECT_EQ(tok.borderWidth, 1);
-  EXPECT_EQ(tok.focusBorderWidth, 1);
-  EXPECT_EQ(tok.controlHeight, 32);
   EXPECT_EQ(tok.ansiBlue, tok.primary);
   EXPECT_EQ(tok.ansiCyan, tok.accentCyan);
 }
@@ -278,8 +275,6 @@ TEST(HoloNightDayTokens, DocumentedColorValues) {
   EXPECT_EQ(tok.success.rgb(), QColor(0x4d, 0x8f, 0x31).rgb());
   EXPECT_EQ(tok.ansiBrightWhite.rgb(), QColor(0x10, 0x13, 0x1f).rgb());
 }
-
-
 
 TEST(HoloNightDayTokens, OverlayAlphaValuesMatchDarkTokenExpectations) {
   const Holonight::ColorTokens tok = Holonight::tokensForScheme(Holonight::ThemeSchemeKind::HoloNightDay);
@@ -466,8 +461,6 @@ TEST(SchemeCatalog, HoloNightSolMatchesGruvboxValues) {
   EXPECT_EQ(tok.accentYellow, QColor(QStringLiteral("#b57614")));
 }
 
-
-
 TEST(SchemeCatalog, CatppuccinOverlayAlphasMatchHoloNightConventions) {
   const Holonight::ColorTokens mocha = Holonight::tokensForScheme(Holonight::ThemeSchemeKind::HoloNightMocha);
   EXPECT_EQ(mocha.borderHover.alpha(), 0x55);
@@ -596,5 +589,3 @@ TEST(SchemeCatalog, AlucardMatchesFileValues) {
   EXPECT_EQ(tok.accentViolet, QColor(QStringLiteral("#644AC9")));
   EXPECT_EQ(tok.accentYellow, QColor(QStringLiteral("#846E15")));
 }
-
-

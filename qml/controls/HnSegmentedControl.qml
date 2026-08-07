@@ -58,7 +58,7 @@ T.Control {
 
     implicitWidth: content.implicitWidth + leftPadding + rightPadding
     implicitHeight: Math.max(32, content.implicitHeight + topPadding + bottomPadding)
-    padding: Math.max(3, HoloniightPalette.borderWidth + 2)
+    padding: Math.max(3, HnMetrics.borderWidth + 2)
     activeFocusOnTab: true
     Accessible.role: Accessible.Grouping
     Keys.onLeftPressed: activate(Math.max(0, currentIndex - 1))
@@ -115,7 +115,7 @@ T.Control {
                 horizontalPadding: 12
                 implicitWidth: Math.max(80, implicitContentWidth + leftPadding + rightPadding)
                 implicitHeight: Math.max(implicitContentHeight + topPadding + bottomPadding,
-                                         HoloniightPalette.controlHeight - root.topPadding - root.bottomPadding)
+                                         HnMetrics.controlHeight(HnControlSize.Normal) - root.topPadding - root.bottomPadding)
                 onClicked: root.activate(index)
                 Layout.fillWidth: true
                 Layout.fillHeight: true
@@ -151,7 +151,7 @@ T.Control {
     background: Rectangle {
         color: HoloniightPalette.surface
         radius: HnAppearance.roundedRadius(HnSurfaceRole.Control, width, height, HnAppearance.revision)
-        border.width: HoloniightPalette.borderWidth
+        border.width: HnMetrics.borderWidth
         border.color: root.visualFocus ? HoloniightPalette.borderFocus : HoloniightPalette.borderPassive
     }
 }

@@ -76,7 +76,7 @@ T.ComboBox {
         radius: semanticRadius
         color: root.hovered ? HoloniightPalette.surfaceHover : HoloniightPalette.surface
         border.color: root.visualFocus || root.popup.visible ? HoloniightPalette.borderFocus : (root.enabled ? HoloniightPalette.borderPassive : HoloniightPalette.borderPassive)
-        border.width: (root.visualFocus || root.popup.visible) ? HoloniightPalette.focusBorderWidth : HoloniightPalette.borderWidth
+        border.width: (root.visualFocus || root.popup.visible) ? HnMetrics.focusBorderWidth : HnMetrics.borderWidth
     }
 
     popup: T.Popup {
@@ -132,7 +132,7 @@ T.ComboBox {
 
             color: HoloniightPalette.surface
             border.color: HoloniightPalette.borderPassive
-            border.width: HoloniightPalette.borderWidth
+            border.width: HnMetrics.borderWidth
             radius: semanticRadius
         }
     }

@@ -15,11 +15,11 @@ Item {
     property real dividerInset: 0
     readonly property alias contentItem: contentLoader.item
 
-    implicitHeight: HnControlMetrics.headerHeight
-    height: HnControlMetrics.headerHeight
-    Layout.minimumHeight: HnControlMetrics.headerHeight
-    Layout.preferredHeight: HnControlMetrics.headerHeight
-    Layout.maximumHeight: HnControlMetrics.headerHeight
+    implicitHeight: HnMetrics.headerHeight
+    height: HnMetrics.headerHeight
+    Layout.minimumHeight: HnMetrics.headerHeight
+    Layout.preferredHeight: HnMetrics.headerHeight
+    Layout.maximumHeight: HnMetrics.headerHeight
 
     Loader {
         id: contentLoader
