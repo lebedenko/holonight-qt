@@ -3,10 +3,10 @@
 
 #include "holonight/appearance_reader.h"
 
-#include <holonight/config/config.h>
-
 #include <QDebug>
 #include <QFileInfo>
+
+#include <holonight/config/config.h>
 
 namespace Holonight {
 namespace {

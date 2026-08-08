@@ -5,9 +5,8 @@
 
 #include "holonight/theme_catalog.h"
 
-#include <holonight/config/config.h>
-
 #include <algorithm>
+#include <holonight/config/config.h>
 
 namespace Holonight {
 namespace {
