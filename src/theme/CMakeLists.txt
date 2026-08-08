@@ -1,4 +1,6 @@
 add_library(holonight_theme STATIC
+    semanticappearance.h
+    semanticappearance.cpp
     shaperesolver.h
     shaperesolver.cpp
     themeresolver.h
@@ -26,4 +28,4 @@ install(TARGETS holonight_theme
     EXPORT HolonightQtTargets
     ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
 )
-install(FILES shaperesolver.h themeresolver.h DESTINATION include/holonight/theme)
+install(FILES semanticappearance.h shaperesolver.h themeresolver.h DESTINATION include/holonight/theme)

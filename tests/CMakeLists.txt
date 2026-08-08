@@ -126,6 +126,7 @@ set_property(TEST holonight_style_complex_tests PROPERTY
 
 add_executable(holonight_theme_resolver_tests
     main.cpp
+    test_semantic_appearance.cpp
     test_theme_resolver.cpp
 )
 

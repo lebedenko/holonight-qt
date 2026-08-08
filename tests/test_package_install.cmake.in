@@ -44,7 +44,7 @@ endif()
 file(WRITE "${consumer_source}/CMakeLists.txt" [=[
 cmake_minimum_required(VERSION 3.25)
 project(holonight_package_consumer LANGUAGES CXX)
-find_package(HolonightQt REQUIRED COMPONENTS Core Controls)
+find_package(HolonightQt REQUIRED COMPONENTS Core Controls Theme)
 find_package(Qt6 REQUIRED COMPONENTS Qml Quick QuickControls2 Widgets)
 if(NOT TARGET HolonightQt::Core)
   message(FATAL_ERROR "HolonightQt::Core is missing")
@@ -52,15 +52,25 @@ endif()
 if(NOT TARGET HolonightQt::Controls)
   message(FATAL_ERROR "HolonightQt::Controls is missing")
 endif()
+if(NOT TARGET HolonightQt::Theme)
+  message(FATAL_ERROR "HolonightQt::Theme is missing")
+endif()
 file(WRITE "${CMAKE_CURRENT_BINARY_DIR}/main.cpp" [==[
 #include <QApplication>
 #include <QQmlComponent>
 #include <QQmlEngine>
 #include <QStyle>
+#include <holonight/appearance.h>
+#include <holonight/theme/semanticappearance.h>
 #include <memory>
 
 int main(int argc, char** argv) {
   QApplication app(argc, argv);
+  const Holonight::SemanticAppearance semantic =
+      Holonight::resolveSemanticAppearance(Holonight::ResolvedAppearance{});
+  if (semantic.contract_version != Holonight::kSemanticAppearanceContractVersion || !semantic.accent.isValid()) {
+    return 1;
+  }
   if (QString::fromLatin1(app.style()->metaObject()->className()) != QStringLiteral("HoloniightStyle")) {
     return 2;
   }
@@ -82,7 +92,7 @@ int main(int argc, char** argv) {
 }
 ]==])
 add_executable(package_consumer "${CMAKE_CURRENT_BINARY_DIR}/main.cpp")
-target_link_libraries(package_consumer PRIVATE HolonightQt::Core HolonightQt::Controls
+target_link_libraries(package_consumer PRIVATE HolonightQt::Core HolonightQt::Controls HolonightQt::Theme
   Qt6::Qml Qt6::Quick Qt6::QuickControls2 Qt6::Widgets)
 ]=])
 
