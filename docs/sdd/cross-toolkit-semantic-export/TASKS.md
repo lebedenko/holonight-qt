@@ -10,7 +10,7 @@
 - [x] **SEM-005:** Extend the installed-prefix consumer to request `Theme`, include the public header, and resolve a
   snapshot.
 - [x] **SEM-006:** Complete local build, full CTest, format, clang-tidy, package/install, and QML policy verification.
-- [ ] **SEM-007:** Publish the focused implementation commit and record green remote CI for umbrella CTV-003 handoff.
+- [x] **SEM-007:** Publish the focused implementation commit and record green remote CI for umbrella CTV-003 handoff.
 
 ## Local verification
 
@@ -23,4 +23,11 @@ Completed on 2026-08-08:
 - `git diff --check`: passed.
 
 The full CTest run includes the installed-prefix consumer, QML import policy, QML source policy, theme resolver unit
-suite, and QML smoke suite. Publication and remote CI remain required before umbrella handoff.
+suite, and QML smoke suite.
+
+## Published handoff
+
+- Semantic appearance implementation: `e69d81e` (`feat(theme): export semantic appearance snapshot`).
+- Package/CI follow-ups: `dde2e9d`, `277a95f`.
+- Published verified revision: `holonight-qt@277a95f`.
+- GitHub Actions CI run `31280216547`: passed on 2026-08-09; build and full CTest completed successfully.
