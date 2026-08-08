@@ -13,6 +13,8 @@ target_include_directories(holonight_theme
         $<INSTALL_INTERFACE:include/holonight/theme>
 )
 
+target_compile_features(holonight_theme PUBLIC cxx_std_23)
+
 target_link_libraries(holonight_theme PUBLIC
     holonight_appearance
     holonight_theme_catalog
