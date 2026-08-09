@@ -21,7 +21,7 @@ jobs:
       - name: Install dependencies
         run: |
           sudo apt-get update -q
-          sudo apt-get install -y ninja-build libgtest-dev libtomlplusplus-dev ripgrep
+          sudo apt-get install -y ninja-build libgtest-dev libtomlplusplus-dev qtbase5-dev qtbase5-private-dev ripgrep
 
       - name: Install Qt 6.11
         uses: jurplel/install-qt-action@v3
@@ -41,9 +41,16 @@ jobs:
           cmake -B build -G Ninja
           -DCMAKE_BUILD_TYPE=Debug
           -DBUILD_TESTS=ON
+          -DBUILD_QT5_PROBES=ON
 
       - name: Build
         run: cmake --build build -j$(nproc)
 
       - name: Test
         run: ctest --test-dir build --output-on-failure
+
+      - name: Format check
+        run: cmake --build build --target format-check
+
+      - name: Clang tidy
+        run: cmake --build build --target tidy-src

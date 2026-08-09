@@ -5,6 +5,9 @@
 
 #include "shaperesolver.h"
 #include "themeresolver.h"
+#ifdef HOLONIGHT_QT5_PROBE
+#include "qt5probeappearance.h"
+#endif
 
 #include <QAbstractItemView>
 #include <QApplication>
@@ -38,7 +41,9 @@ enum class SurfaceRole : uint8_t {
   Container,
 };
 
-bool nameContains(const QString& name, QLatin1StringView needle) { return name.contains(needle, Qt::CaseInsensitive); }
+bool nameContains(const QString& name, const QLatin1String& needle) {
+  return name.contains(needle, Qt::CaseInsensitive);
+}
 
 bool isNamedSidePanel(const QWidget* widget) {
   if (widget == nullptr) {
@@ -46,12 +51,11 @@ bool isNamedSidePanel(const QWidget* widget) {
   }
   const QString className = QString::fromLatin1(widget->metaObject()->className());
   const QString objectName = widget->objectName();
-  return nameContains(className, QLatin1StringView{"PlacesPanel"}) ||
-         nameContains(className, QLatin1StringView{"InformationPanel"}) ||
-         nameContains(objectName, QLatin1StringView{"placesPanel"}) ||
-         nameContains(objectName, QLatin1StringView{"informationPanel"}) ||
-         nameContains(objectName, QLatin1StringView{"placesDock"}) ||
-         nameContains(objectName, QLatin1StringView{"infoDock"});
+  return nameContains(className, QLatin1String{"PlacesPanel"}) ||
+         nameContains(className, QLatin1String{"InformationPanel"}) ||
+         nameContains(objectName, QLatin1String{"placesPanel"}) ||
+         nameContains(objectName, QLatin1String{"informationPanel"}) ||
+         nameContains(objectName, QLatin1String{"placesDock"}) || nameContains(objectName, QLatin1String{"infoDock"});
 }
 
 bool isNamedStatusPanel(const QWidget* widget) {
@@ -60,9 +64,8 @@ bool isNamedStatusPanel(const QWidget* widget) {
   }
   const QString className = QString::fromLatin1(widget->metaObject()->className());
   const QString objectName = widget->objectName();
-  return nameContains(className, QLatin1StringView{"StatusBar"}) ||
-         nameContains(objectName, QLatin1StringView{"statusBar"}) ||
-         nameContains(objectName, QLatin1StringView{"statusLabel"});
+  return nameContains(className, QLatin1String{"StatusBar"}) || nameContains(objectName, QLatin1String{"statusBar"}) ||
+         nameContains(objectName, QLatin1String{"statusLabel"});
 }
 
 SurfaceRole classifyWidgetSurface(const QWidget* widget) {
@@ -136,7 +139,7 @@ bool shouldSuppressScrollAreaFrame(const QWidget* widget) {
   }
 
   const QString className = QString::fromLatin1(widget->metaObject()->className());
-  return nameContains(className, QLatin1StringView{"KItemListContainer"});
+  return nameContains(className, QLatin1String{"KItemListContainer"});
 }
 
 bool isTextEditLikeWidget(const QWidget* widget) {
@@ -291,6 +294,13 @@ bool drawFlatButtonPanelIfNeeded(const QStyleOption* option, QPainter* painter, 
 }
 }  // namespace
 
+#ifdef HOLONIGHT_QT5_PROBE
+HoloniightStyle::HoloniightStyle()
+    : QProxyStyle(QStringLiteral("fusion")),
+      config_{Holonight::qt5ProbeAppearance()},
+      tokens_{Holonight::ThemeResolver::resolve(config_)},
+      palette_{Holonight::buildPalette(tokens_)} {}
+#else
 HoloniightStyle::HoloniightStyle()
     : QProxyStyle(QStringLiteral("fusion")),
       appearance_reader_{this},
@@ -299,6 +309,7 @@ HoloniightStyle::HoloniightStyle()
       palette_{Holonight::buildPalette(tokens_)} {
   connect(&appearance_reader_, &Holonight::AppearanceReader::appearanceChanged, this, &HoloniightStyle::reloadTheme);
 }
+#endif
 
 QPalette HoloniightStyle::standardPalette() const { return palette_; }
 
@@ -728,7 +739,11 @@ void HoloniightStyle::drawHeaderImpl(const QStyleOption* option, QPainter* paint
 const Holonight::ColorTokens& HoloniightStyle::tokens() const { return tokens_; }
 
 void HoloniightStyle::reloadTheme() {
+#ifdef HOLONIGHT_QT5_PROBE
+  const Holonight::ResolvedAppearance newConfig = Holonight::qt5ProbeAppearance();
+#else
   const Holonight::ResolvedAppearance newConfig = appearance_reader_.appearance();
+#endif
   const Holonight::ColorTokens newTokens = Holonight::ThemeResolver::resolve(newConfig);
   if (newTokens == tokens_ && newConfig.color_mode == config_.color_mode &&
       newConfig.layout_scale == config_.layout_scale) {

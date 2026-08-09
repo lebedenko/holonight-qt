@@ -89,13 +89,13 @@ ResolvedShape ShapeResolver::resolve(SurfaceRole role, CornerStyle style, const 
 
   if (chamfered_corners_override >= static_cast<int>(Corner::None) &&
       chamfered_corners_override <= static_cast<int>(Corner::All)) {
-    corners = CornerMask::fromInt(chamfered_corners_override);
+    corners = CornerMask{chamfered_corners_override};
   }
 
   ShapeKind final_kind = ShapeKind::Hybrid;
-  if (corners == Corner::None) {
+  if (corners == CornerMask{Corner::None}) {
     final_kind = role_shape.kind == ShapeKind::Pill ? ShapeKind::Pill : ShapeKind::Rounded;
-  } else if (corners == Corner::All) {
+  } else if (corners == CornerMask{Corner::All}) {
     final_kind = ShapeKind::Chamfered;
   }
 

@@ -236,7 +236,8 @@ QColor accentColorForScheme(const QString& scheme_id, const QString& accent_id) 
       return accent.color;
     }
   }
-  Q_UNREACHABLE_RETURN({});
+  Q_UNREACHABLE();
+  return {};
 }
 
 }  // namespace Holonight

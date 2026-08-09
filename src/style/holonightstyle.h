@@ -3,7 +3,11 @@
 
 #pragma once
 
+#ifdef HOLONIGHT_QT5_PROBE
+#include "holonight/appearance.h"
+#else
 #include "holonight/appearance_reader.h"
+#endif
 #include "holonight/palette.h"
 
 #include <QProxyStyle>
@@ -71,7 +75,9 @@ class HoloniightStyle : public QProxyStyle {
   void drawToolButtonImpl(const QStyleOption* option, QPainter* painter, const QWidget* widget) const;
   void drawGroupBoxImpl(const QStyleOption* option, QPainter* painter, const QWidget* widget) const;
 
+#ifndef HOLONIGHT_QT5_PROBE
   Holonight::AppearanceReader appearance_reader_;
+#endif
   Holonight::ResolvedAppearance config_;
   Holonight::ColorTokens tokens_;
   QPalette palette_;

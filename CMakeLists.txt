@@ -29,6 +29,11 @@ qt_policy(SET QTP0001 NEW)
 option(BUILD_TESTS "Build GTest suite" OFF)
 option(BUILD_DEMO "Build visual demo app" OFF)
 option(BUILD_CONTROLS_GALLERY "Build the shared controls gallery" OFF)
+option(BUILD_QT5_PROBES "Build non-installed Qt 5 compatibility discovery targets" OFF)
+
+if(BUILD_QT5_PROBES)
+  find_package(Qt5 5.15 REQUIRED COMPONENTS Core Gui Test Widgets)
+endif()
 
 if(BUILD_TESTS)
   find_package(Qt6 6.11 REQUIRED COMPONENTS Test)
@@ -52,6 +57,10 @@ endif()
 
 if(BUILD_CONTROLS_GALLERY)
   add_subdirectory(examples/controls-gallery)
+endif()
+
+if(BUILD_QT5_PROBES)
+  add_subdirectory(qt5)
 endif()
 
 install(FILES
@@ -102,13 +111,13 @@ file(GLOB_RECURSE ALL_SOURCE_FILES
     LIST_DIRECTORIES false
     CONFIGURE_DEPENDS
     src/*.cpp src/*.h palette/*.cpp palette/*.h config/*.cpp config/*.h
-    qml/*.cpp qml/*.h tools/*.cpp tools/*.h tests/*.cpp tests/*.h demo/*.cpp demo/*.h
+    qml/*.cpp qml/*.h tools/*.cpp tools/*.h tests/*.cpp tests/*.h demo/*.cpp demo/*.h qt5/*.cpp qt5/*.h
 )
 
 file(GLOB_RECURSE ALL_CXX_SRC_IMPL_FILES
     LIST_DIRECTORIES false
     CONFIGURE_DEPENDS
-    src/*.cpp palette/*.cpp config/*.cpp qml/*.cpp tools/*.cpp demo/*.cpp
+    src/*.cpp palette/*.cpp config/*.cpp qml/*.cpp tools/*.cpp demo/*.cpp qt5/*.cpp
 )
 
 file(GLOB_RECURSE ALL_CXX_TEST_IMPL_FILES
