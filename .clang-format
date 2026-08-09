@@ -13,7 +13,4 @@ IncludeCategories:
     Priority: 3
   - Regex: '".*"'
     Priority: 1
-SortIncludes:
-  Enabled: true
-  IgnoreCase: false
-  IgnoreExtension: true
+SortIncludes: true
