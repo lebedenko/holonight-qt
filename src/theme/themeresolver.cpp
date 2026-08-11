@@ -183,6 +183,86 @@ bool draculaAccent(const QString& accent, ThemeSchemeKind scheme, AccentOverride
   return false;
 }
 
+bool nordAccent(const QString& accent, ThemeSchemeKind scheme, AccentOverride* out) {
+  if (scheme == ThemeSchemeKind::HoloNightFrost) {
+    if (accent == QStringLiteral("cyan")) {
+      *out = {QColor{QStringLiteral("#8FBCBB")}, QColor{QStringLiteral("#88C0D0")}, QColor{QStringLiteral("#7AA8A7")}};
+      return true;
+    }
+    if (accent == QStringLiteral("blue")) {
+      *out = {QColor{QStringLiteral("#81A1C1")}, QColor{QStringLiteral("#88C0D0")}, QColor{QStringLiteral("#6D8EAF")}};
+      return true;
+    }
+    if (accent == QStringLiteral("violet")) {
+      *out = {QColor{QStringLiteral("#B48EAD")}, QColor{QStringLiteral("#C5A2BF")}, QColor{QStringLiteral("#9E7998")}};
+      return true;
+    }
+    if (accent == QStringLiteral("yellow")) {
+      *out = {QColor{QStringLiteral("#EBCB8B")}, QColor{QStringLiteral("#F2D9A6")}, QColor{QStringLiteral("#D4B371")}};
+      return true;
+    }
+  }
+  if (scheme == ThemeSchemeKind::HoloNightSnow) {
+    if (accent == QStringLiteral("cyan")) {
+      *out = {QColor{QStringLiteral("#315E7A")}, QColor{QStringLiteral("#3C718F")}, QColor{QStringLiteral("#274B62")}};
+      return true;
+    }
+    if (accent == QStringLiteral("blue")) {
+      *out = {QColor{QStringLiteral("#3F5F85")}, QColor{QStringLiteral("#4C719B")}, QColor{QStringLiteral("#354F70")}};
+      return true;
+    }
+    if (accent == QStringLiteral("violet")) {
+      *out = {QColor{QStringLiteral("#5B4675")}, QColor{QStringLiteral("#71598D")}, QColor{QStringLiteral("#48375D")}};
+      return true;
+    }
+    if (accent == QStringLiteral("yellow")) {
+      *out = {QColor{QStringLiteral("#78620F")}, QColor{QStringLiteral("#90781C")}, QColor{QStringLiteral("#604E0C")}};
+      return true;
+    }
+  }
+  return false;
+}
+
+bool everforestAccent(const QString& accent, ThemeSchemeKind scheme, AccentOverride* out) {
+  if (scheme == ThemeSchemeKind::HoloNightCanopy) {
+    if (accent == QStringLiteral("cyan")) {
+      *out = {QColor{QStringLiteral("#83C092")}, QColor{QStringLiteral("#9DCEAA")}, QColor{QStringLiteral("#6DA77C")}};
+      return true;
+    }
+    if (accent == QStringLiteral("blue")) {
+      *out = {QColor{QStringLiteral("#7FBBB3")}, QColor{QStringLiteral("#9CCBC5")}, QColor{QStringLiteral("#68A19A")}};
+      return true;
+    }
+    if (accent == QStringLiteral("violet")) {
+      *out = {QColor{QStringLiteral("#D699B6")}, QColor{QStringLiteral("#E0AFC7")}, QColor{QStringLiteral("#BE819F")}};
+      return true;
+    }
+    if (accent == QStringLiteral("yellow")) {
+      *out = {QColor{QStringLiteral("#DBBC7F")}, QColor{QStringLiteral("#E4CC9A")}, QColor{QStringLiteral("#C3A366")}};
+      return true;
+    }
+  }
+  if (scheme == ThemeSchemeKind::HoloNightGlade) {
+    if (accent == QStringLiteral("cyan")) {
+      *out = {QColor{QStringLiteral("#2F6F61")}, QColor{QStringLiteral("#398474")}, QColor{QStringLiteral("#26594E")}};
+      return true;
+    }
+    if (accent == QStringLiteral("blue")) {
+      *out = {QColor{QStringLiteral("#315E7A")}, QColor{QStringLiteral("#3A7191")}, QColor{QStringLiteral("#274B62")}};
+      return true;
+    }
+    if (accent == QStringLiteral("violet")) {
+      *out = {QColor{QStringLiteral("#6A4570")}, QColor{QStringLiteral("#805687")}, QColor{QStringLiteral("#55375A")}};
+      return true;
+    }
+    if (accent == QStringLiteral("yellow")) {
+      *out = {QColor{QStringLiteral("#8A4D18")}, QColor{QStringLiteral("#A55F24")}, QColor{QStringLiteral("#6E3D13")}};
+      return true;
+    }
+  }
+  return false;
+}
+
 bool tokenAccent(const QString& accent, const ColorTokens& tok, AccentOverride* out) {
   QColor primary;
   if (accent == QStringLiteral("cyan")) {
@@ -237,6 +317,14 @@ void ThemeResolver::applyAccent(ColorTokens& tok, const QString& accent, ThemeSc
     return;
   }
   if (draculaAccent(accent, scheme, &overrideColors)) {
+    applyAccentOverride(tok, overrideColors);
+    return;
+  }
+  if (nordAccent(accent, scheme, &overrideColors)) {
+    applyAccentOverride(tok, overrideColors);
+    return;
+  }
+  if (everforestAccent(accent, scheme, &overrideColors)) {
     applyAccentOverride(tok, overrideColors);
     return;
   }

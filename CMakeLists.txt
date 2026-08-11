@@ -76,6 +76,10 @@ install(FILES
     data/holonight-cyber-l.colors
     data/holonight-dracula.colors
     data/holonight-alucard.colors
+    data/holonight-frost.colors
+    data/holonight-snow.colors
+    data/holonight-canopy.colors
+    data/holonight-glade.colors
     DESTINATION share/color-schemes
 )
 

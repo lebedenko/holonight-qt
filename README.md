@@ -29,14 +29,15 @@ style selector for QML controls.
 
 KDE color schemes are also installed to `share/color-schemes`: `HoloNight Dark`, `HoloNight Light`,
 `HoloNight Mocha`, `HoloNight Latte`, `HoloNight Storm`, `HoloNight Day`, `HoloNight Ember`, `HoloNight Sol`,
-`HoloNight Cyber D`, `HoloNight Cyber L`, `HoloNight Dracula`, and `HoloNight Alucard`.
+`HoloNight Cyber D`, `HoloNight Cyber L`, `HoloNight Dracula`, `HoloNight Alucard`, `HoloNight Frost`,
+`HoloNight Snow`, `HoloNight Canopy`, and `HoloNight Glade`.
 
 ## Palette
 
 HoloNight ships a scheme catalog selected with `tokensForScheme(ThemeSchemeKind)`: **HoloNight Dark**,
 **HoloNight Light**, **HoloNight Mocha**, **HoloNight Latte**, **HoloNight Storm**, **HoloNight Day**,
 **HoloNight Ember**, **HoloNight Sol**, **HoloNight Cyber D**, **HoloNight Cyber L**, **HoloNight Dracula**,
-and **HoloNight Alucard**.
+**HoloNight Alucard**, **HoloNight Frost**, **HoloNight Snow**, **HoloNight Canopy**, and **HoloNight Glade**.
 `appearance/scheme` is the canonical config selector; legacy `appearance/mode` is only used as a fallback when no
 valid scheme is present. All resolved colors and metrics originate in `palette/holonight/palette.h`, and
 downstream layers consume that token model rather than hard-coded color values.
@@ -158,7 +159,8 @@ display_size = 24
 
 Supported appearance schemes are `holonight-dark`, `holonight-light`, `holonight-mocha`, `holonight-latte`,
 `holonight-storm`, `holonight-day`, `holonight-ember`, `holonight-sol`, `holonight-cyber-d`, `holonight-cyber-l`,
-`holonight-dracula`, and `holonight-alucard`.
+`holonight-dracula`, `holonight-alucard`, `holonight-frost`, `holonight-snow`, `holonight-canopy`, and
+`holonight-glade`.
 The selected scheme determines dark/light mode. Supported accents are `default`, `cyan`, `blue`, `violet`, and
 `yellow`. Invalid canonical documents are rejected as a unit; live consumers retain their last known good state.
 

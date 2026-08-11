@@ -71,11 +71,23 @@ Holonight::ThemeSchemeKind parseScheme(std::string_view value) {
   if (value == "holonight-alucard" || value == "alucard") {
     return Holonight::ThemeSchemeKind::HoloNightAlucard;
   }
+  if (value == "holonight-frost") {
+    return Holonight::ThemeSchemeKind::HoloNightFrost;
+  }
+  if (value == "holonight-snow") {
+    return Holonight::ThemeSchemeKind::HoloNightSnow;
+  }
+  if (value == "holonight-canopy") {
+    return Holonight::ThemeSchemeKind::HoloNightCanopy;
+  }
+  if (value == "holonight-glade") {
+    return Holonight::ThemeSchemeKind::HoloNightGlade;
+  }
   throw std::runtime_error{
       "invalid scheme '" + std::string{value} +
       "'; expected holonight-dark, holonight-light, holonight-mocha, holonight-latte, holonight-storm, "
       "holonight-day, holonight-ember, holonight-sol, holonight-cyber-d, holonight-cyber-l, holonight-dracula, or "
-      "holonight-alucard"};
+      "holonight-alucard, holonight-frost, holonight-snow, holonight-canopy, or holonight-glade"};
 }
 
 std::string schemeName(Holonight::ThemeSchemeKind scheme) {
@@ -104,6 +116,14 @@ std::string schemeName(Holonight::ThemeSchemeKind scheme) {
       return "HoloNight Dracula";
     case Holonight::ThemeSchemeKind::HoloNightAlucard:
       return "HoloNight Alucard";
+    case Holonight::ThemeSchemeKind::HoloNightFrost:
+      return "HoloNight Frost";
+    case Holonight::ThemeSchemeKind::HoloNightSnow:
+      return "HoloNight Snow";
+    case Holonight::ThemeSchemeKind::HoloNightCanopy:
+      return "HoloNight Canopy";
+    case Holonight::ThemeSchemeKind::HoloNightGlade:
+      return "HoloNight Glade";
   }
   return "HoloNight Dark";
 }
@@ -134,6 +154,14 @@ std::string schemeId(Holonight::ThemeSchemeKind scheme) {
       return "holonight-dracula";
     case Holonight::ThemeSchemeKind::HoloNightAlucard:
       return "holonight-alucard";
+    case Holonight::ThemeSchemeKind::HoloNightFrost:
+      return "holonight-frost";
+    case Holonight::ThemeSchemeKind::HoloNightSnow:
+      return "holonight-snow";
+    case Holonight::ThemeSchemeKind::HoloNightCanopy:
+      return "holonight-canopy";
+    case Holonight::ThemeSchemeKind::HoloNightGlade:
+      return "holonight-glade";
   }
   return "holonight-dark";
 }

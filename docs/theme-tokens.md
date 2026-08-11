@@ -12,13 +12,15 @@ The palette layer is the canonical source for resolved theme values. `Holonight:
 | HoloNight Ember / Sol | Implemented | Yes | Yes | Gruvbox-based high contrast schemes. |
 | HoloNight Cyber D / L | Implemented | Yes | Yes | Cyberpunk-inspired neon schemes from palette.cpp. |
 | HoloNight Dracula / Alucard | Implemented | Yes | Yes | Official Dracula OSS base palettes by Zeno Rocha / draculatheme.com (MIT License), with documented HoloNight semantic derivations. |
-| Aurora | Planned | Planned | No | Nord inspired. Not parsed or exported yet. |
+| HoloNight Frost / Snow | Implemented | Yes | Yes | Nord Polar Night/Snow Storm foundations, Frost interactions, and Aurora status hues (MIT License). |
+| HoloNight Canopy / Glade | Implemented | Yes | Yes | Everforest medium dark/light palettes (MIT License). |
 | Eclipse | Planned | Planned | No | Lower-chroma dark variant. Not parsed or exported yet. |
 | Neon | Planned | Planned | No | Higher-accent dark variant. Not parsed or exported yet. |
 
 Current scheme IDs are `holonight-dark`, `holonight-light`, `holonight-mocha`, `holonight-latte`,
 `holonight-storm`, `holonight-day`, `holonight-ember`, `holonight-sol`, `holonight-cyber-d`, `holonight-cyber-l`,
-`holonight-dracula`, and `holonight-alucard`.
+`holonight-dracula`, `holonight-alucard`, `holonight-frost`, `holonight-snow`, `holonight-canopy`, and
+`holonight-glade`.
 All current scheme IDs resolve to distinct built-in token sets.
 
 ## Canonical Roles
@@ -120,7 +122,8 @@ Current implemented precedence is:
 Appearance scheme is configured with `theme.scheme` and determines dark/light mode.
 Supported values are `holonight-dark`, `holonight-light`, `holonight-mocha`, `holonight-latte`,
 `holonight-storm`, `holonight-day`, `holonight-ember`, `holonight-sol`, `holonight-cyber-d`, `holonight-cyber-l`,
-`holonight-dracula`, and `holonight-alucard`.
+`holonight-dracula`, `holonight-alucard`, `holonight-frost`, `holonight-snow`, `holonight-canopy`, and
+`holonight-glade`.
 `theme.accent` supports `default`, `cyan`, `blue`, `violet`, and `yellow`. The provider validates and normalizes the
 complete document before Qt publishes it.
 
@@ -136,7 +139,30 @@ Generated KDE schemes are `data/holonight-dark.colors` (`HoloNight Dark`),
 `data/holonight-day.colors` (`HoloNight Day`), `data/holonight-ember.colors` (`HoloNight Ember`),
 `data/holonight-sol.colors` (`HoloNight Sol`), `data/holonight-cyber-d.colors` (`HoloNight Cyber D`),
 `data/holonight-cyber-l.colors` (`HoloNight Cyber L`), `data/holonight-dracula.colors` (`HoloNight Dracula`),
-and `data/holonight-alucard.colors` (`HoloNight Alucard`).
+`data/holonight-alucard.colors` (`HoloNight Alucard`), `data/holonight-frost.colors` (`HoloNight Frost`),
+`data/holonight-snow.colors` (`HoloNight Snow`), `data/holonight-canopy.colors` (`HoloNight Canopy`), and
+`data/holonight-glade.colors` (`HoloNight Glade`).
+
+### Nord and Everforest palette mapping
+
+Frost and Snow follow the [official Nord palette](https://www.nordtheme.com/docs/colors-and-palettes/) (MIT):
+Polar Night supplies Frost surfaces, Snow Storm supplies Snow surfaces and neutral text, Frost supplies interaction
+hues, and Aurora supplies status hues. Canopy and Glade use the medium dark/light `bg0`–`bg4`, foreground, grey,
+and accent values from the [official Everforest palette](https://github.com/sainnhe/everforest/blob/master/palette.md)
+([MIT license](https://github.com/sainnhe/everforest/blob/master/LICENSE)).
+
+| Scheme | background | surface | elevated | raised | text | primary | error | warning | success |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| Frost | `#2E3440` | `#3B4252` | `#434C5E` | `#4C566A` | `#ECEFF4` | `#88C0D0` | `#E49399` | `#EBCB8B` | `#A3BE8C` |
+| Snow | `#ECEFF4` | `#E5E9F0` | `#D8DEE9` | `#FFFFFF` | `#2E3440` | `#3F5F85` | `#9B3C45` | `#705A0C` | `#35683A` |
+| Canopy | `#2D353B` | `#343F44` | `#3D484D` | `#475258` | `#D3C6AA` | `#A7C080` | `#E67E80` | `#DBBC7F` | `#A7C080` |
+| Glade | `#FDF6E3` | `#F4F0D9` | `#EFEBD4` | `#FFFFFF` | `#5C6A72` | `#35683A` | `#9B3C45` | `#8A4D18` | `#35683A` |
+
+Roles without upstream equivalents are committed static derivations: extra surface levels follow the upstream
+neutral ramps; hover/pressed, workspace, overlay, glow, and ANSI-bright roles preserve family hue relationships.
+For Snow and Glade, interactive, status, and brand colors are darkened toward the upstream foreground until text
+roles meet 4.5:1 and interactive borders meet 3:1 on canonical surfaces. No accessibility color is calculated at
+runtime.
 
 ### Dracula palette mapping
 

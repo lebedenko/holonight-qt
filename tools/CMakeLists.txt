@@ -62,4 +62,10 @@ if(BUILD_TESTS)
         NAME generated_holonight_alucard_colors_current
         COMMAND generate_holonight_colors --scheme holonight-alucard --check ${CMAKE_SOURCE_DIR}/data/holonight-alucard.colors
     )
+    foreach(SCHEME frost snow canopy glade)
+        add_test(
+            NAME generated_holonight_${SCHEME}_colors_current
+            COMMAND generate_holonight_colors --scheme holonight-${SCHEME} --check ${CMAKE_SOURCE_DIR}/data/holonight-${SCHEME}.colors
+        )
+    endforeach()
 endif()

@@ -856,6 +856,233 @@ ColorTokens holoNightAlucardTokens() {
   return tok;
 }
 
+ColorTokens nordFrostTokens() {
+  ColorTokens tok;
+
+  tok.background = QColor{QStringLiteral("#2E3440")};
+  tok.surface = QColor{QStringLiteral("#3B4252")};
+  tok.surfaceElevated = QColor{QStringLiteral("#434C5E")};
+  tok.surfaceRaised = QColor{QStringLiteral("#4C566A")};
+  tok.surfaceHover = QColor{QStringLiteral("#566277")};
+  tok.surfaceInverse = QColor{QStringLiteral("#ECEFF4")};
+  tok.textPrimary = QColor{QStringLiteral("#ECEFF4")};
+  tok.textSecondary = QColor{QStringLiteral("#E5E9F0")};
+  tok.textMuted = QColor{QStringLiteral("#B8C1D1")};
+  tok.textDisabled = QColor{QStringLiteral("#7B879D")};
+  tok.textInverse = QColor{QStringLiteral("#2E3440")};
+  tok.primary = QColor{QStringLiteral("#88C0D0")};
+  tok.primaryHover = QColor{QStringLiteral("#8FBCBB")};
+  tok.primaryPressed = QColor{QStringLiteral("#88A9C8")};
+  tok.onPrimary = QColor{QStringLiteral("#2E3440")};
+  tok.borderSubtle = QColor{QStringLiteral("#4C566A")};
+  tok.borderPassive = QColor{QStringLiteral("#69778F")};
+  tok.borderStrong = QColor{QStringLiteral("#8A99B2")};
+  tok.borderHover = colorWithAlpha(QStringLiteral("#8FBCBB"), 0x55);
+  tok.borderFocus = QColor{QStringLiteral("#88C0D0")};
+  tok.borderActive = QColor{QStringLiteral("#81A1C1")};
+  tok.borderUrgent = QColor{QStringLiteral("#E49399")};
+  tok.glowCyanSoft = colorWithAlpha(QStringLiteral("#8FBCBB"), 0x33);
+  tok.glowBlueSoft = colorWithAlpha(QStringLiteral("#81A1C1"), 0x30);
+  tok.glowVioletSoft = colorWithAlpha(QStringLiteral("#B48EAD"), 0x30);
+  tok.scrim = colorWithAlpha(QStringLiteral("#000000"), 0x88);
+  tok.glassTint = colorWithAlpha(QStringLiteral("#3B4252"), 0xd8);
+  tok.hoverOverlay = colorWithAlpha(QStringLiteral("#88C0D0"), 0x12);
+  tok.pressedOverlay = colorWithAlpha(QStringLiteral("#88C0D0"), 0x22);
+  tok.disabledOverlay = colorWithAlpha(QStringLiteral("#2E3440"), 0x80);
+  tok.focusRing = tok.borderFocus;
+  tok.shadow = QColor{QStringLiteral("#000000")};
+  tok.error = QColor{QStringLiteral("#E49399")};
+  tok.warning = QColor{QStringLiteral("#EBCB8B")};
+  tok.success = QColor{QStringLiteral("#A3BE8C")};
+  tok.onError = QColor{QStringLiteral("#2E3440")};
+  tok.accentCyan = QColor{QStringLiteral("#8FBCBB")};
+  tok.accentBlue = QColor{QStringLiteral("#81A1C1")};
+  tok.accentViolet = QColor{QStringLiteral("#B48EAD")};
+  tok.brandForeground = QColor{QStringLiteral("#D8DEE9")};
+  tok.accentYellow = QColor{QStringLiteral("#EBCB8B")};
+  tok.workspaceOccupied = QColor{QStringLiteral("#3B4252")};
+  tok.workspaceActive = QColor{QStringLiteral("#434C5E")};
+  tok.ansiBlack = QColor{QStringLiteral("#3B4252")};
+  tok.ansiRed = QColor{QStringLiteral("#E49399")};
+  tok.ansiGreen = QColor{QStringLiteral("#A3BE8C")};
+  tok.ansiYellow = QColor{QStringLiteral("#EBCB8B")};
+  tok.ansiBlue = QColor{QStringLiteral("#81A1C1")};
+  tok.ansiMagenta = QColor{QStringLiteral("#B48EAD")};
+  tok.ansiCyan = QColor{QStringLiteral("#8FBCBB")};
+  tok.ansiWhite = QColor{QStringLiteral("#E5E9F0")};
+  tok.ansiBrightBlack = QColor{QStringLiteral("#4C566A")};
+  tok.ansiBrightRed = QColor{QStringLiteral("#D08770")};
+  tok.ansiBrightGreen = QColor{QStringLiteral("#B5D19E")};
+  tok.ansiBrightYellow = QColor{QStringLiteral("#F2D9A6")};
+  tok.ansiBrightBlue = QColor{QStringLiteral("#9AB8D3")};
+  tok.ansiBrightMagenta = QColor{QStringLiteral("#C7A6C1")};
+  tok.ansiBrightCyan = QColor{QStringLiteral("#A3D1D0")};
+  tok.ansiBrightWhite = QColor{QStringLiteral("#ECEFF4")};
+  populateDerivedTokens(&tok);
+  return tok;
+}
+
+ColorTokens nordSnowTokens() {
+  ColorTokens tok = nordFrostTokens();
+  tok.background = QColor{QStringLiteral("#ECEFF4")};
+  tok.surface = QColor{QStringLiteral("#E5E9F0")};
+  tok.surfaceElevated = QColor{QStringLiteral("#D8DEE9")};
+  tok.surfaceRaised = QColor{QStringLiteral("#FFFFFF")};
+  tok.surfaceHover = QColor{QStringLiteral("#D1D8E4")};
+  tok.surfaceInverse = QColor{QStringLiteral("#2E3440")};
+  tok.textPrimary = QColor{QStringLiteral("#2E3440")};
+  tok.textSecondary = QColor{QStringLiteral("#3B4252")};
+  tok.textMuted = QColor{QStringLiteral("#58657A")};
+  tok.textDisabled = QColor{QStringLiteral("#929CAF")};
+  tok.textInverse = QColor{QStringLiteral("#ECEFF4")};
+  tok.primary = QColor{QStringLiteral("#3F5F85")};
+  tok.primaryHover = QColor{QStringLiteral("#315E7A")};
+  tok.primaryPressed = QColor{QStringLiteral("#354F70")};
+  tok.onPrimary = QColor{QStringLiteral("#FFFFFF")};
+  tok.borderSubtle = QColor{QStringLiteral("#C2CAD7")};
+  tok.borderPassive = QColor{QStringLiteral("#929CAF")};
+  tok.borderStrong = QColor{QStringLiteral("#69778F")};
+  tok.borderHover = colorWithAlpha(QStringLiteral("#315E7A"), 0x44);
+  tok.borderFocus = QColor{QStringLiteral("#315E7A")};
+  tok.borderActive = tok.primary;
+  tok.borderUrgent = QColor{QStringLiteral("#9B3C45")};
+  tok.glowCyanSoft = colorWithAlpha(QStringLiteral("#315E7A"), 0x25);
+  tok.glowBlueSoft = colorWithAlpha(QStringLiteral("#3F5F85"), 0x25);
+  tok.glowVioletSoft = colorWithAlpha(QStringLiteral("#5B4675"), 0x25);
+  tok.scrim = colorWithAlpha(QStringLiteral("#2E3440"), 0x66);
+  tok.glassTint = colorWithAlpha(QStringLiteral("#ECEFF4"), 0xd8);
+  tok.hoverOverlay = colorWithAlpha(QStringLiteral("#3F5F85"), 0x12);
+  tok.pressedOverlay = colorWithAlpha(QStringLiteral("#3F5F85"), 0x22);
+  tok.disabledOverlay = colorWithAlpha(QStringLiteral("#ECEFF4"), 0x99);
+  tok.focusRing = tok.borderFocus;
+  tok.error = QColor{QStringLiteral("#9B3C45")};
+  tok.warning = QColor{QStringLiteral("#705A0C")};
+  tok.success = QColor{QStringLiteral("#35683A")};
+  tok.onError = QColor{QStringLiteral("#FFFFFF")};
+  tok.accentCyan = QColor{QStringLiteral("#315E7A")};
+  tok.accentBlue = QColor{QStringLiteral("#3F5F85")};
+  tok.accentViolet = QColor{QStringLiteral("#5B4675")};
+  tok.brandForeground = QColor{QStringLiteral("#5B4675")};
+  tok.accentYellow = QColor{QStringLiteral("#78620F")};
+  tok.workspaceOccupied = QColor{QStringLiteral("#D8DEE9")};
+  tok.workspaceActive = QColor{QStringLiteral("#C8D0DD")};
+  populateDerivedTokens(&tok);
+  return tok;
+}
+
+ColorTokens everforestCanopyTokens() {
+  ColorTokens tok;
+  tok.background = QColor{QStringLiteral("#2D353B")};
+  tok.surface = QColor{QStringLiteral("#343F44")};
+  tok.surfaceElevated = QColor{QStringLiteral("#3D484D")};
+  tok.surfaceRaised = QColor{QStringLiteral("#475258")};
+  tok.surfaceHover = QColor{QStringLiteral("#4F585E")};
+  tok.surfaceInverse = QColor{QStringLiteral("#FDF6E3")};
+  tok.textPrimary = QColor{QStringLiteral("#D3C6AA")};
+  tok.textSecondary = QColor{QStringLiteral("#D3C6AA")};
+  tok.textMuted = QColor{QStringLiteral("#9DA9A0")};
+  tok.textDisabled = QColor{QStringLiteral("#7A8478")};
+  tok.textInverse = QColor{QStringLiteral("#5C6A72")};
+  tok.primary = QColor{QStringLiteral("#A7C080")};
+  tok.primaryHover = QColor{QStringLiteral("#83C092")};
+  tok.primaryPressed = QColor{QStringLiteral("#8DAA6D")};
+  tok.onPrimary = QColor{QStringLiteral("#2D353B")};
+  tok.borderSubtle = QColor{QStringLiteral("#4F585E")};
+  tok.borderPassive = QColor{QStringLiteral("#7A8478")};
+  tok.borderStrong = QColor{QStringLiteral("#9DA9A0")};
+  tok.borderHover = colorWithAlpha(QStringLiteral("#83C092"), 0x55);
+  tok.borderFocus = QColor{QStringLiteral("#83C092")};
+  tok.borderActive = QColor{QStringLiteral("#A7C080")};
+  tok.borderUrgent = QColor{QStringLiteral("#E67E80")};
+  tok.glowCyanSoft = colorWithAlpha(QStringLiteral("#83C092"), 0x33);
+  tok.glowBlueSoft = colorWithAlpha(QStringLiteral("#7FBBB3"), 0x30);
+  tok.glowVioletSoft = colorWithAlpha(QStringLiteral("#D699B6"), 0x30);
+  tok.scrim = colorWithAlpha(QStringLiteral("#000000"), 0x88);
+  tok.glassTint = colorWithAlpha(QStringLiteral("#343F44"), 0xd8);
+  tok.hoverOverlay = colorWithAlpha(QStringLiteral("#83C092"), 0x12);
+  tok.pressedOverlay = colorWithAlpha(QStringLiteral("#83C092"), 0x22);
+  tok.disabledOverlay = colorWithAlpha(QStringLiteral("#2D353B"), 0x80);
+  tok.focusRing = tok.borderFocus;
+  tok.shadow = QColor{QStringLiteral("#000000")};
+  tok.error = QColor{QStringLiteral("#E67E80")};
+  tok.warning = QColor{QStringLiteral("#DBBC7F")};
+  tok.success = QColor{QStringLiteral("#A7C080")};
+  tok.onError = QColor{QStringLiteral("#2D353B")};
+  tok.accentCyan = QColor{QStringLiteral("#83C092")};
+  tok.accentBlue = QColor{QStringLiteral("#7FBBB3")};
+  tok.accentViolet = QColor{QStringLiteral("#D699B6")};
+  tok.brandForeground = QColor{QStringLiteral("#D3C6AA")};
+  tok.accentYellow = QColor{QStringLiteral("#DBBC7F")};
+  tok.workspaceOccupied = QColor{QStringLiteral("#3D484D")};
+  tok.workspaceActive = QColor{QStringLiteral("#475258")};
+  tok.ansiBlack = QColor{QStringLiteral("#343F44")};
+  tok.ansiRed = QColor{QStringLiteral("#E67E80")};
+  tok.ansiGreen = QColor{QStringLiteral("#A7C080")};
+  tok.ansiYellow = QColor{QStringLiteral("#DBBC7F")};
+  tok.ansiBlue = QColor{QStringLiteral("#7FBBB3")};
+  tok.ansiMagenta = QColor{QStringLiteral("#D699B6")};
+  tok.ansiCyan = QColor{QStringLiteral("#83C092")};
+  tok.ansiWhite = QColor{QStringLiteral("#D3C6AA")};
+  tok.ansiBrightBlack = QColor{QStringLiteral("#7A8478")};
+  tok.ansiBrightRed = QColor{QStringLiteral("#F09A9C")};
+  tok.ansiBrightGreen = QColor{QStringLiteral("#B8CE99")};
+  tok.ansiBrightYellow = QColor{QStringLiteral("#E4CC9A")};
+  tok.ansiBrightBlue = QColor{QStringLiteral("#9CCBC5")};
+  tok.ansiBrightMagenta = QColor{QStringLiteral("#E0AFC7")};
+  tok.ansiBrightCyan = QColor{QStringLiteral("#9DD0AA")};
+  tok.ansiBrightWhite = QColor{QStringLiteral("#FDF6E3")};
+  populateDerivedTokens(&tok);
+  return tok;
+}
+
+ColorTokens everforestGladeTokens() {
+  ColorTokens tok = everforestCanopyTokens();
+  tok.background = QColor{QStringLiteral("#FDF6E3")};
+  tok.surface = QColor{QStringLiteral("#F4F0D9")};
+  tok.surfaceElevated = QColor{QStringLiteral("#EFEBD4")};
+  tok.surfaceRaised = QColor{QStringLiteral("#FFFFFF")};
+  tok.surfaceHover = QColor{QStringLiteral("#E6E2CC")};
+  tok.surfaceInverse = QColor{QStringLiteral("#2D353B")};
+  tok.textPrimary = QColor{QStringLiteral("#5C6A72")};
+  tok.textSecondary = QColor{QStringLiteral("#4F5B63")};
+  tok.textMuted = QColor{QStringLiteral("#6F7B73")};
+  tok.textDisabled = QColor{QStringLiteral("#A6B0A0")};
+  tok.textInverse = QColor{QStringLiteral("#D3C6AA")};
+  tok.primary = QColor{QStringLiteral("#35683A")};
+  tok.primaryHover = QColor{QStringLiteral("#2F6F61")};
+  tok.primaryPressed = QColor{QStringLiteral("#28552F")};
+  tok.onPrimary = QColor{QStringLiteral("#FFFFFF")};
+  tok.borderSubtle = QColor{QStringLiteral("#D6D3BE")};
+  tok.borderPassive = QColor{QStringLiteral("#A6B0A0")};
+  tok.borderStrong = QColor{QStringLiteral("#76847B")};
+  tok.borderHover = colorWithAlpha(QStringLiteral("#2F6F61"), 0x44);
+  tok.borderFocus = QColor{QStringLiteral("#2F6F61")};
+  tok.borderActive = tok.primary;
+  tok.borderUrgent = QColor{QStringLiteral("#9B3C45")};
+  tok.glowCyanSoft = colorWithAlpha(QStringLiteral("#2F6F61"), 0x25);
+  tok.glowBlueSoft = colorWithAlpha(QStringLiteral("#315E7A"), 0x25);
+  tok.glowVioletSoft = colorWithAlpha(QStringLiteral("#6A4570"), 0x25);
+  tok.scrim = colorWithAlpha(QStringLiteral("#5C6A72"), 0x66);
+  tok.glassTint = colorWithAlpha(QStringLiteral("#FDF6E3"), 0xd8);
+  tok.hoverOverlay = colorWithAlpha(QStringLiteral("#35683A"), 0x12);
+  tok.pressedOverlay = colorWithAlpha(QStringLiteral("#35683A"), 0x22);
+  tok.disabledOverlay = colorWithAlpha(QStringLiteral("#FDF6E3"), 0x99);
+  tok.focusRing = tok.borderFocus;
+  tok.error = QColor{QStringLiteral("#9B3C45")};
+  tok.warning = QColor{QStringLiteral("#8A4D18")};
+  tok.success = QColor{QStringLiteral("#35683A")};
+  tok.onError = QColor{QStringLiteral("#FFFFFF")};
+  tok.accentCyan = QColor{QStringLiteral("#2F6F61")};
+  tok.accentBlue = QColor{QStringLiteral("#315E7A")};
+  tok.accentViolet = QColor{QStringLiteral("#6A4570")};
+  tok.brandForeground = QColor{QStringLiteral("#35683A")};
+  tok.accentYellow = QColor{QStringLiteral("#8A4D18")};
+  tok.workspaceOccupied = QColor{QStringLiteral("#EFEBD4")};
+  tok.workspaceActive = QColor{QStringLiteral("#E0DCC7")};
+  populateDerivedTokens(&tok);
+  return tok;
+}
+
 }  // namespace
 
 ColorTokens tokensForScheme(ThemeSchemeKind scheme) {
@@ -884,6 +1111,14 @@ ColorTokens tokensForScheme(ThemeSchemeKind scheme) {
       return holoNightDraculaTokens();
     case ThemeSchemeKind::HoloNightAlucard:
       return holoNightAlucardTokens();
+    case ThemeSchemeKind::HoloNightFrost:
+      return nordFrostTokens();
+    case ThemeSchemeKind::HoloNightSnow:
+      return nordSnowTokens();
+    case ThemeSchemeKind::HoloNightCanopy:
+      return everforestCanopyTokens();
+    case ThemeSchemeKind::HoloNightGlade:
+      return everforestGladeTokens();
   }
   return holoNightDarkTokens();
 }

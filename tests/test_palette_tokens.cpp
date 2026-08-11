@@ -20,6 +20,10 @@ TEST(BrandForegroundTokens, EveryBuiltInSchemeMatchesDocumentedValue) {
       {Holonight::ThemeSchemeKind::HoloNightCyberL, QColor{QStringLiteral("#893EDC")}},
       {Holonight::ThemeSchemeKind::HoloNightDracula, QColor{QStringLiteral("#E2C2FF")}},
       {Holonight::ThemeSchemeKind::HoloNightAlucard, QColor{QStringLiteral("#5137B3")}},
+      {Holonight::ThemeSchemeKind::HoloNightFrost, QColor{QStringLiteral("#D8DEE9")}},
+      {Holonight::ThemeSchemeKind::HoloNightSnow, QColor{QStringLiteral("#5B4675")}},
+      {Holonight::ThemeSchemeKind::HoloNightCanopy, QColor{QStringLiteral("#D3C6AA")}},
+      {Holonight::ThemeSchemeKind::HoloNightGlade, QColor{QStringLiteral("#35683A")}},
   };
 
   for (const auto& [scheme, color] : expected) {
@@ -35,6 +39,8 @@ TEST(SelectionTokens, EveryBuiltInSchemeProvidesSemanticSelectionRoles) {
       Holonight::ThemeSchemeKind::HoloNightEmber,   Holonight::ThemeSchemeKind::HoloNightSol,
       Holonight::ThemeSchemeKind::HoloNightCyberD,  Holonight::ThemeSchemeKind::HoloNightCyberL,
       Holonight::ThemeSchemeKind::HoloNightDracula, Holonight::ThemeSchemeKind::HoloNightAlucard,
+      Holonight::ThemeSchemeKind::HoloNightFrost,   Holonight::ThemeSchemeKind::HoloNightSnow,
+      Holonight::ThemeSchemeKind::HoloNightCanopy,  Holonight::ThemeSchemeKind::HoloNightGlade,
   };
   for (const auto scheme : schemes) {
     const Holonight::ColorTokens tok = Holonight::tokensForScheme(scheme);
@@ -57,12 +63,40 @@ TEST(TextAccentTokens, EveryBuiltInSchemeTracksPrimaryAccent) {
       Holonight::ThemeSchemeKind::HoloNightEmber,   Holonight::ThemeSchemeKind::HoloNightSol,
       Holonight::ThemeSchemeKind::HoloNightCyberD,  Holonight::ThemeSchemeKind::HoloNightCyberL,
       Holonight::ThemeSchemeKind::HoloNightDracula, Holonight::ThemeSchemeKind::HoloNightAlucard,
+      Holonight::ThemeSchemeKind::HoloNightFrost,   Holonight::ThemeSchemeKind::HoloNightSnow,
+      Holonight::ThemeSchemeKind::HoloNightCanopy,  Holonight::ThemeSchemeKind::HoloNightGlade,
   };
   for (const auto scheme : schemes) {
     const Holonight::ColorTokens tok = Holonight::tokensForScheme(scheme);
     EXPECT_TRUE(tok.textAccent.isValid());
     EXPECT_EQ(tok.textAccent, tok.primary);
   }
+}
+
+TEST(NordAndEverforestTokens, PreserveUpstreamFoundationsAndDocumentedDerivations) {
+  const auto frost = Holonight::tokensForScheme(Holonight::ThemeSchemeKind::HoloNightFrost);
+  EXPECT_EQ(frost.background, QColor(QStringLiteral("#2E3440")));
+  EXPECT_EQ(frost.textPrimary, QColor(QStringLiteral("#ECEFF4")));
+  EXPECT_EQ(frost.primary, QColor(QStringLiteral("#88C0D0")));
+  EXPECT_EQ(frost.error, QColor(QStringLiteral("#E49399")));
+
+  const auto snow = Holonight::tokensForScheme(Holonight::ThemeSchemeKind::HoloNightSnow);
+  EXPECT_EQ(snow.background, QColor(QStringLiteral("#ECEFF4")));
+  EXPECT_EQ(snow.surfaceElevated, QColor(QStringLiteral("#D8DEE9")));
+  EXPECT_EQ(snow.primary, QColor(QStringLiteral("#3F5F85")));
+  EXPECT_EQ(snow.success, QColor(QStringLiteral("#35683A")));
+
+  const auto canopy = Holonight::tokensForScheme(Holonight::ThemeSchemeKind::HoloNightCanopy);
+  EXPECT_EQ(canopy.background, QColor(QStringLiteral("#2D353B")));
+  EXPECT_EQ(canopy.surfaceRaised, QColor(QStringLiteral("#475258")));
+  EXPECT_EQ(canopy.primary, QColor(QStringLiteral("#A7C080")));
+  EXPECT_EQ(canopy.accentCyan, QColor(QStringLiteral("#83C092")));
+
+  const auto glade = Holonight::tokensForScheme(Holonight::ThemeSchemeKind::HoloNightGlade);
+  EXPECT_EQ(glade.background, QColor(QStringLiteral("#FDF6E3")));
+  EXPECT_EQ(glade.surfaceElevated, QColor(QStringLiteral("#EFEBD4")));
+  EXPECT_EQ(glade.primary, QColor(QStringLiteral("#35683A")));
+  EXPECT_EQ(glade.accentBlue, QColor(QStringLiteral("#315E7A")));
 }
 
 TEST(HoloNightStormTokens, AllColorsValid) {

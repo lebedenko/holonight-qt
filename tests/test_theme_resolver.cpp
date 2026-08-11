@@ -241,6 +241,37 @@ TEST(ThemeResolver, EveryCatalogAccentMatchesTheResolvedPrimaryColor) {
   }
 }
 
+TEST(ThemeCatalog, NordAndEverforestVariantsExposeCompleteMetadata) {
+  EXPECT_EQ(Holonight::themeFamilies().size(), 8);
+  EXPECT_EQ(Holonight::themeVariants().size(), 16);
+
+  struct Expected {
+    QString id;
+    QString family;
+    QString kde_name;
+    Holonight::ColorMode mode;
+  };
+  const Expected expected[] = {
+      {QStringLiteral("holonight-frost"), QStringLiteral("nord"), QStringLiteral("HoloNight Frost"),
+       Holonight::ColorMode::Dark},
+      {QStringLiteral("holonight-snow"), QStringLiteral("nord"), QStringLiteral("HoloNight Snow"),
+       Holonight::ColorMode::Light},
+      {QStringLiteral("holonight-canopy"), QStringLiteral("everforest"), QStringLiteral("HoloNight Canopy"),
+       Holonight::ColorMode::Dark},
+      {QStringLiteral("holonight-glade"), QStringLiteral("everforest"), QStringLiteral("HoloNight Glade"),
+       Holonight::ColorMode::Light},
+  };
+  for (const Expected& item : expected) {
+    const auto* variant =
+        Holonight::themeVariantForSchemeId(QStringLiteral("  ") + item.id.toUpper() + QStringLiteral("  "));
+    ASSERT_NE(variant, nullptr);
+    EXPECT_EQ(variant->family_id, item.family);
+    EXPECT_EQ(variant->mode, item.mode);
+    EXPECT_EQ(Holonight::schemeIdForKdeColorSchemeName(item.kde_name), item.id);
+    EXPECT_EQ(Holonight::schemeIdForKind(variant->scheme), item.id);
+  }
+}
+
 TEST(ThemeResolver, DraculaFamilyAccentsUseSchemeNativeColors) {
   const Holonight::ColorTokens dracula = Holonight::ThemeResolver::resolve(
       makeConfig(Holonight::ColorMode::Light, QStringLiteral("cyan"), QStringLiteral("holonight-dracula")));

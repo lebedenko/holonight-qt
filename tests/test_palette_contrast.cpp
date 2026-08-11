@@ -32,6 +32,8 @@ TEST(BrandForegroundContrast, EveryBuiltInSchemeMeetsTextContrastOnCanonicalSurf
       Holonight::ThemeSchemeKind::HoloNightEmber,   Holonight::ThemeSchemeKind::HoloNightSol,
       Holonight::ThemeSchemeKind::HoloNightCyberD,  Holonight::ThemeSchemeKind::HoloNightCyberL,
       Holonight::ThemeSchemeKind::HoloNightDracula, Holonight::ThemeSchemeKind::HoloNightAlucard,
+      Holonight::ThemeSchemeKind::HoloNightFrost,   Holonight::ThemeSchemeKind::HoloNightSnow,
+      Holonight::ThemeSchemeKind::HoloNightCanopy,  Holonight::ThemeSchemeKind::HoloNightGlade,
   };
   for (const auto scheme : schemes) {
     const Holonight::ColorTokens tok = Holonight::tokensForScheme(scheme);
@@ -39,6 +41,30 @@ TEST(BrandForegroundContrast, EveryBuiltInSchemeMeetsTextContrastOnCanonicalSurf
     EXPECT_GE(contrastRatio(tok.brandForeground, tok.surface), 4.5);
     EXPECT_GE(contrastRatio(tok.brandForeground, tok.surfaceElevated), 4.5);
     EXPECT_GE(contrastRatio(tok.brandForeground, tok.surfaceRaised), 4.5);
+  }
+}
+
+TEST(NordAndEverforestContrast, TextStatusAndInteractionRolesMeetWcagTargets) {
+  const Holonight::ThemeSchemeKind schemes[] = {
+      Holonight::ThemeSchemeKind::HoloNightFrost,
+      Holonight::ThemeSchemeKind::HoloNightSnow,
+      Holonight::ThemeSchemeKind::HoloNightCanopy,
+      Holonight::ThemeSchemeKind::HoloNightGlade,
+  };
+  for (const auto scheme : schemes) {
+    const Holonight::ColorTokens tok = Holonight::tokensForScheme(scheme);
+    const QColor surfaces[] = {tok.background, tok.surface, tok.surfaceElevated, tok.surfaceRaised};
+    for (const QColor& surface : surfaces) {
+      EXPECT_GE(contrastRatio(tok.textPrimary, surface), 4.5);
+      EXPECT_GE(contrastRatio(tok.textSecondary, surface), 4.5);
+      EXPECT_GE(contrastRatio(tok.primary, surface), 3.0);
+      EXPECT_GE(contrastRatio(tok.primaryPressed, surface), 3.0);
+    }
+    EXPECT_GE(contrastRatio(tok.error, tok.background), 4.5);
+    EXPECT_GE(contrastRatio(tok.warning, tok.background), 4.5);
+    EXPECT_GE(contrastRatio(tok.success, tok.background), 4.5);
+    EXPECT_GE(contrastRatio(tok.onPrimary, tok.primary), 4.5);
+    EXPECT_GE(contrastRatio(tok.onError, tok.error), 4.5);
   }
 }
 

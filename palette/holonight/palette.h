@@ -26,6 +26,10 @@ enum class ThemeSchemeKind {
   HoloNightCyberL,
   HoloNightDracula,
   HoloNightAlucard,
+  HoloNightFrost,
+  HoloNightSnow,
+  HoloNightCanopy,
+  HoloNightGlade,
 };
 
 struct ColorTokens {

@@ -135,4 +135,6 @@ INSTANTIATE_TEST_SUITE_P(
                       Holonight::ThemeSchemeKind::HoloNightStorm, Holonight::ThemeSchemeKind::HoloNightDay,
                       Holonight::ThemeSchemeKind::HoloNightEmber, Holonight::ThemeSchemeKind::HoloNightSol,
                       Holonight::ThemeSchemeKind::HoloNightCyberD, Holonight::ThemeSchemeKind::HoloNightCyberL,
-                      Holonight::ThemeSchemeKind::HoloNightDracula, Holonight::ThemeSchemeKind::HoloNightAlucard));
+                      Holonight::ThemeSchemeKind::HoloNightDracula, Holonight::ThemeSchemeKind::HoloNightAlucard,
+                      Holonight::ThemeSchemeKind::HoloNightFrost, Holonight::ThemeSchemeKind::HoloNightSnow,
+                      Holonight::ThemeSchemeKind::HoloNightCanopy, Holonight::ThemeSchemeKind::HoloNightGlade));
