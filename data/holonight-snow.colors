@@ -23,7 +23,7 @@ DecorationFocus=49,94,122
 DecorationHover=49,94,122
 
 [Colors:Button]
-BackgroundNormal=255,255,255
+BackgroundNormal=209,216,228
 BackgroundAlternate=216,222,233
 ForegroundNormal=46,52,64
 ForegroundInactive=88,101,122

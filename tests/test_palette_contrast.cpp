@@ -70,6 +70,19 @@ TEST(NordAndEverforestContrast, TextStatusAndInteractionRolesMeetWcagTargets) {
 
 // ── Text contrast: WCAG 1.4.3 requires ≥4.5:1 for normal text ──────────────
 
+TEST(NordAndEverforestContrast, LightSurfaceElevationDarkensInOrder) {
+  const Holonight::ThemeSchemeKind schemes[] = {
+      Holonight::ThemeSchemeKind::HoloNightSnow,
+      Holonight::ThemeSchemeKind::HoloNightGlade,
+  };
+  for (const auto scheme : schemes) {
+    const Holonight::ColorTokens tok = Holonight::tokensForScheme(scheme);
+    EXPECT_GT(relativeLuminance(tok.background), relativeLuminance(tok.surface));
+    EXPECT_GT(relativeLuminance(tok.surface), relativeLuminance(tok.surfaceElevated));
+    EXPECT_GT(relativeLuminance(tok.surfaceElevated), relativeLuminance(tok.surfaceRaised));
+  }
+}
+
 TEST_F(ContrastTest, OnSurfaceVsSurface) {
   EXPECT_GE(contrastRatio(tok_.textPrimary, tok_.background), 4.5) << "textPrimary on background fails WCAG AA";
 }

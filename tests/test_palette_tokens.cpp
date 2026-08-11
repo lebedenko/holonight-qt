@@ -83,6 +83,8 @@ TEST(NordAndEverforestTokens, PreserveUpstreamFoundationsAndDocumentedDerivation
   const auto snow = Holonight::tokensForScheme(Holonight::ThemeSchemeKind::HoloNightSnow);
   EXPECT_EQ(snow.background, QColor(QStringLiteral("#ECEFF4")));
   EXPECT_EQ(snow.surfaceElevated, QColor(QStringLiteral("#D8DEE9")));
+  EXPECT_EQ(snow.surfaceRaised, QColor(QStringLiteral("#D1D8E4")));
+  EXPECT_EQ(snow.surfaceHover, QColor(QStringLiteral("#C8D0DD")));
   EXPECT_EQ(snow.primary, QColor(QStringLiteral("#3F5F85")));
   EXPECT_EQ(snow.success, QColor(QStringLiteral("#35683A")));
 
@@ -94,7 +96,10 @@ TEST(NordAndEverforestTokens, PreserveUpstreamFoundationsAndDocumentedDerivation
 
   const auto glade = Holonight::tokensForScheme(Holonight::ThemeSchemeKind::HoloNightGlade);
   EXPECT_EQ(glade.background, QColor(QStringLiteral("#FDF6E3")));
-  EXPECT_EQ(glade.surfaceElevated, QColor(QStringLiteral("#EFEBD4")));
+  EXPECT_EQ(glade.surfaceElevated, QColor(QStringLiteral("#E6E2CC")));
+  EXPECT_EQ(glade.surfaceRaised, QColor(QStringLiteral("#E0DCC7")));
+  EXPECT_EQ(glade.surfaceHover, QColor(QStringLiteral("#D8D4BF")));
+  EXPECT_EQ(glade.textPrimary, QColor(QStringLiteral("#4F5B63")));
   EXPECT_EQ(glade.primary, QColor(QStringLiteral("#35683A")));
   EXPECT_EQ(glade.accentBlue, QColor(QStringLiteral("#315E7A")));
 }

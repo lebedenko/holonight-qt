@@ -154,15 +154,15 @@ and accent values from the [official Everforest palette](https://github.com/sain
 | Scheme | background | surface | elevated | raised | text | primary | error | warning | success |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
 | Frost | `#2E3440` | `#3B4252` | `#434C5E` | `#4C566A` | `#ECEFF4` | `#88C0D0` | `#E49399` | `#EBCB8B` | `#A3BE8C` |
-| Snow | `#ECEFF4` | `#E5E9F0` | `#D8DEE9` | `#FFFFFF` | `#2E3440` | `#3F5F85` | `#9B3C45` | `#705A0C` | `#35683A` |
+| Snow | `#ECEFF4` | `#E5E9F0` | `#D8DEE9` | `#D1D8E4` | `#2E3440` | `#3F5F85` | `#9B3C45` | `#705A0C` | `#35683A` |
 | Canopy | `#2D353B` | `#343F44` | `#3D484D` | `#475258` | `#D3C6AA` | `#A7C080` | `#E67E80` | `#DBBC7F` | `#A7C080` |
-| Glade | `#FDF6E3` | `#F4F0D9` | `#EFEBD4` | `#FFFFFF` | `#5C6A72` | `#35683A` | `#9B3C45` | `#8A4D18` | `#35683A` |
+| Glade | `#FDF6E3` | `#F4F0D9` | `#E6E2CC` | `#E0DCC7` | `#4F5B63` | `#35683A` | `#9B3C45` | `#8A4D18` | `#35683A` |
 
 Roles without upstream equivalents are committed static derivations: extra surface levels follow the upstream
 neutral ramps; hover/pressed, workspace, overlay, glow, and ANSI-bright roles preserve family hue relationships.
-For Snow and Glade, interactive, status, and brand colors are darkened toward the upstream foreground until text
-roles meet 4.5:1 and interactive borders meet 3:1 on canonical surfaces. No accessibility color is calculated at
-runtime.
+For Snow and Glade, text, interactive, status, and brand colors are darkened toward the upstream foreground until
+text roles meet 4.5:1 and interactive borders meet 3:1 on canonical surfaces. No accessibility color is calculated
+at runtime.
 
 ### Dracula palette mapping
 

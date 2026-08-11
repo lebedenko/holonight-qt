@@ -927,8 +927,8 @@ ColorTokens nordSnowTokens() {
   tok.background = QColor{QStringLiteral("#ECEFF4")};
   tok.surface = QColor{QStringLiteral("#E5E9F0")};
   tok.surfaceElevated = QColor{QStringLiteral("#D8DEE9")};
-  tok.surfaceRaised = QColor{QStringLiteral("#FFFFFF")};
-  tok.surfaceHover = QColor{QStringLiteral("#D1D8E4")};
+  tok.surfaceRaised = QColor{QStringLiteral("#D1D8E4")};
+  tok.surfaceHover = QColor{QStringLiteral("#C8D0DD")};
   tok.surfaceInverse = QColor{QStringLiteral("#2E3440")};
   tok.textPrimary = QColor{QStringLiteral("#2E3440")};
   tok.textSecondary = QColor{QStringLiteral("#3B4252")};
@@ -1039,11 +1039,11 @@ ColorTokens everforestGladeTokens() {
   ColorTokens tok = everforestCanopyTokens();
   tok.background = QColor{QStringLiteral("#FDF6E3")};
   tok.surface = QColor{QStringLiteral("#F4F0D9")};
-  tok.surfaceElevated = QColor{QStringLiteral("#EFEBD4")};
-  tok.surfaceRaised = QColor{QStringLiteral("#FFFFFF")};
-  tok.surfaceHover = QColor{QStringLiteral("#E6E2CC")};
+  tok.surfaceElevated = QColor{QStringLiteral("#E6E2CC")};
+  tok.surfaceRaised = QColor{QStringLiteral("#E0DCC7")};
+  tok.surfaceHover = QColor{QStringLiteral("#D8D4BF")};
   tok.surfaceInverse = QColor{QStringLiteral("#2D353B")};
-  tok.textPrimary = QColor{QStringLiteral("#5C6A72")};
+  tok.textPrimary = QColor{QStringLiteral("#4F5B63")};
   tok.textSecondary = QColor{QStringLiteral("#4F5B63")};
   tok.textMuted = QColor{QStringLiteral("#6F7B73")};
   tok.textDisabled = QColor{QStringLiteral("#A6B0A0")};
