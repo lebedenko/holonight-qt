@@ -62,6 +62,32 @@ set_property(TEST holonight_tests PROPERTY
 
 # ── Style drawPrimitive tests ─────────────────────────────────────────────────
 
+# Platform themes are created while QGuiApplication is still installing its event dispatcher.
+# Keep this in a separate process so fatal Qt warnings report bootstrap regressions cleanly.
+add_executable(holonight_platformtheme_bootstrap_test
+    test_platformtheme_bootstrap.cpp
+)
+
+target_link_libraries(holonight_platformtheme_bootstrap_test PRIVATE
+    Qt6::Gui
+)
+
+add_dependencies(holonight_platformtheme_bootstrap_test qholonight)
+
+add_test(NAME holonight_platformtheme_bootstrap_test
+    COMMAND holonight_platformtheme_bootstrap_test
+    WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
+)
+
+set_property(TEST holonight_platformtheme_bootstrap_test PROPERTY
+    ENVIRONMENT
+        "QT_QPA_PLATFORM=offscreen"
+        "QT_QPA_PLATFORMTHEME=holonight"
+        "QT_PLUGIN_PATH=${CMAKE_BINARY_DIR}/lib/qt6/plugins"
+        "QT_FATAL_WARNINGS=1"
+        "HOLONIGHT_APPEARANCE_FILE=/tmp/holonight-tests-missing-appearance.toml"
+)
+
 add_executable(holonight_style_primitive_tests
     main.cpp
     ${CMAKE_SOURCE_DIR}/src/style/holonightstyle.cpp

@@ -3,8 +3,11 @@
 
 #include "holonight/appearance_reader.h"
 
+#include <QAbstractEventDispatcher>
 #include <QDebug>
 #include <QFileInfo>
+#include <QFileSystemWatcher>
+#include <QMetaObject>
 
 #include <holonight/config/config.h>
 
@@ -53,10 +56,15 @@ AppearanceReader::AppearanceReader(QString config_file, QObject* parent)
   reload_timer_.setSingleShot(true);
   reload_timer_.setInterval(0);
   connect(&reload_timer_, &QTimer::timeout, this, &AppearanceReader::reload);
-  connect(&watcher_, &QFileSystemWatcher::fileChanged, this, &AppearanceReader::scheduleReload);
-  connect(&watcher_, &QFileSystemWatcher::directoryChanged, this, &AppearanceReader::scheduleReload);
   initialize();
+  if (QAbstractEventDispatcher::instance()) {
+    initializeWatcher();
+  } else {
+    QMetaObject::invokeMethod(this, &AppearanceReader::initializeWatcher, Qt::QueuedConnection);
+  }
 }
+
+AppearanceReader::~AppearanceReader() = default;
 
 void AppearanceReader::initialize() {
   const HoloNight::Config::Result<HoloNight::Config::LoadedAppearance> loaded =
@@ -72,6 +80,15 @@ void AppearanceReader::initialize() {
     appearance_ = std::move(*resolution.value);
   }
   publishDiagnostics(std::move(diagnostics));
+}
+
+void AppearanceReader::initializeWatcher() {
+  if (watcher_) {
+    return;
+  }
+  watcher_ = std::make_unique<QFileSystemWatcher>();
+  connect(watcher_.get(), &QFileSystemWatcher::fileChanged, this, &AppearanceReader::scheduleReload);
+  connect(watcher_.get(), &QFileSystemWatcher::directoryChanged, this, &AppearanceReader::scheduleReload);
   rearmWatcher();
 }
 
@@ -120,9 +137,13 @@ void AppearanceReader::scheduleReload() {
 }
 
 void AppearanceReader::rearmWatcher() {
-  const QStringList watched = watcher_.files() + watcher_.directories();
+  if (!watcher_) {
+    return;
+  }
+
+  const QStringList watched = watcher_->files() + watcher_->directories();
   if (!watched.isEmpty()) {
-    watcher_.removePaths(watched);
+    watcher_->removePaths(watched);
   }
 
   QString directory = QFileInfo{config_file_}.absolutePath();
@@ -134,10 +155,10 @@ void AppearanceReader::rearmWatcher() {
     directory = parent;
   }
   if (QFileInfo{directory}.isDir()) {
-    watcher_.addPath(directory);
+    watcher_->addPath(directory);
   }
   if (QFileInfo{config_file_}.isFile()) {
-    watcher_.addPath(config_file_);
+    watcher_->addPath(config_file_);
   }
 }
 

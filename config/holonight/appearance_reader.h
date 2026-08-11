@@ -5,9 +5,12 @@
 
 #include "holonight/appearance.h"
 
-#include <QFileSystemWatcher>
 #include <QObject>
 #include <QTimer>
+
+#include <memory>
+
+class QFileSystemWatcher;
 
 namespace Holonight {
 
@@ -17,6 +20,7 @@ class AppearanceReader : public QObject {
  public:
   explicit AppearanceReader(QObject* parent = nullptr);
   explicit AppearanceReader(QString config_file, QObject* parent = nullptr);
+  ~AppearanceReader() override;
   Q_DISABLE_COPY_MOVE(AppearanceReader)
 
   [[nodiscard]] const ResolvedAppearance& appearance() const noexcept { return appearance_; }
@@ -35,6 +39,7 @@ class AppearanceReader : public QObject {
 
  private:
   void initialize();
+  void initializeWatcher();
   void scheduleReload();
   void rearmWatcher();
   void publishDiagnostics(QVector<AppearanceDiagnostic> diagnostics);
@@ -42,7 +47,7 @@ class AppearanceReader : public QObject {
   ResolvedAppearance appearance_;
   QVector<AppearanceDiagnostic> diagnostics_;
   QString config_file_;
-  QFileSystemWatcher watcher_;
+  std::unique_ptr<QFileSystemWatcher> watcher_;
   QTimer reload_timer_;
   int revision_ = 0;
 };
