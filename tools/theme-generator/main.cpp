@@ -23,6 +23,15 @@ int main(int argc, char** argv) {
     return 1;
   }
 
+  QDir themeDir{outputDir};
+  for (const QString& deprecatedTheme : {QStringLiteral("tokyonight-storm.theme"),
+                                         QStringLiteral("tokyonight-day.theme")}) {
+    if (themeDir.exists(deprecatedTheme) && !themeDir.remove(deprecatedTheme)) {
+      std::cerr << "failed to remove deprecated theme " << deprecatedTheme.toStdString() << '\n';
+      return 1;
+    }
+  }
+
   try {
     for (const Holonight::ThemeVariantCatalogEntry& variant : Holonight::themeVariants()) {
       const Holonight::ThemeSchemeKind scheme = variant.scheme;

@@ -29,4 +29,13 @@ add_custom_command(
 add_custom_target(generate-syntax-themes ALL DEPENDS "${_THEME_OUTPUT_DIR}/.stamp")
 
 install(DIRECTORY "${_THEME_OUTPUT_DIR}/" DESTINATION "${CMAKE_INSTALL_DATADIR}/holonight/themes"
-        FILES_MATCHING PATTERN "*.theme")
+        FILES_MATCHING PATTERN "*.theme"
+        PATTERN "tokyonight-storm.theme" EXCLUDE
+        PATTERN "tokyonight-day.theme" EXCLUDE)
+
+install(CODE "
+  file(REMOVE
+    \"\$ENV{DESTDIR}\${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_DATADIR}/holonight/themes/tokyonight-storm.theme\"
+    \"\$ENV{DESTDIR}\${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_DATADIR}/holonight/themes/tokyonight-day.theme\"
+  )
+")
