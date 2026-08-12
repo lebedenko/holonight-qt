@@ -47,7 +47,10 @@ delegate controls. Do not calculate selection colors in application code.
   read-only, and disabled states.
 - `HnIconComboBox`: model-backed combo box with optional icon roles. Its popup
   shows at most eight entries by default; set `maximumVisibleItems` to choose a
-  different limit without replacing the popup.
+  different limit without replacing the popup. `Holonight.ComboBox` compensates
+  its item-based popup for translated, uniformly scaled ancestors and exposes
+  `effectiveScale` for diagnostics. Rotation, shear, and non-uniform scaling are
+  intentionally unsupported and reported by `popupTransformSupported`.
 - `HnTextArea`: shared multiline editor with semantic bounds.
 - `HnFormField`: label, required marker, helper/error text, and owned control.
 - `HnSettingsRow`: title, description, leading/default control/trailing slots,

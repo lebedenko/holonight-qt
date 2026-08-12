@@ -16,8 +16,25 @@ T.ComboBox {
     font.pointSize: HolonightTheme.bodySize
 
     property int maximumVisibleItems: 8
+    property real delegateHeight: 28
 
     readonly property int resolvedMaximumVisibleItems: Math.max(1, maximumVisibleItems)
+    readonly property point sceneOrigin: mapToItem(null, 0, 0)
+    readonly property point sceneXAxis: mapToItem(null, 1, 0)
+    readonly property point sceneYAxis: mapToItem(null, 0, 1)
+    readonly property real sceneScaleX: Math.hypot(sceneXAxis.x - sceneOrigin.x,
+                                                   sceneXAxis.y - sceneOrigin.y)
+    readonly property real sceneScaleY: Math.hypot(sceneYAxis.x - sceneOrigin.x,
+                                                   sceneYAxis.y - sceneOrigin.y)
+    readonly property real sceneAxisDot: (sceneXAxis.x - sceneOrigin.x) * (sceneYAxis.x - sceneOrigin.x)
+                                         + (sceneXAxis.y - sceneOrigin.y) * (sceneYAxis.y - sceneOrigin.y)
+    readonly property bool popupTransformSupported: sceneScaleX > 0
+                                                    && sceneScaleY > 0
+                                                    && Math.abs(sceneScaleX - sceneScaleY) < 0.001
+                                                    && Math.abs(sceneAxisDot) < 0.001
+                                                    && Math.abs(sceneXAxis.y - sceneOrigin.y) < 0.001
+                                                    && Math.abs(sceneYAxis.x - sceneOrigin.x) < 0.001
+    readonly property real effectiveScale: popupTransformSupported ? sceneScaleX : 1
 
     implicitWidth: Math.max(implicitBackgroundWidth + leftInset + rightInset,
                             implicitContentWidth + leftPadding + rightPadding)
@@ -82,24 +99,38 @@ T.ComboBox {
     popup: T.Popup {
         id: popup
 
-        readonly property real controlWindowY: root.mapToItem(null, 0, 0).y
-        readonly property real spaceAbove: Math.max(0, controlWindowY - margins - 2)
+        readonly property point controlSceneBottom: root.mapToItem(null, 0, root.height)
+        readonly property real controlSceneTop: Math.min(root.sceneOrigin.y, controlSceneBottom.y)
+        readonly property real controlSceneBottomY: Math.max(root.sceneOrigin.y, controlSceneBottom.y)
+        readonly property real sceneSpaceAbove: Math.max(0, controlSceneTop
+                                                         - margins - 2 * root.effectiveScale)
+        readonly property real sceneSpaceBelow: root.Window.window
+                                                ? Math.max(0, root.Window.window.height
+                                                           - controlSceneBottomY
+                                                           - margins - 2 * root.effectiveScale)
+                                                : naturalHeight * root.effectiveScale
+        readonly property real sceneAvailableVerticalSpace: Math.max(sceneSpaceAbove, sceneSpaceBelow)
+        readonly property real availableVerticalSpace: sceneAvailableVerticalSpace / root.effectiveScale
+        readonly property real naturalHeight: contentItem.implicitHeight + topPadding + bottomPadding
+        readonly property real renderedDemand: naturalHeight * root.effectiveScale
+        readonly property real spaceAbove: sceneSpaceAbove / root.effectiveScale
         readonly property real spaceBelow: root.Window.window
-                                                   ? Math.max(0, root.Window.window.height
-                                                              - controlWindowY - root.height
-                                                              - margins - 2)
-                                                   : contentItem.implicitHeight + topPadding + bottomPadding
-        readonly property real availableVerticalSpace: Math.max(spaceAbove, spaceBelow)
-        readonly property bool opensAbove: spaceBelow < contentItem.implicitHeight + topPadding + bottomPadding
-                                           && spaceAbove > spaceBelow
+                                           ? sceneSpaceBelow / root.effectiveScale
+                                           : naturalHeight
+        readonly property bool opensAbove: sceneSpaceBelow < renderedDemand
+                                           && sceneSpaceAbove > sceneSpaceBelow
 
         objectName: "holonightComboBoxPopup"
-        y: opensAbove ? -implicitHeight - 2 : root.height + 2
+        popupType: T.Popup.Item
+        x: root.sceneOrigin.x
+        y: opensAbove ? controlSceneTop - 2 * root.effectiveScale - implicitHeight
+                      : controlSceneBottomY + 2 * root.effectiveScale
         width: root.width
-        implicitHeight: Math.min(contentItem.implicitHeight + topPadding + bottomPadding,
-                                 availableVerticalSpace)
-        margins: 4
+        implicitHeight: Math.min(naturalHeight, opensAbove ? spaceAbove : spaceBelow)
+        margins: 4 * root.effectiveScale
         padding: 4
+        scale: root.effectiveScale
+        transformOrigin: opensAbove ? Item.BottomLeft : Item.TopLeft
 
         contentItem: ListView {
             id: popupList
@@ -148,7 +179,7 @@ T.ComboBox {
                                                               - root.popup.padding)
 
             width: root.popup.availableWidth
-            height: 28
+            height: root.delegateHeight
             text: root.textAt(index)
             highlighted: root.highlightedIndex === index
             topLeftRadius: index === 0 ? popupInnerRadius : 0

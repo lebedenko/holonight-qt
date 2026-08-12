@@ -1049,6 +1049,92 @@ TEST_F(QmlSmoke, ComboBox_InstantiatesAndOpensPopup) {
   EXPECT_GT(object->property("popupHeight").toReal(), 0.0);
 }
 
+TEST_F(QmlSmoke, ComboBox_ScaledPopupMatchesControlSceneGeometry) {
+  for (const qreal scale : {0.78, 1.0, 1.25}) {
+    QQmlComponent comp = QQmlComponent{&engine_};
+    comp.setData(QString{R"(
+      import QtQuick
+      import Holonight
+      Window {
+        width: 480
+        height: 400
+        visible: true
+
+        property var combo: combo
+        property point controlLeft: combo.mapToItem(contentItem, 0, 0)
+        property point controlRight: combo.mapToItem(contentItem, combo.width, 0)
+        property point popupLeft: Qt.point(combo.popup.x, combo.popup.y)
+        property point popupRight: Qt.point(combo.popup.x + combo.popup.background.width * combo.effectiveScale,
+                                            combo.popup.y)
+        property real popupX: combo.popup.x
+
+        Item {
+          x: 37
+          y: 41
+          scale: %1
+          transformOrigin: Item.TopLeft
+
+          ComboBox {
+            id: combo
+            x: 19
+            y: 23
+            width: 160
+            model: ["one", "two", "three"]
+            Component.onCompleted: popup.open()
+          }
+        }
+      }
+    )"}
+                     .arg(scale, 0, 'f', 2)
+                     .toUtf8(),
+                 QUrl{});
+    ASSERT_EQ(comp.status(), QQmlComponent::Ready) << comp.errorString().toStdString();
+    std::unique_ptr<QObject> window{comp.create()};
+    ASSERT_NE(window, nullptr);
+    QCoreApplication::processEvents(QEventLoop::AllEvents, 50);
+
+    QObject* combo = window->property("combo").value<QObject*>();
+    ASSERT_NE(combo, nullptr);
+    EXPECT_TRUE(combo->property("popupTransformSupported").toBool());
+    EXPECT_NEAR(combo->property("effectiveScale").toReal(), scale, 0.001);
+
+    const QPointF control_left = window->property("controlLeft").toPointF();
+    const QPointF control_right = window->property("controlRight").toPointF();
+    const QPointF popup_left = window->property("popupLeft").toPointF();
+    const QPointF popup_right = window->property("popupRight").toPointF();
+    EXPECT_NEAR(window->property("popupX").toReal(), control_left.x(), 0.5) << "scale " << scale;
+    EXPECT_NEAR(popup_left.x(), control_left.x(), 0.5) << "scale " << scale;
+    EXPECT_NEAR(popup_right.x(), control_right.x(), 0.5) << "scale " << scale;
+  }
+}
+
+TEST_F(QmlSmoke, ComboBox_ReportsUnsupportedPopupTransforms) {
+  QQmlComponent comp = QQmlComponent{&engine_};
+  comp.setData(R"(
+    import QtQuick
+    import Holonight
+    Item {
+      property var nonUniform: nonUniform
+      property var rotated: rotated
+      Item {
+        scale: 1.25
+        transform: Scale { xScale: 1; yScale: 0.8 }
+        ComboBox { id: nonUniform }
+      }
+      Item {
+        rotation: 5
+        ComboBox { id: rotated }
+      }
+    }
+  )",
+               QUrl{});
+  ASSERT_EQ(comp.status(), QQmlComponent::Ready) << comp.errorString().toStdString();
+  std::unique_ptr<QObject> object{comp.create()};
+  ASSERT_NE(object, nullptr);
+  EXPECT_FALSE(object->property("nonUniform").value<QObject*>()->property("popupTransformSupported").toBool());
+  EXPECT_FALSE(object->property("rotated").value<QObject*>()->property("popupTransformSupported").toBool());
+}
+
 TEST_F(QmlSmoke, ComboBox_DelegateCornersFollowPopupInnerRadius) {
   QQmlComponent comp = QQmlComponent{&engine_};
   comp.setData(R"(

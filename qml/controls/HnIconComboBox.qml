@@ -17,6 +17,8 @@ H.ComboBox {
     readonly property int resolvedSizeRole: HnMetrics.normalizedSizeRole(root.sizeRole)
     readonly property url currentIconSource: root.roleValue(root.currentIndex, root.iconRole)
 
+    delegateHeight: HnMetrics.controlHeight(root.resolvedSizeRole)
+
     function roleValue(index: int, role: string): var {
         if (index < 0 || !root.model || !role)
             return ""
@@ -84,7 +86,7 @@ H.ComboBox {
                                                               - root.popup.padding)
 
             width: root.popup.availableWidth
-            height: HnMetrics.controlHeight(root.resolvedSizeRole)
+            height: root.delegateHeight
             text: root.textAt(index)
             highlighted: root.highlightedIndex === index
             topLeftRadius: index === 0 ? popupInnerRadius : 0
