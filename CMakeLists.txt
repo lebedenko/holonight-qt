@@ -96,7 +96,7 @@ configure_package_config_file(
 
 write_basic_package_version_file(
     ${CMAKE_CURRENT_BINARY_DIR}/HolonightQtConfigVersion.cmake
-    VERSION 0.1.1
+    VERSION 0.1.0
     COMPATIBILITY SameMajorVersion
 )
 
