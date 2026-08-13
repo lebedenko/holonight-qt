@@ -226,6 +226,23 @@ set_property(TEST holonight_qml_smoke_tests PROPERTY
     ENVIRONMENT "${HOLONIGHT_TEST_ENV};QML_IMPORT_PATH=${CMAKE_BINARY_DIR}/qml"
 )
 
+if(BUILD_WAYLAND)
+  add_executable(holonight_wayland_tests
+      main.cpp
+      test_wayland_surface_host.cpp
+  )
+  target_link_libraries(holonight_wayland_tests PRIVATE
+      HolonightQt::Wayland
+      Qt6::Gui
+      Qt6::Test
+      Qt6::Widgets
+      GTest::gtest
+  )
+  target_include_directories(holonight_wayland_tests PRIVATE ${CMAKE_SOURCE_DIR}/wayland)
+  add_test(NAME holonight_wayland_tests COMMAND holonight_wayland_tests)
+  set_property(TEST holonight_wayland_tests PROPERTY ENVIRONMENT "${HOLONIGHT_TEST_ENV}")
+endif()
+
 find_program(HOLONIGHT_QML_EXECUTABLE NAMES qml6 qml REQUIRED)
 find_program(HOLONIGHT_QMLLINT_EXECUTABLE NAMES qmllint6 qmllint REQUIRED)
 

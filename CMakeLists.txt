@@ -30,6 +30,11 @@ option(BUILD_TESTS "Build GTest suite" OFF)
 option(BUILD_DEMO "Build visual demo app" OFF)
 option(BUILD_CONTROLS_GALLERY "Build the shared controls gallery" OFF)
 option(BUILD_QT5_PROBES "Build non-installed Qt 5 compatibility discovery targets" OFF)
+option(BUILD_WAYLAND "Build the optional Wayland layer-surface component" ON)
+
+if(BUILD_WAYLAND)
+  add_subdirectory(wayland)
+endif()
 
 if(BUILD_QT5_PROBES)
   find_package(Qt5 5.15 REQUIRED COMPONENTS Core Gui Test Widgets)
@@ -116,12 +121,13 @@ file(GLOB_RECURSE ALL_SOURCE_FILES
     CONFIGURE_DEPENDS
     src/*.cpp src/*.h palette/*.cpp palette/*.h config/*.cpp config/*.h
     qml/*.cpp qml/*.h tools/*.cpp tools/*.h tests/*.cpp tests/*.h demo/*.cpp demo/*.h qt5/*.cpp qt5/*.h
+    wayland/*.cpp wayland/*.h
 )
 
 file(GLOB_RECURSE ALL_CXX_SRC_IMPL_FILES
     LIST_DIRECTORIES false
     CONFIGURE_DEPENDS
-    src/*.cpp palette/*.cpp config/*.cpp qml/*.cpp tools/*.cpp demo/*.cpp qt5/*.cpp
+    src/*.cpp palette/*.cpp config/*.cpp qml/*.cpp tools/*.cpp demo/*.cpp qt5/*.cpp wayland/*.cpp
 )
 
 file(GLOB_RECURSE ALL_CXX_TEST_IMPL_FILES

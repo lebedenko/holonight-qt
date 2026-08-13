@@ -24,8 +24,8 @@ int main(int argc, char** argv) {
   }
 
   QDir themeDir{outputDir};
-  for (const QString& deprecatedTheme : {QStringLiteral("tokyonight-storm.theme"),
-                                         QStringLiteral("tokyonight-day.theme")}) {
+  for (const QString& deprecatedTheme :
+       {QStringLiteral("tokyonight-storm.theme"), QStringLiteral("tokyonight-day.theme")}) {
     if (themeDir.exists(deprecatedTheme) && !themeDir.remove(deprecatedTheme)) {
       std::cerr << "failed to remove deprecated theme " << deprecatedTheme.toStdString() << '\n';
       return 1;

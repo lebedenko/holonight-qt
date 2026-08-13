@@ -21,13 +21,14 @@ jobs:
       - name: Install dependencies
         run: |
           sudo apt-get update -q
-          sudo apt-get install -y ninja-build libgtest-dev libtomlplusplus-dev qtbase5-dev qtbase5-private-dev ripgrep
+          sudo apt-get install -y ninja-build libgtest-dev libtomlplusplus-dev libwayland-dev wayland-protocols qtbase5-dev qtbase5-private-dev ripgrep
 
       - name: Install Qt 6.11
         uses: jurplel/install-qt-action@v3
         with:
           version: '6.11.*'
           arch: linux_gcc_64
+          modules: qtwayland
           cache: true
 
       - name: Build and install canonical configuration dependency
