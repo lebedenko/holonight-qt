@@ -1051,61 +1051,149 @@ TEST_F(QmlSmoke, ComboBox_InstantiatesAndOpensPopup) {
 
 TEST_F(QmlSmoke, ComboBox_ScaledPopupMatchesControlSceneGeometry) {
   for (const qreal scale : {0.78, 1.0, 1.25}) {
-    QQmlComponent comp = QQmlComponent{&engine_};
-    comp.setData(QString{R"(
-      import QtQuick
-      import Holonight
-      Window {
-        width: 480
-        height: 400
-        visible: true
+    for (const bool rightEdge : {false, true}) {
+      for (const bool opensAbove : {false, true}) {
+        const qreal wrapper_x = rightEdge ? 480 - (19 + 160) * scale - 11 : 11 - 19 * scale;
+        const qreal wrapper_y = opensAbove ? 335 - 23 * scale : 41;
+        QQmlComponent comp = QQmlComponent{&engine_};
+        comp.setData(QString{R"(
+          import QtQuick
+          import QtQuick.Controls
+          import Holonight as H
+          Window {
+            width: 480
+            height: 400
+            visible: true
 
-        property var combo: combo
-        property point controlLeft: combo.mapToItem(contentItem, 0, 0)
-        property point controlRight: combo.mapToItem(contentItem, combo.width, 0)
-        property point popupLeft: Qt.point(combo.popup.x, combo.popup.y)
-        property point popupRight: Qt.point(combo.popup.x + combo.popup.background.width * combo.effectiveScale,
-                                            combo.popup.y)
-        property real popupX: combo.popup.x
+            property var combo: combo
+            property bool popupUsesOverlay: combo.popup.parent === Overlay.overlay
 
-        Item {
-          x: 37
-          y: 41
-          scale: %1
-          transformOrigin: Item.TopLeft
+            function controlTopLeft() { return combo.mapToItem(contentItem, 0, 0) }
+            function controlBottomRight() { return combo.mapToItem(contentItem, combo.width, combo.height) }
+            function popupTopLeft() { return combo.popup.background.mapToItem(contentItem, 0, 0) }
+            function popupBottomRight() {
+              return combo.popup.background.mapToItem(contentItem,
+                                                       combo.popup.background.width,
+                                                       combo.popup.background.height)
+            }
 
-          ComboBox {
-            id: combo
-            x: 19
-            y: 23
-            width: 160
-            model: ["one", "two", "three"]
-            Component.onCompleted: popup.open()
+            Item {
+              x: %WRAPPER_X%
+              y: %WRAPPER_Y%
+              scale: %SCALE%
+              transformOrigin: Item.TopLeft
+
+              H.ComboBox {
+                id: combo
+                x: 19
+                y: 23
+                width: 160
+                model: ["one", "two", "three"]
+                Component.onCompleted: popup.open()
+              }
+            }
           }
+        )"}
+                         .replace(QStringLiteral("%SCALE%"), QString::number(scale, 'f', 2))
+                         .replace(QStringLiteral("%WRAPPER_X%"), QString::number(wrapper_x, 'f', 3))
+                         .replace(QStringLiteral("%WRAPPER_Y%"), QString::number(wrapper_y, 'f', 3))
+                         .toUtf8(),
+                     QUrl{});
+        ASSERT_EQ(comp.status(), QQmlComponent::Ready) << comp.errorString().toStdString();
+        std::unique_ptr<QObject> window{comp.create()};
+        ASSERT_NE(window, nullptr);
+        QCoreApplication::processEvents(QEventLoop::AllEvents, 50);
+
+        QObject* combo = window->property("combo").value<QObject*>();
+        ASSERT_NE(combo, nullptr);
+        ASSERT_TRUE(combo->property("popup").value<QObject*>()->property("visible").toBool());
+        EXPECT_TRUE(combo->property("popupTransformSupported").toBool());
+        EXPECT_NEAR(combo->property("effectiveScale").toReal(), scale, 0.001);
+        EXPECT_TRUE(window->property("popupUsesOverlay").toBool());
+
+        const auto mappedPoint = [&](const char* method) {
+          QVariant result;
+          EXPECT_TRUE(
+              QMetaObject::invokeMethod(window.get(), method, Qt::DirectConnection, Q_RETURN_ARG(QVariant, result)));
+          return result.toPointF();
+        };
+        const QPointF control_top_left = mappedPoint("controlTopLeft");
+        const QPointF control_bottom_right = mappedPoint("controlBottomRight");
+        const QPointF popup_top_left = mappedPoint("popupTopLeft");
+        const QPointF popup_bottom_right = mappedPoint("popupBottomRight");
+        EXPECT_NEAR(popup_top_left.x(), control_top_left.x(), 0.5) << "scale " << scale;
+        EXPECT_NEAR(popup_bottom_right.x(), control_bottom_right.x(), 0.5) << "scale " << scale;
+        EXPECT_GT(popup_top_left.x(), 5.0) << "scale " << scale;
+        EXPECT_LT(popup_bottom_right.x(), 475.0) << "scale " << scale;
+
+        if (opensAbove) {
+          EXPECT_TRUE(combo->property("popup").value<QObject*>()->property("opensAbove").toBool());
+          EXPECT_NEAR(popup_bottom_right.y(), control_top_left.y() - 2 * scale, 0.5) << "scale " << scale;
+        } else {
+          EXPECT_FALSE(combo->property("popup").value<QObject*>()->property("opensAbove").toBool());
+          EXPECT_NEAR(popup_top_left.y(), control_bottom_right.y() + 2 * scale, 0.5) << "scale " << scale;
         }
       }
-    )"}
-                     .arg(scale, 0, 'f', 2)
-                     .toUtf8(),
-                 QUrl{});
-    ASSERT_EQ(comp.status(), QQmlComponent::Ready) << comp.errorString().toStdString();
-    std::unique_ptr<QObject> window{comp.create()};
-    ASSERT_NE(window, nullptr);
-    QCoreApplication::processEvents(QEventLoop::AllEvents, 50);
-
-    QObject* combo = window->property("combo").value<QObject*>();
-    ASSERT_NE(combo, nullptr);
-    EXPECT_TRUE(combo->property("popupTransformSupported").toBool());
-    EXPECT_NEAR(combo->property("effectiveScale").toReal(), scale, 0.001);
-
-    const QPointF control_left = window->property("controlLeft").toPointF();
-    const QPointF control_right = window->property("controlRight").toPointF();
-    const QPointF popup_left = window->property("popupLeft").toPointF();
-    const QPointF popup_right = window->property("popupRight").toPointF();
-    EXPECT_NEAR(window->property("popupX").toReal(), control_left.x(), 0.5) << "scale " << scale;
-    EXPECT_NEAR(popup_left.x(), control_left.x(), 0.5) << "scale " << scale;
-    EXPECT_NEAR(popup_right.x(), control_right.x(), 0.5) << "scale " << scale;
+    }
   }
+}
+
+TEST_F(QmlSmoke, ComboBox_RefreshesPopupGeometryAfterAncestorLayout) {
+  QQmlComponent comp = QQmlComponent{&engine_};
+  comp.setData(R"(
+    import QtQuick
+    import Holonight
+    Window {
+      width: 480
+      height: 400
+      visible: true
+
+      property var combo: combo
+      function layoutAndOpen() {
+        form.x = 245
+        form.y = 306.25
+        form.scale = 1.25
+        combo.popup.open()
+      }
+      function controlTopLeft() { return combo.mapToItem(contentItem, 0, 0) }
+      function popupTopLeft() { return combo.popup.background.mapToItem(contentItem, 0, 0) }
+
+      Item {
+        id: form
+        transformOrigin: Item.TopLeft
+
+        ComboBox {
+          id: combo
+          x: 19
+          y: 23
+          width: 160
+          model: ["one", "two", "three"]
+        }
+      }
+    }
+  )",
+               QUrl{});
+  ASSERT_EQ(comp.status(), QQmlComponent::Ready) << comp.errorString().toStdString();
+  std::unique_ptr<QObject> window{comp.create()};
+  ASSERT_NE(window, nullptr);
+  QCoreApplication::processEvents(QEventLoop::AllEvents, 50);
+  ASSERT_TRUE(QMetaObject::invokeMethod(window.get(), "layoutAndOpen", Qt::DirectConnection));
+  QCoreApplication::processEvents(QEventLoop::AllEvents, 50);
+
+  const auto mappedPoint = [&](const char* method) {
+    QVariant result;
+    EXPECT_TRUE(QMetaObject::invokeMethod(window.get(), method, Qt::DirectConnection, Q_RETURN_ARG(QVariant, result)));
+    return result.toPointF();
+  };
+  QObject* combo = window->property("combo").value<QObject*>();
+  ASSERT_NE(combo, nullptr);
+  QObject* popup = combo->property("popup").value<QObject*>();
+  ASSERT_NE(popup, nullptr);
+  EXPECT_TRUE(popup->property("opensAbove").toBool());
+  EXPECT_NEAR(combo->property("effectiveScale").toReal(), 1.25, 0.001);
+  EXPECT_NEAR(mappedPoint("popupTopLeft").x(), mappedPoint("controlTopLeft").x(), 0.5);
+  EXPECT_GT(mappedPoint("popupTopLeft").x(), 250.0);
+  EXPECT_GT(mappedPoint("popupTopLeft").y(), 200.0);
 }
 
 TEST_F(QmlSmoke, ComboBox_ReportsUnsupportedPopupTransforms) {

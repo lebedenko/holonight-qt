@@ -4,6 +4,7 @@
 pragma ComponentBehavior: Bound
 
 import QtQuick
+import QtQuick.Controls as C
 import QtQuick.Shapes
 import QtQuick.Templates as T
 import Holonight
@@ -19,9 +20,9 @@ T.ComboBox {
     property real delegateHeight: 28
 
     readonly property int resolvedMaximumVisibleItems: Math.max(1, maximumVisibleItems)
-    readonly property point sceneOrigin: mapToItem(null, 0, 0)
-    readonly property point sceneXAxis: mapToItem(null, 1, 0)
-    readonly property point sceneYAxis: mapToItem(null, 0, 1)
+    readonly property point sceneOrigin: mapToItem(null, popup.geometryRevision * 0, 0)
+    readonly property point sceneXAxis: mapToItem(null, 1 + popup.geometryRevision * 0, 0)
+    readonly property point sceneYAxis: mapToItem(null, popup.geometryRevision * 0, 1)
     readonly property real sceneScaleX: Math.hypot(sceneXAxis.x - sceneOrigin.x,
                                                    sceneXAxis.y - sceneOrigin.y)
     readonly property real sceneScaleY: Math.hypot(sceneYAxis.x - sceneOrigin.x,
@@ -99,7 +100,10 @@ T.ComboBox {
     popup: T.Popup {
         id: popup
 
-        readonly property point controlSceneBottom: root.mapToItem(null, 0, root.height)
+        property int geometryRevision: 0
+
+        readonly property point controlSceneBottom: root.mapToItem(null, geometryRevision * 0,
+                                                                   root.height)
         readonly property real controlSceneTop: Math.min(root.sceneOrigin.y, controlSceneBottom.y)
         readonly property real controlSceneBottomY: Math.max(root.sceneOrigin.y, controlSceneBottom.y)
         readonly property real sceneSpaceAbove: Math.max(0, controlSceneTop
@@ -121,6 +125,7 @@ T.ComboBox {
                                            && sceneSpaceAbove > sceneSpaceBelow
 
         objectName: "holonightComboBoxPopup"
+        parent: C.Overlay.overlay
         popupType: T.Popup.Item
         x: root.sceneOrigin.x
         y: opensAbove ? controlSceneTop - 2 * root.effectiveScale - implicitHeight
@@ -131,6 +136,8 @@ T.ComboBox {
         padding: 4
         scale: root.effectiveScale
         transformOrigin: opensAbove ? Item.BottomLeft : Item.TopLeft
+
+        onAboutToShow: geometryRevision++
 
         contentItem: ListView {
             id: popupList
