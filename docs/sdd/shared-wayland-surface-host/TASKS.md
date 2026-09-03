@@ -4,4 +4,4 @@
 - [x] Implement the shared context, surface spec, and lifecycle host.
 - [x] Add lifecycle-state and installed consumer tests.
 - [x] Run formatting, tidy, build, package checks, and tests through `task verify`.
-- [ ] Commit and publish the verified provider revision before consumer adoption starts.
+- [x] Commit and publish the verified provider revision before consumer adoption starts.
