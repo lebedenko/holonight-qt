@@ -257,6 +257,11 @@ else()
   set(HOLONIGHT_SYSTEM_QT_QML_DIR "${QT6_INSTALL_PREFIX}/${QT6_INSTALL_QML}")
 endif()
 
+set(HOLONIGHT_BUILD_SYNTAX_THEMES OFF)
+if(TARGET generate-syntax-themes)
+  set(HOLONIGHT_BUILD_SYNTAX_THEMES ON)
+endif()
+
 configure_file(
     test_package_install.cmake.in
     ${CMAKE_CURRENT_BINARY_DIR}/test_package_install.cmake
