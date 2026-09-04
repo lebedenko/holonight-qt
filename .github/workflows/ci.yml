@@ -28,7 +28,6 @@ jobs:
         with:
           version: '6.11.*'
           arch: linux_gcc_64
-          modules: qtwayland
           cache: true
 
       - name: Build and install canonical configuration dependency
