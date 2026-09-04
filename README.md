@@ -224,14 +224,15 @@ QT_QPA_PLATFORM=offscreen ctest --test-dir build --output-on-failure
 
 GPL-3.0-or-later — see [LICENSE](LICENSE).
 
-Contains colors derived from TokyoNight (MIT licensed).
-
 ## Inspiration
 
-HoloNight draws visual inspiration from the TokyoNight Storm palette
-by folke.
+The implementation is independently authored. Selected base color values and visual direction reference established
+palettes, while HoloNight adds and adjusts roles for its own semantic and accessibility requirements.
 
 ## Credits
 
-- TokyoNight palette by folke
-  <https://github.com/folke/tokyonight.nvim>
+- [Catppuccin](https://github.com/catppuccin/catppuccin)
+- [Tokyo Night](https://github.com/enkia/tokyo-night-vscode-theme) (Apache-2.0)
+- [Dracula](https://github.com/dracula/dracula-theme)
+- [Nord](https://github.com/nordtheme/nord)
+- [Everforest](https://github.com/sainnhe/everforest)

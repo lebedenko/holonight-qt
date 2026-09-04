@@ -9,6 +9,10 @@ vars:
     sh: nproc
 
 tasks:
+  license-check:
+    desc: Validate REUSE licensing metadata
+    cmds: [reuse lint]
+
   configure:
     desc: Configure (Debug + tests)
     deps: [build:config-dependency]
