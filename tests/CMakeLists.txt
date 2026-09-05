@@ -184,6 +184,7 @@ set_property(TEST holonight_theme_resolver_tests PROPERTY
 add_executable(holonight_qml_smoke_tests
     main.cpp
     test_qml_smoke.cpp
+    test_qml_avatar.cpp
 )
 
 set_target_properties(holonight_qml_smoke_tests PROPERTIES AUTOMOC ON)

@@ -27,6 +27,25 @@ ScrollView {
 
         HnLabel {
             role: HnTypographyRole.Title
+            rawText: qsTr("Avatars")
+            Layout.leftMargin: 32
+        }
+        RowLayout {
+            Layout.leftMargin: 32
+            spacing: 24
+            HnAvatar {
+                source: "qrc:/qt/qml/Holonight/Controls/assets/folder.svg"
+            }
+            HnAvatar {
+                size: 132
+                imageInset: 4
+                fallbackSource: "qrc:/qt/qml/Holonight/Controls/assets/folder.svg"
+            }
+            HnAvatar { size: 56 }
+        }
+
+        HnLabel {
+            role: HnTypographyRole.Title
             rawText: qsTr("Navigation & List Delegates")
             Layout.leftMargin: 32
             Layout.topMargin: 8

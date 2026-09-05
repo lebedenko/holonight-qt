@@ -82,6 +82,7 @@ target_link_libraries(holonight_core_qml PRIVATE
 )
 
 set(HOLONIGHT_CONTROLS_PUBLIC_QML_FILES
+    controls/HnAvatar.qml
     controls/HnAppTitle.qml
     controls/HnHeaderBar.qml
     controls/HnSearchField.qml
