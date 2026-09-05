@@ -1,4 +1,95 @@
-# Installed-application evidence — 2026-09-05
+# Installed-application evidence
+
+## Current checkpoint — 2026-09-06 (Europe/Kyiv)
+
+UQC-001 remains In Progress. Baselines match umbrella `a7329dd8c0bc7819e2da39fcfb9a302a0b9a0cdf` and provider
+`063a752b8a391e7e5212bdad884b5f4525bfed3e`; no provider implementation changed. The application and Qt packages
+remain at the versions below. Reuse the dependency inventory. New durable [evidence](audit/EVIDENCE.md) includes
+executable hashes, timestamps, selected environment, staged-library loading and surface/type URL pairs.
+The [launcher and manual checklist](audit/CHECKLIST.md) provide reproduction and separate-session prerequisites.
+
+### Startup diagnosis and collection fixture
+
+Haruna's 12-second ordinary-bus and isolated-bus GDB runs both loaded application QML and the staged provider,
+then reached QCoreApplication::exec. Exit 124 means the bounded run ended while the event loop was running.
+There is no demonstrated failing initialization stage in these corrected runs. Earlier empty stderr was an
+insufficient diagnostic: explicit QT_FORCE_STDERR_LOGGING and logging rules expose module output. Initial GDB
+attempts spent time downloading symbols; corrected runs disable debuginfod. Do not repeat longer timeouts.
+This does not retrospectively explain every earlier portal warning or establish successful compositor rendering.
+
+NeoChat and Tokodon also load staged HoloNight/Core libraries and welcome QML on isolated 12-second runs (exit 124).
+All three are offscreen observations without human input. Type resolution can include preloaded components; it
+must not be reported as visual reachability, instantiated state coverage or interaction success.
+
+A separate consumer built only against system Qt uses the installed provider QML prefix. Three fresh processes
+pass actual URL/library assertions: embedded Holonight default; explicit Fusion; and Holonight with programmatic
+Fusion fallback. Button/TextField resolve to staged HoloNight in the first/third cases; ApplicationWindow, Label,
+ToolButton and Dialog resolve to Basic in the first, Fusion in the other two. Explicit Fusion loads no HoloNight
+library. This fixture validates collection, not application evidence or missing-module negative isolation.
+
+### Surface classifications
+
+Each origin below has a concrete type-resolution reference in [EVIDENCE.md](audit/EVIDENCE.md). “Blocked” identifies
+missing observation or a competing requested style; it does not mean the application cannot start.
+
+| Application surface | Resolved implementation / ownership | Observed state and remaining evidence |
+|---|---|---|
+| Haruna Header/Footer toolbar | Fusion ToolBar/ToolButton; Header ToolSeparator also Fusion | Loading observed; blocked as HoloNight coverage by requested Fusion fallback. Manual hover, disabled actions and layout pending. |
+| Haruna seek and volume | HoloNight Slider base; application-owned hidden handles and Rectangle backgrounds in HProgressBar/VolumeSlider | Loading plus versioned source evidence; manual media/seek/volume behavior and painting pending. Do not count the painted track as HoloNight. |
+| Haruna hamburger/menu surfaces | HoloNight Menu/MenuItem; Fusion MenuSeparator/Popup/ToolButton | Loading observed; opening, selection, geometry and cancellation pending. |
+| Haruna settings | HoloNight ItemDelegate resolves in SettingsWindow | Loading only; individual settings pages, editing and scrolling not yet observed. |
+| Haruna main window/labels | Fusion ApplicationWindow and Label | Loading observed; exact window/label visual requirements remain candidates. |
+| NeoChat welcome | Basic Label/ToolButton/Control, HoloNight ToolTip | Loading observed; labels/buttons may belong to conditional account delegates; manual visibility/states pending. |
+| NeoChat server/login | FormCard.FormTextFieldDelegate in versioned Homeserver source | Blocked: no manually reached server form/type-origin pair. FormCard painting cannot be assumed to match its base control. |
+| NeoChat navigation/dialogs | Kirigami/FormCard and application composition | Blocked: no user-operated navigation/dialog observations. |
+| Tokodon welcome | Basic Label/AbstractButton; application-owned AbstractButton content; FormCard actions | Loading and versioned source observed; manual welcome/onboarding states pending. |
+| Tokodon server/account forms | Kirigami.SearchField and Addons RoundedItemDelegate; explicit Rectangle header background | Source only; blocked pending reachable form origins/editing. Header painting is application-owned. |
+| Tokodon scrolling/dialogs | Kirigami/Addons and application composition | Blocked: no user-operated scroll/dialog observations. |
+| hyprpolkitagent field/buttons | Source candidates TextField/Button, implemented by provider | Blocked: separate user login and confirmed exclusive authentication registration missing. |
+| hyprpolkitagent window/labels | ApplicationWindow/Label candidates; fixture Basic does not establish agent fallback | Blocked: prompt not launched. Explicit label overrides remain application-owned. |
+| hyprpolkitagent separators/error/geometry | Application-owned Rectangle, explicit error styling and fixed constraints | Versioned source only; prompt presentation and cancellation pending. |
+
+Matching NeoChat/Tokodon startup and welcome/server QML were retrieved at v26.08.0, with URLs and hashes in
+[EVIDENCE.md](audit/EVIDENCE.md). NeoChat calls KirigamiAppDefaults::apply after QApplication; Tokodon uses
+KirigamiApp::App/KirigamiApp. Neither inspected main.cpp directly calls QQuickStyle::setStyle. Helper policy is
+not inferred from that absence; the corrected runtime traces establish selected origins for the sampled run.
+The earlier NeoChat URL failed because main.cpp is under src/app. Source inspection explains possible composition,
+not unobserved rendering. Haruna's versioned seek/volume source explicitly replaces standard visual hooks.
+
+### Exact provisional coverage proposal — not accepted
+
+Recommend reviewing these **nine** missing standard implementations first: **ApplicationWindow, Label, ToolButton,
+ToolBar, ToolSeparator, MenuSeparator, Popup, MenuBar and MenuBarItem**. Haruna resolves the first eight from Fusion
+(MenuBarLoader resolves MenuBar); MenuBarItem is its standard dependent implementation. ApplicationWindow and Label
+remain candidates until their default appearance is manually assessed. Require a surface/state evidence pair for
+each accepted addition; reject neither Basic nor Fusion fallback merely from a palette screenshot.
+
+Hold **Dialog, DialogButtonBox, BusyIndicator, Page, Pane, Frame, RoundButton and RadioDelegate** for reachability
+review. Dialog's fallback is verified in the fixture only; Haruna preloads RadioDelegate in HProgressBar, which does
+not prove its popup was shown. The earlier binary-only ContextMenu reference is not an accepted standard-control
+requirement. Nonvisual Action/ActionGroup/ButtonGroup and abstract Control/AbstractButton are not proposed visual
+implementations by themselves. Extend this exact provisional list only after the remaining manual surfaces identify
+additional visible standard gaps. The complete required coverage proposal remains open.
+
+Respect application-owned painting and Haruna's explicit Fusion fallback. Its fallback is a concrete exception to
+the initiative's Basic assumption, requiring joint review; do not silently force Basic or count Fusion as HoloNight.
+Preserve all public composite APIs using the recommendations in [DESIGN.md](DESIGN.md).
+
+### Outstanding prerequisites and stopping point
+
+- User-operated Hyprland surface/state evidence: editing, navigation, scrolling, popup geometry and visual states on
+  all reachable required pages. No signed-in profiles required; record network/account prerequisites if encountered.
+- Separate graphical login with confirmed logind identity and no competing agent, plus a harmless cancellable
+  authorization challenge. Only active user session 4 exists; the existing HoloNight agent remains untouched.
+- Final surface-by-surface addition decisions after these observations. UQC-001 C/D cannot be Done yet.
+
+Publish this as a partial discovery handoff and retain Draft/UQC-002 Planned. Full Hyprland/Sway activation and
+integration acceptance belong to UQC-201. No product source or public API changes are included.
+
+## Historical first-pass record — 2026-09-05
+
+The following preserves the original probe results. Its timeout and missing-source limitations are superseded by
+the corrected loading/source evidence above; its unperformed visual/authentication checks remain open.
 
 ## Environment and reproducibility
 

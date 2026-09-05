@@ -104,3 +104,33 @@ The review's earlier screenshot/install observations are historical; this audit 
 
 Provider → settings → AI → packages → greeter → shell is the proposed execution sequence. Publish and pin provider
 before any consumer implementation. Do not start UQC-201 until every repository package is Done.
+
+## Discovery follow-up — 2026-09-06, proposed for joint review
+
+No dependency inventory changes since provider `063a752b8a391e7e5212bdad884b5f4525bfed3e`; reuse INVENTORY.
+[Collection evidence](audit/EVIDENCE.md) now establishes staged-module loading for the three desktop applications.
+[The checklist](audit/CHECKLIST.md) separates loading checks from manual rendering and authentication evidence.
+The fixture confirms Basic for sampled gaps under the embedded default, Fusion under explicit selection, and
+Fusion gaps when an application calls setFallbackStyle(Fusion), as Haruna does. Therefore the declared Basic import
+is not a guarantee of Basic fallback in every consumer. Recommend respecting Haruna's choice and reviewing each
+visible gap explicitly; forcing Basic would change its requested behavior and needs a separate reviewed decision.
+
+Recommended compatibility resolutions remain proposals, with public APIs preserved:
+
+- Core Label: use an internal Templates.Label implementation for HnLabel, preserving typography, accessibility,
+  implicit sizing and public properties. Do not introduce a runtime Controls dependency inside Core.
+- Composite errors: explicitly declare/preserve `hasError` on HnSearchField/HnTextArea; own the error frame at the
+  composite boundary through public hooks. Never assign a HoloNight-only property to Fusion TextField/TextArea.
+  Standard-control application callers needing this extension require an explicit wrapper migration at review.
+- ComboBox sizing: preserve HnIconComboBox's inherited `maximumVisibleItems` and `delegateHeight` locally with their
+  existing semantics. Own popup/delegate sizing through public APIs, including greeter scaling/edge placement.
+- Delegate corners: keep the four public radius properties where exposed, with composite-owned corner calculation;
+  eliminate reliance on another style's `popup.background.semanticRadius` or ItemDelegate private shape.
+- Authentication discovery: propose extending the shell authentication wrapper's process-local import/plugin-path
+  propagation for the installed prefix, with missing-module diagnostics and tests. Preserve explicit overrides and
+  verify both normal and custom prefixes. Never repair this by importing audit variables into the shared manager.
+
+ApplicationWindow and Label fallback origins are now observed in the fixture (Basic) and Haruna (Fusion), and Label
+in NeoChat/Tokodon welcome QML (Basic). They remain addition candidates pending visual scope review; this evidence
+does not establish agent rendering. The exact provisional additions and remaining evidence gate are in APPLICATIONS.
+No compatibility trade-off is accepted, public API changed, or implementation package activated by this checkpoint.
