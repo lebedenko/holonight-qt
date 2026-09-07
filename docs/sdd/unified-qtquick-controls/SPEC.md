@@ -36,3 +36,7 @@ UQC-001 requires reproducible evidence and explicit coverage limitations. Unobse
 manual interaction is performed by the user, with no automated pointer movement or window focus. Authentication
 must be isolated from the active desktop agent. UQC-002 must resolve every scope/override/coverage finding together
 with the user before Accepted or provider implementation. A partial audit does not satisfy this gate.
+
+## Implementation
+
+The accepted provider work package is tracked in [IMPLEMENTATION.md](IMPLEMENTATION.md).

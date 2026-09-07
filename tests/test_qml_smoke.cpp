@@ -1439,6 +1439,82 @@ TEST_F(QmlSmoke, Switch_LoadsWithoutError) {
   checkComponent(engine_, R"(import Holonight; Switch { text: "toggle" })");
 }
 
+TEST_F(QmlSmoke, Indicators_ReserveLayoutSpaceAndMirror) {
+  for (const auto* type : {"CheckBox", "RadioButton", "Switch"}) {
+    for (bool mirrored : {false, true}) {
+      for (bool labeled : {false, true}) {
+        for (int size_role : {0, 1, 2, 3}) {
+          SCOPED_TRACE(::testing::Message()
+                       << type << " mirrored=" << mirrored << " labeled=" << labeled << " size=" << size_role);
+          const auto qml =
+              QStringLiteral(R"(
+            import QtQuick
+            import QtQuick.Layouts
+            import Holonight as H
+            Item {
+              width: 400
+              height: 100
+              RowLayout {
+                anchors.fill: parent
+                layoutDirection: %1 ? Qt.RightToLeft : Qt.LeftToRight
+                Text { objectName: "label"; text: "Adjacent label"; Layout.fillWidth: true }
+                H.%2 {
+                  objectName: "control"
+                  LayoutMirroring.enabled: %1
+                  %3
+                  %4
+                }
+              }
+            }
+          )")
+                  .arg(mirrored ? "true" : "false", type,
+                       labeled ? "text: \"Labeled control\"" : "contentItem: null; padding: 0; spacing: 0",
+                       QString::fromLatin1(type) == "Switch" ? QStringLiteral("sizeRole: %1").arg(size_role) : "");
+          QQmlComponent comp{&engine_};
+          comp.setData(qml.toUtf8(), QUrl{});
+          ASSERT_EQ(comp.status(), QQmlComponent::Ready) << comp.errorString().toStdString();
+          std::unique_ptr<QObject> root{comp.create()};
+          ASSERT_NE(root, nullptr);
+          QCoreApplication::processEvents();
+          auto* control = root->findChild<QQuickItem*>(QStringLiteral("control"));
+          auto* label = root->findChild<QQuickItem*>(QStringLiteral("label"));
+          ASSERT_NE(control, nullptr);
+          ASSERT_NE(label, nullptr);
+          auto* indicator = control->property("indicator").value<QQuickItem*>();
+          ASSERT_NE(indicator, nullptr);
+          for (bool enabled : {true, false}) {
+            for (bool checked : {false, true}) {
+              control->setProperty("enabled", enabled);
+              control->setProperty("checked", checked);
+              QCoreApplication::processEvents();
+              EXPECT_GE(control->implicitWidth(), indicator->width());
+              EXPECT_GE(control->implicitHeight(), indicator->height());
+              EXPECT_GE(indicator->x(), 0);
+              EXPECT_LE(indicator->x() + indicator->width(), control->width());
+              EXPECT_GE(indicator->y(), 0);
+              EXPECT_LE(indicator->y() + indicator->height(), control->height());
+              if (mirrored) {
+                EXPECT_LE(control->x() + control->width(), label->x());
+                EXPECT_NEAR(indicator->x() + indicator->width(),
+                            control->width() - control->property("rightPadding").toDouble(), 0.001);
+              } else {
+                EXPECT_GE(control->x(), label->x() + label->width());
+                EXPECT_NEAR(indicator->x(), control->property("leftPadding").toDouble(), 0.001);
+              }
+              EXPECT_LE(control->x() + indicator->x() + indicator->width(), 400);
+              if (labeled) {
+                auto* content = control->property("contentItem").value<QQuickItem*>();
+                ASSERT_NE(content, nullptr);
+                EXPECT_GE(content->property(mirrored ? "rightPadding" : "leftPadding").toDouble(), indicator->width());
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
+
 TEST_F(QmlSmoke, Switch_SizeRoles) {
   QQmlComponent comp = QQmlComponent{&engine_};
   comp.setData(R"(

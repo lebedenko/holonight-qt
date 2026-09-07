@@ -49,9 +49,11 @@ T.Switch {
     }
 
     implicitWidth: Math.max(implicitBackgroundWidth + leftInset + rightInset,
-                            implicitContentWidth + leftPadding + rightPadding)
+                            implicitContentWidth + leftPadding + rightPadding,
+                            implicitIndicatorWidth + leftPadding + rightPadding)
     implicitHeight: Math.max(implicitBackgroundHeight + topInset + bottomInset,
-                             implicitContentHeight + topPadding + bottomPadding)
+                             implicitContentHeight + topPadding + bottomPadding,
+                             implicitIndicatorHeight + topPadding + bottomPadding)
 
     padding: {
         switch (root.resolvedSizeRole) {
@@ -66,7 +68,7 @@ T.Switch {
     indicator: Item {
         implicitWidth: root.indicatorTrackWidth
         implicitHeight: root.indicatorTrackHeight
-        x: root.leftPadding
+        x: root.mirrored ? root.width - width - root.rightPadding : root.leftPadding
         anchors.verticalCenter: parent.verticalCenter
 
         // Track
@@ -88,7 +90,8 @@ T.Switch {
             height: root.indicatorThumbSize
             radius: height / 2
             anchors.verticalCenter: parent.verticalCenter
-            x: root.checked ? parent.width - width - root.indicatorThumbMargin : root.indicatorThumbMargin
+            x: root.visualPosition * (parent.width - width - 2 * root.indicatorThumbMargin)
+               + root.indicatorThumbMargin
 
             color: {
                 if (!root.enabled) return HoloniightPalette.textDisabled
@@ -113,7 +116,8 @@ T.Switch {
     }
 
     contentItem: Text {
-        leftPadding: root.indicator.width + root.spacing
+        leftPadding: !root.mirrored && root.indicator ? root.indicator.width + root.spacing : 0
+        rightPadding: root.mirrored && root.indicator ? root.indicator.width + root.spacing : 0
         text: root.text
         font: root.font
         color: root.enabled ? HoloniightPalette.textPrimary : HoloniightPalette.textDisabled
