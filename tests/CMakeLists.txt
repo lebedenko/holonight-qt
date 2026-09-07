@@ -286,3 +286,5 @@ add_test(
     NAME holonight_qml_source_policy_test
     COMMAND bash ${CMAKE_SOURCE_DIR}/scripts/check-qml-import-policy.sh ${CMAKE_SOURCE_DIR}/qml
 )
+
+include(QuickPaletteInfrastructure.cmake)

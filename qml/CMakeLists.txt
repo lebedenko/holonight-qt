@@ -1,7 +1,29 @@
+find_package(Qt6 ${Qt6_VERSION} EXACT REQUIRED COMPONENTS QuickPrivate QuickControls2Private QuickTemplates2Private)
+
+# Implementation-only palette machinery; Core stays independent of the selected style.
+qt_add_qml_module(holonight_impl_qml
+    URI "Holonight.impl"
+    VERSION 1.0
+    PLUGIN_TARGET holonight_impl_qml
+    OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/Holonight/impl
+    SOURCES controlpalette.h controlpalette.cpp appearancecontext.h appearancecontext.cpp
+)
+target_link_libraries(holonight_impl_qml PRIVATE
+    holonight_appearance holonight_theme Qt6::Qml Qt6::Quick Qt6::QuickPrivate)
+install(TARGETS holonight_impl_qml LIBRARY DESTINATION ${QT6_INSTALL_QML}/Holonight/impl)
+install(FILES
+    ${CMAKE_CURRENT_BINARY_DIR}/Holonight/impl/qmldir
+    ${CMAKE_CURRENT_BINARY_DIR}/Holonight/impl/holonight_impl_qml.qmltypes
+    DESTINATION ${QT6_INSTALL_QML}/Holonight/impl)
+
 qt_add_qml_module(holonight_qml
     URI "Holonight"
     VERSION 1.0
     PLUGIN_TARGET holonight_qml
+    NO_PLUGIN_OPTIONAL
+    NO_GENERATE_PLUGIN_SOURCE
+    CLASS_NAME HolonightStylePlugin
+    SOURCES quickstyleplugin.cpp
     OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/Holonight
     IMPORTS
         QtQuick.Controls.Basic
@@ -27,6 +49,7 @@ qt_add_qml_module(holonight_qml
 )
 
 set_target_properties(holonight_qml PROPERTIES AUTOMOC ON)
+add_dependencies(holonight_qml holonight_impl_qml)
 
 set_source_files_properties(
     core/HnControlSize.qml
@@ -200,6 +223,11 @@ set(HOLONIGHT_QML_FILES
 )
 
 target_link_libraries(holonight_qml PRIVATE
+    holonight_appearance
+    holonight_theme
+    Qt6::QuickPrivate
+    Qt6::QuickControls2Private
+    Qt6::QuickTemplates2Private
     Qt6::Quick
     Qt6::QuickControls2
     Qt6::QuickShapes
