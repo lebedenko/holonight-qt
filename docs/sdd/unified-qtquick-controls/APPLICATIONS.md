@@ -1,5 +1,45 @@
 # Installed-application evidence
 
+## Manual observations — 2026-09-07 (Europe/Kyiv)
+
+Provider checkout `4d63b29c708a8876daa30b738f91aef68800d3de` rebuilt and installed to
+`/tmp/uqc-20260907-prefix`; standalone collection fixture passed default, Fusion and Haruna Fusion-fallback
+modes. These observations continue discovery and do not accept implementation scope.
+
+- Haruna: user reports no rendering or interaction issues after the requested playback, seek/volume, menu and
+  settings check. `/tmp/uqc-audit-fh2hcji_/metadata.json` records manual mode and exit 0. Its trace loads the staged
+  provider and resolves ToolButton/ApplicationWindow to Fusion. Visual success does not imply all controls are
+  HoloNight implementations.
+- NeoChat: user reached Appearance and General settings and reports most controls render correctly. Checkbox and
+  radio labels overlap indicators; resizing does not resolve it. Theme switching, especially dark/light transitions,
+  leaves inconsistent colors. No other issues reported. `/tmp/uqc-audit-m1kndzv4/launch.log` confirms staged platform,
+  Widgets and Quick style loading; the completed manual run records exit status 0. Supplied screenshots show
+  Appearance with light surfaces/dark controls and General with indicator/label overlap. Session-local screenshot
+  references: `/tmp/codex-clipboard-B1UivN.png` and `/tmp/codex-clipboard-Jd94UV.png`; these and raw logs are temporary,
+  while this observation summary is durable. Exact theme transition sequence and scale were not recorded.
+
+### Checkbox/radio layout finding
+
+Installed Kirigami Addons `FormCheckDelegate.qml` and `FormRadioDelegate.qml` embed standard controls with
+`contentItem: null`, zero padding and zero spacing, alongside separate labels. Provider `qml/CheckBox.qml` and
+`qml/RadioButton.qml` compute implicit dimensions only from background and content, omitting the 16-pixel indicator.
+With the content removed and no background, their implicit dimensions collapse, explaining why the adjacent label
+can overlap the still-visible indicator. Treat this as a provider compatibility defect for scope review. The required
+regression should exercise indicator-only controls in a layout with adjacent labels, including height and mirrored
+layout; wider windows alone cannot repair the missing size reservation. No product fix is included in discovery.
+
+### Theme-switching investigation
+
+`qml/holoniightpalette.cpp` resolves tokens from the appearance reader and responds to that reader's palette changes;
+CheckBox/RadioButton colors bind to these tokens. The screenshot demonstrates divergent colors after using NeoChat's
+selector. Separate application/Kirigami and HoloNight palette sources are a plausible mechanism, not yet a complete
+runtime diagnosis. Compare initial launch and dark-to-light/light-to-dark transitions with explicit selected schemes,
+record both palette sources, and separate application-owned colors from provider colors before assigning the fix.
+Do not count dynamic application theme switching as verified.
+
+Tokodon observations are recorded below; isolated authentication remains pending. NeoChat's report does not establish individual
+login/server-form or keyboard-navigation checks beyond the surfaces explicitly reported.
+
 ## Current checkpoint — 2026-09-06 (Europe/Kyiv)
 
 UQC-001 remains In Progress. Baselines match umbrella `a7329dd8c0bc7819e2da39fcfb9a302a0b9a0cdf` and provider
@@ -197,3 +237,100 @@ found on required visible standard surfaces must be implemented or explicitly re
 Required outstanding evidence: successful module-loading traces for all four applications; exact reachable desktop
 control list; rendering states; user-operated editing/navigation/scrolling/popups; isolated third-party authentication.
 Until then the complete coverage proposal and UQC-001 exit gate remain incomplete. Do not mark UQC-002 Accepted.
+
+## Tokodon manual observations — 2026-09-07
+
+User reports three issues on reachable settings/about surfaces and no others:
+
+- Network Proxy radio labels overlap their indicators, matching NeoChat's FormRadioDelegate finding.
+- Appearance switches extend beyond the right edge of the card. Provider `qml/Switch.qml` has the same
+  indicator-omitting implicit-size calculation as CheckBox/RadioButton. Installed `FormSwitchDelegate.qml`
+  sets the embedded Switch content to null and all padding to zero. This supplies a concrete source explanation
+  for the layout reserving insufficient space for the visible track. Include Switch in the indicator-only layout
+  regression proposal, covering right-edge containment and its supported size roles.
+- About Tokodon license popup text reaches/clips at the right edge, reported as missing right padding.
+  The trace resolves AboutPage's QQC2.ScrollView to `qrc:/qt/qml/Holonight/ScrollView.qml`.
+  Installed Kirigami Addons AboutPage explicitly sets the license MessageDialog's four paddings to zero and
+  places a SelectableLabel with a grid-unit textMargin inside that ScrollView. Therefore adding blanket popup
+  padding is not yet a justified fix: investigate label width/wrapping, horizontal scrolling and viewport geometry,
+  comparing the same composition under Fusion. Root cause and ownership remain unresolved.
+
+Completed manual run: `/tmp/uqc-audit-8u37qiwb/metadata.json`, exit status 0. Raw trace is `launch.log` in that
+folder. User screenshots (temporary): `/tmp/codex-clipboard-dQJbQS.png` (radio),
+`/tmp/codex-clipboard-W9kNGC.png` (switch), `/tmp/codex-clipboard-1TYrGp.png` (license).
+This durable summary records the observations; temporary screenshots/logs may disappear on reboot. Exact scale
+and individual onboarding/server-field/keyboard checks were not reported. These findings establish reachable
+settings and license-dialog surfaces, not complete application-state coverage. Discovery and scope review remain open.
+
+## Isolated authentication observations — 2026-09-07
+
+Tux run `/home/tux/uqc-auth-evidence/20260907T111246Z` records logind session 5, surveyed agent 0.1.3-10,
+and provider `/var/tmp/uqc-auth-test-20260907/prefix`. `registration.json` records request serial 9, authority
+`:1.24`, agent connection `:1.3644`; the verifier completed request/reply and live ownership checks.
+`agent.json` records PID 114381 and final exit -15 after stopping the directly launched child.
+
+User's observations.txt reports prompt appearance, correct theme/colors, field masking/focus, Tab/Shift+Tab,
+buttons/hover/cancellation and unclipped geometry; no screenshot or other issue. Log lines 16356/16483 load the
+staged Quick/Core libraries. Prompt main.qml resolves Button/TextField to HoloNight (16450/16535) and
+ApplicationWindow/Label to Basic (16409/16571), pairing the actual observed prompt with implementation origins.
+
+Outcome correlation needs clarification: `challenge.txt` contains exit_status=0, indicating successful command
+execution rather than cancelled authorization. The agent log contains two redacted authentication-submit outcomes
+(lines 26116/29571) and a later `fail` outcome (40953), each following prompt creation. This supports multiple prompt
+interactions, including a later negative outcome, but does not identify the command exit associated with each one.
+Do not overwrite the successful visual/loading evidence or mark command-level cancellation verified from exit 0.
+User clarification requested; cancellation acceptance remains open pending correlation or a separately recorded
+cancel-only challenge. No password values are included in the evidence summary.
+
+### Authentication outcome clarification
+
+User confirms multiple attempts: successful authentication returned 0, followed by another invocation explicitly
+cancelled with a nonzero exit. This explains the saved successful exit and the later agent `fail` result. Accept
+prompt appearance/interaction and cancellation based on the user-operated observation plus the loaded-control
+trace; the final cancelled command's exact numeric status was not retained. Authentication discovery is complete,
+not final UQC-201 ecosystem acceptance. No repeat is required for this discovery gate.
+
+## Controlled follow-up — 2026-09-07
+
+The standalone layout/palette probe and six-mode runner are in `audit/layout-probe.cpp`, `layout-probe.qml`, and
+`check-layout.py`. They use system Qt/Kirigami and the installed provider at `/var/tmp/uqc-auth-test-20260907/prefix`.
+All six headless runs passed their characterization assertions. These assertions describe the current defects and
+comparison cases; they must not become regression acceptance assertions preserving broken behavior.
+
+| Reduced composition | HoloNight | Fusion | Basic |
+|---|---|---|---|
+| Indicator-only CheckBox/RadioButton width × height | 0 × 0 | 0 × 14 | 0 × 28 |
+| Indicator-only Switch width × height | 0 × 0 | 0 × 16 | 0 × 28 |
+| Visible indicator widths: checkbox/radio/switch | 16 / 16 / 34 | 14 / 14 / 40 | 28 / 28 / 56 |
+| Unconstrained 400-pixel ScrollView: label width / lines | 19852.25 / 1 | 19852.25 / 1 | 19852.25 / 1 |
+| Viewport-constrained label and content: width / lines | 400 / 56 | 400 / 56 | 400 / 56 |
+| TextField follows application black/white/black palette | No | Yes | Yes |
+
+The initial indicator diagnosis was incomplete: null content and zero padding collapse width under all three
+styles. HoloNight additionally omits indicator height and anchors the indicator at the left rather than centering
+it like the compared styles. This supports a HoloNight compatibility improvement, not a claim that only HoloNight
+can fail this Kirigami composition. Verify the real FormCard delegates after the eventual fix, including trailing
+switch containment, mirrored layout, disabled/checked states and size roles.
+
+The popup probe reproduces the license content composition, not the complete application dialog. Its long ordinary
+text expands to intrinsic width under every style despite WordWrap. Bounding both label width and ScrollView
+contentWidth to availableWidth produces 56 wrapped lines and a full-size horizontal scrollbar (no horizontal
+scroll range) under every style. Kirigami's explicit zero dialog padding and unconstrained SelectableLabel explain
+a cross-style composition problem; blanket HoloNight popup padding is not justified. Full application comparison
+would still be needed before assigning an upstream fix. Do not alter third-party sources within this initiative.
+
+Palette probe: changing QGuiApplication palette black → white → black changes Kirigami text white → black → white.
+HoloNight TextField background stays #131a24 and text stays #e7edf5; Fusion/Basic follow the application palette.
+The experiment changes only the temporary process palette and does not modify any desktop appearance configuration.
+Matching NeoChat v26.08.0 `src/settings/ColorScheme.qml` calls ColorSchemer.apply; `colorschemer.cpp` delegates to
+KColorSchemeManager.activateScheme. This establishes the selector path and reproduces separate palette authority;
+it does not replay every named NeoChat scheme or establish that every control has the same role mapping.
+
+Sources retrieved 2026-09-07:
+- https://github.com/KDE/neochat/blob/v26.08.0/src/settings/ColorScheme.qml
+  SHA-256 `f47f623367bb09c91e3957564b12c26e60ced9b48e0a70504b2239ca0a12731f`
+- https://github.com/KDE/neochat/blob/v26.08.0/src/settings/colorschemer.cpp
+  SHA-256 `21204f5a8fd6c409968dbe144ffe673119d4f6d4a09c21f2b722dc71ee6175b0`
+
+The recommended scope decisions are in [REVIEW.md](REVIEW.md). Earlier provisional ownership assertions are
+superseded by these comparison results; earlier unobserved login/server-form cases remain unclaimed.

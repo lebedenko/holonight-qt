@@ -59,7 +59,15 @@ user action and outcome, geometry/scale, and classification (HoloNight, Basic fa
 Record Fusion fallback as a concrete compatibility boundary; do not relabel it Basic. Resolution traces include
 preloaded/lazy components: pair them with the actual observed page before claiming reachable coverage.
 
-## Separate authentication login — not available in this collection
+## Prepared tux procedure — 2026-09-07
+
+Follow [the detailed standalone instructions](auth-test/README.md). A self-contained kit, including a verified staged
+provider, is prepared at `/var/tmp/uqc-auth-test-20260907`. Evidence is written under tux's home and survives reboot.
+Python syntax, wrong-user refusal, Hyprland config parsing and all three installed-fixture modes passed. No test
+login or live authentication challenge has been executed. The updated procedure supersedes the historical mandatory-journal prerequisite below: verify the actual
+registration reply and current bus/PID/session ownership before any challenge. Journal output is supplementary.
+
+## Separate authentication login — historical 2026-09-06 collection
 
 Observed logind has only user session 4 (uid 1000, Wayland, seat0, tty1, active), plus greeter/manager sessions.
 `holonight-polkit-agent` is running. No separate test login is prepared. Do not stop it, alter its service, or run

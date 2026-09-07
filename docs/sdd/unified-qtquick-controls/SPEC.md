@@ -1,6 +1,7 @@
 # Unified Qt Quick Controls — discovery specification
 
-Status: Draft; UQC-001 discovery only. Product implementation is not authorized.
+Status: Discovery reviewed and approved on 2026-09-07; see REVIEW.md. This specification records UQC-001.
+The umbrella acceptance checkpoint and UQC-101 implementation SDD govern subsequent product work.
 
 Assignment: `holonight-qt`, published upstream baseline
 `dd8eef45f92baf77efe6680e4ccaaa40b3c20030` (`origin/main`, confirmed 2026-09-05).
