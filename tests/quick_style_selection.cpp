@@ -70,13 +70,16 @@ C.ApplicationWindow {
   QFile maps("/proc/self/maps");
   if (!maps.open(QIODevice::ReadOnly)) return 7;
   const auto mappings = maps.readAll();
+  const bool fusion = mode == "Fusion" || mode == "Haruna";
   for (const auto& module :
        {QByteArray("/Holonight/libholonight_qml.so"), QByteArray("/Holonight/Core/libholonight_core_qml.so"),
         QByteArray("/Holonight/Controls/libholonight_controls_qml.so"),
         QByteArray("/Holonight/impl/libholonight_impl_qml.so")}) {
-    if (!mappings.contains(root.toUtf8() + module)) return 8;
+    if (fusion && module == "/Holonight/libholonight_qml.so") {
+      if (mappings.contains(module)) return 8;
+    } else if (!mappings.contains(root.toUtf8() + module))
+      return 8;
   }
-  const bool fusion = mode == "Fusion" || mode == "Haruna";
   if (!url.contains(fusion ? "/QtQuick/Controls/Fusion/TextField.qml" : "/Holonight/TextField.qml")) return 3;
   const auto stylePath = fusion ? QStringLiteral("/QtQuick/Controls/Fusion/") : QStringLiteral("/Holonight/");
   auto checkOrigin = [](QObject* object, const QString& expected) {

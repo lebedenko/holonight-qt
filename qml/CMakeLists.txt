@@ -6,12 +6,14 @@ qt_add_qml_module(holonight_impl_qml
     VERSION 1.0
     PLUGIN_TARGET holonight_impl_qml
     OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/Holonight/impl
+    QML_FILES ComboBoxPopupGeometry.qml
     SOURCES controlpalette.h controlpalette.cpp appearancecontext.h appearancecontext.cpp
 )
 target_link_libraries(holonight_impl_qml PRIVATE
     holonight_appearance holonight_theme Qt6::Qml Qt6::Quick Qt6::QuickPrivate)
 install(TARGETS holonight_impl_qml LIBRARY DESTINATION ${QT6_INSTALL_QML}/Holonight/impl)
 install(FILES
+    ComboBoxPopupGeometry.qml
     ${CMAKE_CURRENT_BINARY_DIR}/Holonight/impl/qmldir
     ${CMAKE_CURRENT_BINARY_DIR}/Holonight/impl/holonight_impl_qml.qmltypes
     DESTINATION ${QT6_INSTALL_QML}/Holonight/impl)
@@ -178,8 +180,9 @@ qt_add_qml_module(holonight_controls_qml
         hnseparatorgeometry.h
         hnseparatorgeometry.cpp
     IMPORTS
-        Holonight
+        QtQuick.Controls
         Holonight.Core
+        Holonight.impl
     QML_FILES
         ${HOLONIGHT_CONTROLS_PUBLIC_QML_FILES}
         ${HOLONIGHT_CONTROLS_INTERNAL_QML_FILES}
@@ -207,7 +210,7 @@ target_link_libraries(holonight_controls_qml PRIVATE
 
 add_dependencies(holonight_controls_qml
     holonight_core_qml
-    holonight_qml
+    holonight_impl_qml
 )
 
 add_library(holonight_core INTERFACE)

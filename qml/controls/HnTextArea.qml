@@ -4,8 +4,7 @@
 pragma ComponentBehavior: Bound
 
 import QtQuick
-import QtQuick.Controls.Basic as C
-import Holonight as H
+import QtQuick.Controls as C
 import Holonight.Core
 import Holonight.impl as Impl
 
@@ -92,7 +91,7 @@ FocusScope {
         opacity: root.enabled ? 1.0 : 0.5
     }
 
-    H.ScrollView {
+    C.ScrollView {
         id: editorScroll
         palette: compositePalette.appearancePalette
 
@@ -110,13 +109,12 @@ FocusScope {
                                        ? C.ScrollBar.AsNeeded : C.ScrollBar.AlwaysOff
         clip: root.overflow || editor.wrapMode === TextEdit.NoWrap
 
-        H.TextArea {
+        C.TextArea {
             id: editor
             palette: compositePalette.appearancePalette
 
             width: editorScroll.contentWidth
             implicitWidth: 0
-            hasError: root.hasError
             enabled: root.enabled
             wrapMode: TextEdit.Wrap
             topPadding: HnMetrics.internalSpacing(root.resolvedSizeRole)

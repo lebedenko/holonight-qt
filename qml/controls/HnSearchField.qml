@@ -5,14 +5,14 @@ pragma ComponentBehavior: Bound
 
 import QtQuick
 import QtQuick.Templates as T
-import Holonight as H
+import QtQuick.Controls as C
 import Holonight.Core
 import Holonight.impl as Impl
 
-H.TextField {
+C.TextField {
     id: root
     palette: compositePalette.appearancePalette
-    background.opacity: root.enabled ? 1.0 : 0.5
+    property bool hasError: false
 
     readonly property Impl.ControlPalette compositePalette: Impl.ControlPalette {}
 
@@ -29,6 +29,29 @@ H.TextField {
     rightPadding: HnMetrics.horizontalPadding(root.resolvedSizeRole)
                   + trailingArea.width
                   + (trailingArea.width > 0 ? HnMetrics.internalSpacing(root.resolvedSizeRole) : 0)
+
+    background: Rectangle {
+        readonly property real semanticRadius: HnAppearance.roundedRadius(HnSurfaceRole.Control,
+                                                                          width, height,
+                                                                          HnAppearance.revision)
+
+        implicitWidth: 200
+        implicitHeight: 32
+
+        color: HoloniightPalette.surface
+        radius: semanticRadius
+
+        border.width: (root.activeFocus || root.hasError) ? HnMetrics.focusBorderWidth : HnMetrics.borderWidth
+        border.color: {
+            if (root.hasError)       return HoloniightPalette.borderUrgent
+            if (root.activeFocus)    return HoloniightPalette.borderFocus
+            return HoloniightPalette.borderPassive
+        }
+
+        opacity: root.enabled ? 1.0 : 0.5
+
+        Behavior on border.color { ColorAnimation { duration: 80 } }
+    }
 
     Keys.priority: Keys.BeforeItem
     Keys.onEscapePressed: event => {

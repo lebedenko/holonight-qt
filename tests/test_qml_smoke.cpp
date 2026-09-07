@@ -1049,7 +1049,11 @@ TEST_F(QmlSmoke, ComboBox_InstantiatesAndOpensPopup) {
   EXPECT_GT(object->property("popupHeight").toReal(), 0.0);
 }
 
-TEST_F(QmlSmoke, ComboBox_ScaledPopupMatchesControlSceneGeometry) {
+class ComboBoxGeometry : public QmlSmoke, public testing::WithParamInterface<QString> {};
+INSTANTIATE_TEST_SUITE_P(Variants, ComboBoxGeometry,
+                         testing::Values(QStringLiteral("H.ComboBox"), QStringLiteral("HnIconComboBox")));
+
+TEST_P(ComboBoxGeometry, ScaledPopupMatchesControlSceneGeometry) {
   for (const qreal scale : {0.78, 1.0, 1.25}) {
     for (const bool rightEdge : {false, true}) {
       for (const bool opensAbove : {false, true}) {
@@ -1060,6 +1064,7 @@ TEST_F(QmlSmoke, ComboBox_ScaledPopupMatchesControlSceneGeometry) {
           import QtQuick
           import QtQuick.Controls
           import Holonight as H
+          import Holonight.Controls
           Window {
             width: 480
             height: 400
@@ -1083,7 +1088,7 @@ TEST_F(QmlSmoke, ComboBox_ScaledPopupMatchesControlSceneGeometry) {
               scale: %SCALE%
               transformOrigin: Item.TopLeft
 
-              H.ComboBox {
+              %TYPE% {
                 id: combo
                 x: 19
                 y: 23
@@ -1094,6 +1099,7 @@ TEST_F(QmlSmoke, ComboBox_ScaledPopupMatchesControlSceneGeometry) {
             }
           }
         )"}
+                         .replace(QStringLiteral("%TYPE%"), GetParam())
                          .replace(QStringLiteral("%SCALE%"), QString::number(scale, 'f', 2))
                          .replace(QStringLiteral("%WRAPPER_X%"), QString::number(wrapper_x, 'f', 3))
                          .replace(QStringLiteral("%WRAPPER_Y%"), QString::number(wrapper_y, 'f', 3))
@@ -1138,11 +1144,12 @@ TEST_F(QmlSmoke, ComboBox_ScaledPopupMatchesControlSceneGeometry) {
   }
 }
 
-TEST_F(QmlSmoke, ComboBox_RefreshesPopupGeometryAfterAncestorLayout) {
+TEST_P(ComboBoxGeometry, RefreshesPopupGeometryAfterAncestorLayout) {
   QQmlComponent comp = QQmlComponent{&engine_};
-  comp.setData(R"(
+  comp.setData(QString{R"(
     import QtQuick
-    import Holonight
+    import Holonight as H
+    import Holonight.Controls
     Window {
       width: 480
       height: 400
@@ -1162,7 +1169,7 @@ TEST_F(QmlSmoke, ComboBox_RefreshesPopupGeometryAfterAncestorLayout) {
         id: form
         transformOrigin: Item.TopLeft
 
-        ComboBox {
+        %TYPE% {
           id: combo
           x: 19
           y: 23
@@ -1171,7 +1178,9 @@ TEST_F(QmlSmoke, ComboBox_RefreshesPopupGeometryAfterAncestorLayout) {
         }
       }
     }
-  )",
+  )"}
+                   .replace(QStringLiteral("%TYPE%"), GetParam())
+                   .toUtf8(),
                QUrl{});
   ASSERT_EQ(comp.status(), QQmlComponent::Ready) << comp.errorString().toStdString();
   std::unique_ptr<QObject> window{comp.create()};
@@ -1196,25 +1205,28 @@ TEST_F(QmlSmoke, ComboBox_RefreshesPopupGeometryAfterAncestorLayout) {
   EXPECT_GT(mappedPoint("popupTopLeft").y(), 200.0);
 }
 
-TEST_F(QmlSmoke, ComboBox_ReportsUnsupportedPopupTransforms) {
+TEST_P(ComboBoxGeometry, ReportsUnsupportedPopupTransforms) {
   QQmlComponent comp = QQmlComponent{&engine_};
-  comp.setData(R"(
+  comp.setData(QString{R"(
     import QtQuick
-    import Holonight
+    import Holonight as H
+    import Holonight.Controls
     Item {
       property var nonUniform: nonUniform
       property var rotated: rotated
       Item {
         scale: 1.25
         transform: Scale { xScale: 1; yScale: 0.8 }
-        ComboBox { id: nonUniform }
+        %TYPE% { id: nonUniform }
       }
       Item {
         rotation: 5
-        ComboBox { id: rotated }
+        %TYPE% { id: rotated }
       }
     }
-  )",
+  )"}
+                   .replace(QStringLiteral("%TYPE%"), GetParam())
+                   .toUtf8(),
                QUrl{});
   ASSERT_EQ(comp.status(), QQmlComponent::Ready) << comp.errorString().toStdString();
   std::unique_ptr<QObject> object{comp.create()};
@@ -1272,11 +1284,12 @@ TEST_F(QmlSmoke, ComboBox_DelegateCornersFollowPopupInnerRadius) {
   EXPECT_DOUBLE_EQ(radius(2, "bottomRightRadius"), inner_radius);
 }
 
-TEST_F(QmlSmoke, ComboBox_BoundsPopupByModelAndMaximumVisibleItems) {
+TEST_P(ComboBoxGeometry, BoundsPopupByModelAndMaximumVisibleItems) {
   QQmlComponent comp = QQmlComponent{&engine_};
-  comp.setData(R"(
+  comp.setData(QString{R"(
     import QtQuick
-    import Holonight
+    import Holonight as H
+    import Holonight.Controls
     Window {
       width: 400
       height: 600
@@ -1291,12 +1304,14 @@ TEST_F(QmlSmoke, ComboBox_BoundsPopupByModelAndMaximumVisibleItems) {
         combo.popup.open()
       }
 
-      ComboBox { id: shortCombo; model: ["1", "2", "3"] }
-      ComboBox { id: defaultCombo; x: 130; model: 20 }
-      ComboBox { id: fourCombo; x: 260; model: 20; maximumVisibleItems: 4 }
-      ComboBox { id: invalidCombo; y: 320; model: 20; maximumVisibleItems: -5 }
+      %TYPE% { id: shortCombo; model: ["1", "2", "3"] }
+      %TYPE% { id: defaultCombo; x: 130; model: 20 }
+      %TYPE% { id: fourCombo; x: 260; model: 20; maximumVisibleItems: 4 }
+      %TYPE% { id: invalidCombo; y: 320; model: 20; maximumVisibleItems: -5 }
     }
-  )",
+  )"}
+                   .replace(QStringLiteral("%TYPE%"), GetParam())
+                   .toUtf8(),
                QUrl{});
   ASSERT_EQ(comp.status(), QQmlComponent::Ready) << comp.errorString().toStdString();
   std::unique_ptr<QObject> window{comp.create()};
@@ -1312,8 +1327,9 @@ TEST_F(QmlSmoke, ComboBox_BoundsPopupByModelAndMaximumVisibleItems) {
     ASSERT_NE(popup, nullptr);
     QObject* list = popup->property("contentItem").value<QObject*>();
     ASSERT_NE(list, nullptr);
-    EXPECT_NEAR(list->property("height").toReal(), expectedRows * 28.0, 0.5);
-    EXPECT_NEAR(popup->property("height").toReal(), expectedRows * 28.0 + 8.0, 0.5);
+    EXPECT_NEAR(list->property("height").toReal(), expectedRows * combo->property("delegateHeight").toReal(), 0.5);
+    EXPECT_NEAR(popup->property("height").toReal(), expectedRows * combo->property("delegateHeight").toReal() + 8.0,
+                0.5);
     popup->setProperty("visible", false);
   };
 
@@ -1324,11 +1340,12 @@ TEST_F(QmlSmoke, ComboBox_BoundsPopupByModelAndMaximumVisibleItems) {
   EXPECT_EQ(window->property("invalidCombo").value<QObject*>()->property("resolvedMaximumVisibleItems").toInt(), 1);
 }
 
-TEST_F(QmlSmoke, ComboBox_ConstrainsPopupToWindowAndKeepsOverflowInteractive) {
+TEST_P(ComboBoxGeometry, ConstrainsPopupToWindowAndKeepsOverflowInteractive) {
   QQmlComponent comp = QQmlComponent{&engine_};
-  comp.setData(R"(
+  comp.setData(QString{R"(
     import QtQuick
-    import Holonight
+    import Holonight as H
+    import Holonight.Controls
     Window {
       width: 240
       height: 120
@@ -1352,14 +1369,16 @@ TEST_F(QmlSmoke, ComboBox_ConstrainsPopupToWindowAndKeepsOverflowInteractive) {
         }
       }
 
-      ComboBox {
+      %TYPE% {
         id: combo
         y: 72
         model: 20
         Component.onCompleted: popup.open()
       }
     }
-  )",
+  )"}
+                   .replace(QStringLiteral("%TYPE%"), GetParam())
+                   .toUtf8(),
                QUrl{});
   ASSERT_EQ(comp.status(), QQmlComponent::Ready) << comp.errorString().toStdString();
   std::unique_ptr<QObject> window{comp.create()};

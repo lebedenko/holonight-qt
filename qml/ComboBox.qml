@@ -29,23 +29,22 @@ T.ComboBox {
     property int maximumVisibleItems: 8
     property real delegateHeight: 28
 
-    readonly property int resolvedMaximumVisibleItems: Math.max(1, maximumVisibleItems)
-    readonly property point sceneOrigin: mapToItem(null, popup.geometryRevision * 0, 0)
-    readonly property point sceneXAxis: mapToItem(null, 1 + popup.geometryRevision * 0, 0)
-    readonly property point sceneYAxis: mapToItem(null, popup.geometryRevision * 0, 1)
-    readonly property real sceneScaleX: Math.hypot(sceneXAxis.x - sceneOrigin.x,
-                                                   sceneXAxis.y - sceneOrigin.y)
-    readonly property real sceneScaleY: Math.hypot(sceneYAxis.x - sceneOrigin.x,
-                                                   sceneYAxis.y - sceneOrigin.y)
-    readonly property real sceneAxisDot: (sceneXAxis.x - sceneOrigin.x) * (sceneYAxis.x - sceneOrigin.x)
-                                         + (sceneXAxis.y - sceneOrigin.y) * (sceneYAxis.y - sceneOrigin.y)
-    readonly property bool popupTransformSupported: sceneScaleX > 0
-                                                    && sceneScaleY > 0
-                                                    && Math.abs(sceneScaleX - sceneScaleY) < 0.001
-                                                    && Math.abs(sceneAxisDot) < 0.001
-                                                    && Math.abs(sceneXAxis.y - sceneOrigin.y) < 0.001
-                                                    && Math.abs(sceneYAxis.x - sceneOrigin.x) < 0.001
-    readonly property real effectiveScale: popupTransformSupported ? sceneScaleX : 1
+    readonly property int resolvedMaximumVisibleItems: popupGeometry.resolvedMaximumVisibleItems
+    readonly property point sceneOrigin: popupGeometry.sceneOrigin
+    readonly property point sceneXAxis: popupGeometry.sceneXAxis
+    readonly property point sceneYAxis: popupGeometry.sceneYAxis
+    readonly property real sceneScaleX: popupGeometry.sceneScaleX
+    readonly property real sceneScaleY: popupGeometry.sceneScaleY
+    readonly property real sceneAxisDot: popupGeometry.sceneAxisDot
+    readonly property bool popupTransformSupported: popupGeometry.popupTransformSupported
+    readonly property real effectiveScale: popupGeometry.effectiveScale
+
+    Impl.ComboBoxPopupGeometry {
+        id: popupGeometry
+        control: root
+        maximumVisibleItems: root.maximumVisibleItems
+        popup: root.popup
+    }
 
     implicitWidth: Math.max(implicitBackgroundWidth + leftInset + rightInset,
                             implicitContentWidth + leftPadding + rightPadding)
@@ -117,29 +116,20 @@ T.ComboBox {
                    ? Impl.ControlPalette.Inactive : Impl.ControlPalette.Active)
         }
 
-        property int geometryRevision: 0
+        property alias geometryRevision: popupGeometry.geometryRevision
 
-        readonly property point controlSceneBottom: root.mapToItem(null, geometryRevision * 0,
-                                                                   root.height)
-        readonly property real controlSceneTop: Math.min(root.sceneOrigin.y, controlSceneBottom.y)
-        readonly property real controlSceneBottomY: Math.max(root.sceneOrigin.y, controlSceneBottom.y)
-        readonly property real sceneSpaceAbove: Math.max(0, controlSceneTop
-                                                         - margins - 2 * root.effectiveScale)
-        readonly property real sceneSpaceBelow: root.Window.window
-                                                ? Math.max(0, root.Window.window.height
-                                                           - controlSceneBottomY
-                                                           - margins - 2 * root.effectiveScale)
-                                                : naturalHeight * root.effectiveScale
-        readonly property real sceneAvailableVerticalSpace: Math.max(sceneSpaceAbove, sceneSpaceBelow)
-        readonly property real availableVerticalSpace: sceneAvailableVerticalSpace / root.effectiveScale
-        readonly property real naturalHeight: contentItem.implicitHeight + topPadding + bottomPadding
-        readonly property real renderedDemand: naturalHeight * root.effectiveScale
-        readonly property real spaceAbove: sceneSpaceAbove / root.effectiveScale
-        readonly property real spaceBelow: root.Window.window
-                                           ? sceneSpaceBelow / root.effectiveScale
-                                           : naturalHeight
-        readonly property bool opensAbove: sceneSpaceBelow < renderedDemand
-                                           && sceneSpaceAbove > sceneSpaceBelow
+        readonly property point controlSceneBottom: popupGeometry.controlSceneBottom
+        readonly property real controlSceneTop: popupGeometry.controlSceneTop
+        readonly property real controlSceneBottomY: popupGeometry.controlSceneBottomY
+        readonly property real sceneSpaceAbove: popupGeometry.sceneSpaceAbove
+        readonly property real sceneSpaceBelow: popupGeometry.sceneSpaceBelow
+        readonly property real sceneAvailableVerticalSpace: popupGeometry.sceneAvailableVerticalSpace
+        readonly property real availableVerticalSpace: popupGeometry.availableVerticalSpace
+        readonly property real naturalHeight: popupGeometry.naturalHeight
+        readonly property real renderedDemand: popupGeometry.renderedDemand
+        readonly property real spaceAbove: popupGeometry.spaceAbove
+        readonly property real spaceBelow: popupGeometry.spaceBelow
+        readonly property bool opensAbove: popupGeometry.opensAbove
 
         objectName: "holonightComboBoxPopup"
         parent: C.Overlay.overlay
