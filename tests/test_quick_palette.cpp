@@ -277,11 +277,15 @@ import Holonight.Controls
 Window {
     TextField { objectName: "standard" }
     HnSearchField { objectName: "composite" }
+    Label { objectName: "newLabel" }
+    ToolBar { objectName: "newBar" }
+    Popup { objectName: "newPopup" }
 })");
   ASSERT_TRUE(window);
   auto* standard = window->findChild<QObject*>("standard");
   auto* composite = window->findChild<QObject*>("composite");
   ASSERT_TRUE(standard && composite);
+  ASSERT_TRUE(QMetaObject::invokeMethod(window->findChild<QObject*>("newPopup"), "open"));
   QCoreApplication::processEvents();  // Initialize the GUI-thread style watcher.
   QPalette palette;
   palette.setColor(QPalette::Base, QColor("#010203"));
@@ -300,6 +304,14 @@ Window {
       3000));
   EXPECT_EQ(standard->property("background").value<QQuickItem*>()->property("color").value<QColor>(),
             QColor("#010203"));
+  EXPECT_EQ(window->findChild<QObject*>("newLabel")->property("color").value<QColor>(), expected.textPrimary);
+  for (const char* name : {"newBar", "newPopup"})
+    EXPECT_EQ(window->findChild<QObject*>(name)
+                  ->property("background")
+                  .value<QQuickItem*>()
+                  ->property("color")
+                  .value<QColor>(),
+              expected.surfaceRaised);
   EXPECT_EQ(QGuiApplication::palette().resolveMask(), mask);
   EXPECT_EQ(QGuiApplication::palette().color(QPalette::Base), QColor("#010203"));
   ASSERT_TRUE(HoloNight::Config::writeAtomically(original, path));
@@ -448,6 +460,7 @@ ApplicationWindow {
   auto* tool = window->findChild<QObject*>("tool");
   ASSERT_TRUE(label && local && tool);
   EXPECT_EQ(label->property("color").value<QColor>(), tokens.textPrimary);
+  EXPECT_EQ(label->property("linkColor").value<QColor>(), Holonight::buildPalette(tokens).color(QPalette::Link));
   EXPECT_EQ(local->property("color").value<QColor>(), QColor(Qt::transparent));
   for (const char* name : {"toolbar", "footer"}) {
     auto* bar = window->findChild<QObject*>(name);
@@ -466,6 +479,10 @@ ApplicationWindow {
   auto* horizontal = window->findChild<QObject*>("horizontal");
   EXPECT_EQ(vertical->property("implicitWidth"), horizontal->property("implicitHeight"));
   EXPECT_EQ(vertical->property("implicitHeight"), horizontal->property("implicitWidth"));
+  auto* separator = window->findChild<QObject*>("separator");
+  EXPECT_EQ(separator->property("implicitWidth").toReal(), 180);
+  separator->setProperty("padding", 10);
+  EXPECT_EQ(separator->property("implicitWidth").toReal(), 196);
   auto* background = tool->property("background").value<QQuickItem*>();
   EXPECT_EQ(background->property("color").value<QColor>(), QColor(Qt::transparent));
   tool->setProperty("checked", true);
@@ -545,5 +562,149 @@ ApplicationWindow {
   EXPECT_TRUE(popup->property("visible").toBool());
   ASSERT_TRUE(QMetaObject::invokeMethod(popup, "close"));
   EXPECT_FALSE(popup->property("visible").toBool());
+}
+}  // namespace
+
+namespace {
+TEST_F(QuickPalette, NewControlGroupsPreserveExplicitColorsAndVisualReplacements) {
+  for (const auto* type :
+       {"Label", "ToolButton", "ToolBar", "ToolSeparator", "MenuSeparator", "Popup", "MenuBar", "MenuBarItem"}) {
+    SCOPED_TRACE(type);
+    auto control = create(QByteArray("import QtQuick; import Holonight; ") + type + R"( {
+        palette.active.windowText: "#112233"; palette.disabled.windowText: "#80445566"
+        palette.active.buttonText: "#112233"; palette.disabled.buttonText: "#80445566"
+        palette.active.button: "#334455"; palette.disabled.button: "#80667788"
+        palette.active.link: "#123456"; palette.disabled.link: "transparent"
+    })");
+    ASSERT_TRUE(control);
+    if (QByteArray(type) == "Label") {
+      EXPECT_EQ(control->property("color").value<QColor>(), QColor("#112233"));
+      control->setProperty("enabled", false);
+      EXPECT_EQ(control->property("color").value<QColor>(), QColor("#80445566"));
+      EXPECT_EQ(control->property("linkColor").value<QColor>(), QColor(Qt::transparent));
+    } else if (QByteArray(type) == "ToolButton" || QByteArray(type) == "MenuBarItem") {
+      control->setProperty("down", true);
+      control->setProperty("enabled", false);
+      auto* background = control->property("background").value<QQuickItem*>();
+      EXPECT_EQ(background->property("color").value<QColor>(), QColor("#80667788"));
+      EXPECT_EQ(background->opacity(), 1.0);
+      EXPECT_EQ(control->property("contentItem").value<QQuickItem*>()->property("color").value<QColor>(),
+                QColor("#80445566"));
+    } else if (QByteArray(type) != "ToolSeparator" && QByteArray(type) != "MenuSeparator") {
+      control->setProperty("enabled", false);
+      EXPECT_EQ(control->property("background").value<QQuickItem*>()->property("color").value<QColor>(),
+                QColor("#80667788"));
+    }
+  }
+  auto window = create(R"(
+import QtQuick
+import Holonight
+ApplicationWindow {
+    width: 400; height: 300
+    header: ToolBar { objectName: "header"; height: 35 }
+    footer: ToolBar { objectName: "footer"; height: 27 }
+    Label { objectName: "label"; width: 40; wrapMode: Text.WordWrap; text: "A long label that wraps onto several lines" }
+    ToolButton { objectName: "custom"; padding: 0; background: null
+        contentItem: Item { implicitWidth: 71; implicitHeight: 53 } }
+    ToolButton { objectName: "icon"; display: AbstractButton.IconOnly; text: "Ignored long text"
+        icon.source: "qrc:/qt/qml/Holonight/Controls/assets/search.svg" }
+    ToolButton { objectName: "text"; display: AbstractButton.TextOnly; text: "A much longer action label" }
+    ToolButton { objectName: "mirror"; LayoutMirroring.enabled: true; text: "Mirrored" }
+    MenuBar { objectName: "bar"; LayoutMirroring.enabled: true
+        Menu { title: "File" } Menu { title: "Edit" }
+        property var first: itemAt(0); property var second: itemAt(1) }
+})");
+  ASSERT_TRUE(window);
+  QCoreApplication::processEvents();
+  auto* custom = window->findChild<QObject*>("custom");
+  EXPECT_EQ(custom->property("implicitWidth").toReal(), 71);
+  EXPECT_EQ(custom->property("implicitHeight").toReal(), 53);
+  auto* label = window->findChild<QObject*>("label");
+  EXPECT_GT(label->property("implicitHeight").toReal(), 40);
+  EXPECT_LT(window->findChild<QObject*>("icon")->property("implicitWidth").toReal(),
+            window->findChild<QObject*>("text")->property("implicitWidth").toReal());
+  auto* mirror = window->findChild<QObject*>("mirror");
+  EXPECT_TRUE(mirror->property("contentItem").value<QQuickItem*>()->property("mirrored").toBool());
+  auto* bar = window->findChild<QObject*>("bar");
+  EXPECT_GT(bar->property("first").value<QObject*>()->property("x").toReal(),
+            bar->property("second").value<QObject*>()->property("x").toReal());
+  auto* content = window->property("contentItem").value<QQuickItem*>();
+  EXPECT_EQ(content->y(), 35);
+  EXPECT_EQ(content->height(), 300 - 35 - 27);
+}
+
+TEST_F(QuickPalette, NewButtonStatesRenderEffectivePaletteAndFocusBorder) {
+  auto object = create(R"(
+import QtQuick
+import Holonight
+ApplicationWindow {
+    width: 360; height: 60; visible: true; color: "white"
+    palette.base: "blue"; palette.button: "black"; palette.buttonText: "white"
+    palette.highlight: "red"; palette.highlightedText: "white"
+    palette.disabled.highlight: "#336699"
+    ToolButton { width: 50; height: 50 }
+    ToolButton { objectName: "hover"; x: 60; width: 50; height: 50 }
+    ToolButton { x: 120; width: 50; height: 50; checked: true }
+    ToolButton { x: 180; width: 50; height: 50; highlighted: true; down: true }
+    MenuBarItem { x: 240; width: 50; height: 50; highlighted: true; enabled: false }
+    MenuBarItem { objectName: "focus"; x: 300; width: 50; height: 50 }
+})");
+  ASSERT_TRUE(object);
+  auto* window = qobject_cast<QQuickWindow*>(object.get());
+  window->findChild<QQuickControl*>("hover")->setHovered(true);
+  QImage rendered;
+  ASSERT_TRUE(QTest::qWaitFor(
+      [&] {
+        rendered = window->grabWindow();
+        return !rendered.isNull() && rendered.pixelColor(85, 25) == QColor("#1a1a1a");
+      },
+      2000));
+  EXPECT_EQ(rendered.pixelColor(25, 25), QColor(Qt::white));
+  EXPECT_EQ(rendered.pixelColor(145, 25), QColor("#1f00e0"));
+  EXPECT_EQ(rendered.pixelColor(205, 25), QColor("#cc0033"));
+  EXPECT_EQ(rendered.pixelColor(265, 25), QColor("#336699"));
+  // Inspect the live border binding without assigning focus to any window/control.
+  auto* background = window->findChild<QObject*>("focus")->property("background").value<QQuickItem*>();
+  auto* border = background->property("border").value<QObject*>();
+  ASSERT_TRUE(border);
+  EXPECT_EQ(border->property("color").value<QColor>(), QColor(Qt::red));
+  EXPECT_EQ(border->property("width").toReal(), 0);
+}
+}  // namespace
+
+namespace {
+TEST_F(QuickPalette, PopupOverlayComponentsMultiplyEffectiveShadowAlpha) {
+  auto window = create(R"(
+import QtQuick
+import QtQuick.Templates as T
+import Holonight
+ApplicationWindow {
+    palette.shadow: "#80663399"
+    Popup {
+        objectName: "popup"
+        property var modalComponent: T.Overlay.modal
+        property var modelessComponent: T.Overlay.modeless
+        Label { objectName: "contentLabel"; text: "Popup content" }
+    }
+})");
+  ASSERT_TRUE(window);
+  auto* popup = window->findChild<QObject*>("popup");
+  ASSERT_TRUE(popup);
+  for (const auto& entry : {std::pair{"modalComponent", 0.5}, std::pair{"modelessComponent", 0.12}}) {
+    auto* component = popup->property(entry.first).value<QQmlComponent*>();
+    ASSERT_TRUE(component);
+    std::unique_ptr<QObject> overlay(component->create(component->creationContext()));
+    ASSERT_TRUE(overlay) << component->errorString().toStdString();
+    auto color = overlay->property("color").value<QColor>();
+    EXPECT_EQ(color.red(), 0x66);
+    EXPECT_EQ(color.green(), 0x33);
+    EXPECT_EQ(color.blue(), 0x99);
+    EXPECT_NEAR(color.alphaF(), 128.0 / 255 * entry.second, 0.00002);
+    popup->property("palette").value<QObject*>()->setProperty("shadow", QColor(Qt::transparent));
+    EXPECT_EQ(overlay->property("color").value<QColor>().alpha(), 0);
+    popup->property("palette").value<QObject*>()->setProperty("shadow", QColor("#80663399"));
+  }
+  EXPECT_EQ(window->findChild<QObject*>("contentLabel")->property("color").value<QColor>(),
+            appearanceTokens().textPrimary);
 }
 }  // namespace

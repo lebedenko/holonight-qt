@@ -194,6 +194,15 @@ if(NOT wayland_build_result EQUAL 0)
 endif()
 
 foreach(relative_path
+    "Holonight/ApplicationWindow.qml"
+    "Holonight/Label.qml"
+    "Holonight/ToolButton.qml"
+    "Holonight/ToolBar.qml"
+    "Holonight/ToolSeparator.qml"
+    "Holonight/MenuSeparator.qml"
+    "Holonight/Popup.qml"
+    "Holonight/MenuBar.qml"
+    "Holonight/MenuBarItem.qml"
     "Holonight/Core/qmldir"
     "Holonight/Core/holonight_core_qml.qmltypes"
     "Holonight/Core/@CMAKE_SHARED_MODULE_PREFIX@holonight_core_qml@CMAKE_SHARED_MODULE_SUFFIX@"
@@ -389,9 +398,12 @@ file(MAKE_DIRECTORY "${palette_fixture_root}/Haruna")
 file(WRITE "${palette_fixture_root}/Haruna/qmldir" "module Haruna\nimport QtQuick.Controls.Fusion auto\n")
 file(WRITE "${palette_fixture_root}/qtquickcontrols2.conf"
     "[Controls]\nStyle=Holonight\n[Holonight\\Palette]\nBase=#654321\n")
-foreach(mode IN ITEMS Holonight Fusion Haruna config config-app)
+foreach(mode IN ITEMS Holonight Fusion Haruna HolonightFusion config config-app)
   set(selected_style "${mode}")
   set(config_path "${palette_fixture_root}/missing.conf")
+  if(mode STREQUAL "HolonightFusion")
+    set(selected_style Holonight)
+  endif()
   if(mode MATCHES "^config")
     set(selected_style Holonight)
     set(config_path "${palette_fixture_root}/qtquickcontrols2.conf")

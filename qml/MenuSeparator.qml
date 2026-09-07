@@ -12,7 +12,9 @@ T.MenuSeparator {
     Impl.ControlPalette {
         id: colors
         palette: root.palette
-        colorGroup: !root.enabled ? Impl.ControlPalette.Disabled : (root.Window.window && !root.Window.window.active ? Impl.ControlPalette.Inactive : Impl.ControlPalette.Active)
+        colorGroup: !root.enabled ? Impl.ControlPalette.Disabled
+                                 : (root.Window.window && !root.Window.window.active
+                                    ? Impl.ControlPalette.Inactive : Impl.ControlPalette.Active)
         textRole: Impl.ControlPalette.WindowText
         fillRole: Impl.ControlPalette.Button
     }
@@ -26,7 +28,7 @@ T.MenuSeparator {
     verticalPadding: padding + 4
 
     contentItem: Rectangle {
-        implicitWidth: 180 - root.leftPadding - root.rightPadding
+        implicitWidth: 176 // The 180-pixel menu width less default horizontal padding.
         implicitHeight: HnMetrics.separatorWidth
         color: colors.colors.borderSubtle
     }

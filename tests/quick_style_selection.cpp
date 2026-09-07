@@ -18,7 +18,7 @@
 int main(int argc, char** argv) {
   QGuiApplication app(argc, argv);
   const QString mode = qEnvironmentVariable("UQC_SELECTION_MODE", "Holonight");
-  if (mode == "Haruna") QQuickStyle::setFallbackStyle("Fusion");
+  if (mode == "Haruna" || mode == "HolonightFusion") QQuickStyle::setFallbackStyle("Fusion");
   QPalette choice;
   if (mode == "config-app") {
     choice.setColor(QPalette::Base, QColor("#123456"));
@@ -34,7 +34,17 @@ import QtQuick
 import QtQuick.Controls as C
 import Holonight.Core
 import Holonight.Controls
-Window {
+C.ApplicationWindow {
+    objectName: "ApplicationWindow"
+    C.Label { objectName: "Label" }
+    C.ToolButton { objectName: "ToolButton" }
+    C.ToolBar { objectName: "ToolBar" }
+    C.ToolSeparator { objectName: "ToolSeparator" }
+    C.MenuSeparator { objectName: "MenuSeparator" }
+    C.Popup { objectName: "Popup" }
+    C.MenuBar { objectName: "MenuBar"; C.Menu { title: "File" } property var generated: itemAt(0) }
+    C.MenuBarItem { objectName: "MenuBarItem" }
+    C.Dialog { objectName: "Dialog" }
     C.TextField { objectName: "runtime" }
     HnSearchField { objectName: "composite" }
 })",
@@ -68,6 +78,26 @@ Window {
   }
   const bool fusion = mode == "Fusion" || mode == "Haruna";
   if (!url.contains(fusion ? "/QtQuick/Controls/Fusion/TextField.qml" : "/Holonight/TextField.qml")) return 3;
+  const auto stylePath = fusion ? QStringLiteral("/QtQuick/Controls/Fusion/") : QStringLiteral("/Holonight/");
+  auto checkOrigin = [](QObject* object, const QString& expected) {
+    if (!object) return false;
+    for (auto* context = QQmlData::get(object)->context; context; context = context->parent().data()) {
+      if (context->url().toString().contains(expected)) return true;
+    }
+    qCritical() << "Wrong type origin" << object << expected;
+    return false;
+  };
+  for (const QString type : {"ApplicationWindow", "Label", "ToolButton", "ToolBar", "ToolSeparator", "MenuSeparator",
+                             "Popup", "MenuBar", "MenuBarItem"}) {
+    auto* object = type == "ApplicationWindow" ? window.get() : window->findChild<QObject*>(type);
+    if (!checkOrigin(object, stylePath + type + ".qml")) return 9;
+  }
+  auto* bar = window->findChild<QObject*>("MenuBar");
+  if (!checkOrigin(bar->property("generated").value<QObject*>(), stylePath + "MenuBarItem.qml")) return 10;
+  const auto fallback = fusion || mode == "HolonightFusion" ? "Fusion" : "Basic";
+  if (!checkOrigin(window->findChild<QObject*>("Dialog"),
+                   QStringLiteral("/QtQuick/Controls/%1/Dialog.qml").arg(fallback)))
+    return 11;
   if (!compositeUrl.contains("/Holonight/Controls/HnSearchField.qml")) return 4;
   const auto tokens =
       Holonight::ThemeResolver::resolve(*Holonight::resolveAppearance(HoloNight::Config::defaults()).value);

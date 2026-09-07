@@ -27,7 +27,7 @@ contracts and verification requirements. Only provider files are changed in this
 |---|---|---|
 | Indicator geometry | Done | Original code fails the new regression; fixed code passes all five focused tests and all 28 CTest entries (2026-09-07). |
 | Application palette support | Done | Black/white/black and reload regressions reproduced before fixes; all 46 CTest entries pass, including 16 schemes, offscreen rendering, hybrid and installed-prefix fixtures (2026-09-08). |
-| Nine new controls | Planned | — |
+| Nine new controls | Done | All nine installed origins, palette/layout/overlay/state acceptance and all 46 provider CTest entries pass (2026-09-08). |
 | Composites and executable defaults | Planned | — |
 | Policy, documentation and installed verification | Planned | — |
 
@@ -124,3 +124,69 @@ Final results (2026-09-08): full build passed; the focused reload, palette and i
 all 46 provider CTest entries passed (5.82 seconds). Formatting checks for changed C++ files and whitespace checks
 passed. No NeoChat named-scheme observation,
 Hyprland/Sway manual acceptance or UQC-201 ecosystem integration check is implied by these provider tests.
+
+## Nine standard controls — 2026-09-08
+
+Slice baseline: published `bc3ed4a0f8e6b9b0d3a3568b07c8c2905332e955`, umbrella checkpoint `8099678`.
+UQC-101 remains In Progress; composite runtime imports, executable defaults and consumer migration are subsequent work.
+
+All nine additions use their matching `QtQuick.Templates` types in the existing `Holonight` module. Build resources,
+installed QML files, generated qmldir registration and tooling metadata retain the existing module identity.
+The palette resolver is a child object addressed by QML id; these controls add no HoloNight-specific public properties.
+No custom input handlers or window management are introduced. Core HnLabel and the separate HnApplicationWindow
+frame API are unchanged.
+
+| Controls | Visual and role contract |
+|---|---|
+| ApplicationWindow | Window background and HoloNight body typography; Qt owns content, header/footer, menu-bar and safe-area behavior. |
+| Label | Effective WindowText and direct Link, including alpha and disabled groups; standard text layout and accessibility. |
+| ToolButton | Transparent idle; Button/ButtonText hover and Button pressed surfaces; Base/Highlight quiet checked surface; Highlight/HighlightedText highlighted surface; Highlight focus border. IconLabel preserves action/icon/display/mirroring behavior. |
+| ToolBar / MenuBar | Button raised surface, normal control-height minimum, Qt safe-area padding and content-driven width. MenuBar uses standard MenuBarItem delegates and a mirrored row of its content model. |
+| ToolSeparator / MenuSeparator | Mid/Base subtle blend, existing separator thickness; Basic orientation-sensitive padding and 30-pixel toolbar length. Menu separator defaults to 180 pixels overall; explicit padding changes implicit size. |
+| Popup | Button raised surface, Mid passive border, Menu radius, 12-pixel padding, no minimum content size. Padding zero and content/background replacement remain authoritative. Qt owns placement, lifecycle and close policies. |
+| MenuBarItem | Transparent idle, MenuItem-compatible hover/highlight/pressed treatment, Highlight focus border, normal control-height minimum, menu padding and IconLabel. |
+
+The existing role-local semantic compatibility branches preserve all sixteen appearance schemes. Explicit Disabled
+roles are painted without an additional opacity reduction. Link is returned directly; overlay RGB comes directly
+from effective Shadow and alpha is multiplied by 0.5 (modal) or 0.12 (modeless), including transparent Shadow.
+Ordinary popups follow Qt window palette inheritance rather than inheriting an intervening control's palette.
+No full appearance palette is copied into these standard controls.
+
+Acceptance extends `test_quick_palette.cpp`, `test_control_palette.cpp`, `quick_style_selection.cpp` and the staged
+package fixture. It covers exact semantic defaults under all sixteen schemes, application overrides and reloads,
+local override/reset and sibling isolation, color groups and alpha, generated menu-bar delegates, mirrored order,
+icon-only/text-only and long-label sizing, explicit padding and visual replacements, header/footer placement,
+popup content and direct open/close, and both overlay components. The ToolButton zero-padding regression exposed
+and removed a separate horizontal-padding default that would have prevented callers from clearing all padding.
+
+Software offscreen pixels cover idle, hover, checked, highlighted/pressed and disabled states. Focus-border color
+bindings are inspected without desktop focus changes. The reload test observes an open popup, following Qt's
+window-palette propagation lifecycle. Overlay components are instantiated using their QML creation context.
+Installed origins are checked for every new type and generated delegates in separate HoloNight, explicit Fusion,
+Haruna-style Fusion fallback, and HoloNight-with-Fusion-fallback processes; Dialog remains the Basic/Fusion fallback
+sentinel. Configuration and application-over-configuration palette fixtures also remain covered.
+
+Verification commands from the umbrella root:
+
+```sh
+cmake --build holonight-qt/build -j 6
+ctest --test-dir holonight-qt/build \
+  -R 'holonight_control_palette_tests|holonight_quick_palette_(dark|hybrid)$|holonight_package_install_test' \
+  --output-on-failure
+QT_QPA_PLATFORM=offscreen ctest --test-dir holonight-qt/build --output-on-failure -j 4
+clang-format --dry-run --Werror holonight-qt/qml/controlpalette.cpp \
+  holonight-qt/tests/test_control_palette.cpp holonight-qt/tests/test_quick_palette.cpp \
+  holonight-qt/tests/quick_style_selection.cpp
+git -C holonight-qt diff --check
+```
+
+Historical discovery characterization is unchanged. These are provider acceptance checks, not real-application
+acceptance. NeoChat named-scheme observations and manual Hyprland/Sway acceptance remain ecosystem integration gates.
+
+Final results (2026-09-08, Qt 6.11.2): full build passed; all four focused palette/hybrid/installed checks passed;
+all 46 provider CTest entries passed (7.92 seconds), including indicator geometry regressions. Changed C++ formatting
+and whitespace checks passed. The source-policy inventory now includes the nine additions and recognizes Core
+HnLabel's existing explicit Basic import; this does not migrate Core or change the historical discovery runner.
+
+Provider commit sequence: `675240e` (window, label, toolbar and separators), `7d0c988` (popup and menu bar), followed
+by the installed acceptance/documentation commit containing this record and the padding regressions.
