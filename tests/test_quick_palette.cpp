@@ -486,3 +486,64 @@ ApplicationWindow {
   EXPECT_EQ(local->property("color").value<QColor>(), QColor("#abcdef"));
 }
 }  // namespace
+
+namespace {
+TEST_F(QuickPalette, PopupAndMenuBarDefaultsSizingAndLifecycle) {
+  auto window = create(R"(
+import QtQuick
+import Holonight
+ApplicationWindow {
+    width: 400; height: 300
+    menuBar: MenuBar {
+        objectName: "bar"
+        Menu { title: "File"; MenuItem { text: "Open" } }
+        Menu { title: "Edit" }
+        property var first: itemAt(0)
+        property var second: itemAt(1)
+    }
+    ItemDelegate {
+        palette.button: "#123456"
+        Popup { objectName: "popup"; contentItem: Item { implicitWidth: 73; implicitHeight: 41 } }
+        Popup { objectName: "local"; palette.button: "transparent"; padding: 0
+            contentItem: Item { implicitWidth: 23; implicitHeight: 17 }
+            function resetButton() { palette.button = undefined }
+        }
+    }
+})");
+  ASSERT_TRUE(window);
+  const auto tokens = appearanceTokens();
+  auto* popup = window->findChild<QObject*>("popup");
+  auto* local = window->findChild<QObject*>("local");
+  auto* bar = window->findChild<QObject*>("bar");
+  ASSERT_TRUE(popup && local && bar);
+  auto background = [](QObject* item) { return item->property("background").value<QQuickItem*>(); };
+  EXPECT_EQ(background(popup)->property("color").value<QColor>(), tokens.surfaceRaised);
+  EXPECT_EQ(background(bar)->property("color").value<QColor>(), tokens.surfaceRaised);
+  EXPECT_EQ(popup->property("implicitWidth").toReal(), 97);
+  EXPECT_EQ(popup->property("implicitHeight").toReal(), 65);
+  EXPECT_EQ(local->property("implicitWidth").toReal(), 23);
+  EXPECT_EQ(local->property("implicitHeight").toReal(), 17);
+  EXPECT_EQ(background(local)->property("color").value<QColor>(), QColor(Qt::transparent));
+  auto* first = bar->property("first").value<QObject*>();
+  auto* second = bar->property("second").value<QObject*>();
+  ASSERT_TRUE(first && second);
+  EXPECT_EQ(first->property("text").toString(), "File");
+  EXPECT_EQ(second->property("text").toString(), "Edit");
+  EXPECT_EQ(background(first)->property("color").value<QColor>(), QColor(Qt::transparent));
+  first->setProperty("highlighted", true);
+  EXPECT_EQ(background(first)->property("color").value<QColor>(), tokens.primary);
+  first->setProperty("down", true);
+  EXPECT_EQ(background(first)->property("color").value<QColor>(), tokens.primaryPressed);
+  auto* palette = window->property("palette").value<QObject*>();
+  ASSERT_TRUE(palette);
+  ASSERT_TRUE(palette->setProperty("button", QColor("#654321")));
+  EXPECT_EQ(background(popup)->property("color").value<QColor>(), QColor("#654321"));
+  EXPECT_EQ(background(local)->property("color").value<QColor>(), QColor(Qt::transparent));
+  ASSERT_TRUE(QMetaObject::invokeMethod(local, "resetButton"));
+  EXPECT_EQ(background(local)->property("color").value<QColor>(), QColor("#654321"));
+  ASSERT_TRUE(QMetaObject::invokeMethod(popup, "open"));
+  EXPECT_TRUE(popup->property("visible").toBool());
+  ASSERT_TRUE(QMetaObject::invokeMethod(popup, "close"));
+  EXPECT_FALSE(popup->property("visible").toBool());
+}
+}  // namespace

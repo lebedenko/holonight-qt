@@ -76,6 +76,13 @@ QVariantMap ControlPalette::colors() const {
   };
   QVariantMap result;
   result.insert(QStringLiteral("link"), color(QPalette::Link));
+  auto overlay = [&](qreal opacity) {
+    auto shadow = color(QPalette::Shadow);
+    shadow.setAlphaF(shadow.alphaF() * opacity);
+    return shadow;
+  };
+  result.insert(QStringLiteral("modalOverlay"), overlay(0.5));
+  result.insert(QStringLiteral("modelessOverlay"), overlay(0.12));
   auto direct = [&](const char* name, QPalette::ColorRole role, const QColor& token) {
     result.insert(QLatin1String(name), matches({role}) ? token : color(role));
   };

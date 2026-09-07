@@ -25,6 +25,8 @@ ControlPalette {
         highlight: "#ffff0000"
         highlightedText: "#ffffffff"
         mid: "#ff00ff00"
+        link: "#40556677"
+        shadow: "#80663399"
     }
 })",
                     QUrl());
@@ -45,4 +47,7 @@ ControlPalette {
   EXPECT_EQ(colors.value("surfaceRaised").value<QColor>(), QColor(Qt::transparent));
   EXPECT_EQ(colors.value("surface").value<QColor>(), QColor("#800000ff"));
   EXPECT_EQ(colors.value("borderFocus").value<QColor>(), QColor(Qt::red));
+  EXPECT_EQ(colors.value("link").value<QColor>(), QColor("#40556677"));
+  near(colors.value("modalOverlay").value<QColor>(), QColor::fromRgbF(0.4, 0.2, 0.6, 128.0 / 255 * 0.5));
+  near(colors.value("modelessOverlay").value<QColor>(), QColor::fromRgbF(0.4, 0.2, 0.6, 128.0 / 255 * 0.12));
 }

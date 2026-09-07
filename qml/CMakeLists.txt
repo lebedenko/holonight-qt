@@ -28,6 +28,9 @@ qt_add_qml_module(holonight_qml
     IMPORTS
         QtQuick.Controls.Basic
     QML_FILES
+        Popup.qml
+        MenuBar.qml
+        MenuBarItem.qml
         ApplicationWindow.qml
         Label.qml
         ToolButton.qml
@@ -223,6 +226,7 @@ target_link_libraries(holonight_controls INTERFACE
 )
 
 set(HOLONIGHT_QML_FILES
+    Popup.qml MenuBar.qml MenuBarItem.qml
     ApplicationWindow.qml Label.qml ToolButton.qml ToolBar.qml ToolSeparator.qml MenuSeparator.qml
     Button.qml CheckBox.qml ComboBox.qml ItemDelegate.qml Menu.qml MenuItem.qml ProgressBar.qml RadioButton.qml
     ScrollBar.qml ScrollView.qml Slider.qml SpinBox.qml Switch.qml TabBar.qml TabButton.qml TextArea.qml TextField.qml
