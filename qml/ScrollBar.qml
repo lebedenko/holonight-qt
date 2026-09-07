@@ -4,9 +4,19 @@
 import QtQuick
 import QtQuick.Templates as T
 import Holonight.Core
+import Holonight.impl as Impl
 
 T.ScrollBar {
     id: root
+
+    readonly property Impl.ControlPalette controlColors: Impl.ControlPalette {
+        palette: root.palette
+        colorGroup: !root.enabled ? Impl.ControlPalette.Disabled
+                                 : (root.Window.window && !root.Window.window.active
+                                    ? Impl.ControlPalette.Inactive : Impl.ControlPalette.Active)
+        textRole: Impl.ControlPalette.WindowText
+        fillRole: Impl.ControlPalette.Base
+    }
 
     implicitWidth: Math.max(implicitBackgroundWidth + leftInset + rightInset,
                             implicitContentWidth + leftPadding + rightPadding)
@@ -37,8 +47,8 @@ T.ScrollBar {
 
         radius: Math.min(width, height) / 2
         color: root.pressed
-               ? HoloniightPalette.primaryPressed
-               : (root.hovered ? HoloniightPalette.textPrimary : HoloniightPalette.textMuted)
+               ? root.controlColors.colors.primaryPressed
+               : (root.hovered ? root.controlColors.colors.textPrimary : root.controlColors.colors.textMuted)
         opacity: root.policy === T.ScrollBar.AlwaysOn || (root.active && root.size < 1.0) ? 1.0 : 0.0
 
         Behavior on width { NumberAnimation { duration: 120 } }
@@ -50,7 +60,7 @@ T.ScrollBar {
     background: Rectangle {
         implicitWidth: 10
         implicitHeight: 10
-        color: HoloniightPalette.surface
+        color: root.controlColors.colors.surface
         opacity: root.hovered && (root.policy === T.ScrollBar.AlwaysOn || (root.active && root.size < 1.0)) ? 0.6 : 0.0
 
         Behavior on opacity { NumberAnimation { duration: 120 } }

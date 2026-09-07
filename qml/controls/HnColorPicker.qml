@@ -9,9 +9,12 @@ import QtQuick.Shapes
 import QtQuick.Templates as T
 import Holonight as H
 import Holonight.Core
+import Holonight.impl as Impl
 
 T.Control {
     id: root
+
+    readonly property Impl.ControlPalette compositePalette: Impl.ControlPalette {}
 
     font.family: HolonightTheme.uiFont
     font.pointSize: HolonightTheme.bodySize
@@ -63,6 +66,7 @@ T.Control {
 
     contentItem: H.ScrollView {
         id: scroll
+        palette: compositePalette.appearancePalette
 
         contentWidth: row.implicitWidth
         implicitHeight: row.implicitHeight

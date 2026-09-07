@@ -287,4 +287,26 @@ add_test(
     COMMAND bash ${CMAKE_SOURCE_DIR}/scripts/check-qml-import-policy.sh ${CMAKE_SOURCE_DIR}/qml
 )
 
+find_package(Qt6 ${Qt6_VERSION} EXACT REQUIRED COMPONENTS QuickPrivate QuickTemplates2Private)
+
+# Each process initializes the selected style and appearance before loading QML.
+add_executable(holonight_quick_palette_tests quick_palette_main.cpp test_quick_palette.cpp)
+target_compile_definitions(holonight_quick_palette_tests PRIVATE
+    HOLONIGHT_QML_IMPORT_PATH="${CMAKE_BINARY_DIR}/qml")
+target_link_libraries(holonight_quick_palette_tests PRIVATE
+    holonight_theme holonight_theme_catalog holonight_palette
+    Qt6::Qml Qt6::Quick Qt6::QuickPrivate Qt6::QuickTemplates2Private Qt6::QuickControls2 Qt6::Widgets Qt6::Test GTest::gtest HoloNight::Config)
+add_dependencies(holonight_quick_palette_tests holonight_qml holonight_controls_qml)
+foreach(scheme IN ITEMS dark light mocha latte storm day ember sol cyber-d cyber-l dracula alucard frost snow canopy glade)
+  add_test(NAME holonight_quick_palette_${scheme} COMMAND holonight_quick_palette_tests)
+  set_property(TEST holonight_quick_palette_${scheme} PROPERTY ENVIRONMENT
+      "${HOLONIGHT_TEST_ENV};QT_QUICK_BACKEND=software;QT_QUICK_CONTROLS_STYLE=Holonight;UQC_SCHEME=holonight-${scheme}")
+endforeach()
+
+add_executable(holonight_quick_style_selection quick_style_selection.cpp)
+target_link_libraries(holonight_quick_style_selection PRIVATE
+    holonight_theme holonight_theme_catalog holonight_palette
+    Qt6::Qml Qt6::QmlPrivate Qt6::Quick Qt6::QuickControls2 HoloNight::Config)
+add_dependencies(holonight_quick_style_selection holonight_qml holonight_controls_qml)
+
 include(QuickPaletteInfrastructure.cmake)

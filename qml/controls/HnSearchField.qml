@@ -7,9 +7,14 @@ import QtQuick
 import QtQuick.Templates as T
 import Holonight as H
 import Holonight.Core
+import Holonight.impl as Impl
 
 H.TextField {
     id: root
+    palette: compositePalette.appearancePalette
+    background.opacity: root.enabled ? 1.0 : 0.5
+
+    readonly property Impl.ControlPalette compositePalette: Impl.ControlPalette {}
 
     property int sizeRole: HnControlSize.Normal
     property Component leadingContent

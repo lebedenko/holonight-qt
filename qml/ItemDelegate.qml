@@ -6,9 +6,19 @@ pragma ComponentBehavior: Bound
 import QtQuick
 import QtQuick.Templates as T
 import Holonight.Core
+import Holonight.impl as Impl
 
 T.ItemDelegate {
     id: root
+
+    readonly property Impl.ControlPalette controlColors: Impl.ControlPalette {
+        palette: root.palette
+        colorGroup: !root.enabled ? Impl.ControlPalette.Disabled
+                                 : (root.Window.window && !root.Window.window.active
+                                    ? Impl.ControlPalette.Inactive : Impl.ControlPalette.Active)
+        textRole: Impl.ControlPalette.WindowText
+        fillRole: Impl.ControlPalette.Base
+    }
 
     property real topLeftRadius: -1
     property real topRightRadius: -1
@@ -32,7 +42,7 @@ T.ItemDelegate {
 
         text: root.text
         font: root.font
-        color: root.enabled ? HoloniightPalette.textPrimary : HoloniightPalette.textDisabled
+        color: root.enabled ? root.controlColors.colors.textPrimary : root.controlColors.colors.textDisabled
         verticalAlignment: Text.AlignVCenter
         elide: Text.ElideRight
         textFormat: Text.PlainText
@@ -50,8 +60,8 @@ T.ItemDelegate {
         Rectangle {
             objectName: "hnItemDelegateBase"
             anchors.fill: parent
-            color: root.down ? HoloniightPalette.surfaceElevated
-                             : (!parent.isSelected && root.hovered ? HoloniightPalette.surfaceHover : "transparent")
+            color: root.down ? root.controlColors.colors.surfaceElevated
+                             : (!parent.isSelected && root.hovered ? root.controlColors.colors.surfaceHover : "transparent")
             topLeftRadius: root.topLeftRadius >= 0 ? root.topLeftRadius : parent.semanticRadius
             topRightRadius: root.topRightRadius >= 0 ? root.topRightRadius : parent.semanticRadius
             bottomLeftRadius: root.bottomLeftRadius >= 0 ? root.bottomLeftRadius : parent.semanticRadius
@@ -61,8 +71,8 @@ T.ItemDelegate {
         Rectangle {
             objectName: "hnItemDelegateSelectedOverlay"
             anchors.fill: parent
-            color: root.hovered ? HoloniightPalette.surfaceSelectedHover
-                                : HoloniightPalette.surfaceSelected
+            color: root.hovered ? root.controlColors.colors.surfaceSelectedHover
+                                : root.controlColors.colors.surfaceSelected
             topLeftRadius: root.topLeftRadius >= 0 ? root.topLeftRadius : parent.semanticRadius
             topRightRadius: root.topRightRadius >= 0 ? root.topRightRadius : parent.semanticRadius
             bottomLeftRadius: root.bottomLeftRadius >= 0 ? root.bottomLeftRadius : parent.semanticRadius
@@ -78,7 +88,7 @@ T.ItemDelegate {
             bottomLeftRadius: root.bottomLeftRadius >= 0 ? root.bottomLeftRadius : parent.semanticRadius
             bottomRightRadius: root.bottomRightRadius >= 0 ? root.bottomRightRadius : parent.semanticRadius
             border.width: root.visualFocus ? HnMetrics.focusBorderWidth : 0
-            border.color: HoloniightPalette.borderFocus
+            border.color: root.controlColors.colors.borderFocus
             Accessible.ignored: true
         }
     }

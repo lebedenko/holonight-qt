@@ -8,9 +8,12 @@ import QtQuick.Controls.Basic
 import QtQuick.Layouts
 import Holonight as H
 import Holonight.Core
+import Holonight.impl as Impl
 
 Item {
     id: root
+
+    readonly property Impl.ControlPalette compositePalette: Impl.ControlPalette {}
 
     property int sizeRole: HnControlSize.Normal
     property string titleText
@@ -36,6 +39,7 @@ Item {
         spacing: root.semanticSpacing
 
         H.ProgressBar {
+            palette: compositePalette.appearancePalette
             objectName: "hnLoadingProgress"
             value: root.normalizedProgress < 0 ? 0 : root.normalizedProgress
             indeterminate: root.running && root.visible && root.normalizedProgress < 0

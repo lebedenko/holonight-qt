@@ -5,17 +5,27 @@ import QtQuick
 import QtQuick.Controls.impl
 import QtQuick.Templates as T
 import Holonight.Core
+import Holonight.impl as Impl
 
 T.Button {
     id: root
+
+    readonly property Impl.ControlPalette controlColors: Impl.ControlPalette {
+        palette: root.palette
+        colorGroup: !root.enabled ? Impl.ControlPalette.Disabled
+                                 : (root.Window.window && !root.Window.window.active
+                                    ? Impl.ControlPalette.Inactive : Impl.ControlPalette.Active)
+        textRole: Impl.ControlPalette.ButtonText
+        fillRole: Impl.ControlPalette.Button
+    }
     hoverEnabled: true
 
     font.family: HolonightTheme.uiFont
     font.pointSize: HolonightTheme.bodySize
 
     readonly property color foregroundColor: {
-        if (!root.enabled) return HoloniightPalette.textDisabled
-        return root.highlighted ? HoloniightPalette.onPrimary : HoloniightPalette.textPrimary
+        if (!root.enabled) return root.controlColors.colors.textDisabled
+        return root.highlighted ? root.controlColors.colors.onPrimary : root.controlColors.colors.textPrimary
     }
 
     implicitWidth: Math.max(implicitBackgroundWidth + leftInset + rightInset,
@@ -53,21 +63,21 @@ T.Button {
         radius: semanticRadius
 
         color: {
-            if (!root.enabled)    return HoloniightPalette.surfaceRaised
+            if (!root.enabled)    return root.controlColors.colors.surfaceRaised
             if (root.highlighted) {
-                if (root.down)    return HoloniightPalette.primaryPressed
-                if (root.hovered) return HoloniightPalette.primaryHover
-                return HoloniightPalette.primary
+                if (root.down)    return root.controlColors.colors.primaryPressed
+                if (root.hovered) return root.controlColors.colors.primaryHover
+                return root.controlColors.colors.primary
             }
-            if (root.down)        return HoloniightPalette.surface
-            if (root.hovered)     return HoloniightPalette.surfaceHover
-            return HoloniightPalette.surfaceRaised
+            if (root.down)        return root.controlColors.colors.buttonPressed
+            if (root.hovered)     return root.controlColors.colors.surfaceHover
+            return root.controlColors.colors.surfaceRaised
         }
 
-        border.color: root.visualFocus ? HoloniightPalette.borderFocus : HoloniightPalette.borderPassive
+        border.color: root.visualFocus ? root.controlColors.colors.borderFocus : root.controlColors.colors.borderPassive
         border.width: root.visualFocus ? HnMetrics.focusBorderWidth : HnMetrics.borderWidth
 
-        opacity: root.enabled ? 1.0 : 0.5
+        opacity: root.enabled || !root.controlColors.defaultDisabled ? 1.0 : 0.5
 
         Behavior on color { ColorAnimation { duration: 80 } }
     }

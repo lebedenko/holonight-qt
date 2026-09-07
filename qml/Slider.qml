@@ -4,9 +4,19 @@
 import QtQuick
 import QtQuick.Templates as T
 import Holonight.Core
+import Holonight.impl as Impl
 
 T.Slider {
     id: root
+
+    readonly property Impl.ControlPalette controlColors: Impl.ControlPalette {
+        palette: root.palette
+        colorGroup: !root.enabled ? Impl.ControlPalette.Disabled
+                                 : (root.Window.window && !root.Window.window.active
+                                    ? Impl.ControlPalette.Inactive : Impl.ControlPalette.Active)
+        textRole: Impl.ControlPalette.WindowText
+        fillRole: Impl.ControlPalette.Base
+    }
 
     implicitWidth: Math.max(implicitBackgroundWidth + leftInset + rightInset,
                             implicitContentWidth + leftPadding + rightPadding)
@@ -23,13 +33,13 @@ T.Slider {
         radius: width / 2
 
         color: {
-            if (!root.enabled) return HoloniightPalette.textDisabled
-            if (root.pressed)  return HoloniightPalette.primaryPressed
-            if (root.hovered)  return HoloniightPalette.primaryHover
-            return HoloniightPalette.primary
+            if (!root.enabled) return root.controlColors.colors.disabledAccent
+            if (root.pressed)  return root.controlColors.colors.primaryPressed
+            if (root.hovered)  return root.controlColors.colors.primaryHover
+            return root.controlColors.colors.primary
         }
 
-        border.color: HoloniightPalette.borderPassive
+        border.color: root.controlColors.colors.borderPassive
         border.width: 1
 
         Rectangle {
@@ -39,7 +49,7 @@ T.Slider {
             height: parent.height + 4
             radius: width / 2
             color: Qt.rgba(0, 0, 0, 0)
-            border.color: HoloniightPalette.borderFocus
+            border.color: root.controlColors.colors.borderFocus
             border.width: HnMetrics.borderWidth
         }
     }
@@ -58,7 +68,7 @@ T.Slider {
             width: root.horizontal ? parent.width : 4
             height: root.horizontal ? 4 : parent.height
             radius: 2
-            color: HoloniightPalette.borderPassive
+            color: root.controlColors.colors.borderPassive
         }
 
         // Filled portion
@@ -68,7 +78,7 @@ T.Slider {
             width: root.horizontal ? root.handle.x + root.handle.width / 2 : 4
             height: root.horizontal ? 4 : parent.height - (root.handle.y + root.handle.height / 2)
             radius: 2
-            color: root.enabled ? HoloniightPalette.primary : HoloniightPalette.textDisabled
+            color: root.enabled ? root.controlColors.colors.primary : root.controlColors.colors.disabledAccent
         }
     }
 }

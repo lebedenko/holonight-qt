@@ -5,9 +5,19 @@ import QtQuick
 import QtQuick.Templates as T
 import Holonight
 import Holonight.Core
+import Holonight.impl as Impl
 
 T.Menu {
     id: root
+
+    readonly property Impl.ControlPalette controlColors: Impl.ControlPalette {
+        palette: root.palette
+        colorGroup: !root.enabled ? Impl.ControlPalette.Disabled
+                                 : (root.contentItem.Window.window && !root.contentItem.Window.window.active
+                                    ? Impl.ControlPalette.Inactive : Impl.ControlPalette.Active)
+        textRole: Impl.ControlPalette.WindowText
+        fillRole: Impl.ControlPalette.Button
+    }
 
     font.family: HolonightTheme.uiFont
     font.pointSize: HolonightTheme.bodySize
@@ -36,8 +46,8 @@ T.Menu {
                                                                           HnAppearance.revision)
 
         implicitWidth: 180
-        color: HoloniightPalette.surfaceRaised
-        border.color: HoloniightPalette.borderPassive
+        color: root.controlColors.colors.surfaceRaised
+        border.color: root.controlColors.colors.borderPassive
         border.width: HnMetrics.borderWidth
         radius: semanticRadius
     }

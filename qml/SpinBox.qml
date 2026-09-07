@@ -6,9 +6,19 @@ pragma ComponentBehavior: Bound
 import QtQuick
 import QtQuick.Templates as T
 import Holonight.Core
+import Holonight.impl as Impl
 
 T.SpinBox {
     id: root
+
+    readonly property Impl.ControlPalette controlColors: Impl.ControlPalette {
+        palette: root.palette
+        colorGroup: !root.enabled ? Impl.ControlPalette.Disabled
+                                 : (root.Window.window && !root.Window.window.active
+                                    ? Impl.ControlPalette.Inactive : Impl.ControlPalette.Active)
+        textRole: Impl.ControlPalette.Text
+        fillRole: Impl.ControlPalette.Base
+    }
 
     font.family: HolonightTheme.uiFont
     font.pointSize: HolonightTheme.bodySize
@@ -38,10 +48,9 @@ T.SpinBox {
         z: 2
         text: root.displayText
         font: root.font
-        color: root.enabled ? HoloniightPalette.textPrimary : HoloniightPalette.textDisabled
-        selectionColor: Qt.rgba(HoloniightPalette.primary.r, HoloniightPalette.primary.g,
-                                HoloniightPalette.primary.b, 0.3)
-        selectedTextColor: HoloniightPalette.onPrimary
+        color: root.enabled ? root.controlColors.colors.textPrimary : root.controlColors.colors.textDisabled
+        selectionColor: root.controlColors.colors.selection
+        selectedTextColor: root.controlColors.colors.onPrimary
         horizontalAlignment: Qt.AlignHCenter
         verticalAlignment: Qt.AlignVCenter
         readOnly: !root.editable
@@ -61,7 +70,7 @@ T.SpinBox {
 
         Rectangle {
             visible: root.enabled && (root.up.hovered || root.up.pressed)
-            color: root.up.pressed ? HoloniightPalette.surfaceRaised : HoloniightPalette.surfaceHover
+            color: root.up.pressed ? root.controlColors.colors.surfaceRaised : root.controlColors.colors.buttonHover
             radius: Math.max(0, parent.semanticRadius - 1)
 
             anchors {
@@ -85,7 +94,7 @@ T.SpinBox {
         // Vertical separator line
         Rectangle {
             width: 1
-            color: HoloniightPalette.borderSubtle
+            color: root.controlColors.colors.borderSubtle
 
             anchors {
                 left: parent.left
@@ -100,7 +109,7 @@ T.SpinBox {
             anchors.centerIn: parent
             text: "+"
             textFormat: Text.PlainText
-            color: (root.enabled && root.value < root.to) ? HoloniightPalette.textPrimary : HoloniightPalette.textDisabled
+            color: (root.enabled && root.value < root.to) ? root.controlColors.colors.buttonText : root.controlColors.colors.stepperDisabledText
 
             font {
                 pointSize: HolonightTheme.bodySize
@@ -122,7 +131,7 @@ T.SpinBox {
 
         Rectangle {
             visible: root.enabled && (root.down.hovered || root.down.pressed)
-            color: root.down.pressed ? HoloniightPalette.surfaceRaised : HoloniightPalette.surfaceHover
+            color: root.down.pressed ? root.controlColors.colors.surfaceRaised : root.controlColors.colors.buttonHover
             radius: Math.max(0, parent.semanticRadius - 1)
 
             anchors {
@@ -146,7 +155,7 @@ T.SpinBox {
         // Vertical separator line
         Rectangle {
             width: 1
-            color: HoloniightPalette.borderSubtle
+            color: root.controlColors.colors.borderSubtle
 
             anchors {
                 right: parent.right
@@ -161,7 +170,7 @@ T.SpinBox {
             anchors.centerIn: parent
             text: "-"
             textFormat: Text.PlainText
-            color: (root.enabled && root.value > root.from) ? HoloniightPalette.textPrimary : HoloniightPalette.textDisabled
+            color: (root.enabled && root.value > root.from) ? root.controlColors.colors.buttonText : root.controlColors.colors.stepperDisabledText
 
             font {
                 pointSize: HolonightTheme.bodySize
@@ -179,13 +188,13 @@ T.SpinBox {
         implicitWidth: 140
         implicitHeight: 32
 
-        color: HoloniightPalette.surface
+        color: root.controlColors.colors.surface
         radius: semanticRadius
 
         border.width: root.activeFocus ? HnMetrics.focusBorderWidth : HnMetrics.borderWidth
-        border.color: root.activeFocus ? HoloniightPalette.borderFocus : HoloniightPalette.borderPassive
+        border.color: root.activeFocus ? root.controlColors.colors.borderFocus : root.controlColors.colors.borderPassive
 
-        opacity: root.enabled ? 1.0 : 0.5
+        opacity: root.enabled || !root.controlColors.defaultDisabled ? 1.0 : 0.5
 
         Behavior on border.color { ColorAnimation { duration: 80 } }
     }

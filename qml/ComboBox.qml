@@ -9,9 +9,19 @@ import QtQuick.Shapes
 import QtQuick.Templates as T
 import Holonight
 import Holonight.Core
+import Holonight.impl as Impl
 
 T.ComboBox {
     id: root
+
+    readonly property Impl.ControlPalette controlColors: Impl.ControlPalette {
+        palette: root.palette
+        colorGroup: !root.enabled ? Impl.ControlPalette.Disabled
+                                 : (root.Window.window && !root.Window.window.active
+                                    ? Impl.ControlPalette.Inactive : Impl.ControlPalette.Active)
+        textRole: Impl.ControlPalette.ButtonText
+        fillRole: Impl.ControlPalette.Base
+    }
 
     font.family: HolonightTheme.uiFont
     font.pointSize: HolonightTheme.bodySize
@@ -57,7 +67,7 @@ T.ComboBox {
         preferredRendererType: Shape.CurveRenderer
 
         ShapePath {
-            strokeColor: root.enabled ? HoloniightPalette.textPrimary : HoloniightPalette.textDisabled
+            strokeColor: root.enabled ? root.controlColors.colors.textPrimary : root.controlColors.colors.textDisabled
             strokeWidth: 1.5
             fillColor: "transparent"
             capStyle: ShapePath.RoundCap
@@ -78,7 +88,7 @@ T.ComboBox {
         rightPadding: root.indicator.width + 4
         text: root.displayText
         font: root.font
-        color: root.enabled ? HoloniightPalette.textPrimary : HoloniightPalette.textDisabled
+        color: root.enabled ? root.controlColors.colors.textPrimary : root.controlColors.colors.textDisabled
         verticalAlignment: Text.AlignVCenter
         elide: Text.ElideRight
         textFormat: Text.PlainText
@@ -92,13 +102,20 @@ T.ComboBox {
         implicitWidth: 120
         implicitHeight: 32
         radius: semanticRadius
-        color: root.hovered ? HoloniightPalette.surfaceHover : HoloniightPalette.surface
-        border.color: root.visualFocus || root.popup.visible ? HoloniightPalette.borderFocus : (root.enabled ? HoloniightPalette.borderPassive : HoloniightPalette.borderPassive)
+        color: root.hovered ? root.controlColors.colors.surfaceHover : root.controlColors.colors.surface
+        border.color: root.visualFocus || root.popup.visible ? root.controlColors.colors.borderFocus : (root.enabled ? root.controlColors.colors.borderPassive : root.controlColors.colors.borderPassive)
         border.width: (root.visualFocus || root.popup.visible) ? HnMetrics.focusBorderWidth : HnMetrics.borderWidth
     }
 
     popup: T.Popup {
         id: popup
+        readonly property Impl.ControlPalette controlColors: Impl.ControlPalette {
+            palette: popup.palette
+            inheritFrom: root.palette
+            colorGroup: !popup.enabled ? Impl.ControlPalette.Disabled
+                : (popup.contentItem.Window.window && !popup.contentItem.Window.window.active
+                   ? Impl.ControlPalette.Inactive : Impl.ControlPalette.Active)
+        }
 
         property int geometryRevision: 0
 
@@ -168,8 +185,8 @@ T.ComboBox {
                                                                               width, height,
                                                                               HnAppearance.revision)
 
-            color: HoloniightPalette.surface
-            border.color: HoloniightPalette.borderPassive
+            color: popup.controlColors.colors.surface
+            border.color: popup.controlColors.colors.borderPassive
             border.width: HnMetrics.borderWidth
             radius: semanticRadius
         }

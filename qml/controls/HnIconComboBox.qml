@@ -7,9 +7,13 @@ import QtQuick
 import QtQuick.Templates as T
 import Holonight as H
 import Holonight.Core
+import Holonight.impl as Impl
 
 H.ComboBox {
     id: root
+    palette: compositePalette.appearancePalette
+
+    readonly property Impl.ControlPalette compositePalette: Impl.ControlPalette {}
 
     property int sizeRole: HnControlSize.Normal
     property string iconRole: "icon"
@@ -74,6 +78,7 @@ H.ComboBox {
 
         H.ItemDelegate {
             id: delegateRoot
+            palette: compositePalette.appearancePalette
 
             required property int index
             required property var model

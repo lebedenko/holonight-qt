@@ -4,9 +4,19 @@
 import QtQuick
 import QtQuick.Templates as T
 import Holonight.Core
+import Holonight.impl as Impl
 
 T.TextField {
     id: root
+
+    readonly property Impl.ControlPalette controlColors: Impl.ControlPalette {
+        palette: root.palette
+        colorGroup: !root.enabled ? Impl.ControlPalette.Disabled
+                                 : (root.Window.window && !root.Window.window.active
+                                    ? Impl.ControlPalette.Inactive : Impl.ControlPalette.Active)
+        textRole: Impl.ControlPalette.Text
+        fillRole: Impl.ControlPalette.Base
+    }
 
     font.family: HolonightTheme.uiFont
     font.pointSize: HolonightTheme.bodySize
@@ -26,11 +36,10 @@ T.TextField {
     bottomPadding: 6
     verticalAlignment: TextInput.AlignVCenter
 
-    color: root.enabled ? HoloniightPalette.textPrimary : HoloniightPalette.textDisabled
-    selectionColor: Qt.rgba(HoloniightPalette.primary.r, HoloniightPalette.primary.g,
-                            HoloniightPalette.primary.b, 0.3)
-    selectedTextColor: HoloniightPalette.onPrimary
-    placeholderTextColor: HoloniightPalette.textMuted
+    color: root.enabled ? root.controlColors.colors.textPrimary : root.controlColors.colors.textDisabled
+    selectionColor: root.controlColors.colors.selection
+    selectedTextColor: root.controlColors.colors.onPrimary
+    placeholderTextColor: root.controlColors.colors.textMuted
 
     Text {
         id: placeholder
@@ -58,17 +67,17 @@ T.TextField {
         implicitWidth: 200
         implicitHeight: 32
 
-        color: HoloniightPalette.surface
+        color: root.controlColors.colors.surface
         radius: semanticRadius
 
         border.width: (root.activeFocus || root.hasError) ? HnMetrics.focusBorderWidth : HnMetrics.borderWidth
         border.color: {
-            if (root.hasError)       return HoloniightPalette.borderUrgent
-            if (root.activeFocus)    return HoloniightPalette.borderFocus
-            return HoloniightPalette.borderPassive
+            if (root.hasError)       return root.controlColors.colors.borderUrgent
+            if (root.activeFocus)    return root.controlColors.colors.borderFocus
+            return root.controlColors.colors.borderPassive
         }
 
-        opacity: root.enabled ? 1.0 : 0.5
+        opacity: root.enabled || !root.controlColors.defaultDisabled ? 1.0 : 0.5
 
         Behavior on border.color { ColorAnimation { duration: 80 } }
     }

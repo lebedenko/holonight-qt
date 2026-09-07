@@ -4,9 +4,19 @@
 import QtQuick
 import QtQuick.Templates as T
 import Holonight.Core
+import Holonight.impl as Impl
 
 T.ProgressBar {
     id: root
+
+    readonly property Impl.ControlPalette controlColors: Impl.ControlPalette {
+        palette: root.palette
+        colorGroup: !root.enabled ? Impl.ControlPalette.Disabled
+                                 : (root.Window.window && !root.Window.window.active
+                                    ? Impl.ControlPalette.Inactive : Impl.ControlPalette.Active)
+        textRole: Impl.ControlPalette.WindowText
+        fillRole: Impl.ControlPalette.Base
+    }
 
     property real barHeight: 8
 
@@ -33,7 +43,7 @@ T.ProgressBar {
             width: root.indeterminate ? track.indicatorWidth : track.width * root.visualPosition
             height: root.contentItem.height
             radius: height / 2
-            color: HoloniightPalette.primary
+            color: root.controlColors.colors.primary
 
             // Indeterminate animation
             SequentialAnimation {
@@ -95,6 +105,6 @@ T.ProgressBar {
         implicitWidth: 200
         implicitHeight: root.barHeight
         radius: height / 2
-        color: HoloniightPalette.surface
+        color: root.controlColors.colors.surface
     }
 }

@@ -4,9 +4,19 @@
 import QtQuick
 import QtQuick.Templates as T
 import Holonight.Core
+import Holonight.impl as Impl
 
 T.TabBar {
     id: root
+
+    readonly property Impl.ControlPalette controlColors: Impl.ControlPalette {
+        palette: root.palette
+        colorGroup: !root.enabled ? Impl.ControlPalette.Disabled
+                                 : (root.Window.window && !root.Window.window.active
+                                    ? Impl.ControlPalette.Inactive : Impl.ControlPalette.Active)
+        textRole: Impl.ControlPalette.WindowText
+        fillRole: Impl.ControlPalette.Base
+    }
 
     implicitWidth: Math.max(implicitBackgroundWidth + leftInset + rightInset,
                             implicitContentWidth + leftPadding + rightPadding)
@@ -31,13 +41,13 @@ T.TabBar {
 
     background: Rectangle {
         implicitHeight: 48
-        color: HoloniightPalette.surface
+        color: root.controlColors.colors.surface
 
         Rectangle {
             anchors.bottom: parent.bottom
             width: parent.width
             height: 1
-            color: HoloniightPalette.borderPassive
+            color: root.controlColors.colors.borderPassive
         }
     }
 }

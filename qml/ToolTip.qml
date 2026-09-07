@@ -4,9 +4,19 @@
 import QtQuick
 import QtQuick.Templates as T
 import Holonight.Core
+import Holonight.impl as Impl
 
 T.ToolTip {
     id: root
+
+    readonly property Impl.ControlPalette controlColors: Impl.ControlPalette {
+        palette: root.palette
+        colorGroup: !root.enabled ? Impl.ControlPalette.Disabled
+                                 : (root.contentItem.Window.window && !root.contentItem.Window.window.active
+                                    ? Impl.ControlPalette.Inactive : Impl.ControlPalette.Active)
+        textRole: Impl.ControlPalette.WindowText
+        fillRole: Impl.ControlPalette.Base
+    }
 
     font.family: HolonightTheme.uiFont
     font.pointSize: HolonightTheme.captionSize
@@ -28,7 +38,7 @@ T.ToolTip {
     contentItem: Text {
         text: root.text
         font: root.font
-        color: HoloniightPalette.textPrimary
+        color: root.controlColors.colors.tooltipText
         wrapMode: Text.Wrap
         textFormat: Text.PlainText
     }
@@ -38,8 +48,8 @@ T.ToolTip {
                                                                           width, height,
                                                                           HnAppearance.revision)
 
-        color: HoloniightPalette.surfaceRaised
-        border.color: HoloniightPalette.borderPassive
+        color: root.controlColors.colors.tooltipBase
+        border.color: root.controlColors.colors.borderPassive
         border.width: HnMetrics.borderWidth
         radius: semanticRadius
     }

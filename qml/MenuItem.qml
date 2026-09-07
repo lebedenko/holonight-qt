@@ -5,19 +5,29 @@ import QtQuick
 import QtQuick.Templates as T
 import QtQuick.Layouts
 import Holonight.Core
+import Holonight.impl as Impl
 
 T.MenuItem {
     id: root
+
+    readonly property Impl.ControlPalette controlColors: Impl.ControlPalette {
+        palette: root.palette
+        colorGroup: !root.enabled ? Impl.ControlPalette.Disabled
+                                 : (root.Window.window && !root.Window.window.active
+                                    ? Impl.ControlPalette.Inactive : Impl.ControlPalette.Active)
+        textRole: Impl.ControlPalette.ButtonText
+        fillRole: Impl.ControlPalette.Button
+    }
 
     font.family: HolonightTheme.uiFont
     font.pointSize: HolonightTheme.bodySize
 
     readonly property color foregroundColor: {
         if (!root.enabled)
-            return HoloniightPalette.textDisabled
+            return root.controlColors.colors.textDisabled
         if (root.highlighted)
-            return HoloniightPalette.onPrimary
-        return HoloniightPalette.textPrimary
+            return root.controlColors.colors.onPrimary
+        return root.controlColors.colors.textPrimary
     }
 
     implicitWidth: Math.max(implicitBackgroundWidth + leftInset + rightInset,
@@ -43,7 +53,7 @@ T.MenuItem {
             Text {
                 anchors.centerIn: parent
                 text: root.checkable && root.checked ? qsTr("✓", "checked menu item indicator") : ""
-                color: root.highlighted ? root.foregroundColor : HoloniightPalette.primary
+                color: root.highlighted ? root.foregroundColor : root.controlColors.colors.primary
                 font.pointSize: HolonightTheme.captionSize
                 textFormat: Text.PlainText
                 Accessible.ignored: true
@@ -105,13 +115,13 @@ T.MenuItem {
         radius: semanticRadius
         color: {
             if (root.down && root.highlighted)
-                return HoloniightPalette.primaryPressed
+                return root.controlColors.colors.primaryPressed
             if (root.highlighted)
-                return HoloniightPalette.primary
+                return root.controlColors.colors.primary
             if (root.down)
-                return HoloniightPalette.surface
+                return root.controlColors.colors.buttonPressed
             if (root.hovered)
-                return HoloniightPalette.surfaceHover
+                return root.controlColors.colors.surfaceHover
             return "transparent"
         }
 

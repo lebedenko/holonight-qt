@@ -4,9 +4,19 @@
 import QtQuick
 import QtQuick.Templates as T
 import Holonight.Core
+import Holonight.impl as Impl
 
 T.Switch {
     id: root
+
+    readonly property Impl.ControlPalette controlColors: Impl.ControlPalette {
+        palette: root.palette
+        colorGroup: !root.enabled ? Impl.ControlPalette.Disabled
+                                 : (root.Window.window && !root.Window.window.active
+                                    ? Impl.ControlPalette.Inactive : Impl.ControlPalette.Active)
+        textRole: Impl.ControlPalette.WindowText
+        fillRole: Impl.ControlPalette.Base
+    }
 
     font.family: HolonightTheme.uiFont
     font.pointSize: HolonightTheme.bodySize
@@ -76,9 +86,9 @@ T.Switch {
             anchors.fill: parent
             radius: height / 2
             color: {
-                if (!root.enabled)  return HoloniightPalette.surface
-                if (root.checked)   return root.hovered ? HoloniightPalette.primaryHover : HoloniightPalette.primary
-                return root.hovered ? HoloniightPalette.textMuted : HoloniightPalette.borderPassive
+                if (!root.enabled)  return root.controlColors.colors.surface
+                if (root.checked)   return root.hovered ? root.controlColors.colors.primaryHover : root.controlColors.colors.primary
+                return root.hovered ? root.controlColors.colors.textMuted : root.controlColors.colors.borderPassive
             }
 
             Behavior on color { ColorAnimation { duration: 150 } }
@@ -94,8 +104,8 @@ T.Switch {
                + root.indicatorThumbMargin
 
             color: {
-                if (!root.enabled) return HoloniightPalette.textDisabled
-                return root.checked ? HoloniightPalette.onPrimary : HoloniightPalette.textMuted
+                if (!root.enabled) return root.controlColors.colors.disabledThumb
+                return root.checked ? root.controlColors.colors.onPrimary : root.controlColors.colors.textMuted
             }
 
             Behavior on x { NumberAnimation { duration: 150; easing.type: Easing.InOutQuad } }
@@ -109,7 +119,7 @@ T.Switch {
                 height: parent.height + 4
                 radius: (parent.width + 4) / 2
                 color: Qt.rgba(0, 0, 0, 0)
-                border.color: HoloniightPalette.borderFocus
+                border.color: root.controlColors.colors.borderFocus
                 border.width: HnMetrics.borderWidth
             }
         }
@@ -120,7 +130,7 @@ T.Switch {
         rightPadding: root.mirrored && root.indicator ? root.indicator.width + root.spacing : 0
         text: root.text
         font: root.font
-        color: root.enabled ? HoloniightPalette.textPrimary : HoloniightPalette.textDisabled
+        color: root.enabled ? root.controlColors.colors.textPrimary : root.controlColors.colors.textDisabled
         verticalAlignment: Text.AlignVCenter
         textFormat: Text.PlainText
     }

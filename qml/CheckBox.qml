@@ -4,9 +4,19 @@
 import QtQuick
 import QtQuick.Templates as T
 import Holonight.Core
+import Holonight.impl as Impl
 
 T.CheckBox {
     id: root
+
+    readonly property Impl.ControlPalette controlColors: Impl.ControlPalette {
+        palette: root.palette
+        colorGroup: !root.enabled ? Impl.ControlPalette.Disabled
+                                 : (root.Window.window && !root.Window.window.active
+                                    ? Impl.ControlPalette.Inactive : Impl.ControlPalette.Active)
+        textRole: Impl.ControlPalette.WindowText
+        fillRole: Impl.ControlPalette.Base
+    }
 
     font.family: HolonightTheme.uiFont
     font.pointSize: HolonightTheme.bodySize
@@ -29,15 +39,15 @@ T.CheckBox {
         radius: 3
 
         color: {
-            if (!root.enabled)                     return HoloniightPalette.surface
-            if (root.checkState > Qt.Unchecked)  return root.pressed ? HoloniightPalette.primaryPressed : (root.hovered ? HoloniightPalette.primaryHover : HoloniightPalette.primary)
-            return root.hovered ? HoloniightPalette.surfaceHover : HoloniightPalette.surface
+            if (!root.enabled)                     return root.controlColors.colors.surface
+            if (root.checkState > Qt.Unchecked)  return root.pressed ? root.controlColors.colors.primaryPressed : (root.hovered ? root.controlColors.colors.primaryHover : root.controlColors.colors.primary)
+            return root.hovered ? root.controlColors.colors.surfaceHover : root.controlColors.colors.surface
         }
 
         border.color: {
-            if (!root.enabled)                     return HoloniightPalette.textDisabled
+            if (!root.enabled)                     return root.controlColors.colors.disabledBorder
             if (root.checkState > Qt.Unchecked)  return color
-            return root.hovered ? HoloniightPalette.borderActive : HoloniightPalette.borderPassive
+            return root.hovered ? root.controlColors.colors.borderActive : root.controlColors.colors.borderPassive
         }
         border.width: 1
 
@@ -48,7 +58,7 @@ T.CheckBox {
             y: 6
             width: 9
             height: 2
-            color: root.enabled ? HoloniightPalette.onPrimary : HoloniightPalette.textDisabled
+            color: root.enabled ? root.controlColors.colors.onPrimary : root.controlColors.colors.disabledOnPrimary
             rotation: -45
             transformOrigin: Item.Left
         }
@@ -56,7 +66,7 @@ T.CheckBox {
             visible: root.checkState === Qt.Checked
             width: 2
             height: 5
-            color: root.enabled ? HoloniightPalette.onPrimary : HoloniightPalette.textDisabled
+            color: root.enabled ? root.controlColors.colors.onPrimary : root.controlColors.colors.disabledOnPrimary
             rotation: -45
             transformOrigin: Item.Bottom
             anchors {
@@ -73,7 +83,7 @@ T.CheckBox {
             anchors.centerIn: parent
             width: 8
             height: 2
-            color: root.enabled ? HoloniightPalette.onPrimary : HoloniightPalette.textDisabled
+            color: root.enabled ? root.controlColors.colors.onPrimary : root.controlColors.colors.disabledOnPrimary
         }
 
         // Focus ring
@@ -88,7 +98,7 @@ T.CheckBox {
             height: parent.height + 4
             radius: semanticRadius
             color: Qt.rgba(0, 0, 0, 0)
-            border.color: HoloniightPalette.borderFocus
+            border.color: root.controlColors.colors.borderFocus
             border.width: HnMetrics.focusBorderWidth
         }
     }
@@ -98,7 +108,7 @@ T.CheckBox {
         rightPadding: root.mirrored && root.indicator ? root.indicator.width + root.spacing : 0
         text: root.text
         font: root.font
-        color: root.enabled ? HoloniightPalette.textPrimary : HoloniightPalette.textDisabled
+        color: root.enabled ? root.controlColors.colors.textPrimary : root.controlColors.colors.textDisabled
         verticalAlignment: Text.AlignVCenter
         textFormat: Text.PlainText
     }

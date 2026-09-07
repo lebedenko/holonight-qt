@@ -381,3 +381,39 @@ execute_process(
 if(NOT qmllint_result EQUAL 0)
   message(FATAL_ERROR "Installed QML lint failed:\n${qmllint_output}\n${qmllint_error}")
 endif()
+
+# Palette acceptance uses only the staged QML import prefix. The runtime type URL
+# and /proc mapping checks below distinguish staged plugins from host/build copies.
+set(palette_fixture_root "${test_root}/palette-fixtures")
+file(MAKE_DIRECTORY "${palette_fixture_root}/Haruna")
+file(WRITE "${palette_fixture_root}/Haruna/qmldir" "module Haruna\nimport QtQuick.Controls.Fusion auto\n")
+file(WRITE "${palette_fixture_root}/qtquickcontrols2.conf"
+    "[Controls]\nStyle=Holonight\n[Holonight\\Palette]\nBase=#654321\n")
+foreach(mode IN ITEMS Holonight Fusion Haruna config config-app)
+  set(selected_style "${mode}")
+  set(config_path "${palette_fixture_root}/missing.conf")
+  if(mode MATCHES "^config")
+    set(selected_style Holonight)
+    set(config_path "${palette_fixture_root}/qtquickcontrols2.conf")
+  endif()
+  execute_process(COMMAND "@CMAKE_COMMAND@" -E env
+      "QT_QPA_PLATFORM=offscreen" "QT_QPA_PLATFORMTHEME=" "QT_STYLE_OVERRIDE="
+      "HOLONIGHT_APPEARANCE_FILE=${palette_fixture_root}/missing.toml"
+      "QT_QUICK_CONTROLS_STYLE=${selected_style}" "QT_QUICK_CONTROLS_CONF=${config_path}"
+      "UQC_SELECTION_MODE=${mode}" "UQC_IMPORT_PATH=${qml_root}"
+      "UQC_HARUNA_PATH=${palette_fixture_root}"
+      "@CMAKE_CURRENT_BINARY_DIR@/holonight_quick_style_selection"
+      RESULT_VARIABLE result OUTPUT_VARIABLE output ERROR_VARIABLE error)
+  if(NOT result EQUAL 0)
+    message(FATAL_ERROR "Installed ${mode} palette fixture failed (${result}):\n${output}\n${error}")
+  endif()
+  message(STATUS "Installed ${mode} palette fixture: ${output}")
+endforeach()
+execute_process(COMMAND "@CMAKE_COMMAND@" -E env
+    "QT_QPA_PLATFORM=offscreen" "QT_QUICK_BACKEND=software"
+    "QT_QPA_PLATFORMTHEME=" "QT_STYLE_OVERRIDE=" "QT_QUICK_CONTROLS_STYLE=Holonight"
+    "UQC_IMPORT_PATH=${qml_root}" "@CMAKE_CURRENT_BINARY_DIR@/holonight_quick_palette_tests"
+    RESULT_VARIABLE result OUTPUT_VARIABLE output ERROR_VARIABLE error)
+if(NOT result EQUAL 0)
+  message(FATAL_ERROR "Installed palette acceptance failed:\n${output}\n${error}")
+endif()

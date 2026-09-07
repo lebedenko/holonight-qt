@@ -7,9 +7,12 @@ import QtQuick
 import QtQuick.Controls.Basic as C
 import Holonight as H
 import Holonight.Core
+import Holonight.impl as Impl
 
 FocusScope {
     id: root
+
+    readonly property Impl.ControlPalette compositePalette: Impl.ControlPalette {}
 
     property int sizeRole: HnControlSize.Normal
     property int minimumVisibleLines: 3
@@ -91,6 +94,7 @@ FocusScope {
 
     H.ScrollView {
         id: editorScroll
+        palette: compositePalette.appearancePalette
 
         anchors.left: parent.left
         anchors.right: parent.right
@@ -108,6 +112,7 @@ FocusScope {
 
         H.TextArea {
             id: editor
+            palette: compositePalette.appearancePalette
 
             width: editorScroll.contentWidth
             implicitWidth: 0
