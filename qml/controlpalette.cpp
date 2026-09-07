@@ -75,6 +75,7 @@ QVariantMap ControlPalette::colors() const {
     return true;
   };
   QVariantMap result;
+  result.insert(QStringLiteral("link"), color(QPalette::Link));
   auto direct = [&](const char* name, QPalette::ColorRole role, const QColor& token) {
     result.insert(QLatin1String(name), matches({role}) ? token : color(role));
   };

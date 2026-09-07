@@ -422,3 +422,67 @@ Window {
   EXPECT_EQ(popup->property("background").value<QQuickItem*>()->property("color").value<QColor>(), QColor("#102030"));
 }
 }  // namespace
+
+namespace {
+TEST_F(QuickPalette, WindowLabelAndToolbarDefaultsAndOverrides) {
+  auto window = create(R"(
+import QtQuick
+import Holonight
+ApplicationWindow {
+    width: 400; height: 300
+    header: ToolBar { objectName: "toolbar"; Label { text: "Header" } }
+    footer: ToolBar { objectName: "footer" }
+    Label { objectName: "label"; text: "A long label with a link" }
+    Label { objectName: "override"; palette.windowText: "transparent"
+        function resetText() { palette.windowText = undefined } }
+    ToolButton { objectName: "tool"; text: "Action" }
+    ToolSeparator { objectName: "vertical" }
+    ToolSeparator { objectName: "horizontal"; orientation: Qt.Horizontal }
+    MenuSeparator { objectName: "separator" }
+})");
+  ASSERT_TRUE(window);
+  const auto tokens = appearanceTokens();
+  EXPECT_EQ(window->property("color").value<QColor>(), tokens.background);
+  auto* label = window->findChild<QObject*>("label");
+  auto* local = window->findChild<QObject*>("override");
+  auto* tool = window->findChild<QObject*>("tool");
+  ASSERT_TRUE(label && local && tool);
+  EXPECT_EQ(label->property("color").value<QColor>(), tokens.textPrimary);
+  EXPECT_EQ(local->property("color").value<QColor>(), QColor(Qt::transparent));
+  for (const char* name : {"toolbar", "footer"}) {
+    auto* bar = window->findChild<QObject*>(name);
+    ASSERT_TRUE(bar);
+    EXPECT_EQ(bar->property("background").value<QQuickItem*>()->property("color").value<QColor>(),
+              tokens.surfaceRaised);
+    EXPECT_GT(bar->property("implicitHeight").toReal(), 0);
+  }
+  for (const char* name : {"vertical", "horizontal", "separator"}) {
+    auto* separator = window->findChild<QObject*>(name);
+    ASSERT_TRUE(separator);
+    EXPECT_EQ(separator->property("contentItem").value<QQuickItem*>()->property("color").value<QColor>(),
+              tokens.borderSubtle);
+  }
+  auto* vertical = window->findChild<QObject*>("vertical");
+  auto* horizontal = window->findChild<QObject*>("horizontal");
+  EXPECT_EQ(vertical->property("implicitWidth"), horizontal->property("implicitHeight"));
+  EXPECT_EQ(vertical->property("implicitHeight"), horizontal->property("implicitWidth"));
+  auto* background = tool->property("background").value<QQuickItem*>();
+  EXPECT_EQ(background->property("color").value<QColor>(), QColor(Qt::transparent));
+  tool->setProperty("checked", true);
+  EXPECT_EQ(background->property("color").value<QColor>(), tokens.surfaceSelected);
+  tool->setProperty("highlighted", true);
+  EXPECT_EQ(background->property("color").value<QColor>(), tokens.primary);
+  QPalette palette;
+  palette.setColor(QPalette::Window, QColor("#123456"));
+  palette.setColor(QPalette::WindowText, QColor("#abcdef"));
+  palette.setColor(QPalette::Link, QColor("#80553377"));
+  QGuiApplication::setPalette(palette);
+  QCoreApplication::processEvents();
+  EXPECT_EQ(window->property("color").value<QColor>(), QColor("#123456"));
+  EXPECT_EQ(label->property("color").value<QColor>(), QColor("#abcdef"));
+  EXPECT_EQ(label->property("linkColor").value<QColor>(), QColor("#80553377"));
+  EXPECT_EQ(local->property("color").value<QColor>(), QColor(Qt::transparent));
+  ASSERT_TRUE(QMetaObject::invokeMethod(local, "resetText"));
+  EXPECT_EQ(local->property("color").value<QColor>(), QColor("#abcdef"));
+}
+}  // namespace
