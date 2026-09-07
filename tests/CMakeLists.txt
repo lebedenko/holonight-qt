@@ -302,6 +302,9 @@ foreach(scheme IN ITEMS dark light mocha latte storm day ember sol cyber-d cyber
   set_property(TEST holonight_quick_palette_${scheme} PROPERTY ENVIRONMENT
       "${HOLONIGHT_TEST_ENV};QT_QUICK_BACKEND=software;QT_QUICK_CONTROLS_STYLE=Holonight;UQC_SCHEME=holonight-${scheme}")
 endforeach()
+add_test(NAME holonight_quick_palette_hybrid COMMAND holonight_quick_palette_tests)
+set_property(TEST holonight_quick_palette_hybrid PROPERTY ENVIRONMENT
+    "${HOLONIGHT_TEST_ENV};QT_QUICK_BACKEND=software;QT_QUICK_CONTROLS_STYLE=Holonight;UQC_HYBRID=1;QT_PLUGIN_PATH=${CMAKE_BINARY_DIR}/lib/qt6/plugins")
 
 add_executable(holonight_quick_style_selection quick_style_selection.cpp)
 target_link_libraries(holonight_quick_style_selection PRIVATE

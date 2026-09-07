@@ -16,6 +16,7 @@
 #include <QtTest/QTest>
 
 #include <gtest/gtest.h>
+#include <holonight/config/config.h>
 
 namespace {
 
@@ -233,4 +234,41 @@ TEST(StyleSmoke, DockWidgetSeparatorExtentIsOne) {
 TEST(StyleSmoke, MenuPanelWidthIsOne) {
   HoloniightStyle style;
   EXPECT_EQ(style.pixelMetric(QStyle::PM_MenuPanelWidth), 1);
+}
+
+TEST(StyleSmoke, ReloadPreservesApplicationPaletteRolesAndResolveMask) {
+  EnvGuard guard("HOLONIGHT_APPEARANCE_FILE");
+  QTemporaryDir directory;
+  ASSERT_TRUE(directory.isValid());
+  const QString path = directory.filePath("appearance.toml");
+  qputenv("HOLONIGHT_APPEARANCE_FILE", path.toUtf8());
+  auto appearance = HoloNight::Config::defaults();
+  ASSERT_TRUE(HoloNight::Config::writeAtomically(appearance, std::filesystem::path(path.toStdString())));
+  const QString savedStyle = QApplication::style()->name();
+  auto* style = new HoloniightStyle;
+  QApplication::setStyle(style);
+  auto* reader = style->findChild<Holonight::AppearanceReader*>();
+  ASSERT_TRUE(reader);
+  const QPalette saved = QApplication::palette();
+  QPalette chosen;
+  chosen.setColor(QPalette::Active, QPalette::Base, QColor("#010203"));
+  chosen.setColor(QPalette::Inactive, QPalette::Text, QColor("#abcdef"));
+  chosen.setColor(QPalette::Disabled, QPalette::Text, QColor("#80654321"));
+  QApplication::setPalette(chosen);
+  const auto mask = QApplication::palette().resolveMask();
+  for (const QByteArray scheme :
+       {QByteArray("holonight-light"), QByteArray("holonight-dark"), QByteArray("holonight-light")}) {
+    appearance.theme.scheme = scheme.toStdString();
+    ASSERT_TRUE(HoloNight::Config::writeAtomically(appearance, std::filesystem::path(path.toStdString())));
+    ASSERT_TRUE(reader->reload());
+    const auto actual = QApplication::palette();
+    EXPECT_EQ(actual.resolveMask(), mask);
+    EXPECT_EQ(actual.color(QPalette::Active, QPalette::Base), QColor("#010203"));
+    EXPECT_EQ(actual.color(QPalette::Inactive, QPalette::Text), QColor("#abcdef"));
+    EXPECT_EQ(actual.color(QPalette::Disabled, QPalette::Text), QColor("#80654321"));
+    EXPECT_EQ(actual.color(QPalette::Active, QPalette::Window),
+              style->standardPalette().color(QPalette::Active, QPalette::Window));
+  }
+  QApplication::setStyle(savedStyle);
+  QApplication::setPalette(saved);
 }

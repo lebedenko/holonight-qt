@@ -758,7 +758,14 @@ void HoloniightStyle::reloadTheme() {
     return;
   }
 
-  qApp->setPalette(palette_);
+  const QPalette current = qApp->palette();
+  QPalette resolved = current.resolve(palette_);
+#ifdef HOLONIGHT_QT5_PROBE
+  resolved.resolve(current.resolve());
+#else
+  resolved.setResolveMask(current.resolveMask());
+#endif
+  qApp->setPalette(resolved);
   const QWidgetList widgets = qApp->allWidgets();
   for (QWidget* widget : widgets) {
     if (widget == nullptr) {
