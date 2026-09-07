@@ -3,7 +3,7 @@
 pragma ComponentBehavior: Bound
 
 import QtQuick
-import QtQuick.Controls.Basic
+import QtQuick.Controls as C
 import QtQuick.Layouts
 import Holonight.Core
 

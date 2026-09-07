@@ -4,10 +4,9 @@
 pragma ComponentBehavior: Bound
 
 import QtQuick
-import QtQuick.Controls.Basic as C
+import QtQuick.Controls as C
 import QtQuick.Shapes
 import QtQuick.Templates as T
-import Holonight as H
 import Holonight.Core
 import Holonight.impl as Impl
 
@@ -64,7 +63,7 @@ T.Control {
     Keys.onReturnPressed: root.activate(root.focusedIndex)
     Keys.onEnterPressed: root.activate(root.focusedIndex)
 
-    contentItem: H.ScrollView {
+    contentItem: C.ScrollView {
         id: scroll
         palette: compositePalette.appearancePalette
 

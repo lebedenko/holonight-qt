@@ -4,10 +4,10 @@
 pragma ComponentBehavior: Bound
 
 import QtQuick
-import QtQuick.Controls.Basic
+import QtQuick.Templates as T
 import Holonight.Core
 
-Label {
+T.Label {
     id: root
 
     property int role: HnTypographyRole.Body
@@ -60,6 +60,8 @@ Label {
 
     font.letterSpacing: role === HnTypographyRole.MicroHeader ? 1.5 : 0
     font.capitalization: role === HnTypographyRole.MicroHeader ? Font.AllUppercase : Font.MixedCase
+
+    linkColor: palette.link
 
     color: {
         switch (role) {

@@ -3,7 +3,7 @@
 pragma ComponentBehavior: Bound
 
 import QtQuick
-import QtQuick.Controls.Basic
+import QtQuick.Controls as C
 import QtQuick.Layouts
 import Holonight.Core
 
@@ -54,8 +54,8 @@ HnSelectableDelegate {
         }
     }
 
-    ToolTip.text: root.title
-    ToolTip.delay: 500
-    ToolTip.visible: root.showTitleToolTipWhenElided && root.hovered
+    C.ToolTip.text: root.title
+    C.ToolTip.delay: 500
+    C.ToolTip.visible: root.showTitleToolTipWhenElided && root.hovered
                      && root.title.length > 0 && titleLabel.truncated
 }

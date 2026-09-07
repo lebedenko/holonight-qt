@@ -4,9 +4,8 @@
 pragma ComponentBehavior: Bound
 
 import QtQuick
-import QtQuick.Controls.Basic
+import QtQuick.Controls as C
 import QtQuick.Layouts
-import Holonight as H
 import Holonight.Core
 import Holonight.impl as Impl
 
@@ -38,7 +37,7 @@ Item {
         anchors.fill: parent
         spacing: root.semanticSpacing
 
-        H.ProgressBar {
+        C.ProgressBar {
             palette: compositePalette.appearancePalette
             objectName: "hnLoadingProgress"
             value: root.normalizedProgress < 0 ? 0 : root.normalizedProgress
