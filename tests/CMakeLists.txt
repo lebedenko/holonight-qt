@@ -313,3 +313,5 @@ target_link_libraries(holonight_quick_style_selection PRIVATE
 add_dependencies(holonight_quick_style_selection holonight_qml holonight_controls_qml)
 
 include(QuickPaletteInfrastructure.cmake)
+
+include(RuntimeComposites.cmake)

@@ -12,6 +12,7 @@
 int main(int argc, char** argv) {
   qInstallMessageHandler([](QtMsgType type, const QMessageLogContext&, const QString& message) {
     if (message.contains("Unable to assign") || message.contains("Binding loop") ||
+        message.contains("non-existent property") || message.contains("Cannot assign") ||
         message.contains("ReferenceError") || message.contains("TypeError") || message.contains("only supports"))
       ADD_FAILURE() << message.toStdString();
     if (type == QtWarningMsg || type == QtCriticalMsg) fprintf(stderr, "%s\n", qPrintable(message));

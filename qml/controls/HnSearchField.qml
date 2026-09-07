@@ -16,6 +16,18 @@ C.TextField {
 
     readonly property Impl.ControlPalette compositePalette: Impl.ControlPalette {}
 
+    readonly property Impl.ControlPalette frameColors: Impl.ControlPalette {
+        palette: root.palette
+        colorGroup: !root.enabled ? Impl.ControlPalette.Disabled
+                                 : (root.Window.window && !root.Window.window.active
+                                    ? Impl.ControlPalette.Inactive : Impl.ControlPalette.Active)
+        textRole: Impl.ControlPalette.Text
+        fillRole: Impl.ControlPalette.Base
+    }
+
+    font.family: HolonightTheme.uiFont
+    font.pointSize: HolonightTheme.bodySize
+
     property int sizeRole: HnControlSize.Normal
     property Component leadingContent
     property Component trailingContent
@@ -38,14 +50,14 @@ C.TextField {
         implicitWidth: 200
         implicitHeight: 32
 
-        color: HoloniightPalette.surface
+        color: root.frameColors.colors.surface
         radius: semanticRadius
 
         border.width: (root.activeFocus || root.hasError) ? HnMetrics.focusBorderWidth : HnMetrics.borderWidth
         border.color: {
-            if (root.hasError)       return HoloniightPalette.borderUrgent
-            if (root.activeFocus)    return HoloniightPalette.borderFocus
-            return HoloniightPalette.borderPassive
+            if (root.hasError)       return root.frameColors.colors.borderUrgent
+            if (root.activeFocus)    return root.frameColors.colors.borderFocus
+            return root.frameColors.colors.borderPassive
         }
 
         opacity: root.enabled ? 1.0 : 0.5

@@ -15,6 +15,18 @@ C.ComboBox {
 
     readonly property Impl.ControlPalette compositePalette: Impl.ControlPalette {}
 
+    readonly property Impl.ControlPalette frameColors: Impl.ControlPalette {
+        palette: root.palette
+        colorGroup: !root.enabled ? Impl.ControlPalette.Disabled
+                                 : (root.Window.window && !root.Window.window.active
+                                    ? Impl.ControlPalette.Inactive : Impl.ControlPalette.Active)
+        textRole: Impl.ControlPalette.ButtonText
+        fillRole: Impl.ControlPalette.Base
+    }
+
+    font.family: HolonightTheme.uiFont
+    font.pointSize: HolonightTheme.bodySize
+
     property int sizeRole: HnControlSize.Normal
     property string iconRole: "icon"
 
@@ -99,8 +111,8 @@ C.ComboBox {
         implicitWidth: 120
         implicitHeight: 32
         radius: semanticRadius
-        color: root.hovered ? HoloniightPalette.surfaceHover : HoloniightPalette.surface
-        border.color: root.visualFocus || root.popup.visible ? HoloniightPalette.borderFocus : (root.enabled ? HoloniightPalette.borderPassive : HoloniightPalette.borderPassive)
+        color: root.hovered ? root.frameColors.colors.surfaceHover : root.frameColors.colors.surface
+        border.color: root.visualFocus || root.popup.visible ? root.frameColors.colors.borderFocus : (root.enabled ? root.frameColors.colors.borderPassive : root.frameColors.colors.borderPassive)
         border.width: (root.visualFocus || root.popup.visible) ? HnMetrics.focusBorderWidth : HnMetrics.borderWidth
     }
 

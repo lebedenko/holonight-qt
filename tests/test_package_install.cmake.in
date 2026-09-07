@@ -429,3 +429,22 @@ execute_process(COMMAND "@CMAKE_COMMAND@" -E env
 if(NOT result EQUAL 0)
   message(FATAL_ERROR "Installed palette acceptance failed:\n${output}\n${error}")
 endif()
+
+foreach(mode IN ITEMS Holonight Fusion Core)
+  set(filter "RuntimeComposites.*:QmlSmoke.Controls_*:Variants/ComboBoxGeometry.*")
+  set(style "${mode}")
+  if(mode STREQUAL "Core")
+    set(filter "CoreIsolation.*")
+    set(style Fusion)
+  endif()
+  execute_process(COMMAND "@CMAKE_COMMAND@" -E env
+      "QT_QPA_PLATFORM=offscreen" "QT_QUICK_BACKEND=software"
+      "QT_QPA_PLATFORMTHEME=" "QT_STYLE_OVERRIDE=" "QT_QUICK_CONTROLS_STYLE=${style}"
+      "QML_IMPORT_PATH=${qml_root}" "UQC_IMPORT_PATH=${qml_root}"
+      "@CMAKE_CURRENT_BINARY_DIR@/holonight_runtime_composite_tests" "--gtest_filter=${filter}"
+      RESULT_VARIABLE result OUTPUT_VARIABLE output ERROR_VARIABLE error)
+  if(NOT result EQUAL 0)
+    message(FATAL_ERROR "Installed ${mode} composite acceptance failed:\n${output}\n${error}")
+  endif()
+  message(STATUS "Installed ${mode} composite acceptance passed")
+endforeach()

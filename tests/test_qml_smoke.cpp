@@ -154,7 +154,9 @@ void expectAllSwatchesDisabled(const QList<QQuickItem*>& swatches) {
 
 class QmlSmoke : public ::testing::Test {
  protected:
-  void SetUp() override { engine_.addImportPath(QStringLiteral(HOLONIGHT_QML_IMPORT_PATH)); }
+  void SetUp() override {
+    engine_.addImportPath(qEnvironmentVariable("UQC_IMPORT_PATH", QStringLiteral(HOLONIGHT_QML_IMPORT_PATH)));
+  }
 
   QQmlEngine engine_;
 };
@@ -1073,6 +1075,12 @@ TEST_P(ComboBoxGeometry, ScaledPopupMatchesControlSceneGeometry) {
             property var combo: combo
             property bool popupUsesOverlay: combo.popup.parent === Overlay.overlay
 
+            function moveAndReopen() {
+                combo.popup.close()
+                combo.parent.x -= 2
+                combo.parent.y += 3
+                combo.popup.open()
+            }
             function controlTopLeft() { return combo.mapToItem(contentItem, 0, 0) }
             function controlBottomRight() { return combo.mapToItem(contentItem, combo.width, combo.height) }
             function popupTopLeft() { return combo.popup.background.mapToItem(contentItem, 0, 0) }
@@ -1139,8 +1147,61 @@ TEST_P(ComboBoxGeometry, ScaledPopupMatchesControlSceneGeometry) {
           EXPECT_FALSE(combo->property("popup").value<QObject*>()->property("opensAbove").toBool());
           EXPECT_NEAR(popup_top_left.y(), control_bottom_right.y() + 2 * scale, 0.5) << "scale " << scale;
         }
+        ASSERT_TRUE(QMetaObject::invokeMethod(window.get(), "moveAndReopen"));
+        QCoreApplication::processEvents();
+        EXPECT_NEAR(mappedPoint("popupTopLeft").x(), mappedPoint("controlTopLeft").x(), 0.5);
+        EXPECT_NEAR(mappedPoint("popupBottomRight").x(), mappedPoint("controlBottomRight").x(), 0.5);
+        if (opensAbove)
+          EXPECT_NEAR(mappedPoint("popupBottomRight").y(), mappedPoint("controlTopLeft").y() - 2 * scale, 0.5);
+        else
+          EXPECT_NEAR(mappedPoint("popupTopLeft").y(), mappedPoint("controlBottomRight").y() + 2 * scale, 0.5);
       }
     }
+  }
+}
+
+TEST_P(ComboBoxGeometry, EmptyAndLongModelsKeepSelectedItemVisible) {
+  for (const qreal scale : {0.78, 1.0, 1.25}) {
+    QQmlComponent component(&engine_);
+    component.setData(QString{R"(
+import QtQuick
+import Holonight as H
+import Holonight.Controls
+Window {
+    width: 400; height: 500; visible: true
+    property alias combo: combo
+    Item {
+        scale: %SCALE%; transformOrigin: Item.TopLeft
+        %TYPE% { id: combo; width: 200; model: 0; maximumVisibleItems: 4 }
+    }
+})"}
+                          .replace("%TYPE%", GetParam())
+                          .replace("%SCALE%", QString::number(scale))
+                          .toUtf8(),
+                      QUrl());
+    std::unique_ptr<QObject> root(component.create());
+    ASSERT_NE(root, nullptr) << component.errorString().toStdString();
+    auto* combo = root->property("combo").value<QObject*>();
+    auto* popup = combo->property("popup").value<QObject*>();
+    ASSERT_TRUE(QMetaObject::invokeMethod(popup, "open"));
+    QCoreApplication::processEvents();
+    auto* list = popup->property("contentItem").value<QObject*>();
+    EXPECT_EQ(list->property("count").toInt(), 0);
+    EXPECT_EQ(list->property("height").toReal(), 0);
+    EXPECT_FALSE(list->property("interactive").toBool());
+    ASSERT_TRUE(QMetaObject::invokeMethod(popup, "close"));
+    ASSERT_TRUE(combo->setProperty("model", 100));
+    ASSERT_TRUE(combo->setProperty("currentIndex", 99));
+    ASSERT_TRUE(QMetaObject::invokeMethod(popup, "open"));
+    ASSERT_TRUE(QTest::qWaitFor([&] { return list->property("currentIndex").toInt() == 99; }));
+    QCoreApplication::processEvents();
+    EXPECT_TRUE(list->property("interactive").toBool());
+    EXPECT_NEAR(list->property("height").toReal(), 4 * combo->property("delegateHeight").toReal(), 0.5);
+    auto* selected = list->property("currentItem").value<QQuickItem*>();
+    ASSERT_NE(selected, nullptr);
+    EXPECT_GE(selected->y(), list->property("contentY").toReal() - 0.5);
+    EXPECT_LE(selected->y() + selected->height(),
+              list->property("contentY").toReal() + list->property("height").toReal() + 0.5);
   }
 }
 
@@ -3859,7 +3920,9 @@ TEST_F(QmlSmoke, Controls_PressedStatesMatchSegmentedControlSurface) {
     import QtQuick
     import Holonight as Hn
     import Holonight.Controls
+    import Holonight.impl as Impl
     Item {
+      property Impl.ControlPalette comparisonPalette: Impl.ControlPalette {}
       property alias choice: choice
       property alias card: card
       property alias navigation: navigation
@@ -3868,7 +3931,7 @@ TEST_F(QmlSmoke, Controls_PressedStatesMatchSegmentedControlSurface) {
       HnChoiceCard { id: choice; width: 160; height: 80 }
       HnCardDelegate { id: card; width: 160; height: 80 }
       HnNavigationDelegate { id: navigation; width: 160; height: 40 }
-      Hn.ItemDelegate { id: itemDelegate; width: 160; height: 40 }
+      Hn.ItemDelegate { palette: comparisonPalette.appearancePalette; id: itemDelegate; width: 160; height: 40 }
     }
   )",
                QUrl{});

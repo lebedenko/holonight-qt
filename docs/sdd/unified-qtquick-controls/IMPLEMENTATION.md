@@ -28,8 +28,9 @@ contracts and verification requirements. Only provider files are changed in this
 | Indicator geometry | Done | Original code fails the new regression; fixed code passes all five focused tests and all 28 CTest entries (2026-09-07). |
 | Application palette support | Done | Black/white/black and reload regressions reproduced before fixes; all 46 CTest entries pass, including 16 schemes, offscreen rendering, hybrid and installed-prefix fixtures (2026-09-08). |
 | Nine new controls | Done | All nine installed origins, palette/layout/overlay/state acceptance and all 46 provider CTest entries pass (2026-09-08). |
-| Composites and executable defaults | Planned | — |
-| Policy, documentation and installed verification | Planned | — |
+| Composite runtime migration and Core isolation | Done | All 26 public composites load; HoloNight/Fusion origins, behavior, shared popup geometry and installed-prefix acceptance pass (2026-09-08). |
+| Executable defaults | Planned | Demo/gallery configuration and imports remain subsequent work. |
+| Policy, documentation and installed verification | In Progress | Composite/Core scope enforced and installed acceptance passes; executable defaults and final provider acceptance remain open. |
 
 Application-painted sliders and the license-popup composition remain accepted boundaries. Other catalog types
 remain fallback controls. No full manual application/state or two-compositor integration pass is implied here.
@@ -190,3 +191,75 @@ HnLabel's existing explicit Basic import; this does not migrate Core or change t
 
 Provider commit sequence: `675240e` (window, label, toolbar and separators), `7d0c988` (popup and menu bar), followed
 by the installed acceptance/documentation commit containing this record and the padding regressions.
+
+
+## Composite runtime migration — 2026-09-08
+
+Slice baseline: published provider `24220e95a4ca612700e2fd2b0395f59a481144b6`, umbrella
+`b44340c169dd63073740efd088b76913b1353bd1`. UQC-101 remains In Progress; consumers remain Planned.
+
+All fixed-style imports in `qml/controls/` now use `QtQuick.Controls as C`, including attached ToolTip/ScrollBar
+properties and enums. Existing Templates-based primitives and application-owned frames remain intact. The Controls
+module declares QtQuick.Controls, Core and impl imports; its build dependency no longer requires the selected style.
+Core HnLabel derives directly from Templates.Label, retaining its typography roles, prefix formatting, text/color/font
+caller overrides, wrapping, sizing and accessible StaticText interface. `linkColor: palette.link` preserves the former
+Basic Label's effective Link behavior without loading runtime Controls.
+
+HnSearchField declares hasError locally and owns the prior semantic error/focus frame and disabled opacity.
+HnTextArea uses runtime ScrollView, TextArea and attached scrollbars; its outer error frame remains authoritative,
+and the editor no longer receives the style-specific hasError property. Both preserve editing/selection APIs,
+size roles, slots, clear behavior, maximum length and wrapping/overflow. Search, editor and icon ComboBox explicitly
+retain HoloNight typography under Fusion, with caller overrides tested. Search and ComboBox body frames retain
+palette-role resolution at the existing appearance boundary.
+
+HnIconComboBox owns maximumVisibleItems (default 8), delegateHeight (size-role default), popup and delegate frames.
+Its runtime ComboBox, Popup, ItemDelegate and ScrollBar implementations follow the selected style. Semantic delegate
+corners are calculated from popup dimensions/appearance directly, without reading another style's background.
+The intentional composite visuals and appearance palette remain present under Fusion.
+
+`qml/ComboBoxPopupGeometry.qml`, registered and installed in `Holonight.impl`, shares the former standard ComboBox
+calculations with HnIconComboBox. This namespace is implementation-only; the helper is not a supported public API.
+It imports only QtQuick and Templates and takes a template control/popup plus the visible-item limit. Existing standard
+ComboBox geometry properties remain forwarded, including the popup geometryRevision refresh and the observable
+popupTransformSupported diagnostic. Overlay parenting, uniform scene scaling, above/below placement, margins,
+item limits, scrolling and highlighted-item visibility retain their behavior. Unsupported transforms continue to
+report false and use the existing scale fallback; support for rotated/nonuniform transforms is not added.
+
+Verification additions are in `tests/RuntimeComposites.cmake`, `test_runtime_composites.cpp`, the shared smoke tests,
+strict diagnostic handler, package-install fixture and import-policy fixtures. The runtime runner reuses existing
+behavior tests rather than duplicating them. Each HoloNight/Fusion process runs 59 tests, including all 26 public
+composite creations and the two-variant geometry suite; a separate Core-only process checks that no runtime Controls
+or HoloNight style/composite plugin loads. Installed runs override every fixture's import root and check plugin
+mappings against the staged prefix. Actual base, editor, popup, delegate, progress and scrollbar context URLs are
+asserted. The Fusion/Haruna selection fixture now requires the HoloNight style plugin to remain unloaded.
+
+Geometry covers both variants at 0.78, 1.0 and 1.25 near each horizontal and vertical edge, reopening after ancestor
+movement, empty and 100-item models, default/custom/invalid limits, constrained windows, selected-item containment,
+and unsupported transforms. Direct editing tests cover selection, maximum length, undo/redo, removal, slots, visual
+replacements, wrapping/overflow, disabled treatment and appearance reload. Existing offscreen rendering and interaction
+regressions run under both styles without desktop pointer/focus automation. A historical pressed-state comparison now
+supplies the same explicit appearance palette to its standard delegate as the compared composites.
+
+The source policy rejects fixed-style imports, missing/wrong runtime namespaces, unqualified control instances,
+enums and attached properties inside the migrated scope, and Controls/style imports inside Core or the geometry
+helper. Positive and individual negative fixtures enforce these rules. Standard style templates, demo/gallery defaults
+and historical compatibility fixture imports remain explicitly outside this slice's new rules.
+
+Commands from the provider root:
+
+```sh
+cmake --build build -j 6
+ctest --test-dir build -R 'holonight_(runtime_composites|core_isolation|package_install|qml_.*policy)' --output-on-failure
+QT_QPA_PLATFORM=offscreen ctest --test-dir build --output-on-failure -j 4
+clang-format --dry-run --Werror tests/test_runtime_composites.cpp tests/test_qml_smoke.cpp tests/quick_palette_main.cpp tests/quick_style_selection.cpp
+git diff --check
+```
+
+Results: focused and installed acceptance passed; full provider build and all 49 CTest entries passed (11.65 seconds)
+with Qt 6.11.2. Changed C++ formatting and whitespace passed. The first slice separately passed 44 focused tests;
+the second passed 21 search/text/geometry tests in each selected style and installed acceptance before its commit.
+
+Provider sequence: `f32f5bb` (Core and straightforward imports), `da470c5` (compatibility and shared geometry), followed
+by this acceptance/policy/implementation-record commit, including typography and frame-palette preservation found
+in final review. Demo/gallery defaults, broader guide alignment, remaining provider negative/final acceptance,
+consumer migration and manual Hyprland/Sway ecosystem acceptance remain subsequent work. No UQC-201 checks ran.

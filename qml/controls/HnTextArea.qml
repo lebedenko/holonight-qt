@@ -113,6 +113,9 @@ FocusScope {
             id: editor
             palette: compositePalette.appearancePalette
 
+            font.family: HolonightTheme.uiFont
+            font.pointSize: HolonightTheme.bodySize
+
             width: editorScroll.contentWidth
             implicitWidth: 0
             enabled: root.enabled
