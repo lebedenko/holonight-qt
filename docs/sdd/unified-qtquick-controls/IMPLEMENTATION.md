@@ -512,3 +512,8 @@ whitespace pass. Focused clang-tidy exits successfully; the pre-existing fixture
 has advisory readability/complexity warnings. Analysis uses a temporary compile
 database without GCC-only flags. No system installation or desktop interaction.
 This provider handoff enables greeter re-verification; it is not UQC-201 integration.
+
+Implementation `7ee28b1a9a4b87e8508428b6d6e0e4b89d9d460c` is published and
+confirmed by canonical origin/main. CI `34288292334` and licensing `34288292339`
+were running at publication; final remote results are recorded in the umbrella
+UQC-109 handoff. Greeter must use the published provider gitlink as prerequisite.

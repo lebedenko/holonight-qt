@@ -137,4 +137,4 @@ preparation. CMake warned about unavailable Kirigami plugin link targets, but ru
 - [x] Define bounded provider correction from published baseline `478ef7c`.
 - [x] Reproduce empty-icon-role failure with QVariantList rows.
 - [x] Guard empty role lookup; verify both styles, provider suite and static checks.
-- [ ] Publish provider correction and confirm canonical availability for UQC-106.
+- [x] Publish provider correction and confirm canonical availability for UQC-106.
