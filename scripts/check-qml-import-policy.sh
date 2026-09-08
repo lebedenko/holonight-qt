@@ -3,30 +3,35 @@
 set -euo pipefail
 
 qml_root=${1:?usage: check-qml-import-policy.sh <qml-root>}
+qml_root=$(cd -- "${qml_root}" && pwd)
 failed=0
-style_types='ApplicationWindow|Label|ToolButton|ToolBar|ToolSeparator|MenuSeparator|Popup|MenuBar|MenuBarItem|Button|CheckBox|ComboBox|ItemDelegate|Menu|MenuItem|ProgressBar|RadioButton|ScrollBar|ScrollView|Slider|SpinBox|Switch|TabBar|TabButton|TextArea|TextField|ToolTip'
+style_types='ApplicationWindow|Label|ToolButton|ToolBar|ToolSeparator|MenuSeparator|Popup|MenuBar|MenuBarItem|Button|CheckBox|ComboBox|ItemDelegate|Menu|MenuItem|ProgressBar|RadioButton|ScrollBar|ScrollView|Slider|SpinBox|Switch|TabBar|TabButton|TextArea|TextField|ToolTip|Control|ButtonGroup|Overlay|RangeSlider|Frame|Pane|Page|Dialog|DialogButtonBox|BusyIndicator|SwipeView|StackView|Action|ActionGroup|RoundButton|DelayButton|Tumbler|SplitView|HorizontalHeaderView|VerticalHeaderView'
 style_use="(^|[^.[:alnum:]_])(${style_types})[[:space:]]*\\{"
 core_types='HoloniightPalette|HolonightTheme|HnAppearance|HnShapeProfile|HnSurfaceRole|HnCornerStyle|HnShapeKind|HnCornerMask|HnIconProvider|HnIcon|HnControlSize|HnMetrics|HnTypographyRole|HnLabel'
 
 while IFS= read -r qml_file; do
-  # This slice migrates composites and isolates Core. Standard style templates,
-  # demo/gallery defaults and historical compatibility fixtures retain their policy.
+  # Applications and composites use runtime Controls. Standard Templates and
+  # explicit compatibility fixtures retain their separate import boundary.
+  namespace=C
   case "${qml_file}" in
-    */controls/*|*/HnApplicationWindow.qml|*/HnSurfaceFrame.qml)
+    */demo/*|*/examples/controls-gallery/*) namespace=Controls ;;
+  esac
+  case "${qml_file}" in
+    */controls/*|*/HnApplicationWindow.qml|*/HnSurfaceFrame.qml|*/demo/*|*/examples/controls-gallery/*)
       if rg -q '^import (Holonight([[:space:]]|$)|QtQuick\.Controls\.)' "${qml_file}"; then
-        echo "${qml_file}: composites must use runtime QtQuick.Controls as C" >&2
+        echo "${qml_file}: applications/composites must use runtime QtQuick.Controls as ${namespace}" >&2
         failed=1
       fi
-      if rg -q '\bC\.' "${qml_file}" && ! rg -q '^import QtQuick\.Controls as C$' "${qml_file}"; then
-        echo "${qml_file}: C control use requires a file-local runtime import" >&2
+      if rg -q "\b${namespace}\." "${qml_file}" && ! rg -q "^import QtQuick\.Controls as ${namespace}$" "${qml_file}"; then
+        echo "${qml_file}: ${namespace} control use requires a file-local runtime import" >&2
         failed=1
       fi
       if rg -q '^import QtQuick\.Controls([[:space:]]|$)' "${qml_file}" \
-          && ! rg -q '^import QtQuick\.Controls as C$' "${qml_file}"; then
-        echo "${qml_file}: runtime Controls must use the C namespace" >&2
+          && ! rg -q "^import QtQuick\.Controls as ${namespace}$" "${qml_file}"; then
+        echo "${qml_file}: runtime Controls must use the ${namespace} namespace" >&2
         failed=1
       fi
-      if rg -q "(^|[^.[:alnum:]_])(${style_types}|Control|ButtonGroup|Overlay)([[:space:]]*\\{|\\.)" "${qml_file}"; then
+      if rg -q "(^|[^.[:alnum:]_])(${style_types})([[:space:]]*\\{|\\.)" "${qml_file}"; then
         echo "${qml_file}: qualify runtime control instances, enums and attached properties" >&2
         failed=1
       fi

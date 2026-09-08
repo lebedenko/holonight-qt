@@ -10,7 +10,7 @@ qt_add_qml_module(holonight_controls_gallery
     IMPORT_PATH
         ${CMAKE_BINARY_DIR}/qml
     IMPORTS
-        Holonight
+        QtQuick.Controls
         Holonight.Core
         Holonight.Controls
     QML_FILES
@@ -41,3 +41,8 @@ add_dependencies(holonight_controls_gallery
 )
 
 install(TARGETS holonight_controls_gallery RUNTIME DESTINATION bin)
+
+qt_add_resources(holonight_controls_gallery controls_config
+    PREFIX "/"
+    FILES qtquickcontrols2.conf
+)

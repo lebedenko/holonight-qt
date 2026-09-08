@@ -448,3 +448,21 @@ foreach(mode IN ITEMS Holonight Fusion Core)
   endif()
   message(STATUS "Installed ${mode} composite acceptance passed")
 endforeach()
+
+# Run the installed executables with all QML search overrides cleared. They must
+# discover their own prefix rather than using the configured build-tree path.
+foreach(example IN ITEMS holonight_demo holonight_controls_gallery)
+  if((example STREQUAL "holonight_demo" AND @BUILD_DEMO@)
+      OR (example STREQUAL "holonight_controls_gallery" AND @BUILD_CONTROLS_GALLERY@))
+    find_program(example_python NAMES python3 REQUIRED)
+    foreach(mode IN ITEMS default environment command-line configuration)
+      execute_process(COMMAND "${example_python}" "@CMAKE_CURRENT_SOURCE_DIR@/check_example_startup.py"
+          "${install_prefix}/bin/${example}" "${qml_root}" "${mode}"
+          RESULT_VARIABLE result OUTPUT_VARIABLE output ERROR_VARIABLE error)
+      if(NOT result EQUAL 0)
+        message(FATAL_ERROR "Installed ${example} ${mode} failed:\n${output}\n${error}")
+      endif()
+      message(STATUS "${output}")
+    endforeach()
+  endif()
+endforeach()

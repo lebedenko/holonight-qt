@@ -4,12 +4,12 @@
 pragma ComponentBehavior: Bound
 
 import QtQuick
-import QtQuick.Controls
+import QtQuick.Controls as Controls
 import QtQuick.Layouts
 import Holonight.Core
 import Holonight.Controls
 
-ScrollView {
+Controls.ScrollView {
     id: root
 
     contentWidth: availableWidth

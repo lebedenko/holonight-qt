@@ -10,7 +10,9 @@ qt_add_qml_module(holonight_demo
     IMPORT_PATH
         ${CMAKE_BINARY_DIR}/qml
     IMPORTS
-        Holonight
+        QtQuick.Controls
+        Holonight.Core
+        Holonight.Controls
     QML_FILES
         Main.qml
     NO_PLUGIN
@@ -27,6 +29,11 @@ target_link_libraries(holonight_demo PRIVATE
     Qt6::QuickControls2
 )
 
-add_dependencies(holonight_demo holonight_qml)
+add_dependencies(holonight_demo holonight_qml holonight_core_qml holonight_controls_qml)
 
 install(TARGETS holonight_demo RUNTIME DESTINATION bin)
+
+qt_add_resources(holonight_demo controls_config
+    PREFIX "/"
+    FILES qtquickcontrols2.conf
+)

@@ -41,6 +41,8 @@ jobs:
           cmake -B build -G Ninja
           -DCMAKE_BUILD_TYPE=Debug
           -DBUILD_TESTS=ON
+          -DBUILD_DEMO=ON
+          -DBUILD_CONTROLS_GALLERY=ON
           -DBUILD_QT5_PROBES=ON
 
       - name: Build

@@ -366,7 +366,7 @@ Use `HnApplicationWindow` for a consistent application canvas and optional in-ap
 
 ```qml
 import QtQuick
-import Holonight
+import QtQuick.Controls as Controls
 import Holonight.Core
 import Holonight.Controls
 
@@ -380,7 +380,7 @@ HnApplicationWindow {
     applicationHeaderHeight: 40
     contentPadding: 16
 
-    applicationHeaderTrailingData: Button {
+    applicationHeaderTrailingData: Controls.Button {
         text: qsTr("Settings")
     }
 

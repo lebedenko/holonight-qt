@@ -4,7 +4,7 @@
 pragma ComponentBehavior: Bound
 
 import QtQuick
-import QtQuick.Controls
+import QtQuick.Controls as Controls
 import Holonight.Core
 import Holonight.Controls
 
@@ -14,7 +14,7 @@ HnSurfaceFrame {
     implicitHeight: 420
     surfaceRole: HnSurfaceRole.Window
 
-    Label {
+    Controls.Label {
         id: windowLabel
 
         anchors.left: parent.left
@@ -40,7 +40,7 @@ HnSurfaceFrame {
         surfaceRole: HnSurfaceRole.Panel
         fillColor: HoloniightPalette.surface
 
-        Label {
+        Controls.Label {
             id: baseLabel
 
             anchors.left: parent.left
@@ -65,7 +65,7 @@ HnSurfaceFrame {
             anchors.bottomMargin: 24
             surfaceRole: HnSurfaceRole.Card
 
-            Label {
+            Controls.Label {
                 id: cardLabel
 
                 anchors.left: parent.left
@@ -88,7 +88,7 @@ HnSurfaceFrame {
                 anchors.bottomMargin: 20
                 surfaceRole: HnSurfaceRole.Popup
 
-                Label {
+                Controls.Label {
                     anchors.centerIn: parent
                     text: qsTr("Popup · surfaceRaised")
                     color: HoloniightPalette.textPrimary

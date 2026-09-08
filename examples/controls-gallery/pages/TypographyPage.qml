@@ -4,12 +4,12 @@
 pragma ComponentBehavior: Bound
 
 import QtQuick
-import QtQuick.Controls
+import QtQuick.Controls as Controls
 import QtQuick.Layouts
 import Holonight.Core
 import Holonight.Controls
 
-ScrollView {
+Controls.ScrollView {
     id: root
 
     property int baseFontSizeOverride: HolonightTheme.bodySize
@@ -73,7 +73,7 @@ ScrollView {
                         rawText: qsTr("Base Size:")
                     }
 
-                    SpinBox {
+                    Controls.SpinBox {
                         id: fontSizeSpinBox
 
                         from: 6
@@ -91,22 +91,22 @@ ScrollView {
 
                     Item { Layout.fillWidth: true }
 
-                    Button {
+                    Controls.Button {
                         text: qsTr("Small (8 pt)")
                         onClicked: root.baseFontSizeOverride = 8
                     }
 
-                    Button {
+                    Controls.Button {
                         text: qsTr("Default (10 pt)")
                         onClicked: root.baseFontSizeOverride = 10
                     }
 
-                    Button {
+                    Controls.Button {
                         text: qsTr("Large (14 pt)")
                         onClicked: root.baseFontSizeOverride = 14
                     }
 
-                    Button {
+                    Controls.Button {
                         text: qsTr("Hero (18 pt)")
                         onClicked: root.baseFontSizeOverride = 18
                     }

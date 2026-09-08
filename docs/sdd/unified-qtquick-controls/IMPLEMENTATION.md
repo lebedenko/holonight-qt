@@ -29,8 +29,8 @@ contracts and verification requirements. Only provider files are changed in this
 | Application palette support | Done | Black/white/black and reload regressions reproduced before fixes; all 46 CTest entries pass, including 16 schemes, offscreen rendering, hybrid and installed-prefix fixtures (2026-09-08). |
 | Nine new controls | Done | All nine installed origins, palette/layout/overlay/state acceptance and all 46 provider CTest entries pass (2026-09-08). |
 | Composite runtime migration and Core isolation | Done | All 26 public composites load; HoloNight/Fusion origins, behavior, shared popup geometry and installed-prefix acceptance pass (2026-09-08). |
-| Executable defaults | Planned | Demo/gallery configuration and imports remain subsequent work. |
-| Policy, documentation and installed verification | In Progress | Composite/Core scope enforced and installed acceptance passes; executable defaults and final provider acceptance remain open. |
+| Executable defaults | Done | Both actual examples pass embedded/default, environment, command-line and configuration overrides in build and installed-prefix runs (2026-09-08). |
+| Policy, documentation and installed verification | In Progress | Application/composite/Core policy, guides, executable defaults and installed acceptance pass; isolated negative fixtures and final provider acceptance remain open. |
 
 Application-painted sliders and the license-popup composition remain accepted boundaries. Other catalog types
 remain fallback controls. No full manual application/state or two-compositor integration pass is implied here.
@@ -263,3 +263,58 @@ Provider sequence: `f32f5bb` (Core and straightforward imports), `da470c5` (comp
 by this acceptance/policy/implementation-record commit, including typography and frame-palette preservation found
 in final review. Demo/gallery defaults, broader guide alignment, remaining provider negative/final acceptance,
 consumer migration and manual Hyprland/Sway ecosystem acceptance remain subsequent work. No UQC-201 checks ran.
+
+## Demo/gallery runtime defaults — 2026-09-08
+
+Slice baseline: published `bd5f2f0f6844ec809b3fa80182a61493cf724c0a`, umbrella `8e3cc74`.
+UQC-101 remains In Progress; final isolated negative fixtures and provider acceptance are subsequent work.
+
+Both graphical examples embed `:/qtquickcontrols2.conf` with `Style=Holonight` and remove imperative startup style
+selection. Application QML qualifies standard controls, fallback types, attached properties and enums using
+`QtQuick.Controls as Controls`. Their CMake imports declare runtime Controls and the explicit Core/composite APIs.
+The demo's error examples use HnSearchField/HnTextArea. Gallery Switch sizeRole assignments are conditional on the
+selected implementation exposing that extension: HoloNight keeps semantic track sizes; Fusion keeps its native
+sizing. The initial migrated gallery failed under Fusion with a nonexistent sizeRole diagnostic before this fix.
+
+Installed executables locate QML relative to their own prefix and do not add the configured build-tree import path.
+Build executables retain that path only when running from their configured build directory. Public composites and
+standard-control implementations are unchanged in this slice. No process-global appearance writes are added.
+
+Changed files: demo and gallery QML, startup sources, generated-header templates, CMake definitions and new config
+resources; source-policy script and positive/negative fixtures; executable startup runner, CTest and installed test
+registration; CI configuration; README and selection/shared-control/frame guides. The ignored local AGENTS.md is
+also aligned with the application namespace, embedded defaults and focused verification commands.
+
+The runtime checker starts the actual executables offscreen in four separate-process modes: no style overrides,
+environment Fusion, command-line Fusion overriding environment HoloNight, and external Fusion configuration.
+It checks resolved Controls.Button URLs, all loaded HoloNight module paths, absence of the HoloNight style plugin
+under Fusion, no QML diagnostics and no appearance file writes. All gallery pages instantiate eagerly. Each process
+is observed for three seconds and terminated; this is bounded startup coverage, not a desktop event-loop readiness,
+visual, editing or pointer/focus interaction claim. The same checks run on installed binaries with inherited QML paths
+cleared. Existing provider fixtures continue to verify detailed palette, rendering, composite and geometry behavior.
+
+Source policy now covers both application directories, including fallback catalog types, with positive and individual
+negative namespace/import/instance/enum/attached-property cases. CI enables both examples so this coverage is active.
+The selector guide replaces historical blanket selection claims with the accepted override, coverage, palette and
+module-discovery boundaries. Historical discovery characterization remains unchanged.
+
+Verification commands from the provider root:
+
+```sh
+cmake -S . -B build -DBUILD_TESTS=ON -DBUILD_DEMO=ON -DBUILD_CONTROLS_GALLERY=ON
+cmake --build build -j 6
+ctest --test-dir build -R 'startup_|qml_.*policy|package_install' --output-on-failure -j 4
+QT_QPA_PLATFORM=offscreen ctest --test-dir build --output-on-failure -j 4
+clang-format --dry-run --Werror demo/main.cpp examples/controls-gallery/main.cpp
+bash -n scripts/check-qml-import-policy.sh
+git diff --check
+```
+
+Results: full build and all 59 provider CTest entries passed (43.15 seconds, Qt 6.11.2); thirteen focused entries
+including all installed startup modes passed. A final focused rerun covers the checker runtime-directory isolation
+and relative source-policy paths. C++ formatting, Python syntax and whitespace checks pass. Configuration reports
+existing Qt private-API and gallery QTP0004 warnings. No UQC-201 integration or human-operated ecosystem checks ran.
+
+Remaining provider acceptance: isolated absent-module/plugin/dependency and bad-case diagnostics; explicit competing
+Basic/Fusion imports, imperative style precedence and platform-theme-only negative fixtures; final contract review and
+published provider handoff. Consumer repositories remain unassigned until UQC-101 completes.

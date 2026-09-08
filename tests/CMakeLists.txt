@@ -287,6 +287,12 @@ add_test(
     COMMAND bash ${CMAKE_SOURCE_DIR}/scripts/check-qml-import-policy.sh ${CMAKE_SOURCE_DIR}/qml
 )
 
+foreach(scope IN ITEMS demo examples/controls-gallery)
+  string(REPLACE "/" "_" name "${scope}")
+  add_test(NAME holonight_qml_policy_${name}
+      COMMAND bash ${CMAKE_SOURCE_DIR}/scripts/check-qml-import-policy.sh ${CMAKE_SOURCE_DIR}/${scope})
+endforeach()
+
 find_package(Qt6 ${Qt6_VERSION} EXACT REQUIRED COMPONENTS QuickPrivate QuickTemplates2Private)
 
 # Each process initializes the selected style and appearance before loading QML.
@@ -315,3 +321,21 @@ add_dependencies(holonight_quick_style_selection holonight_qml holonight_control
 include(QuickPaletteInfrastructure.cmake)
 
 include(RuntimeComposites.cmake)
+
+if(BUILD_DEMO OR BUILD_CONTROLS_GALLERY)
+  find_package(Python3 REQUIRED COMPONENTS Interpreter)
+  set(HOLONIGHT_EXAMPLE_TARGETS)
+  if(BUILD_DEMO)
+    list(APPEND HOLONIGHT_EXAMPLE_TARGETS holonight_demo)
+  endif()
+  if(BUILD_CONTROLS_GALLERY)
+    list(APPEND HOLONIGHT_EXAMPLE_TARGETS holonight_controls_gallery)
+  endif()
+  foreach(example IN LISTS HOLONIGHT_EXAMPLE_TARGETS)
+    foreach(mode IN ITEMS default environment command-line configuration)
+      add_test(NAME ${example}_startup_${mode}
+          COMMAND ${Python3_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/check_example_startup.py
+              $<TARGET_FILE:${example}> ${CMAKE_BINARY_DIR}/qml ${mode})
+    endforeach()
+  endforeach()
+endif()

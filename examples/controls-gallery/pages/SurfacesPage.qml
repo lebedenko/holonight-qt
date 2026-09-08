@@ -4,13 +4,13 @@
 pragma ComponentBehavior: Bound
 
 import QtQuick
-import QtQuick.Controls
+import QtQuick.Controls as Controls
 import QtQuick.Layouts
 import Holonight.Core
 import Holonight.Controls
 import ".."
 
-ScrollView {
+Controls.ScrollView {
     id: root
 
     contentWidth: availableWidth
@@ -115,7 +115,7 @@ ScrollView {
                 rawText: qsTr("●")
                 color: HoloniightPalette.primary
             }
-            trailingContent: Button { text: qsTr("Reset") }
+            trailingContent: Controls.Button { text: qsTr("Reset") }
         }
 
         HnSectionHeader {

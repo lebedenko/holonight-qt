@@ -20,7 +20,7 @@ This repository contains only the Qt theme implementation. The shell, icon theme
 |---|---|---|
 | `src/style/` | `libholonight.so` — QStyle plugin | Selected by the platform theme |
 | `src/platformtheme/` | `libqholonight.so` — QPlatformTheme plugin | `QT_QPA_PLATFORMTHEME=holonight` |
-| `qml/` | QQC2 style components, design-system primitives, and reusable composites | `import Holonight`, `import Holonight.Core`, `import Holonight.Controls` |
+| `qml/` | QQC2 style components, design-system primitives, and reusable composites | `import QtQuick.Controls as Controls`, `import Holonight.Core`, `import Holonight.Controls` |
 | `palette/` | `libholonight_palette.a` — shared color tokens | static dependency |
 | `config/` | Qt appearance projection, reader, and theme catalog | consumed by platform theme, style, and QML |
 
@@ -236,3 +236,9 @@ palettes, while HoloNight adds and adjusts roles for its own semantic and access
 - [Dracula](https://github.com/dracula/dracula-theme)
 - [Nord](https://github.com/nordtheme/nord)
 - [Everforest](https://github.com/sainnhe/everforest)
+
+## Quick Controls application defaults
+
+The demo and controls gallery use namespaced runtime Controls with an embedded HoloNight default. Explicit style
+overrides remain supported. Follow the [selection and deployment guide](docs/automatic-quick-controls-style-selection.md)
+when adopting the shared library in another application.

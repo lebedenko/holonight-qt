@@ -1,121 +1,88 @@
 # Automatic HoloNight Quick Controls Style Selection
 
-## Summary
+## Application default
 
-The HoloNight Qt Quick Controls style is implemented and installed correctly, but downstream applications do not
-select it automatically from the platform-theme plugin alone. Importing `QtQuick.Controls` chooses controls from the
-active style; it does not activate the `Holonight` style.
-
-The reliable application-level mechanism that avoids an explicit `QQuickStyle::setStyle()` call is an embedded
-`qtquickcontrols2.conf` resource:
+Embed this file as `:/qtquickcontrols2.conf` in every graphical executable:
 
 ```ini
 [Controls]
 Style=Holonight
 ```
 
-The file must be available as `:/qtquickcontrols2.conf` before the first Qt Quick Controls type is loaded.
-
-## Verified existing pieces
-
-The shared library already provides the pieces needed after `Holonight` has been selected:
-
-- The `Holonight` QML module exports styled implementations such as `Slider`, `Switch`, and `RadioButton`.
-- Its generated `qmldir` declares the module as a Qt Quick Controls style and imports `QtQuick.Controls.Basic` as
-  the fallback style.
-- The style module and its QML files are installed under `lib/qt6/qml/Holonight`.
-- The QPA platform-theme plugin is installed under `lib/qt6/plugins/platformthemes` and exposes the `holonight` key.
-- `HoloniightTheme::themeHint(QPlatformTheme::StyleNames)` returns `Holonight` followed by `Fusion`.
-- The inspected system installation matches the current source for the affected control files.
-
-When `QT_QUICK_CONTROLS_STYLE=Holonight` is present, controls imported through
-`import QtQuick.Controls as Controls` resolve to the HoloNight implementations. The observed audio-page controls
-therefore demonstrate that the style is loading; their appearance is produced by the current HoloNight control and
-palette definitions.
-
-## Missing automatic-selection contract
-
-No inspected downstream application resource provides `qtquickcontrols2.conf`. The settings application also does
-not call `QQuickStyle::setStyle()`, so its Quick Controls style currently depends on process environment such as:
-
-```text
-QT_QUICK_CONTROLS_STYLE=Holonight
+```cmake
+qt_add_resources(my_app controls_config
+    PREFIX "/"
+    FILES qtquickcontrols2.conf
+)
 ```
 
-That environment variable was present in the validated desktop session, but it is an external deployment property,
-not a self-contained application contract. A different launcher, service manager, test environment, or desktop
-session may omit it and silently select Qt's platform default style.
+Application QML uses the runtime namespace for standard controls, enums and attached properties:
 
-The platform-theme plugin does not close this gap. `QPlatformTheme::StyleNames` is principally a Qt Widgets style
-hint and is not a reliable selector for a custom Qt Quick Controls style. Installing or activating the HoloNight
-platform theme is therefore insufficient to guarantee that `QtQuick.Controls` resolves through `Holonight`.
+```qml
+import QtQuick.Controls as Controls
+import Holonight.Core
+import Holonight.Controls
 
-## Recommended downstream integration
+Controls.Button {
+    text: qsTr("Apply")
+    display: Controls.Button.TextOnly
+    Controls.ToolTip.text: qsTr("Apply changes")
+}
+```
 
-Applications that should always use HoloNight controls without imperative style selection should:
+Do not import `Holonight` or `QtQuick.Controls.Basic` directly in application QML, declare a fixed style in the
+application module's CMake `IMPORTS`, or call `QQuickStyle::setStyle()` in normal startup. Shared composites use
+runtime Controls internally; Core stays independent of the selected style. `Holonight.Core` and `Holonight.Controls`
+retain their intentional HoloNight appearance APIs under explicit style overrides.
 
-1. Add a `qtquickcontrols2.conf` file containing the `[Controls]` configuration above.
-2. Embed it at resource path `:/qtquickcontrols2.conf` in the application target.
-3. Import public Qt controls through a namespace, for example:
+## Overrides and coverage
 
-   ```qml
-   import QtQuick.Controls as Controls
-   ```
+The embedded configuration is an overridable default. Qt gives an imperative `QQuickStyle::setStyle()` call priority,
+followed by command-line `-style`, `QT_QUICK_CONTROLS_STYLE`, and configuration. `QT_QUICK_CONTROLS_CONF` can select
+another configuration file. Explicit competing style imports bypass runtime selection. See
+[Qt style selection](https://doc.qt.io/qt-6/qtquickcontrols-styles.html).
 
-4. Keep the `Holonight` QML style module discoverable through a standard Qt QML import path or application
-   deployment bundle.
-5. Keep `QtQuick.Controls.Basic` imports internal to the HoloNight style implementation; downstream application QML
-   should not bypass style selection by importing Basic directly.
+The provider implements 27 standard controls. Other types use its declared Basic fallback; an application's explicit
+fallback choice, such as Haruna's Fusion fallback, remains effective. Application-painted controls retain their own
+visuals. A selected style name alone does not prove that every visible control uses HoloNight painting.
 
-This configuration is application-specific by design. It makes the style deterministic without relying on a shell
-environment and without coupling application startup code to `QQuickStyle`.
+Standard controls honor effective application/control Qt palettes. Session appearance supplies defaults; choosing
+an application palette does not write desktop appearance configuration. Composites retain their explicit appearance
+boundary. Use `HnSearchField` or `HnTextArea` when an override-safe error API is needed, and `HnIconComboBox` for the
+shared popup sizing API. HoloNight-only standard-control extensions are unavailable in other styles: guard optional
+assignments or use public composite APIs.
 
-## Deployment considerations
+## Deployment
 
-Selecting the style and discovering the style module are separate requirements:
+Style selection and module discovery are separate requirements. Qt must find `Holonight/qmldir`, its QML files,
+and ABI-compatible plugins through the effective QML import paths. A non-system prefix requires an application-relative
+path or an explicit process import path. See [Qt deployment](https://doc.qt.io/qt-6/qtquickcontrols-deployment.html).
 
-- `qtquickcontrols2.conf` selects the name `Holonight`.
-- Qt must still find `Holonight/qmldir`, its QML files, and its plugin through the effective QML import paths.
-- A non-system prefix must be exposed through deployment layout, an application-relative import path, or an
-  appropriate runtime environment.
-- The QPA platform-theme plugin has its own plugin-search path and activation requirements. It supplies palette,
-  font, icon, and color-scheme integration, but should not be treated as the Quick Controls style selector.
+The platform-theme plugin has its own plugin search path and activation. `QT_QPA_PLATFORMTHEME=holonight` supplies
+platform integration but does not by itself select the Quick Controls style. HoloNight sessions export both that
+variable and `QT_QUICK_CONTROLS_STYLE=Holonight`, preserving explicit user overrides. Native dynamically linked Qt 6
+applications are the supported third-party scope; Qt 5 Quick, static binaries, Flatpak and AppImage are outside this
+initiative.
 
-Downstream build and packaging tests should cover both resource selection and installed-prefix discovery rather than
-assuming the developer session's environment.
+## Provider examples and verification
 
-## Recommended verification
+The demo and controls gallery embed the configuration above. Their build executables use the build QML directory;
+installed executables discover the QML directory relative to their installation prefix without adding a build-tree
+fallback. Build both examples to enable their startup acceptance:
 
-Add integration coverage that starts a minimal downstream QML application with style-related environment variables
-cleared and verifies:
+```sh
+cmake -S . -B build -DBUILD_TESTS=ON -DBUILD_DEMO=ON -DBUILD_CONTROLS_GALLERY=ON
+cmake --build build -j 6
+ctest --test-dir build -R 'startup_|qml_.*policy|package_install' --output-on-failure
+```
 
-- the configured Quick Controls style name is `Holonight`;
-- representative `QtQuick.Controls` types instantiate successfully;
-- a representative control resolves to HoloNight-specific geometry or properties;
-- the installed-prefix case works without source-tree QML import paths;
-- direct `QtQuick.Controls.Basic` imports are absent from downstream application QML.
+Fresh offscreen processes check the embedded default, environment Fusion, command-line Fusion overriding environment
+HoloNight, and an external Fusion configuration. The checks inspect runtime type resolution, loaded plugin paths and
+QML diagnostics in build and staged installations. All gallery pages instantiate eagerly. These bounded startup
+checks do not certify desktop interaction or visual appearance. Separate provider palette/rendering and composite
+fixtures cover those contracts within their documented scope.
 
-Also retain a negative test with no configuration to document that installing the platform-theme plugin by itself
-does not guarantee HoloNight Quick Controls selection.
-
-## Separate visual-design finding
-
-Style activation should not be confused with visual correctness. In the inspected audio-page screenshot, the
-controls were already rendered by the HoloNight style. The visible results follow the current shared definitions:
-
-- `Slider.qml` colors its handle and filled groove with `HoloniightPalette.primary` and its border with
-  `borderPassive`.
-- `Switch.qml` uses HoloNight track and thumb metrics and palette roles.
-- `RadioButton.qml` uses the HoloNight indicator geometry and selection colors.
-
-If those controls should look different, the required work is a shared-control visual-design change in
-`holonight-qt`, not another style-loading change in the downstream application.
-
-## Acceptance criteria for automatic selection
-
-- A downstream application with embedded `:/qtquickcontrols2.conf` uses `Holonight` when
-  `QT_QUICK_CONTROLS_STYLE` is unset.
-- The application does not call `QQuickStyle::setStyle()`.
-- The application imports `QtQuick.Controls`, not `QtQuick.Controls.Basic`.
-- Installed and development-prefix deployments both locate the HoloNight style module.
-- Platform-theme activation remains independently configurable and is not required merely to select the QML style.
+Consumer adoption, isolated missing-module/competing-style acceptance and final real-application checks are tracked
+in the [UQC provider implementation record](sdd/unified-qtquick-controls/IMPLEMENTATION.md) and umbrella initiative.
+Historical audio-page screenshots and discovery observations are not final ecosystem acceptance. Hyprland/Sway
+activation and human-operated visual/input checks remain required before integration.

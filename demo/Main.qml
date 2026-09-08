@@ -4,13 +4,12 @@
 pragma ComponentBehavior: Bound
 
 import QtQuick
-import QtQuick.Controls
+import QtQuick.Controls as Controls
 import QtQuick.Layouts
-import Holonight as H
 import Holonight.Core as Core
-import Holonight.Controls as Controls
+import Holonight.Controls as Hn
 
-Controls.HnApplicationWindow {
+Hn.HnApplicationWindow {
     id: root
     visible: true
     width: 840
@@ -36,14 +35,14 @@ Controls.HnApplicationWindow {
         }
 
         // ── Tab bar ───────────────────────────────────────────────────
-        TabBar {
+        Controls.TabBar {
             id: tabBar
             Layout.fillWidth: true
-            TabButton { text: "Input" }
-            TabButton { text: "Text" }
-            TabButton { text: "Navigation" }
-            TabButton { text: "Feedback" }
-            TabButton { text: "Containers" }
+            Controls.TabButton { text: "Input" }
+            Controls.TabButton { text: "Text" }
+            Controls.TabButton { text: "Navigation" }
+            Controls.TabButton { text: "Feedback" }
+            Controls.TabButton { text: "Containers" }
         }
 
         // ── Tab pages ─────────────────────────────────────────────────
@@ -53,7 +52,7 @@ Controls.HnApplicationWindow {
             Layout.fillHeight: true
 
             // ── Tab 1: Input ──────────────────────────────────────────
-            ScrollView {
+            Controls.ScrollView {
                 contentWidth: availableWidth
                 contentHeight: inputCol.implicitHeight
 
@@ -68,15 +67,15 @@ Controls.HnApplicationWindow {
                         spacing: 8
                         Layout.leftMargin: 40
                         Layout.bottomMargin: 8
-                        Button { text: "Default" }
-                        Button { text: "Primary"; highlighted: true }
+                        Controls.Button { text: "Default" }
+                        Controls.Button { text: "Primary"; highlighted: true }
                     }
                     RowLayout {
                         spacing: 8
                         Layout.leftMargin: 40
                         Layout.bottomMargin: 32
-                        Button { text: "Disabled"; enabled: false }
-                        Button { text: "Disabled Primary"; highlighted: true; enabled: false }
+                        Controls.Button { text: "Disabled"; enabled: false }
+                        Controls.Button { text: "Disabled Primary"; highlighted: true; enabled: false }
                     }
 
                     Core.HnLabel { role: Core.HnTypographyRole.MicroHeader; rawText: "CHECKBOXES"; Layout.leftMargin: 40; Layout.bottomMargin: 10 }
@@ -86,15 +85,15 @@ Controls.HnApplicationWindow {
                         Layout.bottomMargin: 32
                         ColumnLayout {
                             spacing: 4
-                            CheckBox { text: "Unchecked" }
-                            CheckBox { text: "Checked"; checked: true }
-                            CheckBox { text: "Partial"; checkState: Qt.PartiallyChecked; tristate: true }
+                            Controls.CheckBox { text: "Unchecked" }
+                            Controls.CheckBox { text: "Checked"; checked: true }
+                            Controls.CheckBox { text: "Partial"; checkState: Qt.PartiallyChecked; tristate: true }
                         }
                         ColumnLayout {
                             spacing: 4
-                            CheckBox { text: "Disabled unchecked"; enabled: false }
-                            CheckBox { text: "Disabled checked"; checked: true; enabled: false }
-                            CheckBox { text: "Disabled partial"; checkState: Qt.PartiallyChecked; tristate: true; enabled: false }
+                            Controls.CheckBox { text: "Disabled unchecked"; enabled: false }
+                            Controls.CheckBox { text: "Disabled checked"; checked: true; enabled: false }
+                            Controls.CheckBox { text: "Disabled partial"; checkState: Qt.PartiallyChecked; tristate: true; enabled: false }
                         }
                     }
 
@@ -105,15 +104,15 @@ Controls.HnApplicationWindow {
                         Layout.bottomMargin: 32
                         ColumnLayout {
                             spacing: 4
-                            ButtonGroup { id: radioGroup }
-                            RadioButton { text: "Option A"; ButtonGroup.group: radioGroup; checked: true }
-                            RadioButton { text: "Option B"; ButtonGroup.group: radioGroup }
-                            RadioButton { text: "Option C"; ButtonGroup.group: radioGroup }
+                            Controls.ButtonGroup { id: radioGroup }
+                            Controls.RadioButton { text: "Option A"; Controls.ButtonGroup.group: radioGroup; checked: true }
+                            Controls.RadioButton { text: "Option B"; Controls.ButtonGroup.group: radioGroup }
+                            Controls.RadioButton { text: "Option C"; Controls.ButtonGroup.group: radioGroup }
                         }
                         ColumnLayout {
                             spacing: 4
-                            RadioButton { text: "Disabled"; enabled: false; checked: true }
-                            RadioButton { text: "Disabled"; enabled: false }
+                            Controls.RadioButton { text: "Disabled"; enabled: false; checked: true }
+                            Controls.RadioButton { text: "Disabled"; enabled: false }
                         }
                     }
 
@@ -122,10 +121,10 @@ Controls.HnApplicationWindow {
                         spacing: 24
                         Layout.leftMargin: 40
                         Layout.bottomMargin: 32
-                        Switch { text: "Off" }
-                        Switch { text: "On"; checked: true }
-                        Switch { text: "Disabled off"; enabled: false }
-                        Switch { text: "Disabled on"; checked: true; enabled: false }
+                        Controls.Switch { text: "Off" }
+                        Controls.Switch { text: "On"; checked: true }
+                        Controls.Switch { text: "Disabled off"; enabled: false }
+                        Controls.Switch { text: "Disabled on"; checked: true; enabled: false }
                     }
 
                     Core.HnLabel { role: Core.HnTypographyRole.MicroHeader; rawText: "SLIDERS"; Layout.leftMargin: 40; Layout.bottomMargin: 10 }
@@ -135,8 +134,8 @@ Controls.HnApplicationWindow {
                         Layout.leftMargin: 40
                         Layout.rightMargin: 40
                         Layout.bottomMargin: 32
-                        Slider { Layout.fillWidth: true; value: 0.4 }
-                        Slider { Layout.fillWidth: true; value: 0.7; enabled: false }
+                        Controls.Slider { Layout.fillWidth: true; value: 0.4 }
+                        Controls.Slider { Layout.fillWidth: true; value: 0.7; enabled: false }
                     }
 
                     Core.HnLabel { role: Core.HnTypographyRole.MicroHeader; rawText: "RANGE SLIDER"; Layout.leftMargin: 40; Layout.bottomMargin: 10 }
@@ -146,8 +145,8 @@ Controls.HnApplicationWindow {
                         Layout.leftMargin: 40
                         Layout.rightMargin: 40
                         Layout.bottomMargin: 32
-                        RangeSlider { Layout.fillWidth: true; first.value: 0.3; second.value: 0.7 }
-                        RangeSlider { Layout.fillWidth: true; first.value: 0.2; second.value: 0.6; enabled: false }
+                        Controls.RangeSlider { Layout.fillWidth: true; first.value: 0.3; second.value: 0.7 }
+                        Controls.RangeSlider { Layout.fillWidth: true; first.value: 0.2; second.value: 0.6; enabled: false }
                     }
 
                     Core.HnLabel { role: Core.HnTypographyRole.MicroHeader; rawText: "DIAL"; Layout.leftMargin: 40; Layout.bottomMargin: 10 }
@@ -164,7 +163,7 @@ Controls.HnApplicationWindow {
             }
 
             // ── Tab 2: Text ───────────────────────────────────────────
-            ScrollView {
+            Controls.ScrollView {
                 contentWidth: availableWidth
                 contentHeight: textCol.implicitHeight
 
@@ -181,10 +180,10 @@ Controls.HnApplicationWindow {
                         Layout.leftMargin: 40
                         Layout.rightMargin: 40
                         Layout.bottomMargin: 32
-                        TextField { Layout.fillWidth: true; placeholderText: "Placeholder text" }
-                        TextField { Layout.fillWidth: true; text: "Filled input value" }
-                        H.TextField { Layout.fillWidth: true; placeholderText: "Error state"; hasError: true }
-                        TextField { Layout.fillWidth: true; placeholderText: "Disabled"; enabled: false }
+                        Controls.TextField { Layout.fillWidth: true; placeholderText: "Placeholder text" }
+                        Controls.TextField { Layout.fillWidth: true; text: "Filled input value" }
+                        Hn.HnSearchField { Layout.fillWidth: true; placeholderText: "Error state"; hasError: true }
+                        Controls.TextField { Layout.fillWidth: true; placeholderText: "Disabled"; enabled: false }
                     }
 
                     Core.HnLabel { role: Core.HnTypographyRole.MicroHeader; rawText: "TEXT AREA"; Layout.leftMargin: 40; Layout.bottomMargin: 10 }
@@ -194,23 +193,23 @@ Controls.HnApplicationWindow {
                         Layout.leftMargin: 40
                         Layout.rightMargin: 40
                         Layout.bottomMargin: 32
-                        TextArea {
+                        Controls.TextArea {
                             implicitHeight: 80
                             text: "Multi-line\ntext area\nwith content"
-                            wrapMode: TextArea.Wrap
+                            wrapMode: Controls.TextArea.Wrap
                             Layout.fillWidth: true
                         }
-                        H.TextArea {
+                        Hn.HnTextArea {
                             implicitHeight: 80
                             placeholderText: "Error state"
                             hasError: true
-                            wrapMode: TextArea.Wrap
+                            wrapMode: Controls.TextArea.Wrap
                             Layout.fillWidth: true
                         }
-                        TextArea {
+                        Controls.TextArea {
                             implicitHeight: 80
                             text: "Disabled text area"
-                            wrapMode: TextArea.Wrap
+                            wrapMode: Controls.TextArea.Wrap
                             enabled: false
                             Layout.fillWidth: true
                         }
@@ -221,8 +220,8 @@ Controls.HnApplicationWindow {
                         spacing: 16
                         Layout.leftMargin: 40
                         Layout.bottomMargin: 32
-                        SpinBox { value: 42; from: 0; to: 100 }
-                        SpinBox { value: 42; from: 0; to: 100; enabled: false }
+                        Controls.SpinBox { value: 42; from: 0; to: 100 }
+                        Controls.SpinBox { value: 42; from: 0; to: 100; enabled: false }
                     }
 
                     Core.HnLabel { role: Core.HnTypographyRole.MicroHeader; rawText: "COMBOBOX"; Layout.leftMargin: 40; Layout.bottomMargin: 10 }
@@ -230,8 +229,8 @@ Controls.HnApplicationWindow {
                         spacing: 16
                         Layout.leftMargin: 40
                         Layout.bottomMargin: 32
-                        ComboBox { model: ["Hyprland", "sway", "niri", "river"] }
-                        ComboBox { model: ["Hyprland", "sway", "niri", "river"]; enabled: false }
+                        Controls.ComboBox { model: ["Hyprland", "sway", "niri", "river"] }
+                        Controls.ComboBox { model: ["Hyprland", "sway", "niri", "river"]; enabled: false }
                     }
 
                     Item { implicitHeight: 24 }
@@ -239,7 +238,7 @@ Controls.HnApplicationWindow {
             }
 
             // ── Tab 3: Navigation ─────────────────────────────────────
-            ScrollView {
+            Controls.ScrollView {
                 contentWidth: availableWidth
                 contentHeight: navCol.implicitHeight
 
@@ -256,12 +255,12 @@ Controls.HnApplicationWindow {
                         Layout.leftMargin: 40
                         Layout.rightMargin: 40
                         Layout.bottomMargin: 32
-                        TabBar {
+                        Controls.TabBar {
                             id: innerTabBar
                             Layout.fillWidth: true
-                            TabButton { text: "Alpha" }
-                            TabButton { text: "Beta" }
-                            TabButton { text: "Gamma" }
+                            Controls.TabButton { text: "Alpha" }
+                            Controls.TabButton { text: "Beta" }
+                            Controls.TabButton { text: "Gamma" }
                         }
                         StackLayout {
                             currentIndex: innerTabBar.currentIndex
@@ -269,15 +268,15 @@ Controls.HnApplicationWindow {
                             Layout.fillWidth: true
                             Item {
                                 Rectangle { anchors.fill: parent; color: palette.base; radius: 4
-                                    Label { anchors.centerIn: parent; text: "Alpha content"; color: palette.placeholderText } }
+                                    Controls.Label { anchors.centerIn: parent; text: "Alpha content"; color: palette.placeholderText } }
                             }
                             Item {
                                 Rectangle { anchors.fill: parent; color: palette.base; radius: 4
-                                    Label { anchors.centerIn: parent; text: "Beta content"; color: palette.placeholderText } }
+                                    Controls.Label { anchors.centerIn: parent; text: "Beta content"; color: palette.placeholderText } }
                             }
                             Item {
                                 Rectangle { anchors.fill: parent; color: palette.base; radius: 4
-                                    Label { anchors.centerIn: parent; text: "Gamma content"; color: palette.placeholderText } }
+                                    Controls.Label { anchors.centerIn: parent; text: "Gamma content"; color: palette.placeholderText } }
                             }
                         }
                     }
@@ -286,29 +285,29 @@ Controls.HnApplicationWindow {
                     RowLayout {
                         Layout.leftMargin: 40
                         Layout.bottomMargin: 32
-                        Button {
+                        Controls.Button {
                             text: "Open Menu"
                             onClicked: contextMenu.open()
-                            Menu {
+                            Controls.Menu {
                                 id: contextMenu
-                                MenuItem { text: "Action One" }
-                                MenuItem { text: "Action Two" }
-                                MenuItem { text: "Disabled Action"; enabled: false }
+                                Controls.MenuItem { text: "Action One" }
+                                Controls.MenuItem { text: "Action Two" }
+                                Controls.MenuItem { text: "Disabled Action"; enabled: false }
                             }
                         }
                     }
 
                     Core.HnLabel { role: Core.HnTypographyRole.MicroHeader; rawText: "TOOLBAR"; Layout.leftMargin: 40; Layout.bottomMargin: 10 }
-                    ToolBar {
+                    Controls.ToolBar {
                         Layout.fillWidth: true
                         Layout.bottomMargin: 32
                         RowLayout {
                             anchors.fill: parent
                             spacing: 4
-                            ToolButton { text: "File" }
-                            ToolButton { text: "Edit" }
-                            ToolButton { text: "View" }
-                            ToolButton { text: "Disabled"; enabled: false }
+                            Controls.ToolButton { text: "File" }
+                            Controls.ToolButton { text: "Edit" }
+                            Controls.ToolButton { text: "View" }
+                            Controls.ToolButton { text: "Disabled"; enabled: false }
                             Item { Layout.fillWidth: true }
                         }
                     }
@@ -335,12 +334,12 @@ Controls.HnApplicationWindow {
                                 "TabBar", "TextField", "TextArea", "ToolBar", "ToolButton"
                             ]
                             delegate: navItemDelegate
-                            ScrollBar.vertical: H.ScrollBar { policy: ScrollBar.AlwaysOn }
+                            Controls.ScrollBar.vertical: Controls.ScrollBar { policy: Controls.ScrollBar.AlwaysOn }
 
                             Component {
                                 id: navItemDelegate
 
-                                H.ItemDelegate {
+                                Controls.ItemDelegate {
                                     required property int index
                                     required property string modelData
 
@@ -362,7 +361,7 @@ Controls.HnApplicationWindow {
             }
 
             // ── Tab 4: Feedback ───────────────────────────────────────
-            ScrollView {
+            Controls.ScrollView {
                 contentWidth: availableWidth
                 contentHeight: feedbackCol.implicitHeight
 
@@ -379,9 +378,9 @@ Controls.HnApplicationWindow {
                         Layout.leftMargin: 40
                         Layout.rightMargin: 40
                         Layout.bottomMargin: 32
-                        ProgressBar { Layout.fillWidth: true; indeterminate: true }
-                        ProgressBar { Layout.fillWidth: true; value: 0.65 }
-                        ProgressBar { Layout.fillWidth: true; value: 0.4; enabled: false }
+                        Controls.ProgressBar { Layout.fillWidth: true; indeterminate: true }
+                        Controls.ProgressBar { Layout.fillWidth: true; value: 0.65 }
+                        Controls.ProgressBar { Layout.fillWidth: true; value: 0.4; enabled: false }
                     }
 
                     Core.HnLabel { role: Core.HnTypographyRole.MicroHeader; rawText: "TOOLTIP"; Layout.leftMargin: 40; Layout.bottomMargin: 10 }
@@ -389,21 +388,21 @@ Controls.HnApplicationWindow {
                         spacing: 16
                         Layout.leftMargin: 40
                         Layout.bottomMargin: 32
-                        Button {
+                        Controls.Button {
                             id: immediateTooltipButton
 
                             text: "Hover me"
-                            ToolTip.visible: immediateTooltipButton.hovered
-                            ToolTip.text: "This is a tooltip"
-                            ToolTip.delay: 500
+                            Controls.ToolTip.visible: immediateTooltipButton.hovered
+                            Controls.ToolTip.text: "This is a tooltip"
+                            Controls.ToolTip.delay: 500
                         }
-                        Button {
+                        Controls.Button {
                             id: delayedTooltipButton
 
                             text: "Longer-delay tooltip"
-                            ToolTip.visible: delayedTooltipButton.hovered
-                            ToolTip.text: "Tooltip with 750ms delay"
-                            ToolTip.delay: 750
+                            Controls.ToolTip.visible: delayedTooltipButton.hovered
+                            Controls.ToolTip.text: "Tooltip with 750ms delay"
+                            Controls.ToolTip.delay: 750
                         }
                     }
 
@@ -412,8 +411,8 @@ Controls.HnApplicationWindow {
                         spacing: 32
                         Layout.leftMargin: 40
                         Layout.bottomMargin: 32
-                        BusyIndicator { running: true }
-                        BusyIndicator { running: false; enabled: false }
+                        Controls.BusyIndicator { running: true }
+                        Controls.BusyIndicator { running: false; enabled: false }
                     }
 
                     Item { implicitHeight: 24 }
@@ -421,7 +420,7 @@ Controls.HnApplicationWindow {
             }
 
             // ── Tab 5: Containers ─────────────────────────────────────
-            ScrollView {
+            Controls.ScrollView {
                 contentWidth: availableWidth
                 contentHeight: containersCol.implicitHeight
 
@@ -437,16 +436,16 @@ Controls.HnApplicationWindow {
                         Layout.leftMargin: 40
                         Layout.rightMargin: 40
                         Layout.bottomMargin: 32
-                        Frame {
+                        Controls.Frame {
                             implicitWidth: 180
                             implicitHeight: 80
-                            Label { anchors.centerIn: parent; text: "Frame content" }
+                            Controls.Label { anchors.centerIn: parent; text: "Frame content" }
                         }
-                        Frame {
+                        Controls.Frame {
                             implicitWidth: 180
                             implicitHeight: 80
                             enabled: false
-                            Label { anchors.centerIn: parent; text: "Disabled frame" }
+                            Controls.Label { anchors.centerIn: parent; text: "Disabled frame" }
                         }
                     }
 
@@ -457,41 +456,41 @@ Controls.HnApplicationWindow {
                         Layout.rightMargin: 40
                         Layout.bottomMargin: 32
 
-                        Controls.HnSurfaceFrame {
+                        Hn.HnSurfaceFrame {
                             surfaceRole: Core.HnSurfaceRole.Panel
                             chamferedCornersOverride: Core.HnCornerMask.TopRight | Core.HnCornerMask.BottomRight
 
                             Layout.preferredWidth: 150
                             Layout.preferredHeight: 84
 
-                            Label { anchors.centerIn: parent; text: "LEFT DOCK" }
+                            Controls.Label { anchors.centerIn: parent; text: "LEFT DOCK" }
                         }
-                        Controls.HnSurfaceFrame {
+                        Hn.HnSurfaceFrame {
                             surfaceRole: Core.HnSurfaceRole.Panel
                             chamferedCornersOverride: Core.HnCornerMask.TopLeft | Core.HnCornerMask.BottomLeft
 
                             Layout.preferredWidth: 150
                             Layout.preferredHeight: 84
 
-                            Label { anchors.centerIn: parent; text: "RIGHT DOCK" }
+                            Controls.Label { anchors.centerIn: parent; text: "RIGHT DOCK" }
                         }
-                        Controls.HnSurfaceFrame {
+                        Hn.HnSurfaceFrame {
                             surfaceRole: Core.HnSurfaceRole.Card
                             chamferedCornersOverride: Core.HnCornerMask.TopRight
 
                             Layout.preferredWidth: 150
                             Layout.preferredHeight: 84
 
-                            Label { anchors.centerIn: parent; text: "3 ROUND / 1 CUT" }
+                            Controls.Label { anchors.centerIn: parent; text: "3 ROUND / 1 CUT" }
                         }
-                        Controls.HnSurfaceFrame {
+                        Hn.HnSurfaceFrame {
                             surfaceRole: Core.HnSurfaceRole.Card
                             chamferedCornersOverride: Core.HnCornerMask.All & ~Core.HnCornerMask.BottomLeft
 
                             Layout.preferredWidth: 150
                             Layout.preferredHeight: 84
 
-                            Label { anchors.centerIn: parent; text: "3 CUT / 1 ROUND" }
+                            Controls.Label { anchors.centerIn: parent; text: "3 CUT / 1 ROUND" }
                         }
                     }
 
@@ -506,8 +505,8 @@ Controls.HnApplicationWindow {
                             implicitWidth: 180
                             ColumnLayout {
                                 spacing: 4
-                                Label { text: "Item one" }
-                                Label { text: "Item two" }
+                                Controls.Label { text: "Item one" }
+                                Controls.Label { text: "Item two" }
                             }
                         }
                         GroupBox {
@@ -516,14 +515,14 @@ Controls.HnApplicationWindow {
                             enabled: false
                             ColumnLayout {
                                 spacing: 4
-                                Label { text: "Item one" }
-                                Label { text: "Item two" }
+                                Controls.Label { text: "Item one" }
+                                Controls.Label { text: "Item two" }
                             }
                         }
                     }
 
                     Core.HnLabel { role: Core.HnTypographyRole.MicroHeader; rawText: "SCROLL VIEW"; Layout.leftMargin: 40; Layout.bottomMargin: 10 }
-                    ScrollView {
+                    Controls.ScrollView {
                         implicitHeight: 120
                         clip: contentHeight > availableHeight
                         Layout.fillWidth: true
@@ -535,7 +534,7 @@ Controls.HnApplicationWindow {
                             spacing: 4
                             Repeater {
                                 model: 12
-                                Label {
+                                Controls.Label {
                                     required property int index
 
                                     text: "Scrollable row " + (index + 1)
@@ -566,12 +565,12 @@ Controls.HnApplicationWindow {
                                 "ItemDelegate Seven", "ItemDelegate Eight"
                             ]
                             delegate: containerItemDelegate
-                            ScrollBar.vertical: H.ScrollBar { policy: ScrollBar.AlwaysOn }
+                            Controls.ScrollBar.vertical: Controls.ScrollBar { policy: Controls.ScrollBar.AlwaysOn }
 
                             Component {
                                 id: containerItemDelegate
 
-                                H.ItemDelegate {
+                                Controls.ItemDelegate {
                                     required property int index
                                     required property string modelData
 

@@ -4,12 +4,12 @@
 pragma ComponentBehavior: Bound
 
 import QtQuick
-import QtQuick.Controls
+import QtQuick.Controls as Controls
 import QtQuick.Layouts
 import Holonight.Core
 import Holonight.Controls
 
-ScrollView {
+Controls.ScrollView {
     id: root
 
     contentWidth: availableWidth
@@ -90,7 +90,7 @@ ScrollView {
                         color: HoloniightPalette.surfaceSelected
                         visible: singleLineDelegate.checked
 
-                        Label {
+                        Controls.Label {
                             id: defaultLabel
 
                             anchors.centerIn: parent
@@ -134,19 +134,19 @@ ScrollView {
             Layout.leftMargin: 32
             Layout.rightMargin: 32
 
-            ButtonGroup { id: galleryChoices }
+            Controls.ButtonGroup { id: galleryChoices }
 
             HnChoiceCard {
                 title: qsTr("Dark")
                 description: qsTr("A selected visual choice.")
                 checked: true
-                ButtonGroup.group: galleryChoices
+                Controls.ButtonGroup.group: galleryChoices
                 Layout.fillWidth: true
             }
             HnChoiceCard {
                 title: qsTr("Light")
-                description: qsTr("Composes with a standard ButtonGroup.")
-                ButtonGroup.group: galleryChoices
+                description: qsTr("Composes with a standard Controls.ButtonGroup.")
+                Controls.ButtonGroup.group: galleryChoices
                 Layout.fillWidth: true
             }
         }

@@ -3,16 +3,21 @@
 
 #include "config.h"
 
+#include <QCoreApplication>
+#include <QDir>
 #include <QGuiApplication>
 #include <QQmlApplicationEngine>
-#include <QQuickStyle>
 
 int main(int argc, char* argv[]) {
-  QQuickStyle::setStyle(QStringLiteral("Holonight"));
   QGuiApplication app(argc, argv);
 
   QQmlApplicationEngine engine;
-  engine.addImportPath(QStringLiteral(HOLONIGHT_QML_IMPORT_PATH));
+  const QString executableDir = QCoreApplication::applicationDirPath();
+  if (executableDir == QStringLiteral(HOLONIGHT_EXECUTABLE_BUILD_DIR)) {
+    engine.addImportPath(QStringLiteral(HOLONIGHT_QML_IMPORT_PATH));
+  } else {
+    engine.addImportPath(QDir(executableDir).absoluteFilePath(QStringLiteral("../" HOLONIGHT_INSTALLED_QML_DIR)));
+  }
   engine.loadFromModule(QStringLiteral("HolonightControlsGallery"), QStringLiteral("Main"));
   if (engine.rootObjects().isEmpty()) {
     return 1;

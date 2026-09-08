@@ -4,12 +4,12 @@
 pragma ComponentBehavior: Bound
 
 import QtQuick
-import QtQuick.Controls
+import QtQuick.Controls as Controls
 import QtQuick.Layouts
 import Holonight.Core
 import Holonight.Controls
 
-ScrollView {
+Controls.ScrollView {
     id: root
 
     contentWidth: availableWidth
@@ -51,8 +51,13 @@ ScrollView {
                 Layout.rightMargin: 32
 
                 control: Component {
-                    Switch {
-                        sizeRole: modelData.role
+                    Controls.Switch {
+                        id: inlineSwitch
+                        Binding {
+                            target: "sizeRole" in inlineSwitch ? inlineSwitch : null
+                            property: "sizeRole"
+                            value: modelData.role
+                        }
                         text: qsTr("Enabled")
                         checked: true
                     }
@@ -94,12 +99,17 @@ ScrollView {
 
                 control: Component {
                     RowLayout {
-                        Switch {
-                            sizeRole: settingsRow.modelData.role
+                        Controls.Switch {
+                            id: stackedSwitch
+                            Binding {
+                                target: "sizeRole" in stackedSwitch ? stackedSwitch : null
+                                property: "sizeRole"
+                                value: settingsRow.modelData.role
+                            }
                             checked: true
                             Layout.alignment: Qt.AlignVCenter
                         }
-                        Slider {
+                        Controls.Slider {
                             value: 0.5
                             Layout.fillWidth: true
                             Layout.alignment: Qt.AlignVCenter
@@ -185,7 +195,7 @@ ScrollView {
                 rawText: qsTr("●")
                 color: HoloniightPalette.primary
             }
-            trailingContent: Button { text: qsTr("Reset") }
+            trailingContent: Controls.Button { text: qsTr("Reset") }
         }
 
         HnSectionHeader {
@@ -302,7 +312,7 @@ ScrollView {
                 titleText: qsTr("No results")
                 descriptionText: qsTr("Try a different search term.")
                 Layout.fillWidth: true
-                actionContent: Button { text: qsTr("Clear search") }
+                actionContent: Controls.Button { text: qsTr("Clear search") }
             }
 
             HnEmptyState {
@@ -315,7 +325,7 @@ ScrollView {
                     rawText: qsTr("◇")
                     font.pointSize: HolonightTheme.displayFontSize
                 }
-                actionContent: Button { text: qsTr("Disabled action") }
+                actionContent: Controls.Button { text: qsTr("Disabled action") }
             }
 
             HnEmptyState {
@@ -343,7 +353,7 @@ ScrollView {
                 titleText: qsTr("Indeterminate")
                 descriptionText: qsTr("Waiting for progress.")
                 Layout.fillWidth: true
-                actionContent: Button { text: qsTr("Cancel") }
+                actionContent: Controls.Button { text: qsTr("Cancel") }
             }
 
             HnLoadingState {
@@ -358,7 +368,7 @@ ScrollView {
                 descriptionText: qsTr("Messages and actions remain composed.")
                 running: false
                 Layout.fillWidth: true
-                actionContent: Button { text: qsTr("Retry") }
+                actionContent: Controls.Button { text: qsTr("Retry") }
             }
         }
 

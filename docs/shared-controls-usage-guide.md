@@ -10,12 +10,18 @@ target_link_libraries(my_app PRIVATE HolonightQt::Controls)
 ```
 
 ```qml
+import QtQuick.Controls as Controls
 import Holonight.Core
 import Holonight.Controls
 ```
 
 `Holonight.Core` supplies `HoloniightPalette`, `HolonightTheme`,
 `HnAppearance`, `HnControlSize`, `HnMetrics`, and `HnIcon`.
+
+Embed an overridable `:/qtquickcontrols2.conf` default with `[Controls]` and `Style=Holonight` in each executable.
+Use `Controls.Type` for standard controls, attached properties and enums; use `Holonight.Core` and
+`Holonight.Controls` for their public APIs. Composites keep their HoloNight appearance while their standard-control
+bases follow runtime selection. See [style selection and deployment](automatic-quick-controls-style-selection.md).
 
 ## Sizing and composition
 
@@ -47,8 +53,8 @@ delegate controls. Do not calculate selection colors in application code.
   read-only, and disabled states.
 - `HnIconComboBox`: model-backed combo box with optional icon roles. Its popup
   shows at most eight entries by default; set `maximumVisibleItems` to choose a
-  different limit without replacing the popup. `Holonight.ComboBox` compensates
-  its item-based popup for translated, uniformly scaled ancestors and exposes
+  different limit without replacing the popup. Both it and the HoloNight standard ComboBox compensate
+  their item-based popups for translated, uniformly scaled ancestors and expose
   `effectiveScale` for diagnostics. Rotation, shear, and non-uniform scaling are
   intentionally unsupported and reported by `popupTransformSupported`.
 - `HnTextArea`: shared multiline editor with semantic bounds.
@@ -117,7 +123,7 @@ HnIconButton {
     Accessible.name: qsTr("Conversation actions")
 }
 
-MenuItem {
+Controls.MenuItem {
     text: qsTr("Rename")
     icon.source: "qrc:/qt/qml/Holonight/Controls/assets/edit.svg"
 }
@@ -163,15 +169,15 @@ HnSegmentedControl {
     onActivated: (index, value) => viewMode = value
 }
 
-ButtonGroup { id: themeChoices }
+Controls.ButtonGroup { id: themeChoices }
 Row {
     HnChoiceCard {
         title: qsTr("Dark")
-        ButtonGroup.group: themeChoices
+        Controls.ButtonGroup.group: themeChoices
     }
     HnChoiceCard {
         title: qsTr("Light")
-        ButtonGroup.group: themeChoices
+        Controls.ButtonGroup.group: themeChoices
     }
 }
 ```

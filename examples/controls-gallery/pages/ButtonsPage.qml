@@ -4,12 +4,12 @@
 pragma ComponentBehavior: Bound
 
 import QtQuick
-import QtQuick.Controls
+import QtQuick.Controls as Controls
 import QtQuick.Layouts
 import Holonight.Core
 import Holonight.Controls
 
-ScrollView {
+Controls.ScrollView {
     id: root
 
     contentWidth: availableWidth
@@ -89,22 +89,22 @@ ScrollView {
             Layout.leftMargin: 32
             Layout.rightMargin: 32
 
-            Button {
+            Controls.Button {
                 implicitWidth: implicitHeight
                 display: AbstractButton.IconOnly
                 icon.source: "qrc:/qt/qml/Holonight/Controls/assets/edit.svg"
                 Accessible.name: qsTr("Edit")
             }
-            Button {
+            Controls.Button {
                 text: qsTr("Enabled")
                 icon.source: "qrc:/qt/qml/Holonight/Controls/assets/folder.svg"
             }
-            Button {
+            Controls.Button {
                 text: qsTr("Disabled")
                 enabled: false
                 icon.source: "qrc:/qt/qml/Holonight/Controls/assets/folder.svg"
             }
-            Button {
+            Controls.Button {
                 text: qsTr("Highlighted")
                 highlighted: true
                 icon.source: "qrc:/qt/qml/Holonight/Controls/assets/folder.svg"
@@ -125,27 +125,27 @@ ScrollView {
             Layout.leftMargin: 32
         }
 
-        Menu {
+        Controls.Menu {
             id: iconMenu
 
-            MenuItem { text: qsTr("Plain action") }
-            MenuItem {
+            Controls.MenuItem { text: qsTr("Plain action") }
+            Controls.MenuItem {
                 text: qsTr("Open folder")
                 icon.source: "qrc:/qt/qml/Holonight/Controls/assets/folder.svg"
             }
-            MenuItem {
+            Controls.MenuItem {
                 text: qsTr("Checked icon action")
                 checkable: true
                 checked: true
                 icon.source: "qrc:/qt/qml/Holonight/Controls/assets/edit.svg"
             }
-            Menu {
+            Controls.Menu {
                 title: qsTr("Submenu with a deliberately long translated label")
-                MenuItem { text: qsTr("Nested action") }
+                Controls.MenuItem { text: qsTr("Nested action") }
             }
         }
 
-        Button {
+        Controls.Button {
             id: iconMenuButton
 
             text: qsTr("Open icon menu")
@@ -186,9 +186,9 @@ ScrollView {
                 }
             }
             trailingContent: RowLayout {
-                Button { text: qsTr("Discard Changes") }
-                Button { text: qsTr("Apply") }
-                Button { text: qsTr("Save & Apply"); highlighted: true }
+                Controls.Button { text: qsTr("Discard Changes") }
+                Controls.Button { text: qsTr("Apply") }
+                Controls.Button { text: qsTr("Save & Apply"); highlighted: true }
             }
         }
     }
