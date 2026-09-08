@@ -426,3 +426,41 @@ separate Qt-default reference passed; four focused composite/DPR entries passed 
 installed/startup/palette/composite/policy entries passed (44.00 seconds); all 61 provider CTest entries passed
 (43.70 seconds). Changed C++ formatting, Python/shell syntax, local documentation links and whitespace passed.
 UQC-101 provider acceptance is complete. The umbrella handoff records canonical publication and the authoritative gitlink.
+
+## UQC-107 — clean dependency build repair (2026-09-08)
+
+Assigned baseline: `50c59558bb3817f57a992dd72730dba141db1bc8`; configuration remains
+`fe69a59e6b73167fd5349223a4d265d75386c139`. AI CI run `34251906896` fails in both jobs:
+`qml/quickstyleplugin.cpp:13:10: fatal error: holonight/config/config.h: No such file or directory`.
+The style plugin directly consumes configuration headers, while its private transitive dependency does not
+export their include path. Host-installed headers masked this in earlier local acceptance.
+
+Add direct private `HoloNight::Config` linkage to `holonight_qml`. CI stages the pinned configuration in
+`build/dependencies/prefix`, rejects configuration headers in system include roots, and builds Release with
+provider tests and both examples enabled. No consumer include workaround or public contract changes.
+Historical UQC-101 local results remain unchanged.
+
+Verification (Qt 6.11.2): fresh Release build and all 59 enabled CTest entries passed (37.77 seconds),
+including installed consumers, isolated negative fixtures and both examples in all startup modes.
+Qt 5 probes were not enabled locally; CI retains them. Format check passes; focused quickstyleplugin clang-tidy
+completes with existing naming, enum-size and brace warnings. Workflow YAML/shell syntax and whitespace pass.
+The first focused installed run overlapped the full suite and failed because both recreated the same staging
+prefix; the complete suite subsequently passed. Do not run two CTest invocations sharing that staging directory.
+
+Commands from the umbrella root (logs in `/tmp/uqc107-*.log`):
+
+```sh
+cmake -S holonight-config -B holonight-qt/build-uqc107/dependencies/config -G Ninja -DCMAKE_BUILD_TYPE=Release -DBUILD_TESTING=OFF
+cmake --build holonight-qt/build-uqc107/dependencies/config -j 6
+cmake --install holonight-qt/build-uqc107/dependencies/config --prefix "$PWD/holonight-qt/build-uqc107/dependencies/prefix"
+bwrap --bind / / --tmpfs /usr/include/holonight/config --dev /dev --proc /proc cmake -S holonight-qt -B holonight-qt/build-uqc107 -G Ninja -DCMAKE_BUILD_TYPE=Release -DCMAKE_PREFIX_PATH="$PWD/holonight-qt/build-uqc107/dependencies/prefix" -DBUILD_TESTS=ON -DBUILD_DEMO=ON -DBUILD_CONTROLS_GALLERY=ON -DHOLONIGHT_PATCHELF_EXECUTABLE=/tmp/uqc-uv-cache/archive-v0/NBwrEcQZIC2EIFJPI2MRH/bin/patchelf
+bwrap --bind / / --tmpfs /usr/include/holonight/config --dev /dev --proc /proc cmake --build holonight-qt/build-uqc107 -j 6
+QT_QPA_PLATFORM=offscreen ctest --test-dir holonight-qt/build-uqc107 --output-on-failure -j 4
+cmake --build holonight-qt/build-uqc107 --target format-check
+cmake -P holonight-qt/build-uqc107/strip_tidy_flags.cmake
+# From holonight-qt, so the repository clang-tidy configuration is selected:
+run-clang-tidy -quiet -j 4 -p build-uqc107/tidy 'qml/quickstyleplugin.cpp$'
+```
+
+The host configuration headers were masked only inside a private mount namespace; no host files were modified.
+Publication is recorded by the umbrella after canonical remote confirmation.

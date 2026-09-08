@@ -237,6 +237,7 @@ set(HOLONIGHT_QML_FILES
 )
 
 target_link_libraries(holonight_qml PRIVATE
+    HoloNight::Config
     holonight_appearance
     holonight_theme
     Qt6::QuickPrivate

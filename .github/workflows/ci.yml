@@ -15,7 +15,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           repository: lebedenko/holonight-config
-          ref: 81b01d3ae8433f3a4b017db2feb588a1ee62b714
+          ref: fe69a59e6b73167fd5349223a4d265d75386c139
           path: holonight-config-dep
 
       - name: Install dependencies
@@ -32,14 +32,20 @@ jobs:
 
       - name: Build and install canonical configuration dependency
         run: |
-          cmake -S holonight-config-dep -B holonight-config-dep/build -G Ninja -DCMAKE_BUILD_TYPE=Release -DBUILD_TESTING=OFF
-          cmake --build holonight-config-dep/build --parallel
-          sudo cmake --install holonight-config-dep/build --prefix /usr
+          cmake -S holonight-config-dep -B build/dependencies/config -G Ninja -DCMAKE_BUILD_TYPE=Release -DBUILD_TESTING=OFF
+          cmake --build build/dependencies/config --parallel
+          cmake --install build/dependencies/config --prefix "$PWD/build/dependencies/prefix"
+
+      - name: Reject system configuration headers that mask missing target dependencies
+        run: |
+          test ! -e /usr/include/holonight/config/config.h
+          test ! -e /usr/local/include/holonight/config/config.h
 
       - name: Configure
         run: >
           cmake -B build -G Ninja
-          -DCMAKE_BUILD_TYPE=Debug
+          -DCMAKE_BUILD_TYPE=Release
+          -DCMAKE_PREFIX_PATH="$PWD/build/dependencies/prefix"
           -DBUILD_TESTS=ON
           -DBUILD_DEMO=ON
           -DBUILD_CONTROLS_GALLERY=ON
