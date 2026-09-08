@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 // SPDX-FileCopyrightText: 2026 Andrii L <lebeden@gmail.com>
 
+#include <QDebug>
 #include <QDir>
 #include <QFile>
 #include <QGuiApplication>
@@ -23,7 +24,10 @@ int main(int argc, char** argv) {
   // that Qt-owned qmldir into the filtered tree instead of adding a resource root.
   const auto qtRoot = qEnvironmentVariable("UQC_QT_MODULES");
   QPluginLoader qtControls(qtRoot + "/QtQuick/Controls/libqtquickcontrols2plugin.so");
-  if (!qtControls.load()) return 2;
+  if (!qtControls.load()) {
+    qCritical() << "Cannot load isolated Qt Controls plugin:" << qtControls.errorString();
+    return 2;
+  }
   QFile indirect(":/qt-project.org/imports/QtQuick/Controls/IndirectBasic/qmldir");
   if (indirect.exists()) {
     const auto destination = qtRoot + "/QtQuick/Controls/IndirectBasic";

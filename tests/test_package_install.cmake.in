@@ -66,7 +66,7 @@ execute_process(COMMAND "@Python3_EXECUTABLE@" "@CMAKE_CURRENT_SOURCE_DIR@/check
     "@CMAKE_CURRENT_BINARY_DIR@/holonight_isolated_style_probe"
     "${qml_root}" "@HOLONIGHT_SYSTEM_QT_QML_DIR@"
     "${install_prefix}/@QT6_INSTALL_PLUGINS@" "@HOLONIGHT_CONFIG_RUNTIME_DIR@"
-    "@HOLONIGHT_PATCHELF_EXECUTABLE@"
+    "@HOLONIGHT_PATCHELF_EXECUTABLE@" "@HOLONIGHT_QT_RUNTIME_DIR@"
     RESULT_VARIABLE isolated_result OUTPUT_VARIABLE isolated_output ERROR_VARIABLE isolated_error
     TIMEOUT 240)
 file(WRITE "${test_root}/isolated-style.log" "${isolated_output}\n${isolated_error}")

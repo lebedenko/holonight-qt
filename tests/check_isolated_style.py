@@ -10,7 +10,7 @@ import subprocess
 import sys
 import tempfile
 
-probe, staged_qml, qt_qml, staged_plugins, config_lib, patchelf = map(Path, sys.argv[1:])
+probe, staged_qml, qt_qml, staged_plugins, config_lib, patchelf, qt_lib = map(Path, sys.argv[1:])
 
 
 def require(condition, message):
@@ -75,7 +75,7 @@ with tempfile.TemporaryDirectory(prefix="uqc-isolated-") as temporary:
                    UQC_MODE=case, UQC_FIXTURE=str(qml), UQC_QT_MODULES=str(qt), UQC_SOURCE=str(source),
                    XDG_RUNTIME_DIR=str(runtime), XDG_CONFIG_HOME=str(fixture / "config"),
                    XDG_CACHE_HOME=str(fixture / "cache"), XDG_DATA_HOME=str(fixture / "data"),
-                   HOLONIGHT_APPEARANCE_FILE=str(fixture / "missing.toml"), LD_LIBRARY_PATH=str(config_lib))
+                   HOLONIGHT_APPEARANCE_FILE=str(fixture / "missing.toml"), LD_LIBRARY_PATH=os.pathsep.join((str(config_lib), str(qt_lib))))
         if case == "platform":
             plugins = fixture / "plugins"
             shutil.copytree(staged_plugins / "platformthemes", plugins / "platformthemes")

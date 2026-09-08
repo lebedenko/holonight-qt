@@ -464,3 +464,12 @@ run-clang-tidy -quiet -j 4 -p build-uqc107/tidy 'qml/quickstyleplugin.cpp$'
 
 The host configuration headers were masked only inside a private mount namespace; no host files were modified.
 Publication is recorded by the umbrella after canonical remote confirmation.
+
+### Private Qt installation follow-up
+
+Remote CI `34258367972` passed clean Release compilation, then its isolated probe exited 2 loading the copied
+Qt Controls plugin. Unlike system Qt, the CI Qt installation needs an explicit native library search directory
+after copied plugins lose their original relative RPATH context. Derive that directory from configured Qt6::Core
+and pass it alongside the staged configuration library; retain exact filtered QML roots and origin checks.
+The probe now reports loader errors before exiting. Focused installed acceptance (including ten isolated cases)
+and rebuild pass locally; Python syntax, changed C++ formatting and whitespace pass. Remote confirmation pending.

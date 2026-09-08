@@ -244,6 +244,14 @@ if(BUILD_WAYLAND)
   set_property(TEST holonight_wayland_tests PROPERTY ENVIRONMENT "${HOLONIGHT_TEST_ENV}")
 endif()
 
+# Copied Qt QML plugins retain relative RPATHs; provide the configured Qt libraries
+# explicitly when the isolated runner clears ambient loader paths.
+get_target_property(HOLONIGHT_QT_CORE_LIBRARY Qt6::Core IMPORTED_LOCATION_RELEASE)
+if(NOT HOLONIGHT_QT_CORE_LIBRARY)
+  get_target_property(HOLONIGHT_QT_CORE_LIBRARY Qt6::Core IMPORTED_LOCATION)
+endif()
+get_filename_component(HOLONIGHT_QT_RUNTIME_DIR "${HOLONIGHT_QT_CORE_LIBRARY}" DIRECTORY)
+
 find_package(Python3 REQUIRED COMPONENTS Interpreter)
 find_program(HOLONIGHT_PATCHELF_EXECUTABLE NAMES patchelf REQUIRED)
 
