@@ -40,3 +40,11 @@ with the user before Accepted or provider implementation. A partial audit does n
 ## Implementation
 
 The accepted provider work package is tracked in [IMPLEMENTATION.md](IMPLEMENTATION.md).
+
+## UQC-109: Empty icon roles for QVariantList consumers
+
+2026-09-09: User authorized the provider correction discovered during UQC-106.
+At baseline `478ef7c40a22c7c3f7ea6f45d9205411b5504834`, HnIconComboBox with
+`iconRole: ""` must render text-only QVariantList rows without QML diagnostics.
+Preserve nonempty icon roles, selection, popup geometry and runtime styles.
+Configuration remains `fe69a59e6b73167fd5349223a4d265d75386c139`, unchanged.

@@ -118,7 +118,7 @@ C.ComboBox {
 
     popup: C.Popup {
         id: popup
-        palette: compositePalette.appearancePalette
+        palette: root.compositePalette.appearancePalette
 
         property alias geometryRevision: popupGeometry.geometryRevision
 
@@ -191,12 +191,13 @@ C.ComboBox {
 
         C.ItemDelegate {
             id: delegateRoot
-            palette: compositePalette.appearancePalette
+            palette: root.compositePalette.appearancePalette
 
             required property int index
             required property var model
             readonly property var rowModel: model
-            readonly property url iconSource: rowModel && rowModel[root.iconRole] !== undefined
+            readonly property url iconSource: root.iconRole.length > 0 && rowModel
+                                                && rowModel[root.iconRole] !== undefined
                                                 ? rowModel[root.iconRole]
                                                 : root.roleValue(index, root.iconRole)
             readonly property real popupInnerRadius: Math.max(0,

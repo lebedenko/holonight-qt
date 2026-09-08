@@ -134,3 +134,11 @@ ApplicationWindow and Label fallback origins are now observed in the fixture (Ba
 in NeoChat/Tokodon welcome QML (Basic). They remain addition candidates pending visual scope review; this evidence
 does not establish agent rendering. The exact provisional additions and remaining evidence gate are in APPLICATIONS.
 No compatibility trade-off is accepted, public API changed, or implementation package activated by this checkpoint.
+
+## UQC-109 design
+
+The delegate model treats an empty role lookup as modelData. Guard the delegate
+icon lookup with a nonempty role before indexing rowModel, then retain roleValue
+as the fallback. Add a QVariantList regression under both runtime styles and DPRs,
+asserting no warnings, row text, empty icon source and nonempty-role behavior.
+Publish this provider fix separately before updating greeter’s dependency pin.

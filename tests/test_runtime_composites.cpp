@@ -5,8 +5,11 @@
 #include <QFile>
 #include <QFont>
 #include <QQmlComponent>
+#include <QQmlContext>
 #include <QQmlEngine>
 #include <QQuickItem>
+#include <QSignalSpy>
+#include <QTemporaryDir>
 #include <QTest>
 #include <QtQml/private/qqmlcontextdata_p.h>
 #include <QtQml/private/qqmldata_p.h>
@@ -178,6 +181,51 @@ Window {
        {"/Holonight/Core/libholonight_core_qml.so", "/Holonight/Controls/libholonight_controls_qml.so",
         "/Holonight/impl/libholonight_impl_qml.so"})
     EXPECT_TRUE(mappings.contains(importRoot + module)) << module;
+}
+
+TEST_F(RuntimeComposites, EmptyIconRoleKeepsVariantListDelegatesTextOnly) {
+  QTemporaryDir directory;
+  QFile icon(directory.filePath("icon.svg"));
+  ASSERT_TRUE(icon.open(QIODevice::WriteOnly));
+  icon.write(R"(<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16"><rect width="16" height="16"/></svg>)");
+  icon.close();
+  const auto iconUrl = QUrl::fromLocalFile(icon.fileName());
+  const QVariantList rows{QVariantMap{{"label", "First"}, {"icon", iconUrl}},
+                          QVariantMap{{"label", "Last"}, {"icon", iconUrl}}};
+  engine.rootContext()->setContextProperty("variantRows", rows);
+  QSignalSpy warnings(&engine, &QQmlEngine::warnings);
+  auto root = create(R"(
+import QtQuick
+import Holonight.Controls
+Window {
+    width: 600; height: 600; visible: true
+    property alias combo: combo
+    HnIconComboBox {
+        id: combo; width: 240; model: variantRows; textRole: "label"; iconRole: ""
+    }
+})");
+  ASSERT_NE(root, nullptr);
+  auto* combo = objectProperty(root.get(), "combo");
+  ASSERT_NE(combo, nullptr);
+  auto* popup = objectProperty(combo, "popup");
+  ASSERT_NE(popup, nullptr);
+  ASSERT_TRUE(QMetaObject::invokeMethod(popup, "open"));
+  auto* list = objectProperty(popup, "contentItem");
+  ASSERT_NE(list, nullptr);
+  ASSERT_TRUE(QTest::qWaitFor([&] { return objectProperty(list, "currentItem") != nullptr; }));
+  auto* item = objectProperty(list, "currentItem");
+  EXPECT_EQ(item->property("text").toString(), "First");
+  EXPECT_TRUE(item->property("iconSource").toUrl().isEmpty());
+  EXPECT_TRUE(combo->property("currentIconSource").toUrl().isEmpty());
+  EXPECT_TRUE(warnings.isEmpty());
+  ASSERT_TRUE(QMetaObject::invokeMethod(popup, "close"));
+  // Nonempty roles still resolve their icon when selection changes.
+  ASSERT_TRUE(combo->setProperty("iconRole", "icon"));
+  EXPECT_EQ(combo->property("currentIconSource").toUrl(), iconUrl);
+  ASSERT_TRUE(combo->setProperty("currentIndex", 1));
+  EXPECT_EQ(combo->property("currentIconSource").toUrl(), iconUrl);
+  EXPECT_EQ(combo->property("displayText").toString(), "Last");
+  EXPECT_TRUE(warnings.isEmpty());
 }
 
 TEST_F(RuntimeComposites, PublicVisualHooksAndCallerOverridesRemainAuthoritative) {

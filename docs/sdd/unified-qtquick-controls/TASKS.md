@@ -131,3 +131,10 @@ UQC-002 is umbrella-owned; publication and its acceptance checkpoint precede UQC
 
 Standalone audit configure/build and all six layout/palette characterization runs passed during scope-review
 preparation. CMake warned about unavailable Kirigami plugin link targets, but runtime comparison succeeded.
+
+## UQC-109 — authorized 2026-09-09
+
+- [x] Define bounded provider correction from published baseline `478ef7c`.
+- [x] Reproduce empty-icon-role failure with QVariantList rows.
+- [x] Guard empty role lookup; verify both styles, provider suite and static checks.
+- [ ] Publish provider correction and confirm canonical availability for UQC-106.

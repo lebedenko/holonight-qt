@@ -478,3 +478,37 @@ Remote follow-up `34260895278` confirms the loader correction: all style cases r
 The Qt-default reference then falsely classified Qt libraries as HoloNight because CI installs Qt beneath a
 `holonight-qt` parent directory. Match the library basename, consistently with the other origin assertions.
 The isolated matrix passes locally after this correction; remote confirmation remains required.
+
+## UQC-109: Greeter empty-icon-role compatibility — 2026-09-09
+
+User authorized this scoped provider correction from canonical baseline
+`478ef7c40a22c7c3f7ea6f45d9205411b5504834`. Umbrella assignment `22f7298`
+was published before the fix. Configuration remains unchanged at `fe69a59e`.
+
+HnIconComboBox now checks that iconRole is nonempty before looking up a delegate
+model role. Qt maps the empty role to the entire QVariantMap row; that bypassed
+the existing roleValue guard and emitted `Unable to assign QVariantMap to QUrl`.
+The runtime regression reproduces the error before the fix and verifies text-only
+rows and nonempty icon-role selection afterward. Two palette references in the
+same QML file are explicitly qualified to pass zero-warning lint.
+
+Verification from holonight-qt (Qt 6.11.2):
+
+```sh
+cmake --build build-uqc107 -j4
+ctest --test-dir build-uqc107 -R runtime_composites --output-on-failure
+QT_SCALE_FACTOR=1.25 ctest --test-dir build-uqc107 -R runtime_composites --output-on-failure
+ctest --test-dir build-uqc107 --output-on-failure -j4
+cmake --build build-uqc107 --target format-check
+/usr/lib/qt6/bin/qmllint --bare --max-warnings 0 -I build-uqc107/qml -I /usr/lib/qt6/qml qml/controls/HnIconComboBox.qml
+run-clang-tidy -quiet -j 4 -p build-uqc107/tidy-uqc109 'tests/test_runtime_composites.cpp$'
+reuse lint
+git diff --check
+```
+
+All 59 CTests pass (36.02 seconds), including installed-provider acceptance.
+Both style suites pass at DPR 1 and 1.25. Formatting, QML lint, licensing and
+whitespace pass. Focused clang-tidy exits successfully; the pre-existing fixture
+has advisory readability/complexity warnings. Analysis uses a temporary compile
+database without GCC-only flags. No system installation or desktop interaction.
+This provider handoff enables greeter re-verification; it is not UQC-201 integration.
