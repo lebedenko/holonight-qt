@@ -95,7 +95,7 @@ with tempfile.TemporaryDirectory(prefix="uqc-isolated-") as temporary:
             require(reference.returncode == 0 and not reference.stderr.strip(), "Qt default reference failed")
             reference_report = json.loads(reference.stdout)
             require(not reference_report["errors"], "Qt default reference emitted errors")
-            require(not any("holonight" in lib.lower() for lib in reference_report["libraries"]),
+            require(not any("holonight" in Path(lib).name.lower() for lib in reference_report["libraries"]),
                     "Qt default reference loaded HoloNight")
             default_origins = reference_report["origins"]
         result = subprocess.run(command, env=env, text=True, capture_output=True, timeout=20)

@@ -473,3 +473,8 @@ after copied plugins lose their original relative RPATH context. Derive that dir
 and pass it alongside the staged configuration library; retain exact filtered QML roots and origin checks.
 The probe now reports loader errors before exiting. Focused installed acceptance (including ten isolated cases)
 and rebuild pass locally; Python syntax, changed C++ formatting and whitespace pass. Remote confirmation pending.
+
+Remote follow-up `34260895278` confirms the loader correction: all style cases reach their intended outcomes.
+The Qt-default reference then falsely classified Qt libraries as HoloNight because CI installs Qt beneath a
+`holonight-qt` parent directory. Match the library basename, consistently with the other origin assertions.
+The isolated matrix passes locally after this correction; remote confirmation remains required.
