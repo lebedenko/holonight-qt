@@ -1,6 +1,6 @@
 # UQC-101 — provider implementation
 
-Status: In Progress. Assigned repository: holonight-qt.
+Status: Done (provider acceptance completed 2026-09-08). Assigned repository: holonight-qt.
 Exact published upstream baseline: `033d6001fd088a96ac6e4ff936b6bafcf6ab5d4c` (origin/main, checked 2026-09-07).
 Umbrella acceptance checkpoint: `8764bc8`. REVIEW contains the user-approved scope; DESIGN contains the audited
 contracts and verification requirements. Only provider files are changed in this work package.
@@ -30,7 +30,7 @@ contracts and verification requirements. Only provider files are changed in this
 | Nine new controls | Done | All nine installed origins, palette/layout/overlay/state acceptance and all 46 provider CTest entries pass (2026-09-08). |
 | Composite runtime migration and Core isolation | Done | All 26 public composites load; HoloNight/Fusion origins, behavior, shared popup geometry and installed-prefix acceptance pass (2026-09-08). |
 | Executable defaults | Done | Both actual examples pass embedded/default, environment, command-line and configuration overrides in build and installed-prefix runs (2026-09-08). |
-| Policy, documentation and installed verification | In Progress | Application/composite/Core policy, guides, executable defaults and installed acceptance pass; isolated negative fixtures and final provider acceptance remain open. |
+| Policy, documentation and installed verification | Done | Ten isolated cases, Qt-default reference, final contract review and all 61 provider CTest entries pass (2026-09-08); see final acceptance record below. |
 
 Application-painted sliders and the license-popup composition remain accepted boundaries. Other catalog types
 remain fallback controls. No full manual application/state or two-compositor integration pass is implied here.
@@ -318,3 +318,111 @@ existing Qt private-API and gallery QTP0004 warnings. No UQC-201 integration or 
 Remaining provider acceptance: isolated absent-module/plugin/dependency and bad-case diagnostics; explicit competing
 Basic/Fusion imports, imperative style precedence and platform-theme-only negative fixtures; final contract review and
 published provider handoff. Consumer repositories remain unassigned until UQC-101 completes.
+
+## Final isolated provider acceptance — 2026-09-08
+
+Handoff slice baseline: published `82ccb126c2ad8f364f32e0ae3b1551040a6949cb`; umbrella
+`a68e524da790314eb55c64ee7b14bfb99ab4e5e5`. This final review supersedes the open provider gates in the
+historical slice records above. No production APIs or style behavior changed in this slice.
+
+Changed files: `tests/isolated_style_probe.cpp`, `tests/check_isolated_style.py`, `tests/CMakeLists.txt`,
+`tests/test_package_install.cmake.in`, `tests/test_runtime_composites.cpp`, `tests/test_quick_palette.cpp`,
+`.github/workflows/ci.yml`, and this record.
+
+### Isolation and acceptance evidence
+
+The standalone probe links only Qt (including version-matched QmlPrivate for origin inspection), with only the
+example's root controls configuration embedded. `ldd` confirms no linked HoloNight libraries. Every selection runs
+in a fresh process; the engine's complete import list is asserted to equal exactly the per-case provider fixture
+and a filtered Qt tree containing only QtQml and QtQuick. Normal engine host/build/resource import roots are excluded.
+Qt embeds its IndirectBasic forwarding qmldir in the Controls plugin: the probe loads that copied Qt plugin and
+copies its Qt-owned metadata into the filtered tree, without adding a resource import root or synthesizing metadata.
+
+The runner clears inherited Qt, QML, loader and appearance overrides and uses disposable XDG directories. Only the
+configured native configuration-library directory is supplied via LD_LIBRARY_PATH. It copies the staged provider
+into distinct per-case trees, omitting the selected module/plugin/dependency during copying. It never removes files
+from a host module or the normal staged installation. The native failure rewrites the copied style plugin's actual
+configuration-library DT_NEEDED entry to a temporary-fixture-specific missing library name. The real host config
+library remains installed and cannot satisfy that name. Patchelf is required only when tests are enabled and is
+included in CI's test dependencies; this session obtained 0.19.1 via a temporary uv environment, with no system install.
+
+The probe exits 0 after successful creation, 1 for component-creation failure, and 2 for harness failures. Every
+negative requires exactly exit 1 plus its intended component diagnostic. Signals, crashes, other exits and the
+20-second subprocess timeout fail acceptance. The orchestrator also has a 240-second timeout. JSON evidence records
+effective import paths, complete component errors, Button/TextField context URLs and mapped plugin paths. All loaded
+HoloNight modules must come from that case's fixture; success also requires the expected style/Core/impl mappings.
+Resource URLs are interpreted together with those mapped plugin origins, never as standalone installation evidence.
+The installed runner saves the complete reports to `build/tests/package-install-test/isolated-style.log`.
+
+| Case | Observed result |
+|---|---|
+| Complete deployment | Exit 0; runtime Button/TextField use Holonight QML; style, Core and impl plugins map from the fixture. |
+| Missing Holonight | Exit 1; `module "Holonight" is not installed`; no host provider loads. |
+| Missing style plugin | Exit 1; `plugin "holonight_qml" not found`. |
+| Missing Core | Exit 1; `module "Holonight.Core" is not installed`. |
+| Missing impl | Exit 1; `module "Holonight.impl" is not installed`. |
+| Missing native dependency | Exit 1; cannot load copied style plugin, naming `libuqc-isolated-<fixture>_missing_config.so`. |
+| Incorrect casing | Exit 1; `module "HoloNight" is not installed`, with correctly cased Holonight available. |
+| Explicit Basic/Fusion imports | Exit 0; Basic.Button and Fusion.TextField retain their origins alongside runtime HoloNight Button/TextField. |
+| Imperative precedence | Exit 0; setStyle(Fusion) wins over command-line Holonight, environment Holonight and embedded Holonight; no style plugin loads. |
+| Platform theme alone | Exit 0; the copied qholonight platform plugin loads, but runtime origins match a separate no-theme/no-selector reference process (Fusion on this Qt build); no HoloNight Quick style plugin loads. |
+
+### Final contract review
+
+Reviewed [SPEC](SPEC.md), [DESIGN](DESIGN.md), [approved REVIEW](REVIEW.md) and every implementation slice above.
+SPEC and DESIGN preserve historical discovery findings; the approved REVIEW and subsequent implementation records
+settle the implementation contract. Provider requirements have the following evidence:
+
+| Provider requirement | Acceptance evidence |
+|---|---|
+| Indicator geometry and mirrored containment | Existing indicator and ComboBox geometry regressions, including uniform scales 0.78/1.0/1.25, remain passing. |
+| Application palette authority; intentional Core/composite appearance | Sixteen scheme fixtures, palette inheritance/group/alpha/reset/reload tests, hybrid QWidget checks, and installed palette/composite fixtures. |
+| Nine approved standard controls; Basic/Fusion fallback | Existing type/delegate origin, layout, state, overlay and installed-selection checks. Unapproved catalog types remain fallback controls. |
+| Runtime composite migration and Core independence | All public composites load under HoloNight/Fusion; existing editing, replacement, wrapping, scrolling, popup, disabled-state and Core-only checks. |
+| Password echo, input hints and length limits | New runtime fixture verifies masked display with retained/truncated text on standard TextField and HnSearchField, hint flags, zero-length input, and HnTextArea editor hint forwarding and positive/zero limits. It runs under both styles and against installed modules. HnTextArea retains its existing text-change truncation behavior. |
+| Rendering at multiple device ratios | Two representative existing state-rendering tests now run at DPR 1.0 and 1.25. Physical sample coordinates use the window DPR because software grabWindow images retain DPR metadata 1. Image dimensions are checked against the physical window size; exact center-pixel palette colors pass. |
+| Executable defaults and override hierarchy | Both built and installed example executables pass four startup modes; the isolated imperative and competing-import cases complete precedence coverage. |
+| Installation failures and platform/Quick independence | Ten isolated cases plus the Qt-default reference above; no host provider masks an incomplete deployment. |
+| Policy and documentation | Provider/Core/composite and both application import-policy checks, positive/negative policy fixtures, C++ formatting, Python/shell syntax, local SDD links and whitespace checks. |
+
+All new checks remain offscreen, without desktop pointer or focus automation. Existing isolated control-state and
+editing harnesses are reused. No system installation, consumer implementation, live authentication challenge or
+UQC-201 integration run was performed.
+
+### Final verification commands
+
+From the umbrella root (the patchelf path below is this session's disposable tool environment):
+
+```sh
+UV_CACHE_DIR=/tmp/uqc-uv-cache uv run --with patchelf --no-project patchelf --version
+cmake -S holonight-qt -B holonight-qt/build -G Ninja -DCMAKE_BUILD_TYPE=Debug \
+  -DBUILD_TESTS=ON -DBUILD_DEMO=ON -DBUILD_CONTROLS_GALLERY=ON \
+  -DHOLONIGHT_PATCHELF_EXECUTABLE=/tmp/uqc-uv-cache/archive-v0/NBwrEcQZIC2EIFJPI2MRH/bin/patchelf
+cmake --build holonight-qt/build -j 6
+cmake -DUQC_ISOLATED_ONLY=ON -P holonight-qt/build/tests/test_package_install.cmake
+ctest --test-dir holonight-qt/build \
+  -R 'holonight_quick_rendering_dpr|holonight_runtime_composites' --output-on-failure
+ctest --test-dir holonight-qt/build \
+  -R 'package_install|startup_|palette_(dark|hybrid)$|control_palette|runtime_composites|core_isolation|qml_.*policy' \
+  --output-on-failure -j 4
+QT_QPA_PLATFORM=offscreen ctest --test-dir holonight-qt/build --output-on-failure -j 4
+clang-format --dry-run --Werror holonight-qt/tests/isolated_style_probe.cpp \
+  holonight-qt/tests/test_runtime_composites.cpp holonight-qt/tests/test_quick_palette.cpp
+bash -n holonight-qt/scripts/check-qml-import-policy.sh
+git -C holonight-qt diff --check
+```
+
+Python `ast.parse` checked both acceptance/startup runners; a local Markdown-link existence check covered SPEC,
+DESIGN, REVIEW and IMPLEMENTATION. The probe's `ldd` output was checked for HoloNight linkage (none).
+With patchelf already on PATH, the explicit CMake tool override is unnecessary.
+
+Human-operated Hyprland/Sway rendering, editing/navigation/scrolling and activation propagation, real-application
+and named-scheme observations, isolated authentication prompt/cancellation, and the final ecosystem matrix remain
+UQC-201 gates. Provider completion does not claim any of those gates passed. The next assignment is UQC-103 settings,
+starting with its repository-local SDD after the verified provider is published and pinned by the umbrella.
+
+Final results (2026-09-08, Qt 6.11.2): full build including both examples passed; all ten isolated cases and the
+separate Qt-default reference passed; four focused composite/DPR entries passed (5.40 seconds); nineteen focused
+installed/startup/palette/composite/policy entries passed (44.00 seconds); all 61 provider CTest entries passed
+(43.70 seconds). Changed C++ formatting, Python/shell syntax, local documentation links and whitespace passed.
+UQC-101 provider acceptance is complete. The umbrella handoff records canonical publication and the authoritative gitlink.

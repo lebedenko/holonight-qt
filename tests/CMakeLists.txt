@@ -244,6 +244,9 @@ if(BUILD_WAYLAND)
   set_property(TEST holonight_wayland_tests PROPERTY ENVIRONMENT "${HOLONIGHT_TEST_ENV}")
 endif()
 
+find_package(Python3 REQUIRED COMPONENTS Interpreter)
+find_program(HOLONIGHT_PATCHELF_EXECUTABLE NAMES patchelf REQUIRED)
+
 find_program(HOLONIGHT_QML_EXECUTABLE NAMES qml6 qml REQUIRED)
 find_program(HOLONIGHT_QMLLINT_EXECUTABLE NAMES qmllint6 qmllint REQUIRED)
 
@@ -339,3 +342,17 @@ if(BUILD_DEMO OR BUILD_CONTROLS_GALLERY)
     endforeach()
   endforeach()
 endif()
+
+# Deliberately links only Qt: no provider libraries/resources may pre-register modules.
+add_executable(holonight_isolated_style_probe isolated_style_probe.cpp)
+target_link_libraries(holonight_isolated_style_probe PRIVATE
+    Qt6::Gui Qt6::Qml Qt6::QmlPrivate Qt6::QuickControls2)
+qt_add_resources(holonight_isolated_style_probe isolated_controls_config
+    PREFIX "/" BASE "${CMAKE_SOURCE_DIR}/demo" FILES "${CMAKE_SOURCE_DIR}/demo/qtquickcontrols2.conf")
+
+foreach(ratio IN ITEMS 1.0 1.25)
+  add_test(NAME holonight_quick_rendering_dpr_${ratio} COMMAND holonight_quick_palette_tests
+      "--gtest_filter=QuickPalette.OffscreenRendering*:QuickPalette.NewButtonStatesRender*")
+  set_property(TEST holonight_quick_rendering_dpr_${ratio} PROPERTY ENVIRONMENT
+      "${HOLONIGHT_TEST_ENV};QT_QUICK_BACKEND=software;QT_QUICK_CONTROLS_STYLE=Holonight;QT_SCALE_FACTOR=${ratio}")
+endforeach()

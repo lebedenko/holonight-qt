@@ -17,6 +17,12 @@
 #include <memory>
 
 namespace {
+QColor logicalPixel(const QImage& image, const QQuickWindow* window, int x, int y) {
+  // grabWindow() returns physical pixels, but the software backend leaves the
+  // image's DPR metadata at 1. Use the window's actual rendering ratio.
+  return image.pixelColor(qRound(x * window->devicePixelRatio()), qRound(y * window->devicePixelRatio()));
+}
+
 class QuickPalette : public testing::Test {
  protected:
   QPalette saved = QGuiApplication::palette();
@@ -386,13 +392,15 @@ Window {
   EXPECT_TRUE(QTest::qWaitFor(
       [&] {
         rendered = window->grabWindow();
-        return !rendered.isNull() && rendered.pixelColor(25, 25) == QColor("#1a1a1a");
+        return !rendered.isNull() && logicalPixel(rendered, window, 25, 25) == QColor("#1a1a1a");
       },
       2000));
   ASSERT_FALSE(rendered.isNull());
-  EXPECT_EQ(rendered.pixelColor(85, 25), QColor("#cc0033"));
-  EXPECT_EQ(rendered.pixelColor(145, 25), QColor("#1f00e0"));
-  EXPECT_EQ(rendered.pixelColor(205, 25), QColor("#336699"));
+  EXPECT_EQ(rendered.size(), QSize(qRound(window->width() * window->devicePixelRatio()),
+                                   qRound(window->height() * window->devicePixelRatio())));
+  EXPECT_EQ(logicalPixel(rendered, window, 85, 25), QColor("#cc0033"));
+  EXPECT_EQ(logicalPixel(rendered, window, 145, 25), QColor("#1f00e0"));
+  EXPECT_EQ(logicalPixel(rendered, window, 205, 25), QColor("#336699"));
 }
 }  // namespace
 
@@ -656,13 +664,13 @@ ApplicationWindow {
   ASSERT_TRUE(QTest::qWaitFor(
       [&] {
         rendered = window->grabWindow();
-        return !rendered.isNull() && rendered.pixelColor(85, 25) == QColor("#1a1a1a");
+        return !rendered.isNull() && logicalPixel(rendered, window, 85, 25) == QColor("#1a1a1a");
       },
       2000));
-  EXPECT_EQ(rendered.pixelColor(25, 25), QColor(Qt::white));
-  EXPECT_EQ(rendered.pixelColor(145, 25), QColor("#1f00e0"));
-  EXPECT_EQ(rendered.pixelColor(205, 25), QColor("#cc0033"));
-  EXPECT_EQ(rendered.pixelColor(265, 25), QColor("#336699"));
+  EXPECT_EQ(logicalPixel(rendered, window, 25, 25), QColor(Qt::white));
+  EXPECT_EQ(logicalPixel(rendered, window, 145, 25), QColor("#1f00e0"));
+  EXPECT_EQ(logicalPixel(rendered, window, 205, 25), QColor("#cc0033"));
+  EXPECT_EQ(logicalPixel(rendered, window, 265, 25), QColor("#336699"));
   // Inspect the live border binding without assigning focus to any window/control.
   auto* background = window->findChild<QObject*>("focus")->property("background").value<QQuickItem*>();
   auto* border = background->property("border").value<QObject*>();

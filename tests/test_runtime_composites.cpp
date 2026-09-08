@@ -229,6 +229,54 @@ Item {
   EXPECT_EQ(area->property("text").toString(), "ho");
 }
 
+TEST_F(RuntimeComposites, PasswordMaskingInputHintsAndLengthLimitsSurviveRuntimeStyle) {
+  auto root = create(R"(
+import QtQuick
+import QtQuick.Controls as C
+import Holonight.Controls
+Item {
+    C.TextField {
+        objectName: "standard"; text: "secret"; maximumLength: 5
+        echoMode: TextInput.Password; passwordCharacter: "*"
+        inputMethodHints: Qt.ImhSensitiveData | Qt.ImhNoPredictiveText
+    }
+    HnSearchField {
+        objectName: "search"; text: "secret"; maximumLength: 5
+        echoMode: TextInput.Password; passwordCharacter: "*"
+        inputMethodHints: Qt.ImhSensitiveData | Qt.ImhNoPredictiveText
+    }
+    HnTextArea { objectName: "area"; inputMethodHints: Qt.ImhNoPredictiveText; maximumLength: 3 }
+})");
+  ASSERT_NE(root, nullptr);
+  for (const char* name : {"standard", "search"}) {
+    auto* field = root->findChild<QObject*>(name);
+    ASSERT_NE(field, nullptr);
+    EXPECT_EQ(field->property("text").toString(), "secre");
+    EXPECT_EQ(field->property("displayText").toString(), "*****");
+    const int hints = Qt::ImhSensitiveData | Qt::ImhNoPredictiveText;
+    EXPECT_EQ(field->property("inputMethodHints").toInt() & hints, hints);
+    ASSERT_TRUE(field->setProperty("maximumLength", 0));
+    ASSERT_TRUE(field->setProperty("text", "abc"));
+    EXPECT_TRUE(field->property("text").toString().isEmpty());
+    EXPECT_TRUE(field->property("displayText").toString().isEmpty());
+  }
+  auto* area = root->findChild<QObject*>("area");
+  ASSERT_NE(area, nullptr);
+  QObject* editor = nullptr;
+  for (auto* child : area->findChildren<QObject*>()) {
+    if (child->inherits("QQuickTextArea")) editor = child;
+  }
+  ASSERT_NE(editor, nullptr);
+  EXPECT_EQ(editor->property("inputMethodHints").toInt(), int(Qt::ImhNoPredictiveText));
+  ASSERT_TRUE(area->setProperty("inputMethodHints", int(Qt::ImhDigitsOnly)));
+  EXPECT_EQ(editor->property("inputMethodHints").toInt(), int(Qt::ImhDigitsOnly));
+  ASSERT_TRUE(area->setProperty("text", "abcdef"));
+  EXPECT_EQ(area->property("text").toString(), "abc");
+  ASSERT_TRUE(area->setProperty("maximumLength", 0));
+  ASSERT_TRUE(area->setProperty("text", "new input"));
+  EXPECT_TRUE(area->property("text").toString().isEmpty());
+}
+
 TEST_F(RuntimeComposites, EditingErrorFramesContentReplacementAndReload) {
   auto root = create(R"(
 import QtQuick
