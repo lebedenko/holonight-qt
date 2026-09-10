@@ -13,16 +13,16 @@
 namespace {
 class FormFocus : public testing::TestWithParam<const char*> {
  private:
-  QQmlEngine engine;
-  std::unique_ptr<QObject> object;
-  QQuickWindow* window = nullptr;
+  QQmlEngine engine_;
+  std::unique_ptr<QObject> object_;
+  QQuickWindow* window_ = nullptr;
 
  protected:
-  QObject* root() { return object.get(); }
+  QObject* root() { return object_.get(); }
 
   void SetUp() override {
-    engine.addImportPath(qEnvironmentVariable("UQC_IMPORT_PATH", QStringLiteral(HOLONIGHT_QML_IMPORT_PATH)));
-    QQmlComponent component(&engine);
+    engine_.addImportPath(qEnvironmentVariable("UQC_IMPORT_PATH", QStringLiteral(HOLONIGHT_QML_IMPORT_PATH)));
+    QQmlComponent component(&engine_);
     component.setData(QString(R"(
 import QtQuick
 import QtQuick.Controls as C
@@ -61,15 +61,15 @@ Window {
                           .arg(GetParam())
                           .toUtf8(),
                       QUrl());
-    object.reset(component.create());
-    ASSERT_NE(object, nullptr) << component.errorString().toStdString();
-    window = qobject_cast<QQuickWindow*>(object.get());
-    ASSERT_NE(window, nullptr);
+    object_.reset(component.create());
+    ASSERT_NE(object_, nullptr) << component.errorString().toStdString();
+    window_ = qobject_cast<QQuickWindow*>(object_.get());
+    ASSERT_NE(window_, nullptr);
     QCoreApplication::processEvents();
   }
 
   QQuickItem* item(const char* name) {
-    auto* result = object->findChild<QQuickItem*>(QString::fromLatin1(name));
+    auto* result = object_->findChild<QQuickItem*>(QString::fromLatin1(name));
     EXPECT_NE(result, nullptr) << name;
     return result;
   }
@@ -78,7 +78,7 @@ Window {
     QCoreApplication::processEvents();
     auto* expected = item(name);
     ASSERT_NE(expected, nullptr);
-    auto* focusItem = window->activeFocusItem();
+    auto* focusItem = window_->activeFocusItem();
     // SpinBox is itself a focus scope: native keyboard entry focuses its editor.
     auto* content = expected->property("contentItem").value<QQuickItem*>();
     EXPECT_TRUE(focusItem == expected || (expected->isFocusScope() && focusItem == content))
@@ -91,7 +91,7 @@ Window {
   }
 
   void step(const char* name, bool reverse = false) {
-    QTest::keyClick(window, reverse ? Qt::Key_Backtab : Qt::Key_Tab, reverse ? Qt::ShiftModifier : Qt::NoModifier);
+    QTest::keyClick(window_, reverse ? Qt::Key_Backtab : Qt::Key_Tab, reverse ? Qt::ShiftModifier : Qt::NoModifier);
     expectFocus(name, reverse ? Qt::BacktabFocusReason : Qt::TabFocusReason);
   }
 };
