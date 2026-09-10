@@ -138,3 +138,7 @@ preparation. CMake warned about unavailable Kirigami plugin link targets, but ru
 - [x] Reproduce empty-icon-role failure with QVariantList rows.
 - [x] Guard empty role lookup; verify both styles, provider suite and static checks.
 - [x] Publish provider correction and confirm canonical availability for UQC-106.
+
+## UQC-204 supplemental repair
+
+See [UQC-204.md](UQC-204.md) for the exact baseline, both-wrapper scope, regressions and handoff.

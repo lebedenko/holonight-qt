@@ -21,11 +21,10 @@ FocusScope {
 
     implicitWidth: content.implicitWidth
     implicitHeight: content.implicitHeight
-    activeFocusOnTab: controlLoader.item !== null
-    onActiveFocusChanged: {
-        if (root.activeFocus && controlLoader.status === Loader.Ready)
-            controlLoader.loadedControl.forceActiveFocus()
-    }
+    activeFocusOnTab: controlLoader.loadedControl !== null
+                      && controlLoader.loadedControl.enabled
+                      && controlLoader.loadedControl.visible
+                      && controlLoader.loadedControl.activeFocusOnTab
 
     ColumnLayout {
         id: content
@@ -57,6 +56,15 @@ FocusScope {
             id: controlLoader
 
             readonly property Item loadedControl: item as Item
+
+            // Let FocusScope entry preserve the original keyboard focus reason.
+            focus: root.activeFocusOnTab
+            Binding {
+                target: controlLoader.loadedControl
+                property: "focus"
+                value: true
+                when: root.activeFocusOnTab
+            }
 
             sourceComponent: root.control
             Layout.fillWidth: true
