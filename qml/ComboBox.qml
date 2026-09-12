@@ -134,6 +134,9 @@ T.ComboBox {
         objectName: "holonightComboBoxPopup"
         parent: C.Overlay.overlay
         popupType: T.Popup.Item
+        closePolicy: T.Popup.CloseOnEscape | T.Popup.CloseOnPressOutside
+        modal: true
+        dim: false
         x: root.sceneOrigin.x
         y: opensAbove ? controlSceneTop - 2 * root.effectiveScale - implicitHeight
                       : controlSceneBottomY + 2 * root.effectiveScale
@@ -149,16 +152,17 @@ T.ComboBox {
         contentItem: ListView {
             id: popupList
 
-            readonly property real averageItemHeight: count > 0 ? contentHeight / count : 0
-            readonly property real itemLimitedHeight: Math.min(contentHeight,
-                                                               averageItemHeight
-                                                               * root.resolvedMaximumVisibleItems)
+            // Demand must not query the viewport while its height is being evaluated.
+            // All owned delegates use the control's configurable delegateHeight.
+            readonly property real itemLimitedHeight: Math.min(count, root.resolvedMaximumVisibleItems)
+                                                        * root.delegateHeight
 
             objectName: "holonightComboBoxPopupList"
             clip: contentHeight > height
             implicitHeight: itemLimitedHeight
             interactive: contentHeight > height
-            model: root.delegateModel
+            // A composite may replace this popup; two views must not share its delegates.
+            model: root.popup === popup ? root.delegateModel : null
             currentIndex: root.highlightedIndex
             onCurrentIndexChanged: positionViewAtIndex(currentIndex, ListView.Contain)
             ScrollBar.vertical: ScrollBar {

@@ -448,7 +448,7 @@ if(NOT result EQUAL 0)
 endif()
 
 foreach(mode IN ITEMS Holonight Fusion Core)
-  set(filter "Wrappers/FormFocus.*:RuntimeComposites.*:QmlSmoke.Controls_*:Variants/ComboBoxGeometry.*")
+  set(filter "Controls/DropdownInteraction.*:Wrappers/FormFocus.*:RuntimeComposites.*:QmlSmoke.Controls_*:Variants/ComboBoxGeometry.*")
   set(style "${mode}")
   if(mode STREQUAL "Core")
     set(filter "CoreIsolation.*")
@@ -457,6 +457,7 @@ foreach(mode IN ITEMS Holonight Fusion Core)
   execute_process(COMMAND "@CMAKE_COMMAND@" -E env
       "QT_QPA_PLATFORM=offscreen" "QT_QUICK_BACKEND=software"
       "QT_QPA_PLATFORMTHEME=" "QT_STYLE_OVERRIDE=" "QT_QUICK_CONTROLS_STYLE=${style}"
+      "QT_LOGGING_RULES=qt.quick.viewport.debug=true"
       "QML_IMPORT_PATH=${qml_root}" "UQC_IMPORT_PATH=${qml_root}"
       "@CMAKE_CURRENT_BINARY_DIR@/holonight_runtime_composite_tests" "--gtest_filter=${filter}"
       RESULT_VARIABLE result OUTPUT_VARIABLE output ERROR_VARIABLE error)
