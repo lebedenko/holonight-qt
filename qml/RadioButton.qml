@@ -40,14 +40,14 @@ T.RadioButton {
 
         color: {
             if (!root.enabled)   return root.controlColors.colors.surface
-            if (root.checked)    return root.pressed ? root.controlColors.colors.primaryPressed : (root.hovered ? root.controlColors.colors.primaryHover : root.controlColors.colors.primary)
-            return root.hovered ? root.controlColors.colors.surfaceHover : root.controlColors.colors.surface
+            if (root.checked)    return root.pressed ? root.controlColors.colors.primaryPressed : ((root.HnInputInteraction.hoverAllowed && root.hovered) ? root.controlColors.colors.primaryHover : root.controlColors.colors.primary)
+            return (root.HnInputInteraction.hoverAllowed && root.hovered) ? root.controlColors.colors.surfaceHover : root.controlColors.colors.surface
         }
 
         border.color: {
             if (!root.enabled)   return root.controlColors.colors.disabledBorder
             if (root.checked)    return color
-            return root.hovered ? root.controlColors.colors.borderActive : root.controlColors.colors.borderPassive
+            return (root.HnInputInteraction.hoverAllowed && root.hovered) ? root.controlColors.colors.borderActive : root.controlColors.colors.borderPassive
         }
         border.width: 1
 

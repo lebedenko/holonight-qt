@@ -34,12 +34,12 @@ T.ScrollBar {
 
         Binding on width {
             when: root.orientation === Qt.Vertical
-            value: root.interactive ? (root.hovered ? 8 : 6) : 4
+            value: root.interactive ? ((root.HnInputInteraction.hoverAllowed && root.hovered) ? 8 : 6) : 4
         }
 
         Binding on height {
             when: !(root.orientation === Qt.Vertical)
-            value: root.interactive ? (root.hovered ? 8 : 6) : 4
+            value: root.interactive ? ((root.HnInputInteraction.hoverAllowed && root.hovered) ? 8 : 6) : 4
         }
 
         x: root.orientation === Qt.Vertical ? (root.width - width) / 2 : 0
@@ -48,7 +48,7 @@ T.ScrollBar {
         radius: Math.min(width, height) / 2
         color: root.pressed
                ? root.controlColors.colors.primaryPressed
-               : (root.hovered ? root.controlColors.colors.textPrimary : root.controlColors.colors.textMuted)
+               : ((root.HnInputInteraction.hoverAllowed && root.hovered) ? root.controlColors.colors.textPrimary : root.controlColors.colors.textMuted)
         opacity: root.policy === T.ScrollBar.AlwaysOn || (root.active && root.size < 1.0) ? 1.0 : 0.0
 
         Behavior on width { NumberAnimation { duration: 120 } }
@@ -61,7 +61,7 @@ T.ScrollBar {
         implicitWidth: 10
         implicitHeight: 10
         color: root.controlColors.colors.surface
-        opacity: root.hovered && (root.policy === T.ScrollBar.AlwaysOn || (root.active && root.size < 1.0)) ? 0.6 : 0.0
+        opacity: (root.HnInputInteraction.hoverAllowed && root.hovered) && (root.policy === T.ScrollBar.AlwaysOn || (root.active && root.size < 1.0)) ? 0.6 : 0.0
 
         Behavior on opacity { NumberAnimation { duration: 120 } }
     }

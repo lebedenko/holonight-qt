@@ -56,12 +56,12 @@ T.ItemDelegate {
 
         implicitWidth: 100
         implicitHeight: 32
-        visible: root.down || root.hovered || isSelected || root.visualFocus
+        visible: root.down || (root.HnInputInteraction.hoverAllowed && root.hovered) || isSelected || root.visualFocus
         Rectangle {
             objectName: "hnItemDelegateBase"
             anchors.fill: parent
             color: root.down ? root.controlColors.colors.surfaceElevated
-                             : (!parent.isSelected && root.hovered ? root.controlColors.colors.surfaceHover : "transparent")
+                             : (!parent.isSelected && (root.HnInputInteraction.hoverAllowed && root.hovered) ? root.controlColors.colors.surfaceHover : "transparent")
             topLeftRadius: root.topLeftRadius >= 0 ? root.topLeftRadius : parent.semanticRadius
             topRightRadius: root.topRightRadius >= 0 ? root.topRightRadius : parent.semanticRadius
             bottomLeftRadius: root.bottomLeftRadius >= 0 ? root.bottomLeftRadius : parent.semanticRadius
@@ -71,7 +71,7 @@ T.ItemDelegate {
         Rectangle {
             objectName: "hnItemDelegateSelectedOverlay"
             anchors.fill: parent
-            color: root.hovered ? root.controlColors.colors.surfaceSelectedHover
+            color: (root.HnInputInteraction.hoverAllowed && root.hovered) ? root.controlColors.colors.surfaceSelectedHover
                                 : root.controlColors.colors.surfaceSelected
             topLeftRadius: root.topLeftRadius >= 0 ? root.topLeftRadius : parent.semanticRadius
             topRightRadius: root.topRightRadius >= 0 ? root.topRightRadius : parent.semanticRadius

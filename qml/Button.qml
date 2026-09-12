@@ -66,11 +66,11 @@ T.Button {
             if (!root.enabled)    return root.controlColors.colors.surfaceRaised
             if (root.highlighted) {
                 if (root.down)    return root.controlColors.colors.primaryPressed
-                if (root.hovered) return root.controlColors.colors.primaryHover
+                if ((root.HnInputInteraction.hoverAllowed && root.hovered)) return root.controlColors.colors.primaryHover
                 return root.controlColors.colors.primary
             }
             if (root.down)        return root.controlColors.colors.buttonPressed
-            if (root.hovered)     return root.controlColors.colors.surfaceHover
+            if ((root.HnInputInteraction.hoverAllowed && root.hovered))     return root.controlColors.colors.surfaceHover
             return root.controlColors.colors.surfaceRaised
         }
 

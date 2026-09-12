@@ -69,7 +69,7 @@ T.SpinBox {
                                                                           HnAppearance.revision)
 
         Rectangle {
-            visible: root.enabled && (root.up.hovered || root.up.pressed)
+            visible: root.enabled && ((root.HnInputInteraction.hoverAllowed && root.up.hovered) || root.up.pressed)
             color: root.up.pressed ? root.controlColors.colors.surfaceRaised : root.controlColors.colors.buttonHover
             radius: Math.max(0, parent.semanticRadius - 1)
 
@@ -130,7 +130,7 @@ T.SpinBox {
                                                                           HnAppearance.revision)
 
         Rectangle {
-            visible: root.enabled && (root.down.hovered || root.down.pressed)
+            visible: root.enabled && ((root.HnInputInteraction.hoverAllowed && root.down.hovered) || root.down.pressed)
             color: root.down.pressed ? root.controlColors.colors.surfaceRaised : root.controlColors.colors.buttonHover
             radius: Math.max(0, parent.semanticRadius - 1)
 

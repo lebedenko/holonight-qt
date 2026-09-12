@@ -205,3 +205,23 @@ heights, and layouts rather than hand-calculated widths. Test at fractional scal
 factors and in both light and dark schemes. Wrap application-visible strings in
 `qsTr()`, allow title/description labels to grow or elide as documented, and do
 not assume shortcut text or translated labels have a fixed width.
+
+## Window input authority
+
+`Holonight.Core` provides `HnInputInteraction` attached to an Item or Window.
+`hoverAllowed` gates decorative hover feedback; keep selected, checked, pressed
+and focus states visible independently. State is shared by items in the same
+window and is independent between windows.
+
+Non-modifier key presses suppress hover. Changed pointer screen coordinates
+restore it; entering an item, scrolling, layout and animation do not. Pointer
+presses continue to activate controls immediately. A keyboard-oriented surface
+should call `HnInputInteraction.suppressHover()` each time it opens. Consumers
+that manage selection can handle `HnInputInteraction.onPointerMoved` and hit-test
+the delivered `scenePosition` against their current layout using `mapFromItem(null,
+scenePosition.x, scenePosition.y)`. Do not use `onHoveredChanged` to authorize
+selection: it can fire with a stationary pointer. The observer never consumes input.
+
+HoloNight standard controls and owned composites use this policy for hover
+rendering. Fusion keeps its standard-control rendering. An unattached item has no
+window authority; suppression requested before attachment applies when attached.

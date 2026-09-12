@@ -87,8 +87,8 @@ T.Switch {
             radius: height / 2
             color: {
                 if (!root.enabled)  return root.controlColors.colors.surface
-                if (root.checked)   return root.hovered ? root.controlColors.colors.primaryHover : root.controlColors.colors.primary
-                return root.hovered ? root.controlColors.colors.textMuted : root.controlColors.colors.borderPassive
+                if (root.checked)   return (root.HnInputInteraction.hoverAllowed && root.hovered) ? root.controlColors.colors.primaryHover : root.controlColors.colors.primary
+                return (root.HnInputInteraction.hoverAllowed && root.hovered) ? root.controlColors.colors.textMuted : root.controlColors.colors.borderPassive
             }
 
             Behavior on color { ColorAnimation { duration: 150 } }

@@ -54,7 +54,7 @@ T.CheckDelegate {
             objectName: "hnChoiceCardBase"
             anchors.fill: parent
             color: root.down ? HoloniightPalette.surfaceElevated
-                             : (!root.checked && root.hovered ? HoloniightPalette.surfaceHover
+                             : (!root.checked && (root.HnInputInteraction.hoverAllowed && root.hovered) ? HoloniightPalette.surfaceHover
                                                               : HoloniightPalette.surfaceElevated)
             radius: HnAppearance.roundedRadius(HnSurfaceRole.Control, width, height, HnAppearance.revision)
             Accessible.ignored: true

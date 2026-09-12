@@ -111,7 +111,7 @@ T.MenuItem {
 
         implicitWidth: 180
         implicitHeight: 28
-        visible: root.enabled && (root.down || root.highlighted || root.hovered)
+        visible: root.enabled && (root.down || root.highlighted || (root.HnInputInteraction.hoverAllowed && root.hovered))
         radius: semanticRadius
         color: {
             if (root.down && root.highlighted)
@@ -120,7 +120,7 @@ T.MenuItem {
                 return root.controlColors.colors.primary
             if (root.down)
                 return root.controlColors.colors.buttonPressed
-            if (root.hovered)
+            if ((root.HnInputInteraction.hoverAllowed && root.hovered))
                 return root.controlColors.colors.surfaceHover
             return "transparent"
         }

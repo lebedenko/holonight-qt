@@ -111,7 +111,7 @@ C.ComboBox {
         implicitWidth: 120
         implicitHeight: 32
         radius: semanticRadius
-        color: root.hovered ? root.frameColors.colors.surfaceHover : root.frameColors.colors.surface
+        color: (root.HnInputInteraction.hoverAllowed && root.hovered) ? root.frameColors.colors.surfaceHover : root.frameColors.colors.surface
         border.color: root.visualFocus || root.popup.visible ? root.frameColors.colors.borderFocus : (root.enabled ? root.frameColors.colors.borderPassive : root.frameColors.colors.borderPassive)
         border.width: (root.visualFocus || root.popup.visible) ? HnMetrics.focusBorderWidth : HnMetrics.borderWidth
     }
@@ -195,6 +195,7 @@ C.ComboBox {
 
         C.ItemDelegate {
             id: delegateRoot
+            hoverEnabled: true
             palette: root.compositePalette.appearancePalette
 
             required property int index
@@ -228,12 +229,12 @@ C.ComboBox {
 
                 implicitWidth: 100
                 implicitHeight: 32
-                visible: delegateRoot.down || delegateRoot.hovered || isSelected || delegateRoot.visualFocus
+                visible: delegateRoot.down || (delegateRoot.HnInputInteraction.hoverAllowed && delegateRoot.hovered) || isSelected || delegateRoot.visualFocus
                 Rectangle {
                     objectName: "hnItemDelegateBase"
                     anchors.fill: parent
                     color: delegateRoot.down ? HoloniightPalette.surfaceElevated
-                                     : (!parent.isSelected && delegateRoot.hovered ? HoloniightPalette.surfaceHover : "transparent")
+                                     : (!parent.isSelected && (delegateRoot.HnInputInteraction.hoverAllowed && delegateRoot.hovered) ? HoloniightPalette.surfaceHover : "transparent")
                     topLeftRadius: delegateRoot.topLeftRadius
                     topRightRadius: delegateRoot.topRightRadius
                     bottomLeftRadius: delegateRoot.bottomLeftRadius
@@ -243,7 +244,7 @@ C.ComboBox {
                 Rectangle {
                     objectName: "hnItemDelegateSelectedOverlay"
                     anchors.fill: parent
-                    color: delegateRoot.hovered ? HoloniightPalette.surfaceSelectedHover
+                    color: (delegateRoot.HnInputInteraction.hoverAllowed && delegateRoot.hovered) ? HoloniightPalette.surfaceSelectedHover
                                         : HoloniightPalette.surfaceSelected
                     topLeftRadius: delegateRoot.topLeftRadius
                     topRightRadius: delegateRoot.topRightRadius

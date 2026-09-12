@@ -41,7 +41,7 @@ T.AbstractButton {
                 return "transparent"
             if (root.down)
                 return HoloniightPalette.surface
-            if (root.hovered)
+            if ((root.HnInputInteraction.hoverAllowed && root.hovered))
                 return HoloniightPalette.surfaceHover
             return "transparent"
         }

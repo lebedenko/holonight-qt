@@ -59,7 +59,7 @@ T.MenuBarItem {
                 return colors.colors.primary
             }
             if (root.down) return colors.colors.buttonPressed
-            if (root.hovered) return colors.colors.buttonHover
+            if ((root.HnInputInteraction.hoverAllowed && root.hovered)) return colors.colors.buttonHover
             return "transparent"
         }
         border.color: colors.colors.borderFocus

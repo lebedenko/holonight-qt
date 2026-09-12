@@ -84,7 +84,7 @@ T.Control {
                         return HoloniightPalette.surfaceElevated
                     if (segment.checked)
                         return HoloniightPalette.surfaceHover
-                    return segment.hovered ? HoloniightPalette.surfaceRaised : HoloniightPalette.surface
+                    return (segment.HnInputInteraction.hoverAllowed && segment.hovered) ? HoloniightPalette.surfaceRaised : HoloniightPalette.surface
                 }
 
                 function segmentPath(): string {

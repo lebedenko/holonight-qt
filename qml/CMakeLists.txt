@@ -80,6 +80,8 @@ qt_add_qml_module(holonight_core_qml
     SOURCES
         appearancecontext.h
         appearancecontext.cpp
+        hninputinteraction.h
+        hninputinteraction.cpp
         hnmetrics.h
         hnmetrics.cpp
         hnappearance.h

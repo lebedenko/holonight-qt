@@ -35,7 +35,7 @@ T.Slider {
         color: {
             if (!root.enabled) return root.controlColors.colors.disabledAccent
             if (root.pressed)  return root.controlColors.colors.primaryPressed
-            if (root.hovered)  return root.controlColors.colors.primaryHover
+            if ((root.HnInputInteraction.hoverAllowed && root.hovered))  return root.controlColors.colors.primaryHover
             return root.controlColors.colors.primary
         }
 

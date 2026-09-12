@@ -448,7 +448,7 @@ if(NOT result EQUAL 0)
 endif()
 
 foreach(mode IN ITEMS Holonight Fusion Core)
-  set(filter "Controls/DropdownInteraction.*:Wrappers/FormFocus.*:RuntimeComposites.*:QmlSmoke.Controls_*:Variants/ComboBoxGeometry.*")
+  set(filter "InputInteraction*.*:Controls/DropdownInteraction.*:Wrappers/FormFocus.*:RuntimeComposites.*:QmlSmoke.Controls_*:Variants/ComboBoxGeometry.*")
   set(style "${mode}")
   if(mode STREQUAL "Core")
     set(filter "CoreIsolation.*")

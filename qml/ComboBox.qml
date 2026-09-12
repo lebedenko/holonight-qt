@@ -101,7 +101,7 @@ T.ComboBox {
         implicitWidth: 120
         implicitHeight: 32
         radius: semanticRadius
-        color: root.hovered ? root.controlColors.colors.surfaceHover : root.controlColors.colors.surface
+        color: (root.HnInputInteraction.hoverAllowed && root.hovered) ? root.controlColors.colors.surfaceHover : root.controlColors.colors.surface
         border.color: root.visualFocus || root.popup.visible ? root.controlColors.colors.borderFocus : (root.enabled ? root.controlColors.colors.borderPassive : root.controlColors.colors.borderPassive)
         border.width: (root.visualFocus || root.popup.visible) ? HnMetrics.focusBorderWidth : HnMetrics.borderWidth
     }

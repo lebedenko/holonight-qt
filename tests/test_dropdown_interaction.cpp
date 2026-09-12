@@ -290,6 +290,30 @@ TEST_P(DropdownInteraction, HoveredRowsRemainVisibleAndFirstLastCanBeSelected) {
   }
 }
 
+TEST_P(DropdownInteraction, StationaryPointerDoesNotCompeteWithKeyboardHighlight) {
+  if (qEnvironmentVariable("QT_QUICK_CONTROLS_STYLE") == "Fusion" && QString(GetParam()) == "C.ComboBox")
+    GTEST_SKIP() << "Fusion owns standard delegate rendering";
+  ASSERT_NO_FATAL_FAILURE(open());
+  QPointer<QQuickItem> hovered = currentItem();
+  ASSERT_NE(hovered, nullptr);
+  const QPoint center = hovered->mapToScene(QPointF(hovered->width() / 2, hovered->height() / 2)).toPoint();
+  QTest::mouseMove(window, center);
+  QCoreApplication::processEvents();
+  ASSERT_TRUE(hovered->property("hovered").toBool());
+  QTest::keyClick(window, Qt::Key_Down);
+  EXPECT_EQ(combo->property("highlightedIndex").toInt(), 16);
+  auto* base = hovered->findChild<QObject*>("hnItemDelegateBase");
+  ASSERT_NE(base, nullptr);
+  EXPECT_EQ(base->property("color").value<QColor>().alpha(), 0);
+  QTest::keyClick(window, Qt::Key_Escape);
+  ASSERT_TRUE(combo->setProperty("currentIndex", 20));
+  QTest::keyClick(window, Qt::Key_Space);
+  ASSERT_TRUE(QTest::qWaitFor([&] { return popup->property("opened").toBool(); }));
+  EXPECT_EQ(combo->property("highlightedIndex").toInt(), 20);
+  QTest::keyClick(window, Qt::Key_Return);
+  EXPECT_EQ(combo->property("currentIndex").toInt(), 20);
+}
+
 TEST_P(DropdownInteraction, FontModelResetsKeepPopupBoundedAtBothWindowEdges) {
   ASSERT_TRUE(root->setProperty("useFonts", true));
   for (int y : {10, 340}) {

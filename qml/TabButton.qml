@@ -35,7 +35,7 @@ T.TabButton {
         color: {
             if (!root.enabled) return root.controlColors.colors.textDisabled
             if (root.checked)  return root.controlColors.colors.primary
-            return root.hovered ? root.controlColors.colors.textPrimary : root.controlColors.colors.textMuted
+            return (root.HnInputInteraction.hoverAllowed && root.hovered) ? root.controlColors.colors.textPrimary : root.controlColors.colors.textMuted
         }
         horizontalAlignment: Text.AlignHCenter
         verticalAlignment: Text.AlignVCenter
@@ -46,7 +46,7 @@ T.TabButton {
         // Tab body
         Rectangle {
             anchors.fill: parent
-            color: root.hovered ? root.controlColors.colors.surfaceHover : Qt.rgba(0, 0, 0, 0)
+            color: (root.HnInputInteraction.hoverAllowed && root.hovered) ? root.controlColors.colors.surfaceHover : Qt.rgba(0, 0, 0, 0)
         }
 
         // Active indicator bar

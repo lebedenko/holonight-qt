@@ -27,7 +27,7 @@ HnSelectableDelegate {
             objectName: "hnCardDelegateBase"
             anchors.fill: parent
             color: root.down ? HoloniightPalette.surfaceElevated
-                             : (!root.selected && root.hovered ? HoloniightPalette.surfaceHover
+                             : (!root.selected && (root.HnInputInteraction.hoverAllowed && root.hovered) ? HoloniightPalette.surfaceHover
                                                                : HoloniightPalette.surfaceElevated)
             radius: parent.semanticRadius
             Accessible.ignored: true
@@ -35,7 +35,7 @@ HnSelectableDelegate {
         Rectangle {
             objectName: "hnCardDelegateSelectedOverlay"
             anchors.fill: parent
-            color: root.hovered ? HoloniightPalette.surfaceSelectedHover
+            color: (root.HnInputInteraction.hoverAllowed && root.hovered) ? HoloniightPalette.surfaceSelectedHover
                                 : HoloniightPalette.surfaceSelected
             radius: parent.semanticRadius
             visible: root.selected && !root.down

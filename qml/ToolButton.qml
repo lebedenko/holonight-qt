@@ -53,12 +53,12 @@ T.ToolButton {
         color: {
             if (root.highlighted) {
                 if (root.down) return colors.colors.primaryPressed
-                if (root.hovered) return colors.colors.primaryHover
+                if ((root.HnInputInteraction.hoverAllowed && root.hovered)) return colors.colors.primaryHover
                 return colors.colors.primary
             }
             if (root.down) return colors.colors.buttonPressed
-            if (root.checked) return root.hovered ? colors.colors.surfaceSelectedHover : colors.colors.surfaceSelected
-            if (root.hovered) return colors.colors.buttonHover
+            if (root.checked) return (root.HnInputInteraction.hoverAllowed && root.hovered) ? colors.colors.surfaceSelectedHover : colors.colors.surfaceSelected
+            if ((root.HnInputInteraction.hoverAllowed && root.hovered)) return colors.colors.buttonHover
             return "transparent"
         }
         border.color: colors.colors.borderFocus

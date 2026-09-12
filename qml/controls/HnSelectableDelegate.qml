@@ -37,7 +37,7 @@ T.ItemDelegate {
             objectName: "hnSelectableDelegateBase"
             anchors.fill: parent
             color: root.down ? HoloniightPalette.surfaceElevated
-                             : (!root.selected && root.hovered ? HoloniightPalette.surfaceHover : "transparent")
+                             : (!root.selected && (root.HnInputInteraction.hoverAllowed && root.hovered) ? HoloniightPalette.surfaceHover : "transparent")
             radius: parent.semanticRadius
             Accessible.ignored: true
         }
@@ -46,7 +46,7 @@ T.ItemDelegate {
 
             objectName: "hnSelectableDelegateSelectedOverlay"
             anchors.fill: parent
-            color: root.hovered ? HoloniightPalette.surfaceSelectedHover
+            color: (root.HnInputInteraction.hoverAllowed && root.hovered) ? HoloniightPalette.surfaceSelectedHover
                                 : HoloniightPalette.surfaceSelected
             gradient: root.selectionStyle === HnSelectableDelegate.AccentEdge ? selectionGradient : null
             radius: parent.semanticRadius
