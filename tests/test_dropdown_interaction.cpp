@@ -2,6 +2,7 @@
 // SPDX-FileCopyrightText: 2026 Andrii L <lebeden@gmail.com>
 
 #include <QFontDatabase>
+#include <QMouseEvent>
 #include <QPointer>
 #include <QQmlComponent>
 #include <QQmlContext>
@@ -315,6 +316,37 @@ TEST_P(DropdownInteraction, StationaryPointerDoesNotCompeteWithKeyboardHighlight
   EXPECT_EQ(combo->property("highlightedIndex").toInt(), 20);
   QTest::keyClick(window, Qt::Key_Return);
   EXPECT_EQ(combo->property("currentIndex").toInt(), 20);
+}
+
+TEST_P(DropdownInteraction, TabSpaceOpenAndSpaceClosePreserveSelectionUnderStationaryPointer) {
+  if (qEnvironmentVariable("QT_QUICK_CONTROLS_STYLE") == "Fusion" && QString(GetParam()) == "C.ComboBox")
+    GTEST_SKIP() << "Fusion owns standard dropdown interaction";
+  ASSERT_TRUE(combo->setProperty("currentIndex", 0));
+  ASSERT_NO_FATAL_FAILURE(open());
+  auto* item = currentItem();
+  ASSERT_NE(item, nullptr);
+  const QPoint pointer = item->mapToScene(QPointF(item->width() / 2, item->height() / 2)).toPoint();
+  QTest::keyClick(window, Qt::Key_Escape);
+  ASSERT_TRUE(QTest::qWaitFor([&] { return !popup->property("visible").toBool(); }));
+  ASSERT_TRUE(combo->setProperty("currentIndex", 3));
+  // Place the pointer over a different future popup row before using only keys.
+  QTest::mouseMove(window, pointer);
+  window->contentItem()->forceActiveFocus();
+  QTest::keyClick(window, Qt::Key_Tab);
+  ASSERT_TRUE(combo->hasActiveFocus());
+  QTest::keyClick(window, Qt::Key_Space);
+  ASSERT_TRUE(QTest::qWaitFor([&] { return popup->property("opened").toBool(); }));
+  QSignalSpy rendered(window, &QQuickWindow::frameSwapped);
+  window->update();
+  ASSERT_TRUE(rendered.wait(1000));
+  // A window can receive a pointer update without a change in screen position.
+  QMouseEvent stationary(QEvent::MouseMove, pointer, window->mapToGlobal(pointer), Qt::NoButton, Qt::NoButton,
+                         Qt::NoModifier);
+  QCoreApplication::sendEvent(window, &stationary);
+  EXPECT_EQ(combo->property("highlightedIndex").toInt(), 3);
+  QTest::keyClick(window, Qt::Key_Space);
+  EXPECT_TRUE(QTest::qWaitFor([&] { return !popup->property("visible").toBool(); }));
+  EXPECT_EQ(combo->property("currentIndex").toInt(), 3);
 }
 
 TEST_P(DropdownInteraction, KeyboardScrollDoesNotSelectRowUnderStationaryPointer) {
