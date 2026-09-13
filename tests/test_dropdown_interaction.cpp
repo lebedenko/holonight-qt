@@ -309,9 +309,62 @@ TEST_P(DropdownInteraction, StationaryPointerDoesNotCompeteWithKeyboardHighlight
   ASSERT_TRUE(combo->setProperty("currentIndex", 20));
   QTest::keyClick(window, Qt::Key_Space);
   ASSERT_TRUE(QTest::qWaitFor([&] { return popup->property("opened").toBool(); }));
+  QSignalSpy rendered(window, &QQuickWindow::frameSwapped);
+  window->update();
+  ASSERT_TRUE(rendered.wait(1000));
   EXPECT_EQ(combo->property("highlightedIndex").toInt(), 20);
   QTest::keyClick(window, Qt::Key_Return);
   EXPECT_EQ(combo->property("currentIndex").toInt(), 20);
+}
+
+TEST_P(DropdownInteraction, KeyboardScrollDoesNotSelectRowUnderStationaryPointer) {
+  if (qEnvironmentVariable("QT_QUICK_CONTROLS_STYLE") == "Fusion" && QString(GetParam()) == "C.ComboBox")
+    GTEST_SKIP() << "Fusion owns standard dropdown interaction";
+  ASSERT_TRUE(combo->setProperty("currentIndex", 0));
+  ASSERT_NO_FATAL_FAILURE(open());
+  auto* item = currentItem();
+  ASSERT_NE(item, nullptr);
+  const QPoint pointer = item->mapToScene(QPointF(item->width() / 2, item->height() / 2)).toPoint();
+  QTest::mouseMove(window, pointer);
+  QCoreApplication::processEvents();
+  for (int index = 1; index <= 20; ++index) {
+    QTest::keyClick(window, Qt::Key_Down);
+    QSignalSpy rendered(window, &QQuickWindow::frameSwapped);
+    window->update();
+    ASSERT_TRUE(rendered.wait(1000));
+    EXPECT_EQ(combo->property("highlightedIndex").toInt(), index);
+    EXPECT_EQ(combo->property("currentIndex").toInt(), 0);
+  }
+  QTest::keyClick(window, Qt::Key_Return);
+  EXPECT_EQ(combo->property("currentIndex").toInt(), 20);
+}
+
+TEST_P(DropdownInteraction, PointerMovementAndClickRecoverAfterKeyboardScroll) {
+  if (qEnvironmentVariable("QT_QUICK_CONTROLS_STYLE") == "Fusion" && QString(GetParam()) == "C.ComboBox")
+    GTEST_SKIP() << "Fusion owns standard dropdown interaction";
+  ASSERT_TRUE(combo->setProperty("currentIndex", 0));
+  ASSERT_NO_FATAL_FAILURE(open());
+  auto* item = currentItem();
+  ASSERT_NE(item, nullptr);
+  QTest::mouseMove(window, item->mapToScene(QPointF(item->width() / 2, item->height() / 2)).toPoint());
+  for (int index = 1; index <= 10; ++index) QTest::keyClick(window, Qt::Key_Down);
+  QSignalSpy rendered(window, &QQuickWindow::frameSwapped);
+  window->update();
+  ASSERT_TRUE(rendered.wait(1000));
+  ASSERT_EQ(combo->property("highlightedIndex").toInt(), 10);
+  item = currentItem();
+  ASSERT_NE(item, nullptr);
+  // Row 9 is immediately above the keyboard-selected row, inside the viewport.
+  const QPoint row_nine = item->mapToScene(QPointF(item->width() / 2, -item->height() / 2)).toPoint();
+  QTest::mouseMove(window, row_nine);
+  ASSERT_TRUE(QTest::qWaitFor([&] { return combo->property("highlightedIndex").toInt() == 9; }));
+  EXPECT_EQ(combo->property("currentIndex").toInt(), 0);
+  QTest::keyClick(window, Qt::Key_Down);
+  ASSERT_EQ(combo->property("highlightedIndex").toInt(), 10);
+  // A click must work immediately even while keyboard authority suppresses hover.
+  QTest::mouseClick(window, Qt::LeftButton, Qt::NoModifier, row_nine);
+  EXPECT_TRUE(QTest::qWaitFor([&] { return !popup->property("visible").toBool(); }));
+  EXPECT_EQ(combo->property("currentIndex").toInt(), 9);
 }
 
 TEST_P(DropdownInteraction, FontModelResetsKeepPopupBoundedAtBothWindowEdges) {

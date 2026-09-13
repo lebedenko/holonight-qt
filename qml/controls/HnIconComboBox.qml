@@ -151,7 +151,10 @@ C.ComboBox {
         scale: root.effectiveScale
         transformOrigin: opensAbove ? Item.BottomLeft : Item.TopLeft
 
-        onAboutToShow: geometryRevision++
+        onAboutToShow: {
+            root.HnInputInteraction.suppressHover()
+            geometryRevision++
+        }
 
         contentItem: ListView {
             id: popupList
@@ -195,7 +198,8 @@ C.ComboBox {
 
         C.ItemDelegate {
             id: delegateRoot
-            hoverEnabled: true
+            // Qt uses delegate hover changes to update highlightedIndex.
+            hoverEnabled: delegateRoot.HnInputInteraction.hoverAllowed
             palette: root.compositePalette.appearancePalette
 
             required property int index
