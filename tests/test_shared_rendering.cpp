@@ -301,6 +301,60 @@ TEST_F(SharedRendering, SwitchFocusOutlineSurroundsTrackInBothStates) {
   }
 }
 
+TEST_F(SharedRendering, ClosedComboBoxChevronRenders) {
+  QQmlComponent available(&engine);
+  available.setData("import org.kde.kirigamiaddons.formcard as F\nF.FormComboBoxDelegate {}", QUrl());
+  if (available.isError()) GTEST_SKIP() << available.errorString().toStdString();
+  QQmlComponent component(&engine);
+  component.setData(R"(
+    import QtQuick
+    import QtQuick.Controls as C
+    import org.kde.kirigamiaddons.formcard as F
+    Window {
+      visible: true; width: 640; height: 480
+      Window {
+        objectName: "settings"; visible: true; width: 640; height: 480
+        F.FormComboBoxDelegate {
+          id: form; width: 538; y: 40; text: "Color scheme"
+          model: ["First", "Second", "Third"]
+        }
+      }
+      function findCombo(item) {
+        if (item instanceof C.ComboBox) return item
+        for (const child of item.children) {
+          const found = findCombo(child); if (found) return found
+        }
+        return null
+      }
+      property var combo: findCombo(form)
+    }
+  )",
+                    QUrl());
+  ASSERT_FALSE(component.isError()) << component.errorString().toStdString();
+  root.reset(component.create());
+  ASSERT_TRUE(root) << component.errorString().toStdString();
+  window = root->findChild<QQuickWindow*>("settings");
+  ASSERT_TRUE(window);
+  ASSERT_TRUE(QTest::qWaitForWindowExposed(window));
+  QTest::qWait(200);
+  auto* combo = root->property("combo").value<QQuickItem*>();
+  ASSERT_TRUE(combo);
+  auto* indicator = combo->property("indicator").value<QQuickItem*>();
+  ASSERT_TRUE(indicator);
+  const auto image = window->grabWindow();
+  const auto origin = indicator->mapToScene(QPointF());
+  const auto dpr = window->devicePixelRatio();
+  const QColor surface = image.pixelColor(qRound((origin.x() - 2) * dpr), qRound(origin.y() * dpr));
+  int ink = 0;
+  for (int y = 0; y < qRound(indicator->height() * dpr); ++y) {
+    for (int x = 0; x < qRound(indicator->width() * dpr); ++x) {
+      const auto color = image.pixelColor(qRound(origin.x() * dpr) + x, qRound(origin.y() * dpr) + y);
+      if (std::abs(color.lightness() - surface.lightness()) > 60) ++ink;
+    }
+  }
+  EXPECT_GT(ink, 5) << "Closed ComboBox indicator must contain visible chevron pixels";
+}
+
 TEST_F(SharedRendering, InstalledFormComboPopupBackground) {
   QQmlComponent available(&engine);
   available.setData("import org.kde.kirigamiaddons.formcard as F\nF.FormComboBoxDelegate {}", QUrl());
