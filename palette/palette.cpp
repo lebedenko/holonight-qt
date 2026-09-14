@@ -1147,6 +1147,7 @@ QPalette buildPalette(const ColorTokens& tok) {
   pal.setColor(QPalette::Active, QPalette::LinkVisited, tok.error);
   pal.setColor(QPalette::Active, QPalette::Mid, tok.borderPassive);
   pal.setColor(QPalette::Active, QPalette::Dark, tok.borderPassive);
+  pal.setColor(QPalette::Active, QPalette::Light, tok.surfaceRaised);
   pal.setColor(QPalette::Active, QPalette::Midlight, tok.surfaceRaised);
   pal.setColor(QPalette::Active, QPalette::Shadow, tok.borderPassive);
   pal.setColor(QPalette::Active, QPalette::BrightText, tok.textPrimary);
@@ -1168,6 +1169,7 @@ QPalette buildPalette(const ColorTokens& tok) {
   pal.setColor(QPalette::Disabled, QPalette::ToolTipBase, tok.surfaceInverse);
   pal.setColor(QPalette::Disabled, QPalette::Mid, tok.borderPassive);
   pal.setColor(QPalette::Disabled, QPalette::Dark, tok.borderPassive);
+  pal.setColor(QPalette::Disabled, QPalette::Light, tok.surfaceRaised);
   pal.setColor(QPalette::Disabled, QPalette::Midlight, tok.surfaceRaised);
   pal.setColor(QPalette::Disabled, QPalette::Shadow, tok.borderPassive);
   pal.setColor(QPalette::Disabled, QPalette::WindowText, tok.textDisabled);

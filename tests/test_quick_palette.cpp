@@ -17,6 +17,8 @@
 #include <memory>
 
 namespace {
+Holonight::ColorTokens appearanceTokens();
+
 QColor logicalPixel(const QImage& image, const QQuickWindow* window, int x, int y) {
   // grabWindow() returns physical pixels, but the software backend leaves the
   // image's DPR metadata at 1. Use the window's actual rendering ratio.
@@ -68,6 +70,85 @@ TEST_F(QuickPalette, ApplicationBlackWhiteBlackUpdatesEditableColors) {
     EXPECT_EQ(field->property("placeholderTextColor").value<QColor>(), QColor("#9374ab"));
     EXPECT_EQ(field->property("selectionColor").value<QColor>(), QColor("#557799"));
     EXPECT_EQ(field->property("selectedTextColor").value<QColor>(), QColor("#ffeedd"));
+  }
+}
+
+TEST_F(QuickPalette, FallbackPickerFooterUsesAppearanceAndPreservesLightOverrideOnReopen) {
+  const auto tokens = appearanceTokens();
+  for (const auto* type : {"FontDialog", "ColorDialog", "FileDialog"}) {
+    SCOPED_TRACE(type);
+    auto object = create(QByteArray(R"(
+      import QtQuick
+      import QtQuick.Controls as C
+      import QtQuick.Dialogs as D
+      C.ApplicationWindow {
+        visible: true; width: 900; height: 800
+        D.)") + type + R"( { id: picker; objectName: "picker" }
+        function openPicker() { picker.open() }
+      }
+    )");
+    ASSERT_TRUE(object);
+    ASSERT_TRUE(QMetaObject::invokeMethod(object.get(), "openPicker"));
+    QTest::qWait(100);
+    QObject* implementation = nullptr;
+    for (auto* child : object->findChildren<QObject*>()) {
+      if (child->inherits((QByteArray("QQuick") + type + "Impl").constData())) implementation = child;
+    }
+    ASSERT_TRUE(implementation) << "Expected the actual Qt Quick fallback dialog implementation";
+    auto* footer = implementation->property("footer").value<QQuickItem*>();
+    ASSERT_TRUE(footer);
+    EXPECT_EQ(footer->property("color").value<QColor>(), tokens.surfaceRaised);
+    auto* palette = implementation->property("palette").value<QObject*>();
+    ASSERT_TRUE(palette);
+    for (const auto scheme : {Holonight::ThemeSchemeKind::HoloNightDark, Holonight::ThemeSchemeKind::HoloNightLight,
+                              Holonight::ThemeSchemeKind::HoloNightDark}) {
+      const auto transition = Holonight::tokensForScheme(scheme);
+      QGuiApplication::setPalette(Holonight::buildPalette(transition));
+      QCoreApplication::processEvents();
+      EXPECT_EQ(footer->property("color").value<QColor>(), transition.surfaceRaised);
+    }
+    ASSERT_TRUE(palette->setProperty("light", QColor("#80445566")));
+    auto* picker = object->findChild<QObject*>("picker");
+    for (const auto base : {Qt::black, Qt::white, Qt::black}) {
+      QPalette application;
+      application.setColor(QPalette::Base, base);
+      application.setColor(QPalette::Light, QColor("#80998877"));
+      QGuiApplication::setPalette(application);
+      QCoreApplication::processEvents();
+      ASSERT_TRUE(QMetaObject::invokeMethod(picker, "close"));
+      ASSERT_TRUE(QMetaObject::invokeMethod(object.get(), "openPicker"));
+      QCoreApplication::processEvents();
+      EXPECT_EQ(footer->property("color").value<QColor>(), QColor("#80445566"));
+    }
+    ASSERT_TRUE(QMetaObject::invokeMethod(picker, "close"));
+    QTest::qWait(250);
+    QGuiApplication::setPalette(saved);
+    QCoreApplication::processEvents();
+  }
+}
+
+TEST_F(QuickPalette, CreatingAndDestroyingSettingsControlsDoesNotMutateApplicationPalette) {
+  QPalette application = saved;
+  application.setColor(QPalette::Active, QPalette::Light, QColor("#80112233"));
+  application.setColor(QPalette::Inactive, QPalette::Light, QColor("#40445566"));
+  application.setColor(QPalette::Disabled, QPalette::Light, QColor("#20778899"));
+  QGuiApplication::setPalette(application);
+  for (int repeat = 0; repeat < 3; ++repeat) {
+    auto page = create(R"(
+      import QtQuick
+      import QtQuick.Controls as C
+      C.ApplicationWindow {
+        C.ComboBox { model: ["Default", "Dark", "Light"] }
+        C.TextField { palette.text: "#80776655" }
+      }
+    )");
+    ASSERT_TRUE(page);
+    QCoreApplication::processEvents();
+    EXPECT_EQ(QGuiApplication::palette(), application);
+    EXPECT_EQ(QGuiApplication::palette().resolveMask(), application.resolveMask());
+    page.reset();
+    QCoreApplication::processEvents();
+    EXPECT_EQ(QGuiApplication::palette(), application);
   }
 }
 }  // namespace

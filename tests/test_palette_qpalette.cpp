@@ -122,6 +122,12 @@ TEST_P(PaletteTest, CanonicalTextRolesAreMapped) {
   EXPECT_EQ(palette_.color(QPalette::Disabled, QPalette::PlaceholderText), tok.textDisabled);
 }
 
+TEST_P(PaletteTest, PickerLightFillUsesRaisedSurfaceInEveryGroup) {
+  for (const auto group : {QPalette::Active, QPalette::Inactive, QPalette::Disabled}) {
+    EXPECT_EQ(palette_.color(group, QPalette::Light), tok_.surfaceRaised);
+  }
+}
+
 TEST_P(PaletteTest, LinkAndVisitedLinkUseCanonicalTokens) {
   const Holonight::ColorTokens& tok = tok_;
   EXPECT_EQ(palette_.color(QPalette::Active, QPalette::Link), tok.primary);

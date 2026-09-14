@@ -61,6 +61,24 @@ foreach(style IN ITEMS Holonight Fusion)
 endforeach()
 
 set(render_audit "${CMAKE_SOURCE_DIR}/docs/sdd/unified-qtquick-controls/audit")
+add_library(holonight_palette_diagnostics MODULE "${render_audit}/palette-diagnostics.cpp")
+set_target_properties(holonight_palette_diagnostics PROPERTIES PREFIX "" OUTPUT_NAME "palette-diagnostics")
+target_link_libraries(holonight_palette_diagnostics PRIVATE Qt6::QuickPrivate Qt6::Qml Qt6::Widgets)
+add_executable(holonight_palette_diagnostics_check
+    "${render_audit}/check-palette-diagnostics.cpp" "${render_audit}/palette-diagnostics.cpp")
+target_link_libraries(holonight_palette_diagnostics_check PRIVATE Qt6::QuickPrivate Qt6::Qml Qt6::Widgets Qt6::Test)
+add_dependencies(holonight_palette_diagnostics_check holonight_qml)
+foreach(style IN ITEMS Holonight Fusion)
+  foreach(observer IN ITEMS on off)
+    add_test(NAME holonight_palette_diagnostics_${style}_${observer} COMMAND holonight_palette_diagnostics_check)
+    set_property(TEST holonight_palette_diagnostics_${style}_${observer} PROPERTY ENVIRONMENT
+        "${HOLONIGHT_TEST_ENV};QT_QUICK_BACKEND=software;QT_QUICK_CONTROLS_STYLE=${style};QT_SCALE_FACTOR=1;UQC_IMPORT_PATH=${CMAKE_BINARY_DIR}/qml")
+    if(observer STREQUAL "on")
+      set_property(TEST holonight_palette_diagnostics_${style}_${observer} APPEND PROPERTY ENVIRONMENT
+          "HOLONIGHT_PALETTE_DIAGNOSTICS=1")
+    endif()
+  endforeach()
+endforeach()
 add_executable(holonight_render_diagnostics_check
     "${render_audit}/check-render-diagnostics.cpp" "${render_audit}/render-diagnostics.cpp")
 target_link_libraries(holonight_render_diagnostics_check PRIVATE Qt6::Quick Qt6::Qml Qt6::Test)
