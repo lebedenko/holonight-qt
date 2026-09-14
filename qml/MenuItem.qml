@@ -36,10 +36,16 @@ T.MenuItem {
                              implicitContentHeight + topPadding + bottomPadding)
 
     padding: 6
-    leftPadding: 12
-    rightPadding: 12 + (root.subMenu ? 16 + root.spacing : 0)
+    leftPadding: 12 + (root.mirrored && root.subMenu ? 16 + root.spacing : 0)
+    rightPadding: 12 + (!root.mirrored && root.subMenu ? 16 + root.spacing : 0)
     spacing: 6
     hoverEnabled: true
+
+    readonly property bool hasIcon: root.icon.name.length > 0 || root.icon.source.toString().length > 0
+    readonly property bool reserveIconColumn: {
+        const menu = root.menu as Menu
+        return menu ? menu.hasIcons : root.hasIcon
+    }
 
     contentItem: RowLayout {
         spacing: root.spacing
@@ -61,6 +67,7 @@ T.MenuItem {
         }
 
         Item {
+            visible: root.reserveIconColumn
             Layout.preferredWidth: HnMetrics.iconSize(HnControlSize.Compact)
             Layout.preferredHeight: HnMetrics.iconSize(HnControlSize.Compact)
             Layout.alignment: Qt.AlignVCenter
@@ -68,12 +75,12 @@ T.MenuItem {
             HnIcon {
                 objectName: "hnMenuItemIcon"
                 anchors.centerIn: parent
-                source: root.icon.source
+                source: root.icon.source.toString().length > 0 ? root.icon.source : root.icon.name
                 size: HnMetrics.iconSize(HnControlSize.Compact)
                 iconState: root.enabled ? HnIcon.Normal : HnIcon.Disabled
                 normalColor: root.foregroundColor
                 disabledColor: root.foregroundColor
-                visible: root.icon.source.toString().length > 0
+                visible: root.hasIcon
             }
         }
 

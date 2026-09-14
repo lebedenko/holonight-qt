@@ -968,8 +968,9 @@ TEST_F(QmlSmoke, ItemDelegate_SelectionAndStateColors) {
   EXPECT_EQ(highlightedBase->property("color").value<QColor>(), QColor{Qt::transparent});
   EXPECT_EQ(highlightedSelection->property("color").value<QColor>(), tok.surfaceSelected);
   EXPECT_TRUE(highlightedSelection->property("visible").toBool());
-  EXPECT_EQ(highlightedDelegate->property("contentItem").value<QObject*>()->property("color").value<QColor>(),
-            tok.textPrimary);
+  auto* label = highlightedDelegate->findChild<QObject*>(QStringLiteral("hnItemDelegateLabel"));
+  ASSERT_NE(label, nullptr);
+  EXPECT_EQ(label->property("color").value<QColor>(), tok.textPrimary);
 
   // Pressed item delegates use the same opaque resolved surface as segmented controls.
   QObject* pressedBase = pressedDelegate->findChild<QObject*>(QStringLiteral("hnItemDelegateBase"));

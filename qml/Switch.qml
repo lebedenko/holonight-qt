@@ -110,19 +110,18 @@ T.Switch {
 
             Behavior on x { NumberAnimation { duration: 150; easing.type: Easing.InOutQuad } }
             Behavior on color { ColorAnimation { duration: 150 } }
-
-            // Focus ring
-            Rectangle {
-                visible: root.visualFocus
-                anchors.centerIn: parent
-                width: parent.width + 4
-                height: parent.height + 4
-                radius: (parent.width + 4) / 2
-                color: Qt.rgba(0, 0, 0, 0)
-                border.color: root.controlColors.colors.borderFocus
-                border.width: HnMetrics.borderWidth
-            }
         }
+    }
+
+    background: Rectangle {
+        readonly property real semanticRadius: HnAppearance.roundedRadius(HnSurfaceRole.Control,
+                                                                          width, height,
+                                                                          HnAppearance.revision)
+        color: "transparent"
+        radius: semanticRadius
+        border.color: root.controlColors.colors.borderFocus
+        border.width: root.visualFocus ? HnMetrics.focusBorderWidth : 0
+        visible: root.visualFocus
     }
 
     contentItem: Text {

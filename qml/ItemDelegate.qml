@@ -5,6 +5,7 @@ pragma ComponentBehavior: Bound
 
 import QtQuick
 import QtQuick.Templates as T
+import QtQuick.Layouts
 import Holonight.Core
 import Holonight.impl as Impl
 
@@ -37,22 +38,37 @@ T.ItemDelegate {
     spacing: 8
     hoverEnabled: true
 
-    contentItem: Text {
-        readonly property bool isSelected: root.highlighted || root.checked || (root.ListView ? root.ListView.isCurrentItem : false)
+    contentItem: RowLayout {
+        spacing: root.spacing
+        LayoutMirroring.enabled: root.mirrored
 
-        text: root.text
-        font: root.font
-        color: root.enabled ? root.controlColors.colors.textPrimary : root.controlColors.colors.textDisabled
-        verticalAlignment: Text.AlignVCenter
-        elide: Text.ElideRight
-        textFormat: Text.PlainText
+        HnIcon {
+            source: root.icon.source.toString().length > 0 ? root.icon.source : root.icon.name
+            visible: root.icon.name.length > 0 || root.icon.source.toString().length > 0
+            size: HnMetrics.iconSize(HnControlSize.Compact)
+            iconState: root.enabled ? HnIcon.Normal : HnIcon.Disabled
+            normalColor: root.controlColors.colors.textPrimary
+            disabledColor: root.controlColors.colors.textDisabled
+            Layout.alignment: Qt.AlignVCenter
+        }
+
+        Text {
+            objectName: "hnItemDelegateLabel"
+            text: root.text
+            font: root.font
+            color: root.enabled ? root.controlColors.colors.textPrimary : root.controlColors.colors.textDisabled
+            verticalAlignment: Text.AlignVCenter
+            elide: Text.ElideRight
+            textFormat: Text.PlainText
+            Layout.fillWidth: true
+        }
     }
 
     background: Item {
         readonly property real semanticRadius: HnAppearance.roundedRadius(HnSurfaceRole.Control,
                                                                           width, height,
                                                                           HnAppearance.revision)
-        readonly property bool isSelected: root.highlighted || root.checked || (root.ListView ? root.ListView.isCurrentItem : false)
+        readonly property bool isSelected: root.highlighted || root.checked
 
         implicitWidth: 100
         implicitHeight: 32

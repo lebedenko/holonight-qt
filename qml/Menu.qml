@@ -30,6 +30,16 @@ T.Menu {
     margins: 0
     padding: 4
 
+    readonly property bool hasIcons: {
+        for (let index = 0; index < root.count; ++index) {
+            const item = root.itemAt(index) as T.MenuItem
+            if (item && item.visible
+                    && (item.icon.name.length > 0 || item.icon.source.toString().length > 0))
+                return true
+        }
+        return false
+    }
+
     delegate: MenuItem {}
 
     contentItem: ListView {
