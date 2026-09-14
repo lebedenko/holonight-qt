@@ -49,3 +49,30 @@ foreach(style IN ITEMS Holonight Fusion)
         "${HOLONIGHT_TEST_ENV};QT_QUICK_BACKEND=software;QT_QUICK_CONTROLS_STYLE=${style};QT_SCALE_FACTOR=${scale}")
   endforeach()
 endforeach()
+
+# Qt viewport logging evaluates geometry during deferred popup construction.
+# Preserve coverage under the diagnostic mode used by actual-app acceptance.
+foreach(style IN ITEMS Holonight Fusion)
+  add_test(NAME holonight_popup_background_diagnostics_${style}
+      COMMAND holonight_runtime_composite_tests
+      "--gtest_filter=SharedRendering.InstalledFormComboPopupBackground:SharedRendering.ComboPopupBackgroundTracksLateLayout:SharedRendering.Scroll*Teardown")
+  set_property(TEST holonight_popup_background_diagnostics_${style} PROPERTY ENVIRONMENT
+      "${HOLONIGHT_TEST_ENV};QT_QUICK_BACKEND=software;QT_QUICK_CONTROLS_STYLE=${style};QT_SCALE_FACTOR=1;QT_LOGGING_RULES=qt.quick.viewport.debug=true")
+endforeach()
+
+set(render_audit "${CMAKE_SOURCE_DIR}/docs/sdd/unified-qtquick-controls/audit")
+add_executable(holonight_render_diagnostics_check
+    "${render_audit}/check-render-diagnostics.cpp" "${render_audit}/render-diagnostics.cpp")
+target_link_libraries(holonight_render_diagnostics_check PRIVATE Qt6::Quick Qt6::Qml Qt6::Test)
+add_dependencies(holonight_render_diagnostics_check holonight_qml)
+foreach(style IN ITEMS Holonight Fusion)
+  foreach(observer IN ITEMS on off)
+    add_test(NAME holonight_render_diagnostics_${style}_${observer} COMMAND holonight_render_diagnostics_check)
+    set_property(TEST holonight_render_diagnostics_${style}_${observer} PROPERTY ENVIRONMENT
+        "${HOLONIGHT_TEST_ENV};QT_QUICK_BACKEND=software;QT_QUICK_CONTROLS_STYLE=${style};QT_SCALE_FACTOR=1;QT_LOGGING_RULES=qt.quick.viewport.debug=true;UQC_IMPORT_PATH=${CMAKE_BINARY_DIR}/qml")
+    if(observer STREQUAL "on")
+      set_property(TEST holonight_render_diagnostics_${style}_${observer} APPEND PROPERTY ENVIRONMENT
+          "HOLONIGHT_RENDER_DIAGNOSTICS=1")
+    endif()
+  endforeach()
+endforeach()

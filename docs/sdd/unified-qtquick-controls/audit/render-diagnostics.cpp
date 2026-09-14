@@ -15,6 +15,7 @@
 #include <QQmlProperty>
 #include <QQuickItem>
 #include <QQuickWindow>
+#include <QSet>
 #include <QTimer>
 
 namespace {
@@ -55,9 +56,12 @@ class Observer : public QObject {
     state["time_ms"] = QDateTime::currentMSecsSinceEpoch();
     qInfo().noquote() << "HN_RENDER" << QJsonDocument(state).toJson(QJsonDocument::Compact);
   }
-  void popup(QQuickItem* control, const char* phase) {
-    auto* popup = control->property("popup").value<QObject*>();
-    if (!popup || !popup->property("visible").toBool()) return;
+  void popup(QObject* popup, const char* phase) {
+    if (!popup->property("visible").toBool()) {
+      report({{"id", identity(popup)}, {"popupVisible", false}}, phase, false);
+      popups_.remove(identity(popup));
+      return;
+    }
     auto* background = popup->property("background").value<QQuickItem*>();
     if (!background || !background->window()) return;
     const auto origin = background->mapToScene(QPointF());
@@ -70,6 +74,20 @@ class Observer : public QObject {
                       {"visible", background->isVisible()},
                       {"opacity", background->opacity()},
                       {"color", background->property("color").value<QColor>().name(QColor::HexArgb)}};
+    state["popupVisible"] = true;
+    for (const char* name : {"x", "y", "width", "height", "implicitWidth", "implicitHeight", "contentWidth",
+                             "contentHeight", "availableWidth", "availableHeight", "opened"})
+      state[QString("popup.") + name] = QJsonValue::fromVariant(popup->property(name));
+    auto geometry = [&state](QObject* object, const QString& prefix) {
+      state[prefix + ".id"] = identity(object);
+      if (!object) return;
+      for (const char* name :
+           {"x", "y", "width", "height", "implicitWidth", "implicitHeight", "count", "contentHeight"})
+        state[prefix + "." + name] = QJsonValue::fromVariant(object->property(name));
+    };
+    geometry(popup->parent(), "owner");
+    geometry(popup->property("contentItem").value<QObject*>(), "content");
+    geometry(background->parentItem(), "backgroundParent");
     if (auto* context = qmlContext(background)) state["origin"] = context->baseUrl().toString();
     for (const auto* role : {"base", "window", "button", "text", "highlight"})
       state[QString("palette.") + role] =
@@ -86,8 +104,16 @@ class Observer : public QObject {
     if (pixels.rect().contains(pixel)) state["renderedPixel"] = pixels.pixelColor(pixel).name(QColor::HexArgb);
     report(state, phase, true);
   }
+  void objects(QObject* object, const char* phase, QSet<QObject*>& visited) {
+    if (visited.contains(object)) return;
+    visited.insert(object);
+    // Traverse existing objects only: reading a ComboBox's popup executes deferred QML.
+    if (object->inherits("QQuickPopup")) popup(object, phase);
+    for (auto* child : object->children()) objects(child, phase, visited);
+    if (auto* item = qobject_cast<QQuickItem*>(object))
+      for (auto* child : item->childItems()) objects(child, phase, visited);
+  }
   void walk(QQuickItem* item, const char* phase, bool force) {
-    popup(item, phase);
     const auto focus = item->property("visualFocus");
     if (focus.isValid() && item->property("down").isValid() && item->isVisible()) {
       QJsonObject state{{"id", identity(item)},
@@ -114,6 +140,8 @@ class Observer : public QObject {
               {"dpr", quick->devicePixelRatio()},
               {"active", quick->isActive()}},
              phase, force);
+      QSet<QObject*> visited;
+      objects(quick, phase, visited);
       walk(quick->contentItem(), phase, force);
     }
   }

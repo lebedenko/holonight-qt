@@ -182,6 +182,10 @@ T.ComboBox {
                                                                               width, height,
                                                                               HnAppearance.revision)
 
+            // Keep coverage live even when Qt evaluates geometry during deferred creation
+            // (for example, with qt.quick.viewport diagnostics enabled).
+            width: popup.width - popup.leftInset - popup.rightInset
+            height: popup.height - popup.topInset - popup.bottomInset
             color: popup.controlColors.colors.surface
             border.color: popup.controlColors.colors.borderPassive
             border.width: HnMetrics.borderWidth

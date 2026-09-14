@@ -348,8 +348,8 @@ TEST_F(SharedRendering, InstalledFormComboPopupBackground) {
             << " visible=" << background->isVisible() << " opacity=" << background->opacity()
             << " color=" << color.name(QColor::HexArgb).toStdString() << " dpr=" << window->devicePixelRatio()
             << std::endl;
-  EXPECT_GT(background->width(), 0);
-  EXPECT_GT(background->height(), 0);
+  EXPECT_DOUBLE_EQ(background->width(), popup->property("width").toDouble());
+  EXPECT_DOUBLE_EQ(background->height(), popup->property("height").toDouble());
   EXPECT_TRUE(background->isVisible());
   EXPECT_EQ(background->opacity(), 1);
   EXPECT_EQ(color.alpha(), 255);
@@ -359,6 +359,14 @@ TEST_F(SharedRendering, InstalledFormComboPopupBackground) {
       pixels.pixelColor(qRound(point.x() * window->devicePixelRatio()), qRound(point.y() * window->devicePixelRatio())),
       color);
   if (qEnvironmentVariable("QT_QUICK_CONTROLS_STYLE") == "Holonight") {
+    for (const char* inset : {"leftInset", "rightInset", "topInset", "bottomInset"})
+      ASSERT_TRUE(popup->setProperty(inset, 3));
+    EXPECT_DOUBLE_EQ(background->x(), 3);
+    EXPECT_DOUBLE_EQ(background->y(), 3);
+    EXPECT_DOUBLE_EQ(background->width(), popup->property("width").toDouble() - 6);
+    EXPECT_DOUBLE_EQ(background->height(), popup->property("height").toDouble() - 6);
+    for (const char* inset : {"leftInset", "rightInset", "topInset", "bottomInset"})
+      ASSERT_TRUE(popup->setProperty(inset, 0));
     const QColor override_color("#804488cc");
     ASSERT_TRUE(QQmlProperty(combo, "palette.base").write(override_color));
     EXPECT_TRUE(QTest::qWaitFor([&] { return background->property("color").value<QColor>() == override_color; }));
@@ -368,8 +376,42 @@ TEST_F(SharedRendering, InstalledFormComboPopupBackground) {
     EXPECT_TRUE(QTest::qWaitFor([&] { return background->property("color").value<QColor>() == popup_override; }));
   }
   QMetaObject::invokeMethod(popup, "close");
+  ASSERT_TRUE(QTest::qWaitFor([&] { return !popup->property("visible").toBool(); }));
+  ASSERT_TRUE(QMetaObject::invokeMethod(popup, "open"));
+  ASSERT_TRUE(QTest::qWaitFor([&] { return popup->property("opened").toBool(); }));
+  EXPECT_DOUBLE_EQ(background->width(), popup->property("width").toDouble());
+  EXPECT_DOUBLE_EQ(background->height(), popup->property("height").toDouble());
+  QMetaObject::invokeMethod(popup, "close");
   root.reset();
   QCoreApplication::sendPostedEvents(nullptr, QEvent::DeferredDelete);
+}
+
+TEST_F(SharedRendering, ComboPopupBackgroundTracksLateLayout) {
+  create(R"(
+    Component { id: factory; C.ComboBox { objectName: "lateCombo"; model: 0 } }
+    property var combo: factory.createObject(null)
+    function attachCombo() { combo.parent = contentItem; combo.width = 360; combo.model = 20 }
+    function openCombo() { combo.popup.open() }
+    function closeCombo() { combo.popup.close() }
+  )");
+  ASSERT_TRUE(root);
+  ASSERT_TRUE(QMetaObject::invokeMethod(root.get(), "attachCombo"));
+  auto* combo = item("lateCombo");
+  ASSERT_TRUE(combo);
+  for (int cycle = 0; cycle < 2; ++cycle) {
+    ASSERT_TRUE(QMetaObject::invokeMethod(root.get(), "openCombo"));
+    auto* popup = combo->property("popup").value<QObject*>();
+    ASSERT_TRUE(popup);
+    ASSERT_TRUE(QTest::qWaitFor([&] { return popup->property("opened").toBool(); }));
+    QTest::qWait(200);
+    auto* background = popup->property("background").value<QQuickItem*>();
+    ASSERT_TRUE(background);
+    EXPECT_DOUBLE_EQ(background->width(), popup->property("width").toDouble());
+    EXPECT_DOUBLE_EQ(background->height(), popup->property("height").toDouble());
+    ASSERT_TRUE(QMetaObject::invokeMethod(root.get(), "closeCombo"));
+    ASSERT_TRUE(QTest::qWaitFor([&] { return !popup->property("visible").toBool(); }));
+  }
+  delete combo;
 }
 
 TEST_F(SharedRendering, ScrollBarSurvivesPopupTeardown) {
@@ -397,6 +439,40 @@ TEST_F(SharedRendering, ScrollBarSurvivesPopupTeardown) {
     QCoreApplication::sendPostedEvents(nullptr, QEvent::DeferredDelete);
     QCoreApplication::processEvents();
   }
+}
+
+TEST_F(SharedRendering, ScrollViewSurvivesPageTeardown) {
+  create(R"(
+    Component {
+      id: pageFactory
+      C.ScrollView {
+        width: 300; height: 200
+        ListView { model: 50; delegate: C.Label { required property int index; text: index; height: 30 } }
+      }
+    }
+    property var page: null
+    function createPage() { page = pageFactory.createObject(contentItem) }
+    function destroyPage() { page.destroy(); page = null; gc() }
+  )");
+  ASSERT_TRUE(root);
+  for (int i = 0; i < 3; ++i) {
+    ASSERT_TRUE(QMetaObject::invokeMethod(root.get(), "createPage"));
+    QTest::qWait(30);
+    ASSERT_TRUE(QMetaObject::invokeMethod(root.get(), "destroyPage"));
+    QCoreApplication::sendPostedEvents(nullptr, QEvent::DeferredDelete);
+    QTest::qWait(150);
+  }
+}
+
+TEST_F(SharedRendering, ScrollBarSurvivesWindowTeardown) {
+  create(R"(
+    C.ScrollBar { orientation: Qt.Vertical; height: 240; size: 0.7; active: true }
+    C.ScrollBar { orientation: Qt.Horizontal; width: 240; size: 0.7; active: true }
+  )");
+  ASSERT_TRUE(root);
+  QTest::qWait(300);
+  root.reset();
+  QCoreApplication::sendPostedEvents(nullptr, QEvent::DeferredDelete);
 }
 
 TEST_F(SharedRendering, ScrollBarApplicationEngineTeardown) {
