@@ -3,8 +3,10 @@
 
 #include <QFile>
 #include <QIcon>
+#include <QQmlApplicationEngine>
 #include <QQmlComponent>
 #include <QQmlEngine>
+#include <QQmlProperty>
 #include <QQuickItem>
 #include <QQuickWindow>
 #include <QTemporaryDir>
@@ -27,14 +29,19 @@ class SharedRendering : public testing::Test {
   void SetUp() override {
     engine.addImportPath(qEnvironmentVariable("UQC_IMPORT_PATH", QStringLiteral(HOLONIGHT_QML_IMPORT_PATH)));
     ASSERT_TRUE(icons.isValid());
-    ASSERT_TRUE(QDir(icons.path()).mkpath("uqc207/16x16/actions"));
-    QFile index(icons.filePath("uqc207/index.theme"));
+    ASSERT_TRUE(QDir(icons.path()).mkpath("uqc207-parent/16x16/actions"));
+    ASSERT_TRUE(QDir(icons.path()).mkpath("uqc207"));
+    QFile childIndex(icons.filePath("uqc207/index.theme"));
+    ASSERT_TRUE(childIndex.open(QIODevice::WriteOnly));
+    childIndex.write("[Icon Theme]\nName=uqc207\nInherits=missing,uqc207-parent\n");
+    childIndex.close();
+    QFile index(icons.filePath("uqc207-parent/index.theme"));
     ASSERT_TRUE(index.open(QIODevice::WriteOnly));
     index.write(
         "[Icon Theme]\nName=uqc207\nDirectories=16x16/actions\n"
         "[16x16/actions]\nSize=16\nType=Fixed\nContext=Actions\n");
     index.close();
-    QFile svg(icons.filePath("uqc207/16x16/actions/uqc207-configure.svg"));
+    QFile svg(icons.filePath("uqc207-parent/16x16/actions/uqc207-configure.svg"));
     ASSERT_TRUE(svg.open(QIODevice::WriteOnly));
     svg.write(
         "<svg xmlns='http://www.w3.org/2000/svg' width='16' height='16'>"
@@ -97,7 +104,7 @@ TEST_F(SharedRendering, ActionNamedAndUrlIconsRenderInMenuAndNavigation) {
     EXPECT_TRUE(QTest::qWaitFor([&] { return hasRenderedIcon(item(name)); })) << name;
   }
   root->setProperty("iconName", "");
-  root->setProperty("iconUrl", QUrl::fromLocalFile(icons.filePath("uqc207/16x16/actions/uqc207-configure.svg")));
+  root->setProperty("iconUrl", QUrl::fromLocalFile(icons.filePath("uqc207-parent/16x16/actions/uqc207-configure.svg")));
   for (const char* name : {"navigation", "entry"})
     EXPECT_TRUE(QTest::qWaitFor([&] { return hasRenderedIcon(item(name)); })) << name;
 }
@@ -238,38 +245,176 @@ TEST_F(SharedRendering, KeyboardButtonActivationRetainsOwnerReasonAndFeedback) {
   EXPECT_TRUE(item("button")->property("visualFocus").toBool());
 }
 
-TEST_F(SharedRendering, SwitchFocusOutlineSurroundsWholeControlInBothStates) {
+TEST_F(SharedRendering, SwitchFocusOutlineSurroundsTrackInBothStates) {
   if (qEnvironmentVariable("QT_QUICK_CONTROLS_STYLE") != "Holonight")
-    GTEST_SKIP() << "Whole-control outline is the requested HoloNight convention.";
+    GTEST_SKIP() << "Track-only outline is the requested HoloNight convention.";
   create(R"(
-    C.Switch { objectName: "switch"; x: 30; y: 30; width: 120; height: 36 }
+    property bool mirror: false
+    C.Switch { objectName: "switch"; x: 30; y: 30; width: 180; height: 48; text: "Enabled";
+               LayoutMirroring.enabled: mirror }
     C.Button { objectName: "other"; y: 120; text: "Other" }
   )");
   ASSERT_TRUE(root);
   auto* control = item("switch");
-  for (bool checked : {false, true}) {
-    SCOPED_TRACE(checked);
-    control->setProperty("checked", checked);
-    item("other")->forceActiveFocus(Qt::TabFocusReason);
-    // Settle the track/thumb animation before comparing focus alone.
-    QTest::qWait(180);
-    const auto before = window->grabWindow();
-    control->forceActiveFocus(Qt::BacktabFocusReason);
-    ASSERT_EQ(window->activeFocusItem(), control);
-    ASSERT_TRUE(control->property("visualFocus").toBool());
-    const auto after = window->grabWindow();
-    QRect changed;
-    const auto dpr = window->devicePixelRatio();
-    const QRect region(qRound(30 * dpr), qRound(30 * dpr), qRound(120 * dpr), qRound(36 * dpr));
-    for (int y = region.top(); y <= region.bottom(); ++y)
-      for (int x = region.left(); x <= region.right(); ++x)
-        if (before.pixel(x, y) != after.pixel(x, y)) changed |= QRect(x, y, 1, 1);
-    EXPECT_GE(changed.width(), region.width() - 2);
-    EXPECT_GE(changed.height(), region.height() - 2);
-    QTest::keyClick(window, Qt::Key_Space);
-    EXPECT_EQ(control->property("checked").toBool(), !checked);
-    EXPECT_EQ(window->activeFocusItem(), control);
-    EXPECT_TRUE(control->property("visualFocus").toBool());
+  for (int role : {0, 1, 2, 3}) {
+    control->setProperty("sizeRole", role);
+    for (bool mirrored : {false, true}) {
+      root->setProperty("mirror", mirrored);
+      for (bool checked : {false, true}) {
+        SCOPED_TRACE(role);
+        SCOPED_TRACE(mirrored);
+        SCOPED_TRACE(checked);
+        control->setProperty("checked", checked);
+        item("other")->forceActiveFocus(Qt::TabFocusReason);
+        // Settle the track/thumb animation before comparing focus alone.
+        QTest::qWait(180);
+        const auto before = window->grabWindow();
+        control->forceActiveFocus(Qt::BacktabFocusReason);
+        ASSERT_EQ(window->activeFocusItem(), control);
+        ASSERT_TRUE(control->property("visualFocus").toBool());
+        const auto after = window->grabWindow();
+        QRect changed;
+        const auto dpr = window->devicePixelRatio();
+        const QRect region(qRound(30 * dpr), qRound(30 * dpr), qRound(180 * dpr), qRound(48 * dpr));
+        for (int y = region.top(); y <= region.bottom(); ++y)
+          for (int x = region.left(); x <= region.right(); ++x)
+            if (before.pixel(x, y) != after.pixel(x, y)) changed |= QRect(x, y, 1, 1);
+        auto* indicator = control->property("indicator").value<QQuickItem*>();
+        ASSERT_TRUE(indicator);
+        const auto origin = indicator->mapToScene(QPointF());
+        const QRect track(qRound(origin.x() * dpr), qRound(origin.y() * dpr), qRound(indicator->width() * dpr),
+                          qRound(indicator->height() * dpr));
+        EXPECT_GT(changed.width(), track.width());
+        EXPECT_GT(changed.height(), track.height());
+        EXPECT_LT(changed.width(), track.width() + 12 * dpr);
+        EXPECT_LT(changed.height(), track.height() + 12 * dpr);
+        EXPECT_NEAR(changed.center().x(), track.center().x(), 1);
+        EXPECT_NEAR(changed.center().y(), track.center().y(), 1);
+        for (int y = track.top() + 3; y < track.bottom() - 3; ++y)
+          for (int x = track.left() + 3; x < track.right() - 3; ++x) EXPECT_EQ(before.pixel(x, y), after.pixel(x, y));
+        QTest::keyClick(window, Qt::Key_Space);
+        EXPECT_EQ(control->property("checked").toBool(), !checked);
+        EXPECT_EQ(window->activeFocusItem(), control);
+        EXPECT_TRUE(control->property("visualFocus").toBool());
+      }
+    }
   }
+}
+
+TEST_F(SharedRendering, InstalledFormComboPopupBackground) {
+  QQmlComponent available(&engine);
+  available.setData("import org.kde.kirigamiaddons.formcard as F\nF.FormComboBoxDelegate {}", QUrl());
+  if (available.isError()) GTEST_SKIP() << available.errorString().toStdString();
+  QQmlComponent component(&engine);
+  component.setData(R"(
+    import QtQuick
+    import QtQuick.Controls as C
+    import org.kde.kirigamiaddons.formcard as F
+    Window {
+      width: 640; height: 480; visible: true; color: "#ff00ff"
+      F.FormComboBoxDelegate {
+        id: form; width: 400; y: 40; text: "Scheme"
+        model: ["First", "Second", "Third"]
+      }
+      function findCombo(item) {
+        if (item.popup && item.indicator) return item
+        for (const child of item.children) {
+          const found = findCombo(child); if (found) return found
+        }
+        return null
+      }
+      property var combo: findCombo(form)
+    }
+  )",
+                    QUrl());
+  root.reset(component.create());
+  ASSERT_TRUE(root) << component.errorString().toStdString();
+  window = qobject_cast<QQuickWindow*>(root.get());
+  ASSERT_TRUE(QTest::qWaitForWindowExposed(window));
+  auto* combo = root->property("combo").value<QObject*>();
+  ASSERT_TRUE(combo);
+  auto* popup = combo->property("popup").value<QObject*>();
+  ASSERT_TRUE(popup);
+  ASSERT_TRUE(QMetaObject::invokeMethod(popup, "open"));
+  ASSERT_TRUE(QTest::qWaitFor([&] { return popup->property("opened").toBool(); }));
+  ASSERT_TRUE(QTest::qWaitFor([&] { return popup->property("height").toDouble() > 50; }));
+  QTest::qWait(300);  // Include the installed delegate/palette transition in the measurement.
+  auto* background = popup->property("background").value<QQuickItem*>();
+  ASSERT_TRUE(background);
+  const auto color = background->property("color").value<QColor>();
+  std::cout << "POPUP background=" << background->metaObject()->className()
+            << " origin=" << background->mapToScene(QPointF()).x() << "," << background->mapToScene(QPointF()).y()
+            << " dimensions=" << background->width() << "x" << background->height()
+            << " visible=" << background->isVisible() << " opacity=" << background->opacity()
+            << " color=" << color.name(QColor::HexArgb).toStdString() << " dpr=" << window->devicePixelRatio()
+            << std::endl;
+  EXPECT_GT(background->width(), 0);
+  EXPECT_GT(background->height(), 0);
+  EXPECT_TRUE(background->isVisible());
+  EXPECT_EQ(background->opacity(), 1);
+  EXPECT_EQ(color.alpha(), 255);
+  const auto point = background->mapToScene(QPointF(background->width() / 2, 2));
+  const auto pixels = window->grabWindow();
+  EXPECT_EQ(
+      pixels.pixelColor(qRound(point.x() * window->devicePixelRatio()), qRound(point.y() * window->devicePixelRatio())),
+      color);
+  if (qEnvironmentVariable("QT_QUICK_CONTROLS_STYLE") == "Holonight") {
+    const QColor override_color("#804488cc");
+    ASSERT_TRUE(QQmlProperty(combo, "palette.base").write(override_color));
+    EXPECT_TRUE(QTest::qWaitFor([&] { return background->property("color").value<QColor>() == override_color; }));
+    const QColor popup_override("#ff115533");
+    ASSERT_TRUE(QQmlProperty(popup, "palette.base").write(popup_override));
+    ASSERT_TRUE(QQmlProperty(combo, "palette.base").write(QColor("#ffaa3311")));
+    EXPECT_TRUE(QTest::qWaitFor([&] { return background->property("color").value<QColor>() == popup_override; }));
+  }
+  QMetaObject::invokeMethod(popup, "close");
+  root.reset();
+  QCoreApplication::sendPostedEvents(nullptr, QEvent::DeferredDelete);
+}
+
+TEST_F(SharedRendering, ScrollBarSurvivesPopupTeardown) {
+  create(R"(
+    Component {
+      id: popupFactory
+      C.Popup {
+        width: 200; height: 120
+        contentItem: ListView {
+          model: 50; delegate: C.Label { required property int index; text: index }
+          C.ScrollBar.vertical: C.ScrollBar { policy: C.ScrollBar.AlwaysOn }
+          C.ScrollBar.horizontal: C.ScrollBar { policy: C.ScrollBar.AlwaysOn }
+        }
+      }
+    }
+    property var instance: null
+    function openPopup() { instance = popupFactory.createObject(contentItem); instance.open() }
+    function destroyPopup() { instance.close(); instance.destroy(); instance = null; gc() }
+  )");
+  ASSERT_TRUE(root);
+  for (int i = 0; i < 10; ++i) {
+    ASSERT_TRUE(QMetaObject::invokeMethod(root.get(), "openPopup"));
+    QTest::qWait(20);  // Tear down while the ScrollBar geometry/opacity animations are live.
+    ASSERT_TRUE(QMetaObject::invokeMethod(root.get(), "destroyPopup"));
+    QCoreApplication::sendPostedEvents(nullptr, QEvent::DeferredDelete);
+    QCoreApplication::processEvents();
+  }
+}
+
+TEST_F(SharedRendering, ScrollBarApplicationEngineTeardown) {
+  for (int i = 0; i < 3; ++i) {
+    QQmlApplicationEngine application;
+    application.addImportPath(qEnvironmentVariable("UQC_IMPORT_PATH", QStringLiteral(HOLONIGHT_QML_IMPORT_PATH)));
+    application.loadData(R"(
+      import QtQuick
+      import QtQuick.Controls as C
+      Window {
+        visible: true; width: 400; height: 300
+        C.ComboBox { id: combo; model: 50 }
+        Component.onCompleted: combo.popup.open()
+      }
+    )");
+    ASSERT_FALSE(application.rootObjects().isEmpty());
+    QCoreApplication::processEvents();
+  }
+  QCoreApplication::sendPostedEvents(nullptr, QEvent::DeferredDelete);
 }
 }  // namespace

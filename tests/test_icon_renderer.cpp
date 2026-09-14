@@ -5,7 +5,9 @@
 #include "iconrenderer.h"
 #include "iconthemeresolver.h"
 
+#include <QDir>
 #include <QFile>
+#include <QIcon>
 #include <QTemporaryDir>
 #include <QUrl>
 #include <QUrlQuery>
@@ -177,4 +179,44 @@ TEST(HnIconImageProvider, EvictsImagesWhenCacheCostLimitIsReached) {
   }
 
   EXPECT_LE(provider.cacheSize(), 4);
+}
+
+TEST(HnIconImageProvider, InheritedThemeAndSourceChangesInvalidateImages) {
+  QTemporaryDir dir;
+  ASSERT_TRUE(dir.isValid());
+  const auto old_paths = QIcon::themeSearchPaths();
+  const auto old_theme = QIcon::themeName();
+  struct Restore {
+    QStringList paths;
+    QString theme;
+    ~Restore() {
+      QIcon::setThemeSearchPaths(paths);
+      QIcon::setThemeName(theme);
+    }
+  } restore{old_paths, old_theme};
+  for (const auto* theme : {"child", "parent", "other"}) {
+    ASSERT_TRUE(QDir(dir.path()).mkpath(QString(theme) + "/16x16/actions"));
+    writeFile(dir.filePath(QString(theme) + "/index.theme"),
+              "[Icon Theme]\nName=Fixture\nInherits=" +
+                  QByteArray(theme == std::string("child") ? "missing,parent" : "child") +
+                  "\nDirectories=16x16/actions\n[16x16/actions]\nSize=16\nType=Fixed\nContext=Actions\n");
+  }
+  const auto path = dir.filePath("parent/16x16/actions/uqc-inherited.svg");
+  writeFile(path, QByteArray{kSemanticSvg});
+  QIcon::setThemeSearchPaths({dir.path()});
+  QIcon::setThemeName("child");
+  ASSERT_TRUE(QIcon::hasThemeIcon("uqc-inherited"));
+  Holonight::HnIconImageProvider provider;
+  const auto id = providerId("uqc-inherited", 50, QColor("#ff0000"));
+  const auto first = provider.requestImage(id, nullptr, {});
+  EXPECT_FALSE(first.isNull());
+  writeFile(path, QByteArray(kSemanticSvg).replace("width=\"10\"", "width=\"1\""));
+  const auto changed = provider.requestImage(id, nullptr, {});
+  EXPECT_NE(first, changed);
+  writeFile(dir.filePath("other/16x16/actions/uqc-inherited.svg"), QByteArray{kHardcodedMonochromeSvg});
+  QIcon::setThemeName("other");
+  EXPECT_NE(changed, provider.requestImage(id, nullptr, {}));
+  EXPECT_TRUE(provider.requestImage(providerId("uqc-missing", 24, Qt::white), nullptr, {}).isNull());
+  writeFile(dir.filePath("other/16x16/actions/uqc-missing.svg"), QByteArray{kSemanticSvg});
+  EXPECT_FALSE(provider.requestImage(providerId("uqc-missing", 24, Qt::white), nullptr, {}).isNull());
 }

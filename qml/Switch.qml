@@ -94,6 +94,17 @@ T.Switch {
             Behavior on color { ColorAnimation { duration: 150 } }
         }
 
+        // Keep the focus border outside the track fill, with a two-pixel gap.
+        Rectangle {
+            anchors.fill: parent
+            anchors.margins: -(2 + HnMetrics.focusBorderWidth)
+            radius: height / 2
+            color: "transparent"
+            border.color: root.controlColors.colors.borderFocus
+            border.width: HnMetrics.focusBorderWidth
+            visible: root.visualFocus
+        }
+
         // Thumb
         Rectangle {
             width: root.indicatorThumbSize
@@ -111,17 +122,6 @@ T.Switch {
             Behavior on x { NumberAnimation { duration: 150; easing.type: Easing.InOutQuad } }
             Behavior on color { ColorAnimation { duration: 150 } }
         }
-    }
-
-    background: Rectangle {
-        readonly property real semanticRadius: HnAppearance.roundedRadius(HnSurfaceRole.Control,
-                                                                          width, height,
-                                                                          HnAppearance.revision)
-        color: "transparent"
-        radius: semanticRadius
-        border.color: root.controlColors.colors.borderFocus
-        border.width: root.visualFocus ? HnMetrics.focusBorderWidth : 0
-        visible: root.visualFocus
     }
 
     contentItem: Text {

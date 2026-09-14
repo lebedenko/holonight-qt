@@ -5,14 +5,13 @@
 
 #include "holonight/appearance_reader.h"
 
-#include <QDirIterator>
+#include <QDir>
 #include <QFile>
 #include <QFileInfo>
-#include <QHash>
 #include <QIcon>
-#include <QMutex>
-#include <QMutexLocker>
 #include <QRegularExpression>
+#include <QSet>
+#include <QSettings>
 #include <QStandardPaths>
 #include <QUrl>
 
@@ -20,10 +19,6 @@ namespace Holonight {
 namespace {
 
 constexpr qsizetype kMaximumSvgBytes = 1024 * 1024;
-constexpr qsizetype kMaximumThemeIconCacheEntries = 256;
-QMutex themeIconCacheMutex;
-QHash<QString, QByteArray> themeIconCache;
-
 [[nodiscard]] QByteArray readFile(const QString& path) {
   QFile file = QFile{path};
   if (!file.open(QIODevice::ReadOnly)) {
@@ -90,45 +85,54 @@ QHash<QString, QByteArray> themeIconCache;
   return roots;
 }
 
+// Search every root for the selected theme before visiting its parents. An index
+// may describe a theme split over several roots; inheritance cycles are legal input.
+[[nodiscard]] QByteArray resolveInTheme(const QString& name, const QString& theme, const QStringList& roots,
+                                        QSet<QString>& visited) {
+  if (visited.contains(theme)) return {};
+  visited.insert(theme);
+  QStringList directories;
+  QStringList parents;
+  for (const auto& root : roots) {
+    QSettings index(root + QLatin1Char('/') + theme + QStringLiteral("/index.theme"), QSettings::IniFormat);
+    index.beginGroup(QStringLiteral("Icon Theme"));
+    directories.append(index.value(QStringLiteral("Directories")).toStringList());
+    directories.append(index.value(QStringLiteral("ScaledDirectories")).toStringList());
+    parents.append(index.value(QStringLiteral("Inherits")).toStringList());
+  }
+  directories.removeDuplicates();
+  parents.removeDuplicates();
+  for (const auto& root : roots) {
+    for (const auto& directory : directories) {
+      const auto bytes = readFile(root + QLatin1Char('/') + theme + QLatin1Char('/') + directory + QLatin1Char('/') +
+                                  name + QStringLiteral(".svg"));
+      if (!bytes.isEmpty()) return bytes;
+    }
+  }
+  for (const auto& parent : parents) {
+    const auto bytes = resolveInTheme(name, parent, roots, visited);
+    if (!bytes.isEmpty()) return bytes;
+  }
+  return {};
+}
+
 [[nodiscard]] QByteArray resolveThemeIcon(const QString& name) {
-  const QString icon_name = name.endsWith(QStringLiteral(".svg")) ? name.chopped(4) : name;
-  const QStringList roots = iconSearchRoots();
-  const QStringList themes = iconThemeNames();
-  const QString cache_key =
-      icon_name + QLatin1Char('|') + roots.join(QLatin1Char('|')) + QLatin1Char('|') + themes.join(QLatin1Char('|'));
-  {
-    const QMutexLocker locker{&themeIconCacheMutex};
-    const auto cached = themeIconCache.constFind(cache_key);
-    if (cached != themeIconCache.constEnd()) {
-      return *cached;
+  QString icon_name = name.endsWith(QStringLiteral(".svg")) ? name.chopped(4) : name;
+  // URLs and filesystem paths are never theme names.
+  if (icon_name.contains(QLatin1Char('/')) || icon_name.contains(QLatin1Char(':'))) return {};
+  const auto roots = iconSearchRoots();
+  const auto themes = iconThemeNames();
+  while (!icon_name.isEmpty()) {
+    QSet<QString> visited;
+    for (const auto& theme : themes) {
+      const auto bytes = resolveInTheme(icon_name, theme, roots, visited);
+      if (!bytes.isEmpty()) return bytes;
     }
+    const auto separator = icon_name.lastIndexOf(QLatin1Char('-'));
+    if (separator < 0) break;
+    icon_name.truncate(separator);
   }
-
-  QByteArray bytes;
-  for (const QString& root : roots) {
-    for (const QString& theme : themes) {
-      const QString theme_root = root + QLatin1Char('/') + theme;
-      if (!QFileInfo::exists(theme_root)) {
-        continue;
-      }
-      QDirIterator iterator =
-          QDirIterator{theme_root, {icon_name + QStringLiteral(".svg")}, QDir::Files, QDirIterator::Subdirectories};
-      if (iterator.hasNext()) {
-        bytes = readFile(iterator.next());
-        break;
-      }
-    }
-    if (!bytes.isEmpty()) {
-      break;
-    }
-  }
-
-  const QMutexLocker locker{&themeIconCacheMutex};
-  if (themeIconCache.size() >= kMaximumThemeIconCacheEntries) {
-    themeIconCache.clear();
-  }
-  themeIconCache.insert(cache_key, bytes);
-  return bytes;
+  return {};
 }
 
 }  // namespace

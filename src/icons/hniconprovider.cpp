@@ -6,6 +6,9 @@
 #include "hniconimageprovider.h"
 #include "iconthemeresolver.h"
 
+#include <QCryptographicHash>
+#include <QDebug>
+#include <QIcon>
 #include <QQmlEngine>
 #include <QUrlQuery>
 
@@ -53,8 +56,18 @@ QString HnIconProvider::sourceUrl(const QUrl& source, int size, const QColor& co
   }
 
   ensureProviderRegistered();
+  if (qEnvironmentVariableIsSet("HOLONIGHT_RENDER_DIAGNOSTICS")) {
+    qInfo() << "HN_ICON" << source_string << "theme" << QIcon::themeName() << "fallback" << QIcon::fallbackThemeName()
+            << "paths" << QIcon::themeSearchPaths() << "qtFound" << QIcon::hasThemeIcon(source_string)
+            << "providerBytes" << Holonight::IconThemeResolver::resolveSvgBytes(source_string).size();
+  }
 
   QUrlQuery query;
+  query.addQueryItem(
+      QStringLiteral("sourceRevision"),
+      QString::fromLatin1(QCryptographicHash::hash(Holonight::IconThemeResolver::resolveSvgBytes(source_string),
+                                                   QCryptographicHash::Sha256)
+                              .toHex()));
   query.addQueryItem(QStringLiteral("size"), QString::number(std::clamp(size, 1, kMaximumIconExtent)));
   query.addQueryItem(QStringLiteral("color"), colorString(color));
   query.addQueryItem(QStringLiteral("highlight"), colorString(highlight));

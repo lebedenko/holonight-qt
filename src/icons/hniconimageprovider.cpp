@@ -6,6 +6,7 @@
 #include "iconrenderer.h"
 #include "iconthemeresolver.h"
 
+#include <QCryptographicHash>
 #include <QMutexLocker>
 #include <QUrl>
 #include <QUrlQuery>
@@ -61,8 +62,16 @@ QImage HnIconImageProvider::requestImage(const QString& id, QSize* size, const Q
       .negative = queryColor(query, QStringLiteral("negative"), QColor{QStringLiteral("#ffffffff")}),
   };
 
+  // Resolve before cache lookup: the same name may now select another theme or
+  // changed file. Cache rendered pixels by content, never stale source names.
+  const QByteArray svg_bytes = IconThemeResolver::resolveSvgBytes(source);
+  if (svg_bytes.isEmpty()) {
+    if (size != nullptr) *size = {};
+    return {};
+  }
+  const auto source_hash = QString::fromLatin1(QCryptographicHash::hash(svg_bytes, QCryptographicHash::Sha256).toHex());
   const QString cache_key =
-      source + QLatin1Char('|') + QString::number(logical_size.width()) + QLatin1Char('x') +
+      source_hash + QLatin1Char('|') + QString::number(logical_size.width()) + QLatin1Char('x') +
       QString::number(logical_size.height()) + QLatin1Char('|') + colors.text.name(QColor::HexArgb) + QLatin1Char('|') +
       colors.highlight.name(QColor::HexArgb) + QLatin1Char('|') + colors.positive.name(QColor::HexArgb) +
       QLatin1Char('|') + colors.neutral.name(QColor::HexArgb) + QLatin1Char('|') +
@@ -103,12 +112,6 @@ QImage HnIconImageProvider::requestImage(const QString& id, QSize* size, const Q
     }
     cache_ready_.wakeAll();
   };
-
-  const QByteArray svg_bytes = IconThemeResolver::resolveSvgBytes(source);
-  if (svg_bytes.isEmpty()) {
-    finish_request({});
-    return {};
-  }
 
   const QImage image = IconRenderer::renderSvg(svg_bytes, logical_size, colors);
   if (size != nullptr) {
