@@ -23,6 +23,10 @@ Q_DECLARE_FLAGS(Anchors, Anchor)
 enum class KeyboardInteractivity : quint32 { None = 0, Exclusive = 1, OnDemand = 2 };
 enum class InputRegionPolicy { Default, Empty, Region };
 
+// Geometry uses Qt logical coordinates, including surface-local input regions.
+// The backend converts to Wayland surface coordinates (not buffer pixels).
+// Zero dimensions request anchored allocation; exclusive zones <= 0 retain
+// their protocol meaning. Margins are signed logical distances.
 struct LayerSurfaceSpec {
   QScreen* output{nullptr};
   QString name_space;

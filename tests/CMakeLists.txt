@@ -228,6 +228,13 @@ set_property(TEST holonight_qml_smoke_tests PROPERTY
 )
 
 if(BUILD_WAYLAND)
+  add_executable(holonight_wayland_coordinate_tests test_wayland_coordinates.cpp)
+  target_link_libraries(holonight_wayland_coordinate_tests PRIVATE
+      HolonightQt::Wayland Qt6::Test GTest::gtest)
+  target_include_directories(holonight_wayland_coordinate_tests PRIVATE ${CMAKE_SOURCE_DIR}/wayland
+      $<TARGET_PROPERTY:Qt6::GuiPrivate,INTERFACE_INCLUDE_DIRECTORIES>)
+  # Explicit opt-in real-compositor runner; never connects to the user's session.
+  # python3 tests/run_wayland_coordinates.py build/tests/holonight_wayland_coordinate_tests LOG_DIR
   add_executable(holonight_wayland_tests
       main.cpp
       test_wayland_surface_host.cpp

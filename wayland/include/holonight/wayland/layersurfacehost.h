@@ -36,6 +36,7 @@ class LayerSurfaceHost final : public QObject {
   [[nodiscard]] QObject* rootObject() const;
   [[nodiscard]] QQmlEngine* engine() const;
 
+  // Geometry setters use the same Qt logical units/sentinels as LayerSurfaceSpec.
   bool setSize(int width, int height);
   bool setMargins(int top, int right, int bottom, int left);
   bool setAnchors(Anchors anchors);
