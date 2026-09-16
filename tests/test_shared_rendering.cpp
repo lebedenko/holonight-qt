@@ -6,13 +6,17 @@
 #include <QQmlApplicationEngine>
 #include <QQmlComponent>
 #include <QQmlEngine>
+#include <QQmlIncubationController>
 #include <QQmlProperty>
 #include <QQuickItem>
 #include <QQuickWindow>
+#include <QScopeGuard>
 #include <QTemporaryDir>
 #include <QTest>
+#include <QThread>
 #include <QtQuick/private/qquickimage_p.h>
 
+#include <atomic>
 #include <gtest/gtest.h>
 #include <memory>
 
@@ -518,6 +522,47 @@ TEST_F(SharedRendering, ScrollViewSurvivesPageTeardown) {
   }
 }
 
+TEST_F(SharedRendering, InstalledFormCardPageSurvivesTeardown) {
+  QQmlComponent available(&engine);
+  available.setData("import org.kde.kirigamiaddons.formcard as F\nF.FormCardPage {}", QUrl());
+  if (available.isError()) GTEST_SKIP() << available.errorString().toStdString();
+  QQmlComponent component(&engine);
+  component.setData(R"(
+    import QtQuick
+    import QtQuick.Controls as C
+    import org.kde.kirigamiaddons.formcard as F
+    Window {
+      width: 640; height: 480; visible: true
+      Component {
+        id: pageFactory
+        F.FormCardPage {
+          width: 600; height: 400
+          F.FormCard {
+            F.FormComboBoxDelegate { text: "Scheme"; model: ["Dark", "Light"] }
+            Repeater { model: 20; F.FormTextDelegate { text: "Setting" } }
+          }
+        }
+      }
+      property var page: null
+      function createPage() { page = pageFactory.createObject(contentItem) }
+      function destroyPage() { page.destroy(); page = null; gc() }
+    }
+  )",
+                    QUrl());
+  root.reset(component.create());
+  ASSERT_TRUE(root) << component.errorString().toStdString();
+  window = qobject_cast<QQuickWindow*>(root.get());
+  ASSERT_TRUE(window);
+  ASSERT_TRUE(QTest::qWaitForWindowExposed(window));
+  for (int i = 0; i < 3; ++i) {
+    ASSERT_TRUE(QMetaObject::invokeMethod(root.get(), "createPage"));
+    QTest::qWait(150);
+    ASSERT_TRUE(QMetaObject::invokeMethod(root.get(), "destroyPage"));
+    QCoreApplication::sendPostedEvents(nullptr, QEvent::DeferredDelete);
+    QCoreApplication::processEvents();
+  }
+}
+
 TEST_F(SharedRendering, ScrollBarSurvivesWindowTeardown) {
   create(R"(
     C.ScrollBar { orientation: Qt.Vertical; height: 240; size: 0.7; active: true }
@@ -527,6 +572,76 @@ TEST_F(SharedRendering, ScrollBarSurvivesWindowTeardown) {
   QTest::qWait(300);
   root.reset();
   QCoreApplication::sendPostedEvents(nullptr, QEvent::DeferredDelete);
+}
+
+TEST_F(SharedRendering, AsyncSettingsDelegatesKeepGuiThreadAffinity) {
+  // Haruna creates its settings window asynchronously and reuses shortcut delegates.
+  // Exercise completion, cancellation and recreation without moving QML objects to workers.
+  create(R"(
+    Loader {
+      id: settingsLoader; objectName: "settingsLoader"
+      active: false; asynchronous: true
+      sourceComponent: C.ApplicationWindow {
+        width: 360; height: 240; visible: true
+        C.ScrollView {
+          anchors.fill: parent
+          ListView {
+            id: list; objectName: "settingsList"
+            model: 100; reuseItems: true
+            delegate: C.ItemDelegate {
+              required property int index
+              width: list.width; text: "Setting " + index
+              highlighted: index === list.currentIndex
+            }
+          }
+        }
+      }
+    }
+  )");
+  ASSERT_TRUE(root);
+  engine.setIncubationController(window->incubationController());
+  auto* loader = root->findChild<QObject*>("settingsLoader");
+  ASSERT_TRUE(loader);
+  for (int cycle = 0; cycle < 6; ++cycle) {
+    ASSERT_TRUE(loader->setProperty("active", true));
+    if (cycle % 2 == 0) {
+      ASSERT_TRUE(QTest::qWaitFor([&] { return loader->property("status").toInt() == 1; }));
+      auto* settings = loader->property("item").value<QObject*>();
+      ASSERT_TRUE(settings);
+      auto* settings_window = qobject_cast<QQuickWindow*>(settings);
+      ASSERT_TRUE(settings_window);
+      std::atomic<bool> synchronized = false;
+      std::atomic<bool> threaded = false;
+      auto* gui_thread = engine.thread();
+      const auto connection = QObject::connect(
+          settings_window, &QQuickWindow::beforeSynchronizing, settings_window,
+          [&] {
+            threaded = QThread::currentThread() != gui_thread;
+            synchronized = true;
+          },
+          Qt::DirectConnection);
+      const auto disconnect = qScopeGuard([&] { QObject::disconnect(connection); });
+      auto* list = settings->findChild<QQuickItem*>("settingsList");
+      ASSERT_TRUE(list);
+      for (int index : {0, 80, 10}) {
+        ASSERT_TRUE(list->setProperty("currentIndex", index));
+        ASSERT_TRUE(QMetaObject::invokeMethod(list, "positionViewAtIndex", Q_ARG(int, index), Q_ARG(int, 0)));
+        QTest::qWait(30);  // Permit delegate reuse and scene-graph synchronization.
+        for (auto* child : settings->findChildren<QObject*>())
+          EXPECT_EQ(child->thread(), engine.thread()) << child->metaObject()->className();
+      }
+      EXPECT_TRUE(synchronized.load());
+      if (qEnvironmentVariable("QSG_RENDER_LOOP") == "threaded" && qEnvironmentVariable("QT_QUICK_BACKEND") == "rhi")
+        EXPECT_TRUE(threaded.load());
+      std::cout << "SETTINGS dpr=" << settings_window->devicePixelRatio() << " threadedSync=" << threaded.load()
+                << std::endl;
+    }
+    ASSERT_TRUE(loader->setProperty("active", false));
+    QCoreApplication::sendPostedEvents(nullptr, QEvent::DeferredDelete);
+    engine.collectGarbage();
+    EXPECT_EQ(loader->property("status").toInt(), 0);
+  }
+  engine.setIncubationController(nullptr);
 }
 
 TEST_F(SharedRendering, ScrollBarApplicationEngineTeardown) {
