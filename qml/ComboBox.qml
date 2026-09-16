@@ -208,6 +208,10 @@ T.ComboBox {
 
             width: root.popup.availableWidth
             height: root.delegateHeight
+            // Rows have a fixed height; ItemDelegate's default vertical padding
+            // can leave less space than the label's minimum layout height.
+            topPadding: 0
+            bottomPadding: 0
             text: root.textAt(index)
             highlighted: root.highlightedIndex === index
             topLeftRadius: index === 0 ? popupInnerRadius : 0

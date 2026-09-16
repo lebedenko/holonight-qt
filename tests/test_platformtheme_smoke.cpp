@@ -77,6 +77,11 @@ TEST(PlatformThemeSmoke, StyleNamesContainsHolonight) {
   EXPECT_EQ(names.front(), QStringLiteral("Holonight"));
 }
 
+TEST(PlatformThemeSmoke, DesktopControlsEnableHoverEffects) {
+  HoloniightTheme theme;
+  EXPECT_NE(theme.themeHint(QPlatformTheme::UiEffects).toInt() & QPlatformTheme::HoverEffect, 0);
+}
+
 TEST(PlatformThemeSmoke, ColorSchemeIsDark) {
   HoloniightTheme theme;
   EXPECT_EQ(theme.colorScheme(), Qt::ColorScheme::Dark);

@@ -94,6 +94,40 @@ class SharedRendering : public testing::Test {
   }
 };
 
+TEST_F(SharedRendering, ComboPopupLabelsStayVerticallyCentered) {
+  if (qEnvironmentVariable("QT_QUICK_CONTROLS_STYLE") == QStringLiteral("Fusion"))
+    GTEST_SKIP() << "Provider delegate label geometry";
+  create(R"(
+    C.ComboBox {
+      id: combo; objectName: "combo"; x: 24; y: 24; width: 240
+      property bool mirror: false
+      LayoutMirroring.enabled: mirror
+      LayoutMirroring.childrenInherit: true
+      model: ["Open-Meteo", "OpenWeatherMap"]
+    }
+  )");
+  auto* combo = item("combo");
+  ASSERT_TRUE(combo);
+  auto* popup = combo->property("popup").value<QObject*>();
+  ASSERT_TRUE(popup);
+  for (bool mirrored : {false, true}) {
+    ASSERT_TRUE(combo->setProperty("mirror", mirrored));
+    ASSERT_TRUE(QMetaObject::invokeMethod(popup, "open"));
+    ASSERT_TRUE(QTest::qWaitFor([&] { return popup->property("opened").toBool(); }));
+    auto* label = item("hnItemDelegateLabel");
+    ASSERT_TRUE(label);
+    auto* delegate = label->parentItem()->parentItem();
+    ASSERT_TRUE(delegate);
+    EXPECT_NEAR(delegate->height(), combo->property("delegateHeight").toReal(), 0.01);
+    EXPECT_TRUE(QTest::qWaitFor([&] {
+      const qreal center = label->mapToItem(delegate, QPointF(0, label->height() / 2)).y();
+      return qAbs(center - delegate->height() / 2) < 0.1;
+    })) << "Popup text must be centered within its fixed-height row";
+    ASSERT_TRUE(QMetaObject::invokeMethod(popup, "close"));
+    ASSERT_TRUE(QTest::qWaitFor([&] { return !popup->property("visible").toBool(); }));
+  }
+}
+
 TEST_F(SharedRendering, ActionNamedAndUrlIconsRenderInMenuAndNavigation) {
   create(R"(
     property string iconName: "uqc207-configure"

@@ -27,6 +27,8 @@ const QPalette* HoloniightTheme::palette(Palette /*type*/) const { return &palet
 
 QVariant HoloniightTheme::themeHint(ThemeHint hint) const {
   switch (hint) {
+    case UiEffects:
+      return QPlatformTheme::themeHint(hint).toInt() | HoverEffect;
     case StyleNames:
       return QStringList{QStringLiteral("Holonight"), QStringLiteral("Fusion")};
     case SystemIconThemeName:
