@@ -205,6 +205,9 @@ def check(args):
     failures = []
     selected = 0
     for path in sorted(args.output.glob("*/measurements.json")):
+        case_window = path.parent.name.split("-", 1)[0]
+        if args.window != "all" and case_window != args.window:
+            continue
         is_file = "-file-" in path.parent.name
         if (args.scope == "p03") != is_file:
             continue
@@ -229,20 +232,57 @@ def check(args):
                 colors = [s[name]["palette"][group][role] for s in states]
                 # Recreated and existing controls must agree; dark must round-trip.
                 passed = colors[0] != colors[1] and colors[0] == colors[3]
-                if args.scope != "positive":
+                if args.scope != "positive" or case_window == "HnApplicationWindow":
                     passed = passed and colors[1] == colors[2]
                 if not passed:
                     failures.append(f"{path.parent.name}/{window}/{name}: {colors}")
+            if args.scope == "p03" and case_window == "HnApplicationWindow":
+                for name in [
+                    "nativeText",
+                    "nativeSpin",
+                    "nativeCombo",
+                    "disabledText",
+                    "sharedSearch",
+                    "sharedCombo",
+                ]:
+                    for label, values in [
+                        (
+                            "background",
+                            [s[name]["background"]["color"] for s in states],
+                        ),
+                        ("pixel", [s[name]["pixel"] for s in states]),
+                    ]:
+                        if not (
+                            values[0] != values[1]
+                            and values[1] == values[2]
+                            and values[0] == values[3]
+                        ):
+                            failures.append(
+                                f"{path.parent.name}/{window}/{name}/{label}: {values}"
+                            )
+                for name in ["sharedSearch", "sharedCombo"]:
+                    colors = [s[name]["palette"]["0"]["Base"] for s in states]
+                    assert (
+                        colors[0] != colors[1]
+                        and colors[1] == colors[2]
+                        and colors[0] == colors[3]
+                    )
             assert all(
                 s["localOverride"]["palette"]["0"]["Base"] == "#ffbada55"
                 for s in states
             )
-    expected = {"p03": 8, "positive": 10, "external": 2}[args.scope]
+    expected = {
+        "all": {"p03": 8, "positive": 10, "external": 2},
+        "HnApplicationWindow": {"p03": 4, "positive": 4, "external": 0},
+        "Window": {"p03": 4, "positive": 4, "external": 0},
+        "native": {"p03": 0, "positive": 2, "external": 2},
+    }[args.window][args.scope]
+    assert expected, "The selected scope and window have no cases"
     assert selected == expected, f"Expected {expected} cases, found {selected}"
     for failure in failures:
         print(args.scope.upper(), "FAIL", failure)
     print(
-        f"{len(failures)} native palette transition failures; collection is independent"
+        f"{len(failures)} palette/render transition failures; collection is independent"
     )
     return bool(failures)
 
@@ -253,6 +293,12 @@ def main():
     parser.add_argument("--output", required=True, type=lambda p: Path(p).resolve())
     parser.add_argument(
         "--scope", choices=["p03", "positive", "external"], default="p03"
+    )
+    parser.add_argument(
+        "--window",
+        choices=["all", "HnApplicationWindow", "Window", "native"],
+        default="all",
+        help="Filter assertions without changing collection or external boundary evidence",
     )
     parser.add_argument("--prefix", type=Path)
     parser.add_argument("--executable", type=Path)

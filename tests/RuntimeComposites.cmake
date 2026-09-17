@@ -1,7 +1,7 @@
 # Separate processes keep Qt's process-wide style cache out of override acceptance.
 string(JOIN "," composite_types ${HOLONIGHT_CONTROLS_PUBLIC_TYPES})
 add_executable(holonight_runtime_composite_tests
-    quick_palette_main.cpp test_shared_rendering.cpp test_runtime_composites.cpp test_form_focus.cpp test_dropdown_interaction.cpp test_input_interaction.cpp test_qml_smoke.cpp)
+    quick_palette_main.cpp test_window_palette.cpp test_shared_rendering.cpp test_runtime_composites.cpp test_form_focus.cpp test_dropdown_interaction.cpp test_input_interaction.cpp test_qml_smoke.cpp)
 target_compile_definitions(holonight_runtime_composite_tests PRIVATE
     HOLONIGHT_QML_IMPORT_PATH="${CMAKE_BINARY_DIR}/qml"
     HOLONIGHT_COMPOSITE_TYPES="${composite_types}")
@@ -92,5 +92,14 @@ foreach(style IN ITEMS Holonight Fusion)
       set_property(TEST holonight_render_diagnostics_${style}_${observer} APPEND PROPERTY ENVIRONMENT
           "HOLONIGHT_RENDER_DIAGNOSTICS=1")
     endif()
+  endforeach()
+endforeach()
+
+foreach(style IN ITEMS Holonight Fusion)
+  foreach(scale IN ITEMS 1 1.25)
+    add_test(NAME holonight_window_palette_${style}_${scale}
+        COMMAND holonight_runtime_composite_tests "--gtest_filter=WindowPalette.*")
+    set_property(TEST holonight_window_palette_${style}_${scale} PROPERTY ENVIRONMENT
+        "${HOLONIGHT_TEST_ENV};QT_QUICK_BACKEND=software;QT_QUICK_CONTROLS_STYLE=${style};QT_SCALE_FACTOR=${scale}")
   endforeach()
 endforeach()

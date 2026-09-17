@@ -93,7 +93,12 @@ delegate controls. Do not calculate selection colors in application code.
 - `HnSeparator`: horizontal or vertical pixel-aligned divider with solid,
   both-edge, start-edge, or end-edge fade profiles.
 - `HnSurfaceFrame`: semantic surface, border, corner, and shape framing.
-- `HnApplicationWindow`: application window using shared appearance behavior.
+- `HnApplicationWindow`: application window using shared appearance behavior. Native controls inherit live
+  appearance defaults, including when a window is created during a theme transition. Explicit application,
+  window, control and color-group palette roles take precedence; resetting a role restores inheritance.
+  Shared composites retain their own appearance bindings. The Core `HnWindowPalette` helper is implementation
+  support for the shared window, not a new application palette-selection API. It does not change the
+  application palette or the palette policy of plain Qt windows.
 - `HnAppTitle`: semantic HoloNight brand and application title with an optional icon.
 
 Common `more-vertical`, `edit`, `delete`, and `folder` glyphs are installed at

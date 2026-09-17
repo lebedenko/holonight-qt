@@ -80,6 +80,8 @@ qt_add_qml_module(holonight_core_qml
     SOURCES
         appearancecontext.h
         appearancecontext.cpp
+        hnwindowpalette.h
+        hnwindowpalette.cpp
         hninputinteraction.h
         hninputinteraction.cpp
         hnmetrics.h
@@ -115,6 +117,7 @@ target_link_libraries(holonight_core_qml PRIVATE
     holonight_palette
     Qt6::Qml
     Qt6::Quick
+    Qt6::QuickPrivate
 )
 
 set(HOLONIGHT_CONTROLS_PUBLIC_QML_FILES

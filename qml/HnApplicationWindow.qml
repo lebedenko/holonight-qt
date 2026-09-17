@@ -26,6 +26,8 @@ Window {
     property alias applicationHeaderTrailingData: trailingItem.data
     default property alias contentData: clientContentItem.data
 
+    HnWindowPalette { window: root }
+
     color: HoloniightPalette.background
 
     Item {

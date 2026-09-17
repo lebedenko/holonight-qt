@@ -4,10 +4,12 @@
 #include <QAccessible>
 #include <QFile>
 #include <QFont>
+#include <QGuiApplication>
 #include <QQmlComponent>
 #include <QQmlContext>
 #include <QQmlEngine>
 #include <QQuickItem>
+#include <QQuickWindow>
 #include <QSignalSpy>
 #include <QTemporaryDir>
 #include <QTest>
@@ -97,6 +99,61 @@ Item {
   EXPECT_FALSE(mappings.contains("/Holonight/libholonight_qml.so"));
   EXPECT_FALSE(mappings.contains("/Holonight/Controls/"));
   EXPECT_FALSE(mappings.contains("/QtQuick/Controls/"));
+}
+
+TEST_F(CoreIsolation, WindowPaletteRetargetingAndDestructionStayIndependentOfControls) {
+  const auto source = R"(
+import QtQuick
+import Holonight.Core
+Window {
+    property color appearanceBackground: HoloniightPalette.background
+    property color inheritedBackground: palette.window
+    palette.text: "#123456"
+    property color preservedText: palette.text
+})";
+  auto first = create(source);
+  auto second = create(source);
+  auto bridge = create("import Holonight.Core; HnWindowPalette {}");
+  ASSERT_TRUE(first);
+  ASSERT_TRUE(second);
+  ASSERT_TRUE(bridge);
+  const auto target = [&](QObject* object) {
+    return bridge->setProperty("window", QVariant::fromValue(qobject_cast<QQuickWindow*>(object)));
+  };
+  ASSERT_TRUE(target(first.get()));
+  EXPECT_EQ(first->property("inheritedBackground"), first->property("appearanceBackground"));
+  EXPECT_EQ(first->property("preservedText").value<QColor>(), QColor("#123456"));
+  ASSERT_TRUE(target(second.get()));
+  auto appearance = HoloNight::Config::defaults();
+  appearance.theme.scheme = "holonight-light";
+  const auto path = qEnvironmentVariable("HOLONIGHT_APPEARANCE_FILE").toStdString();
+  const auto dark = first->property("appearanceBackground");
+  ASSERT_TRUE(HoloNight::Config::writeAtomically(appearance, path));
+  ASSERT_TRUE(QTest::qWaitFor([&] { return second->property("appearanceBackground") != dark; }, 5000));
+  EXPECT_EQ(first->property("inheritedBackground"), dark);
+  EXPECT_EQ(second->property("inheritedBackground"), second->property("appearanceBackground"));
+  second.reset();
+  EXPECT_EQ(bridge->property("window").value<QQuickWindow*>(), nullptr);
+  ASSERT_TRUE(target(first.get()));
+  EXPECT_EQ(first->property("inheritedBackground"), first->property("appearanceBackground"));
+  ASSERT_TRUE(target(nullptr));
+  ASSERT_TRUE(target(first.get()));
+  // Queue a refresh, then destroy the bridge before delivery.
+  QEvent event(QEvent::ApplicationPaletteChange);
+  QCoreApplication::sendEvent(qGuiApp, &event);
+  bridge.reset();
+  first.reset();
+  appearance.theme.scheme = "holonight-dark";
+  ASSERT_TRUE(HoloNight::Config::writeAtomically(appearance, path));
+  QCoreApplication::processEvents();
+  QFile maps("/proc/self/maps");
+  ASSERT_TRUE(maps.open(QIODevice::ReadOnly));
+  const auto mappings = maps.readAll();
+  EXPECT_FALSE(mappings.contains("/Holonight/libholonight_qml.so"));
+  EXPECT_FALSE(mappings.contains("/Holonight/Controls/"));
+  EXPECT_FALSE(mappings.contains("/QtQuick/Controls/"));
+  EXPECT_FALSE(mappings.contains("libQt6QuickControls2Fusion.so"));
+  EXPECT_FALSE(mappings.contains("libQt6QuickControls2Basic.so"));
 }
 
 TEST_F(RuntimeComposites, EveryPublicCompositeLoadsAndHonorsDisabledState) {
