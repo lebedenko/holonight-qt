@@ -41,7 +41,7 @@ scale = 1.0
 """
 
 
-def fixture(window, native):
+def fixture(window, native, stability=False):
     imports = "import QtQuick\nimport QtQuick.Controls as C\n"
     if not native:
         imports += "import Holonight.Core\nimport Holonight.Controls\n"
@@ -67,27 +67,52 @@ def fixture(window, native):
     body += "    }\n"
     if not native:
         body += "    property color appearanceBase: HoloniightPalette.background\n"
+    if stability:
+        body = body.replace("height: 390", "height: 550")
+        body = body.replace(
+            "x: 20; y: 20; spacing: 12",
+            'x: 20; y: 20; spacing: 12\n        C.Button { objectName: "nativeButton"; width: 300; text: "Button"; hoverEnabled: true }',
+        )
+        body += (
+            "    property int appearanceRevision: "
+            + ("0" if native else "HoloniightPalette.revision")
+            + "\n"
+        )
     return imports + window + " {\n" + body + "}\n"
 
 
 def collect(args):
     args.output.mkdir(parents=True, exist_ok=False)
     prefix = args.prefix.resolve()
-    for native, window in [
-        (False, "Window"),
-        (False, "HnApplicationWindow"),
-        (True, "Window"),
-    ]:
+    cases = (
+        [
+            (
+                args.boundary == "native",
+                "Window" if args.boundary != "shared" else "HnApplicationWindow",
+            )
+        ]
+        if args.stability
+        else [
+            (False, "Window"),
+            (False, "HnApplicationWindow"),
+            (True, "Window"),
+        ]
+    )
+    for native, window in cases:
         for style in ["Fusion"] if native else ["Fusion", "Holonight"]:
-            for mechanism in ["application"] if native else ["file", "application"]:
-                for scale in ["1", "1.25"]:
+            for mechanism in (
+                ["stability"]
+                if args.stability
+                else (["application"] if native else ["file", "application"])
+            ):
+                for scale in [args.scale] if args.stability else ["1", "1.25"]:
                     name = (
                         f"{'native' if native else window}-{style}-{mechanism}-{scale}"
                     )
                     case = args.output / name
                     case.mkdir()
                     qml = case / "fixture.qml"
-                    qml.write_text(fixture(window, native))
+                    qml.write_text(fixture(window, native, bool(args.stability)))
                     appearance = case / "appearance.toml"
                     appearance.write_text(APPEARANCE)
                     env = {
@@ -110,7 +135,14 @@ def collect(args):
                         QT_QUICK_BACKEND="software",
                         QT_QUICK_CONTROLS_STYLE=style,
                         QT_SCALE_FACTOR=scale,
-                        QT_QPA_PLATFORMTHEME="" if native else "holonight",
+                        QT_QPA_PLATFORMTHEME=""
+                        if native or args.no_platform_theme
+                        else "holonight",
+                        UQC_STABILITY_TRIGGER=args.stability or "",
+                        UQC_SECONDARY_HISTORY=args.history,
+                        UQC_CONTENT_PALETTE=args.content_palette,
+                        UQC_BOUNDARY=args.boundary,
+                        UQC_OVERRIDE_SCOPE=args.override_scope,
                         QT_PLUGIN_PATH=""
                         if native
                         else str(prefix / "lib/qt6/plugins"),
@@ -120,6 +152,24 @@ def collect(args):
                         QT_FORCE_STDERR_LOGGING="1",
                         QML_IMPORT_TRACE="1",
                         QT_DEBUG_PLUGINS="1",
+                    )
+                    if args.stability and style == "Holonight":
+                        env.pop("QT_QUICK_CONTROLS_STYLE")
+                    (case / "experiment.json").write_text(
+                        json.dumps(
+                            {
+                                "trigger": args.stability,
+                                "history": args.history,
+                                "content_palette": args.content_palette,
+                                "boundary": args.boundary,
+                                "override_scope": args.override_scope,
+                                "platform_theme": env["QT_QPA_PLATFORMTHEME"],
+                                "style_override": env.get("QT_QUICK_CONTROLS_STYLE"),
+                                "scale": scale,
+                            },
+                            indent=2,
+                        )
+                        + "\n"
                     )
                     bus = case / "bus.conf"
                     bus.write_text(
@@ -185,7 +235,9 @@ def collect(args):
                         assert not libraries, libraries
                         assert "/platformthemes/" not in maps
                     else:
-                        assert any("libqholonight.so" in lib for lib in libraries)
+                        assert any("libqholonight.so" in lib for lib in libraries) == (
+                            not args.no_platform_theme
+                        )
                         assert libraries and all(
                             str(prefix) in lib for lib in libraries
                         ), libraries
@@ -299,6 +351,24 @@ def main():
         choices=["all", "HnApplicationWindow", "Window", "native"],
         default="all",
         help="Filter assertions without changing collection or external boundary evidence",
+    )
+    parser.add_argument(
+        "--stability",
+        choices=["activation", "hover", "resolve", "application-event", "enabled"],
+    )
+    parser.add_argument("--history", choices=["light", "dark"], default="light")
+    parser.add_argument("--scale", choices=["1", "1.25"], default="1.25")
+    parser.add_argument("--no-platform-theme", action="store_true")
+    parser.add_argument(
+        "--content-palette", choices=["passive", "read"], default="passive"
+    )
+    parser.add_argument(
+        "--boundary", choices=["shared", "plain", "native"], default="shared"
+    )
+    parser.add_argument(
+        "--override-scope",
+        choices=["none", "application", "window", "control"],
+        default="none",
     )
     parser.add_argument("--prefix", type=Path)
     parser.add_argument("--executable", type=Path)

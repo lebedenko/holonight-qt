@@ -142,3 +142,13 @@ preparation. CMake warned about unavailable Kirigami plugin link targets, but ru
 ## UQC-204 supplemental repair
 
 See [UQC-204.md](UQC-204.md) for the exact baseline, both-wrapper scope, regressions and handoff.
+
+## UQC-223 diagnostic handoff — 2026-09-18
+
+[UQC-223](UQC-223.md) is Done as a diagnosis: deterministic activation reversal,
+Qt root-content-item/allocating-observer boundary identified, bounded observer
+repair and regression contract proposed. 74-process collection succeeds; opt-in
+assertion intentionally fails 26 cases. All passive shared-window activation cases
+pass; all deliberately allocating counterparts fail at both DPRs/styles/histories.
+Twelve override/reset comparisons retain the window-role inheritance failure.
+No production or consumer changes. Publication/umbrella handoff follows separately.
