@@ -152,3 +152,11 @@ assertion intentionally fails 26 cases. All passive shared-window activation cas
 pass; all deliberately allocating counterparts fail at both DPRs/styles/histories.
 Twelve override/reset comparisons retain the window-role inheritance failure.
 No production or consumer changes. Publication/umbrella handoff follows separately.
+
+## UQC-224 observer repair — 2026-09-18
+
+[UQC-224](UQC-224.md) local verification is Done: passive allocation-aware observer,
+actual shared-library regression, 98-process matrix and 49 on/off equivalence pairs
+pass. Deliberately allocating Qt-boundary failure remains reproducible. Narrow
+13/13 CTests and static/licensing checks pass. Publication follows separately;
+P03 remains open for a fresh focused kit and human acceptance.
