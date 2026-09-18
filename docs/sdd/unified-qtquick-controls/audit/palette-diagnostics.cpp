@@ -15,7 +15,9 @@
 #include <QSet>
 #include <QTimer>
 #include <QWidget>
+#include <QtQuick/private/qquickitem_p.h>
 #include <QtQuick/private/qquickpalette_p.h>
+#include <QtQuick/private/qquickwindow_p.h>
 
 namespace {
 QString identity(QObject* object) {
@@ -43,10 +45,27 @@ class PaletteObserver : public QObject {
     timer->start(100);
   }
   bool eventFilter(QObject* object, QEvent* event) override {
-    if (event->type() == QEvent::ApplicationPaletteChange || event->type() == QEvent::PaletteChange) {
-      emitRecord({{"id", identity(object)},
-                  {"event", int(event->type())},
-                  {"applicationPalette", paletteState(QGuiApplication::palette())}});
+    switch (event->type()) {
+      case QEvent::ApplicationPaletteChange:
+      case QEvent::PaletteChange:
+      case QEvent::WindowActivate:
+      case QEvent::WindowDeactivate:
+      case QEvent::FocusIn:
+      case QEvent::FocusOut:
+      case QEvent::HoverEnter:
+      case QEvent::HoverLeave:
+      case QEvent::HoverMove:
+      case QEvent::ApplicationActivate:
+      case QEvent::ApplicationDeactivate:
+
+        emitRecord({{"id", identity(object)},
+                    {"event", int(event->type())},
+                    {"name", object->objectName()},
+                    {"beforeDelivery", true},
+                    {"applicationPalette", paletteState(QGuiApplication::palette())}});
+        break;
+      default:
+        break;
     }
     return false;
   }
@@ -74,13 +93,24 @@ class PaletteObserver : public QObject {
       state["palette"] = paletteState(widget->palette());
       state["widgetPaletteExplicit"] = widget->testAttribute(Qt::WA_SetPalette);
       state["backend"] = "QWidget";
-    } else if (object->metaObject()->indexOfProperty("palette") >= 0) {
-      // palette getters do not execute deferred control implementations. Read the
-      // resolved QPalette without creating active/inactive/disabled group objects.
-      if (auto* palette = object->property("palette").value<QQuickPalette*>())
-        state["palette"] = paletteState(palette->toQPalette());
+    } else {
+      // Even reading Item.palette allocates a new inheritance boundary. Never
+      // invoke unknown QObject getters or manufacture a palette while sampling.
+      QQuickPalette* palette = nullptr;
+      if (auto* item = qobject_cast<QQuickItem*>(object)) {
+        auto* data = QQuickItemPrivate::get(item);
+        state["paletteAllocated"] = data->providesPalette();
+        if (data->providesPalette()) palette = data->palette();
+      } else if (auto* window = qobject_cast<QQuickWindow*>(object)) {
+        auto* data = QQuickWindowPrivate::get(window);
+        state["paletteAllocated"] = data->providesPalette();
+        if (data->providesPalette()) palette = data->palette();
+      }
+      if (palette) state["palette"] = paletteState(palette->toQPalette());
     }
-    for (const auto* name : {"visible", "enabled", "color", "currentIndex"}) {
+    state["name"] = object->objectName();
+    for (const auto* name :
+         {"visible", "enabled", "color", "currentIndex", "active", "activeFocus", "focus", "hovered"}) {
       if (object->metaObject()->indexOfProperty(name) >= 0) {
         const auto value = object->property(name);
         state[name] = value.metaType() == QMetaType::fromType<QColor>()
@@ -89,7 +119,7 @@ class PaletteObserver : public QObject {
       }
     }
     if (auto* window = qobject_cast<QWindow*>(object)) state["dpr"] = window->devicePixelRatio();
-    if (state.contains("palette") || state.contains("color") ||
+    if (state.contains("paletteAllocated") || state.contains("palette") || state.contains("color") ||
         QByteArray(object->metaObject()->className()).contains("Dialog"))
       report(state);
     for (auto* child : object->children()) walk(child, visited);
