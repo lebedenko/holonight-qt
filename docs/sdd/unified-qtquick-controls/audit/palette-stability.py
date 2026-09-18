@@ -57,6 +57,44 @@ def collect(args):
                 ["--no-platform-theme"],
             )
         )
+    if args.observer:
+        # Keep the original allocating Qt-boundary matrix available unchanged.
+        experiments = [e for e in experiments if e[4] == "passive"]
+        for scope in ["application", "window", "control"]:
+            for history in ["dark", "light"]:
+                experiments.append(
+                    (
+                        f"override-{scope}-{history}",
+                        "activation",
+                        "1.25",
+                        history,
+                        "passive",
+                        ["--override-scope", scope],
+                    )
+                )
+        experiments = [
+            (
+                f"{name}-{mode}",
+                trigger,
+                scale,
+                history,
+                read,
+                extra + (["--observer", str(args.observer)] if mode == "on" else []),
+            )
+            for name, trigger, scale, history, read, extra in experiments
+            for mode in ["off", "on"]
+        ]
+    (args.output / "collection.json").write_text(
+        json.dumps(
+            {
+                "profile": "observer-repair" if args.observer else "qt-boundary",
+                "experiments": [e[0] for e in experiments],
+                "expected_cases": 98 if args.observer else 74,
+            },
+            indent=2,
+        )
+        + "\n"
+    )
     for name, trigger, scale, history, read, extra in experiments:
         command = [
             sys.executable,
@@ -98,8 +136,12 @@ def check(args):
         raise RuntimeError("No measurements; collection is not a behavioral pass")
     # Reject a partial suite instead of reporting its passing subset as complete.
     nested = any(p.parent.parent != args.output for p in paths)
-    if nested and len(paths) != 74:
-        raise RuntimeError(f"Expected 74 independent cases, found {len(paths)}")
+    manifest = args.output / "collection.json"
+    expected = (
+        json.loads(manifest.read_text())["expected_cases"] if manifest.exists() else 74
+    )
+    if nested and len(paths) != expected:
+        raise RuntimeError(f"Expected {expected} independent cases, found {len(paths)}")
     for path in paths:
         experiment = json.loads(path.with_name("experiment.json").read_text())
         records = json.loads(path.read_text())["records"]
@@ -218,7 +260,94 @@ def check(args):
             len(rendered),
             "rendered reversals",
         )
+    equivalence = []
+    if (
+        manifest.exists()
+        and json.loads(manifest.read_text())["profile"] == "observer-repair"
+    ):
+        for path in paths:
+            if not path.parent.parent.name.endswith("-on"):
+                continue
+            off = (
+                path.parent.parent.with_name(path.parent.parent.name[:-3] + "-off")
+                / path.parent.name
+                / path.name
+            )
+            observed = json.loads(path.read_text())["records"]
+            passive = json.loads(off.read_text())["records"]
+            experiment = json.loads(path.with_name("experiment.json").read_text())
+            for left, right in zip(observed, passive, strict=True):
+                for window in [
+                    "primary",
+                    "secondary",
+                    "initialPrimary",
+                    "beforeSecondaryPrimary",
+                ]:
+                    if window not in left:
+                        continue
+                    a, b = left[window], right[window]
+                    assert a["paletteAllocated"] == b["paletteAllocated"]
+                    assert a["palette"] == b["palette"]
+                    assert a["contentItem"]["paletteAllocated"] is False
+                    assert b["contentItem"]["paletteAllocated"] is False
+                    ac, bc = controls(a), controls(b)
+                    assert ac.keys() == bc.keys()
+                    for name in ac:
+                        for key in ["paletteAllocated", "palette"]:
+                            assert ac[name].get(key) == bc[name].get(key), (
+                                path,
+                                window,
+                                name,
+                                key,
+                            )
+                        if name == "nativeText":
+                            assert ac[name]["pixel"] == bc[name]["pixel"], (
+                                path,
+                                window,
+                                name,
+                            )
+            if (
+                experiment["boundary"] == "shared"
+                and experiment["override_scope"] == "none"
+            ):
+                first = observed[0]
+                initial = controls(first["initialPrimary"])
+                light = controls(first["beforeSecondaryPrimary"])
+                dark = controls(observed[3]["primary"])
+                for name, role in [
+                    ("nativeButton", "Button"),
+                    ("nativeText", "Base"),
+                    ("nativeSpin", "Base"),
+                    ("nativeCombo", "Button"),
+                    ("disabledText", "Base"),
+                    ("sharedSearch", "Base"),
+                    ("sharedCombo", "Base"),
+                ]:
+                    for group in ["0", "1", "2"]:
+                        assert (
+                            initial[name]["palette"][group][role]
+                            != light[name]["palette"][group][role]
+                        )
+                        assert (
+                            initial[name]["palette"][group][role]
+                            == dark[name]["palette"][group][role]
+                        )
+                assert initial["nativeText"]["pixel"] != light["nativeText"]["pixel"]
+                assert initial["nativeText"]["pixel"] == dark["nativeText"]["pixel"]
+            log = path.with_name("launch.log").read_text()
+            observer_records = [
+                json.loads(line.split("HN_PALETTE ", 1)[1])
+                for line in log.splitlines()
+                if "HN_PALETTE " in line
+            ]
+            assert any(r.get("paletteAllocated") is False for r in observer_records)
+            assert any(
+                "event" in r and r.get("beforeDelivery") for r in observer_records
+            )
+            equivalence.append(str(path.parent.relative_to(args.output)))
+        assert len(equivalence) == 49
     report = {
+        "observer_equivalence": equivalence,
         "cases": cases,
         "failed_cases": sum(
             bool(c["failures"] or c["rendered_reversals"]) for c in cases
@@ -235,6 +364,7 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("action", choices=["collect", "assert"])
     parser.add_argument("--output", required=True, type=lambda p: Path(p).resolve())
+    parser.add_argument("--observer", type=lambda p: Path(p).resolve())
     parser.add_argument("--prefix", type=lambda p: Path(p).resolve())
     parser.add_argument("--executable", type=lambda p: Path(p).resolve())
     args = parser.parse_args()

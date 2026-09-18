@@ -155,10 +155,16 @@ def collect(args):
                     )
                     if args.stability and style == "Holonight":
                         env.pop("QT_QUICK_CONTROLS_STYLE")
+                    if args.observer:
+                        env["LD_PRELOAD"] = str(args.observer.resolve())
+                        env["HOLONIGHT_PALETTE_DIAGNOSTICS"] = "1"
                     (case / "experiment.json").write_text(
                         json.dumps(
                             {
                                 "trigger": args.stability,
+                                "observer": str(args.observer.resolve())
+                                if args.observer
+                                else None,
                                 "history": args.history,
                                 "content_palette": args.content_palette,
                                 "boundary": args.boundary,
@@ -222,11 +228,19 @@ def collect(args):
                             f"{name}: collection failed ({result.returncode}); see launch.log"
                         )
                     maps = (case / "maps.txt").read_text()
+                    if args.observer:
+                        assert str(args.observer.resolve()) in maps
+                        assert "HN_PALETTE " in (case / "launch.log").read_text()
                     libraries = sorted(
                         {
                             line.split()[-1]
                             for line in maps.splitlines()
-                            if "holonight" in line.lower() and ".so" in line
+                            if "holonight" in line.lower()
+                            and ".so" in line
+                            and (
+                                not args.observer
+                                or line.split()[-1] != str(args.observer.resolve())
+                            )
                         }
                     )
                     if style == "Fusion":
@@ -369,6 +383,9 @@ def main():
         "--override-scope",
         choices=["none", "application", "window", "control"],
         default="none",
+    )
+    parser.add_argument(
+        "--observer", type=Path, help="Load the actual observer shared library"
     )
     parser.add_argument("--prefix", type=Path)
     parser.add_argument("--executable", type=Path)

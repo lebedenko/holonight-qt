@@ -196,6 +196,9 @@ QJsonArray stability(QQmlComponent& component, const QString& output) {
       palette->setBase(QColor("#bada55"));
       palette->disabled()->setText(QColor("#112233"));
     }
+    // Allow the actual observer timer to sample construction before transitioning.
+    // This delay belongs only to the opt-in diagnostic, never production sampling.
+    QTest::qWait(150);
     observer.watch(window.get());
     for (auto* child : window->findChildren<QObject*>())
       if (!child->objectName().isEmpty()) observer.watch(child);
