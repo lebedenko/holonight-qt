@@ -91,7 +91,74 @@ Controls.ScrollView {
             Layout.fillWidth: true
             Layout.leftMargin: 32
             Layout.rightMargin: 32
-            trailingContent: HnKeyHint { text: qsTr("Ctrl K") }
+            trailingContent: HnKeyHint { keyGroups: [[Qt.Key_Control, Qt.Key_K]] }
+        }
+
+        HnLabel {
+            role: HnTypographyRole.Title
+            rawText: qsTr("Keyboard hints")
+            Layout.leftMargin: 32
+        }
+
+        Controls.Slider {
+            id: hintSize
+            Layout.leftMargin: 32
+            from: 8
+            to: 18
+            stepSize: 1
+            value: 12
+            Accessible.name: qsTr("Hint font size")
+        }
+
+        Controls.ComboBox {
+            id: hintFamily
+            Layout.leftMargin: 32
+            model: [HolonightTheme.monospaceFont, "DejaVu Sans Mono", "DejaVu Sans"]
+            Accessible.name: qsTr("Hint font family")
+        }
+
+        Flow {
+            Layout.fillWidth: true
+            Layout.leftMargin: 32
+            Layout.rightMargin: 32
+            spacing: 8
+
+            Repeater {
+                model: [Qt.Key_Shift, Qt.Key_Tab, Qt.Key_Backtab, Qt.Key_Return,
+                        Qt.Key_Enter, Qt.Key_Backspace, Qt.Key_Space, Qt.Key_Delete,
+                        Qt.Key_Left, Qt.Key_Right, Qt.Key_Up, Qt.Key_Down]
+                delegate: HnKeyHint {
+                    required property int modelData
+                    keyGroups: [[modelData]]
+                    font.pointSize: hintSize.value
+                    font.family: hintFamily.currentText
+                }
+            }
+        }
+
+        HnKeyHint {
+            Layout.leftMargin: 32
+            keyGroups: [[Qt.Key_Control, Qt.Key_Shift, Qt.Key_Return], [Qt.Key_Tab]]
+            font.pointSize: hintSize.value
+            font.family: hintFamily.currentText
+        }
+
+        HnKeyHint {
+            Layout.leftMargin: 32
+            Layout.preferredWidth: 150
+            wrap: true
+            keyGroups: [[Qt.Key_Control, Qt.Key_Shift, Qt.Key_Plus], [Qt.Key_Slash],
+                        [Qt.Key_Alt, Qt.Key_Backspace]]
+            font.pointSize: hintSize.value
+            font.family: hintFamily.currentText
+        }
+
+        HnKeyHint {
+            Layout.leftMargin: 32
+            enabled: false
+            keyGroups: [[Qt.Key_Control, Qt.Key_Return]]
+            font.pointSize: hintSize.value
+            font.family: hintFamily.currentText
         }
 
         HnSectionHeader {

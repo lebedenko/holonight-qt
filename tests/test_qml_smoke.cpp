@@ -4592,3 +4592,122 @@ TEST_F(QmlSmoke, Controls_ColorPickerIntegratesStandaloneAndInSettingsRow) {
   ASSERT_NE(control_item, nullptr);
   EXPECT_EQ(colorPickerSwatches(control_item).size(), 6);
 }
+
+TEST_F(QmlSmoke, Controls_KeyHintSemanticNamesAndLiteralCompatibility) {
+  QQmlComponent comp{&engine_};
+  comp.setData(R"(
+    import QtQuick
+    import Holonight.Controls
+    HnKeyHint {
+      text: "literal Ctrl+/ <b>"
+      property string spokenName: Accessible.name
+      property int accessibleRole: Accessible.role
+      property bool decorationIgnored: contentItem.Accessible.ignored
+      function semantic() { keyGroups = [[Qt.Key_Control, Qt.Key_Plus], [Qt.Key_Slash]] }
+      function symbols() {
+        keyGroups = [[Qt.Key_Shift, Qt.Key_Tab, Qt.Key_Backtab, Qt.Key_Return, Qt.Key_Enter,
+          Qt.Key_Backspace, Qt.Key_Space, Qt.Key_Delete, Qt.Key_Up, Qt.Key_Down, Qt.Key_Left, Qt.Key_Right]]
+      }
+      function legacy() { keyGroups = [] }
+    }
+  )",
+               QUrl{});
+  ASSERT_EQ(comp.status(), QQmlComponent::Ready) << comp.errorString().toStdString();
+  std::unique_ptr<QObject> hint{comp.create()};
+  ASSERT_NE(hint, nullptr);
+  EXPECT_EQ(hint->property("spokenName").toString(), QStringLiteral("literal Ctrl+/ <b>"));
+  EXPECT_TRUE(hint->property("decorationIgnored").toBool());
+  EXPECT_FALSE(hint->property("activeFocusOnTab").toBool());
+  ASSERT_TRUE(QMetaObject::invokeMethod(hint.get(), "semantic"));
+  EXPECT_EQ(hint->property("spokenName").toString(), QStringLiteral("Ctrl plus + or /"));
+  ASSERT_TRUE(QMetaObject::invokeMethod(hint.get(), "symbols"));
+  EXPECT_EQ(hint->property("spokenName").toString(),
+            QStringLiteral("Shift plus Tab plus Backtab plus Return plus Enter plus Backspace plus Space plus Delete "
+                           "plus Up plus Down plus Left plus Right"));
+  ASSERT_TRUE(QMetaObject::invokeMethod(hint.get(), "legacy"));
+  EXPECT_EQ(hint->property("spokenName").toString(), QStringLiteral("literal Ctrl+/ <b>"));
+}
+
+TEST_F(QmlSmoke, Controls_KeyHintWrapsAlternativesThenKeysAndTracksResolvedFont) {
+  QQmlComponent comp{&engine_};
+  comp.setData(R"(
+    import QtQuick
+    import Holonight.Controls
+    HnKeyHint {
+      id: hint
+      keyGroups: [[Qt.Key_Control, Qt.Key_Return], [Qt.Key_Control, Qt.Key_Tab]]
+      font.family: "DejaVu Sans Mono"
+      font.pointSize: 12
+      wrap: true
+      property real lineHeight: fm.height
+      FontMetrics { id: fm; font: hint.font }
+      function textOnly() { keyGroups = [[Qt.Key_Control, Qt.Key_M]] }
+      function largeFont() { font.pointSize = 18 }
+      function pixelFont() { font = Qt.font({pixelSize: 32, family: "DejaVu Sans"}) }
+      function legacy() { keyGroups = []; text = "Ctrl plus Return or Ctrl plus Tab" }
+    }
+  )",
+               QUrl{});
+  ASSERT_EQ(comp.status(), QQmlComponent::Ready) << comp.errorString().toStdString();
+  std::unique_ptr<QObject> hint{comp.create()};
+  ASSERT_NE(hint, nullptr);
+  auto* content = hint->property("contentItem").value<QQuickItem*>();
+  ASSERT_NE(content, nullptr);
+  const double natural_width = hint->property("implicitWidth").toDouble();
+  const double line_height = hint->property("lineHeight").toDouble();
+  EXPECT_DOUBLE_EQ(content->implicitHeight(), line_height);
+  // A full alternative fits, but both alternatives do not.
+  hint->setProperty("width", natural_width * 0.65);
+  QCoreApplication::processEvents();
+  EXPECT_DOUBLE_EQ(content->implicitHeight(), 2 * line_height);
+  hint->setProperty("width", natural_width * 0.3);
+  QCoreApplication::processEvents();
+  EXPECT_GT(content->implicitHeight(), 2 * line_height);
+  hint->setProperty("wrap", false);
+  EXPECT_DOUBLE_EQ(content->implicitHeight(), line_height);
+  ASSERT_TRUE(QMetaObject::invokeMethod(hint.get(), "textOnly"));
+  const double text_width = content->implicitWidth();
+  ASSERT_TRUE(QMetaObject::invokeMethod(hint.get(), "largeFont"));
+  EXPECT_GT(content->implicitWidth(), text_width);
+  EXPECT_GT(content->implicitHeight(), line_height);
+  ASSERT_TRUE(QMetaObject::invokeMethod(hint.get(), "pixelFont"));
+  EXPECT_GT(hint->property("lineHeight").toDouble(), line_height);
+  ASSERT_TRUE(QMetaObject::invokeMethod(hint.get(), "legacy"));
+  hint->setProperty("wrap", true);
+  QCoreApplication::processEvents();
+  EXPECT_GT(content->implicitHeight(), hint->property("lineHeight").toDouble());
+}
+
+// GTest assertion macro expansion dominates the score of this linear state check.
+// NOLINTNEXTLINE(readability-function-cognitive-complexity)
+TEST_F(QmlSmoke, Controls_KeyHintDisabledAppearance) {
+  QQmlComponent comp{&engine_};
+  comp.setData(R"(
+    import QtQuick
+    import Holonight.Controls
+    HnKeyHint { keyGroups: [[Qt.Key_Control, Qt.Key_Return]] }
+  )",
+               QUrl{});
+  ASSERT_EQ(comp.status(), QQmlComponent::Ready) << comp.errorString().toStdString();
+  std::unique_ptr<QObject> hint{comp.create()};
+  ASSERT_NE(hint, nullptr);
+  const auto colors = canonicalDefaultTokens();
+  auto* content = hint->property("contentItem").value<QQuickItem*>();
+  ASSERT_NE(content, nullptr);
+  // Every text decoration uses the same state-dependent foreground.
+  QList<QObject*> labels;
+  for (QObject* child : content->findChildren<QObject*>()) {
+    if (child->property("text").isValid() && child->property("color").isValid()) {
+      labels.append(child);
+    }
+  }
+  ASSERT_FALSE(labels.empty());
+  for (QObject* label : labels) {
+    EXPECT_EQ(label->property("color").value<QColor>(), colors.textSecondary);
+  }
+  hint->setProperty("enabled", false);
+  for (QObject* label : labels) {
+    EXPECT_EQ(label->property("color").value<QColor>(), colors.textDisabled);
+  }
+  EXPECT_EQ(hint->property("background").value<QObject*>()->property("color").value<QColor>(), colors.surfaceRaised);
+}

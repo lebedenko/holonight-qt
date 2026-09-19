@@ -697,3 +697,88 @@ TEST_F(SharedRendering, ScrollBarApplicationEngineTeardown) {
   QCoreApplication::sendPostedEvents(nullptr, QEvent::DeferredDelete);
 }
 }  // namespace
+
+TEST_F(SharedRendering, KeyHintSymbolsRenderDistinctlyAcrossFontsAndSizes) {
+  QQmlComponent component(&engine);
+  component.setData(R"(
+    import QtQuick
+    import Holonight.Controls
+    Window {
+      width: 1000; height: 360; visible: true
+      Column {
+        Repeater {
+          model: [8, 12, 18]
+          delegate: Column {
+            id: sizeRow
+            required property int modelData
+            Repeater {
+              model: ["DejaVu Sans Mono", "DejaVu Sans"]
+              delegate: Row {
+                id: fontRow
+                required property string modelData
+                Repeater {
+                  model: [Qt.Key_Shift, Qt.Key_Tab, Qt.Key_Backtab, Qt.Key_Return, Qt.Key_Enter,
+                          Qt.Key_Backspace, Qt.Key_Delete, Qt.Key_Space,
+                          Qt.Key_Up, Qt.Key_Down, Qt.Key_Left, Qt.Key_Right]
+                  delegate: HnKeyHint {
+                    required property int index
+                    required property int modelData
+                    objectName: fontRow.modelData + sizeRow.modelData + "/" + index
+                    width: 75; height: 55
+                    font.family: fontRow.modelData
+                    font.pointSize: sizeRow.modelData
+                    keyGroups: [[modelData]]
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  )",
+                    QUrl{});
+  root.reset(component.create());
+  ASSERT_TRUE(root) << component.errorString().toStdString();
+  window = qobject_cast<QQuickWindow*>(root.get());
+  ASSERT_NE(window, nullptr);
+  ASSERT_TRUE(QTest::qWaitForWindowExposed(window));
+  const QImage rendered = window->grabWindow();
+  ASSERT_FALSE(rendered.isNull());
+  const qreal dpr = window->devicePixelRatio();
+  for (const auto* family : {"DejaVu Sans Mono", "DejaVu Sans"}) {
+    for (const int size : {8, 12, 18}) {
+      QList<QImage> symbols;
+      for (int index = 0; index < 12; ++index) {
+        const QByteArray name = QStringLiteral("%1%2/%3").arg(family).arg(size).arg(index).toUtf8();
+        auto* hint = item(name.constData());
+        ASSERT_NE(hint, nullptr);
+        const QPointF origin = hint->mapToScene(QPointF());
+        // Compare the content only, excluding position-dependent fractional border rasterization.
+        const qreal left = hint->property("leftPadding").toReal();
+        const qreal top = hint->property("topPadding").toReal();
+        const QRect area(qRound((origin.x() + left) * dpr), qRound((origin.y() + top) * dpr),
+                         qRound((hint->width() - (2 * left)) * dpr), qRound((hint->height() - (2 * top)) * dpr));
+        const QImage symbol = rendered.copy(area);
+        bool has_ink = false;
+        const QColor background = symbol.pixelColor(symbol.width() - 1, symbol.height() - 1);
+        for (int row = 0; row < symbol.height(); ++row) {
+          for (int column = 0; column < symbol.width(); ++column) {
+            if (symbol.pixelColor(column, row) != background) {
+              has_ink = true;
+            }
+          }
+        }
+        EXPECT_TRUE(has_ink) << name.constData();
+        for (int previous = 0; previous < symbols.size(); ++previous) {
+          // Return and Enter intentionally share a symbol.
+          if (index == 4 && previous == 3) {
+            continue;
+          }
+          EXPECT_NE(symbol, symbols.at(previous)) << name.constData() << " versus " << previous;
+        }
+        symbols.append(symbol);
+      }
+    }
+  }
+}

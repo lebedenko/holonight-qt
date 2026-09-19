@@ -1,13 +1,13 @@
 find_package(Qt6 ${Qt6_VERSION} EXACT REQUIRED COMPONENTS QuickPrivate QuickControls2Private QuickTemplates2Private)
 
-# Implementation-only palette machinery; Core stays independent of the selected style.
+# Implementation-only helpers; Core stays independent of the selected style.
 qt_add_qml_module(holonight_impl_qml
     URI "Holonight.impl"
     VERSION 1.0
     PLUGIN_TARGET holonight_impl_qml
     OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/Holonight/impl
     QML_FILES ComboBoxPopupGeometry.qml
-    SOURCES controlpalette.h controlpalette.cpp appearancecontext.h appearancecontext.cpp
+    SOURCES controlpalette.h controlpalette.cpp appearancecontext.h appearancecontext.cpp keyhintnames.h
 )
 target_link_libraries(holonight_impl_qml PRIVATE
     holonight_appearance holonight_theme Qt6::Qml Qt6::Quick Qt6::QuickPrivate)

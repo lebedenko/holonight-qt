@@ -87,7 +87,15 @@ delegate controls. Do not calculate selection colors in application code.
 
 - `HnStatusIndicator`: neutral, info, success, warning, or error; dot or icon
   plus text.
-- `HnKeyHint`: compact accessible shortcut text.
+- `HnKeyHint`: compact accessible keyboard hints. Set `keyGroups` to an ordered array of combinations,
+  for example `[[Qt.Key_Control, Qt.Key_Return], [Qt.Key_Tab]]`. Keys use `+` and alternatives use ` / `
+  inside one badge. Shift, Tab/Backtab, Return/Enter, Backspace, Delete, Space and arrows use font-scaled
+  vector symbols. Other keys remain text; punctuation keys are passed literally as `Qt.Key_Plus` or
+  `Qt.Key_Slash`. Nonempty `keyGroups` takes precedence over the compatible literal `text` API.
+  Set `wrap: true` and constrain the width to wrap alternatives, then long combinations between keys.
+  Individual keys stay intact; allow enough width for the longest key plus its separator.
+  `accessibleText` supplies translated readable names for parent action-label composition.
+  Use the resolved `font` to change typography; do not replace `contentItem` or resize individual symbols.
 - `HnEmptyState`: empty-result graphic, title, description, and action.
 - `HnLoadingState`: indeterminate or normalized progress presentation.
 - `HnSeparator`: horizontal or vertical pixel-aligned divider with solid,
