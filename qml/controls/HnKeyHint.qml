@@ -26,7 +26,7 @@ C.Control {
     }
     background: Rectangle {
         color: HoloniightPalette.surfaceRaised
-        radius: HnAppearance.roundedRadius(HnSurfaceRole.Badge, width, height, HnAppearance.revision)
+        radius: HnAppearance.roundedRadius(HnSurfaceRole.Control, width, height, HnAppearance.revision)
         border.width: HnMetrics.borderWidth
         border.color: HoloniightPalette.borderPassive
     }
