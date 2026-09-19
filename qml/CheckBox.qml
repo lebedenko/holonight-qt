@@ -54,27 +54,25 @@ T.CheckBox {
         // Checkmark
         Rectangle {
             visible: root.checkState === Qt.Checked
-            x: 5
-            y: 6
-            width: 9
+            x: 6
+            y: 10
+            width: 8
             height: 2
             color: root.enabled ? root.controlColors.colors.onPrimary : root.controlColors.colors.disabledOnPrimary
             rotation: -45
             transformOrigin: Item.Left
+            antialiasing: true
         }
         Rectangle {
             visible: root.checkState === Qt.Checked
-            width: 2
-            height: 5
+            x: 6
+            y: 10
+            width: 4.5
+            height: 2
             color: root.enabled ? root.controlColors.colors.onPrimary : root.controlColors.colors.disabledOnPrimary
-            rotation: -45
-            transformOrigin: Item.Bottom
-            anchors {
-                left: parent.left
-                bottom: parent.bottom
-                leftMargin: 3
-                bottomMargin: 4
-            }
+            rotation: -135
+            transformOrigin: Item.Left
+            antialiasing: true
         }
 
         // Indeterminate dash
