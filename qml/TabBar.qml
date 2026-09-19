@@ -40,7 +40,6 @@ T.TabBar {
     }
 
     background: Rectangle {
-        implicitHeight: 48
         color: root.controlColors.colors.surface
 
         Rectangle {
