@@ -48,3 +48,22 @@ Consumers can combine `accessibleText` with their translated action labels.
 - `docs/shared-controls-usage-guide.md`: consumer API and sizing guidance.
 
 See `VERIFICATION.md` for acceptance evidence and remaining ecosystem work.
+
+## KH-006 design refinement
+
+Move the existing layout, key names and vector paths unchanged into an Item-based
+HnKeySequenceLabel. Its font defaults to the theme UI body font; explicit full-font
+bindings support menu typography. Its color defaults to the existing secondary /
+disabled palette and is publicly bindable. The component has one accessible name;
+its decorative children remain ignored.
+
+HnKeyHint composes that label in an accessible-ignored content item and exposes
+its accessibleText at the badge root. The content item retains natural dimensions;
+the sequence takes the lesser of natural and available width and is centered.
+Minimum implicit badge width uses FontMetrics.height plus padding, never wrapped
+implicitHeight. This keeps constrained wrapping acyclic. The badge retains its
+monospace font, raised background and passive border, with compact padding and a
+2 px cap on the appearance-derived radius.
+
+The standalone label is registered and verified by the installed-package test.
+Viewer menu and footer adoption belongs to KH-007 after provider publication/pinning.

@@ -244,6 +244,7 @@ foreach(relative_path
     "Holonight/Controls/HnActionDelegate.qml"
     "Holonight/Controls/HnStatusIndicator.qml"
     "Holonight/Controls/HnKeyHint.qml"
+    "Holonight/Controls/HnKeySequenceLabel.qml"
     "Holonight/Controls/HnPanelHeader.qml"
     "Holonight/Controls/HnSegmentedControl.qml"
     "Holonight/Controls/HnChoiceCard.qml"

@@ -87,7 +87,12 @@ delegate controls. Do not calculate selection colors in application code.
 
 - `HnStatusIndicator`: neutral, info, success, warning, or error; dot or icon
   plus text.
-- `HnKeyHint`: compact accessible keyboard hints. Set `keyGroups` to an ordered array of combinations,
+- `HnKeySequenceLabel`: frameless keyboard sequences with `keyGroups`, literal `text`, `font`,
+  `color`, `wrap`, and read-only `accessibleText`. It has no background, frame, or padding.
+  Bind `font` to an adjacent menu label for matching typography, and bind `color` to
+  `HoloniightPalette.textMuted` / `textDisabled` according to the action’s enabled state.
+  It uses the same symbols, separators, accessibility names, and wrapping as `HnKeyHint`.
+- `HnKeyHint`: compact accessible keyboard hints with default monospace typography. Set `keyGroups` to an ordered array of combinations,
   for example `[[Qt.Key_Control, Qt.Key_Return], [Qt.Key_Tab]]`. Keys use `+` and alternatives use ` / `
   inside one badge. Shift, Tab/Backtab, Return/Enter, Backspace, Delete, Space and arrows use font-scaled
   vector symbols. Other keys remain text; punctuation keys are passed literally as `Qt.Key_Plus` or
@@ -95,6 +100,10 @@ delegate controls. Do not calculate selection colors in application code.
   Set `wrap: true` and constrain the width to wrap alternatives, then long combinations between keys.
   Individual keys stay intact; allow enough width for the longest key plus its separator.
   `accessibleText` supplies translated readable names for parent action-label composition.
+  Vertical/horizontal padding scales at 2/22 and 6/22 of resolved line height. Natural
+  single-line badges are at least 1.2 times their height, with centered short content.
+  Corner rounding follows appearance settings up to 2 logical pixels. Explicitly
+  constrained multiline badges retain their wrapping contract.
   Use the resolved `font` to change typography; do not replace `contentItem` or resize individual symbols.
 - `HnEmptyState`: empty-result graphic, title, description, and action.
 - `HnLoadingState`: indeterminate or normalized progress presentation.

@@ -124,7 +124,7 @@ Controls.ScrollView {
             spacing: 8
 
             Repeater {
-                model: [Qt.Key_Shift, Qt.Key_Tab, Qt.Key_Backtab, Qt.Key_Return,
+                model: [Qt.Key_R, Qt.Key_1, Qt.Key_Shift, Qt.Key_Tab, Qt.Key_Backtab, Qt.Key_Return,
                         Qt.Key_Enter, Qt.Key_Backspace, Qt.Key_Space, Qt.Key_Delete,
                         Qt.Key_Left, Qt.Key_Right, Qt.Key_Up, Qt.Key_Down]
                 delegate: HnKeyHint {
@@ -134,6 +134,21 @@ Controls.ScrollView {
                     font.family: hintFamily.currentText
                 }
             }
+        }
+
+        HnKeySequenceLabel {
+            Layout.leftMargin: 32
+            keyGroups: [[Qt.Key_Control, Qt.Key_Shift, Qt.Key_Return], [Qt.Key_Tab]]
+            font.pointSize: hintSize.value
+            font.family: hintFamily.currentText
+            color: HoloniightPalette.textMuted
+        }
+
+        HnKeyHint {
+            Layout.leftMargin: 32
+            keyGroups: [[Qt.Key_Control, Qt.Key_0]]
+            font.pointSize: hintSize.value
+            font.family: hintFamily.currentText
         }
 
         HnKeyHint {

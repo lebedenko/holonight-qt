@@ -137,6 +137,7 @@ set(HOLONIGHT_CONTROLS_PUBLIC_QML_FILES
     controls/HnCardDelegate.qml
     controls/HnActionDelegate.qml
     controls/HnStatusIndicator.qml
+    controls/HnKeySequenceLabel.qml
     controls/HnKeyHint.qml
     controls/HnPanelHeader.qml
     controls/HnSegmentedControl.qml

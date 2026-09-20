@@ -4711,3 +4711,116 @@ TEST_F(QmlSmoke, Controls_KeyHintDisabledAppearance) {
   }
   EXPECT_EQ(hint->property("background").value<QObject*>()->property("color").value<QColor>(), colors.surfaceRaised);
 }
+
+TEST_F(QmlSmoke, Controls_KeySequenceLabelMatchesBadgeWithoutFrameOrPadding) {
+  QQmlComponent comp{&engine_};
+  comp.setData(R"(
+    import QtQuick
+    import Holonight.Controls
+    Item {
+      HnKeyHint {
+        id: badge; objectName: "badge"
+        keyGroups: [[Qt.Key_Control, Qt.Key_Shift, Qt.Key_Return], [Qt.Key_Tab]]
+        font.family: "DejaVu Sans"; font.pointSize: 12
+      }
+      HnKeySequenceLabel {
+        id: label; objectName: "label"
+        keyGroups: badge.keyGroups; font: badge.font; color: "#ff123456"
+        property string spokenName: Accessible.name
+      }
+      function pixelFont() { badge.font = Qt.font({pixelSize: 32, family: "DejaVu Sans Mono", bold: true}) }
+      function literal() { badge.keyGroups = []; badge.text = "<b>Ctrl+/</b>"; label.text = badge.text }
+    }
+  )",
+               QUrl{});
+  ASSERT_EQ(comp.status(), QQmlComponent::Ready) << comp.errorString().toStdString();
+  std::unique_ptr<QObject> root{comp.create()};
+  ASSERT_NE(root, nullptr);
+  auto* badge = root->findChild<QQuickItem*>("badge");
+  auto* label = root->findChild<QQuickItem*>("label");
+  ASSERT_NE(badge, nullptr);
+  ASSERT_NE(label, nullptr);
+  EXPECT_FALSE(label->property("background").isValid());
+  EXPECT_FALSE(label->property("padding").isValid());
+  EXPECT_FALSE(label->activeFocusOnTab());
+  EXPECT_EQ(label->property("spokenName"), badge->property("accessibleText"));
+  EXPECT_EQ(label->property("spokenName").toString(), QStringLiteral("Ctrl plus Shift plus Return or Tab"));
+  const double initial_width = label->implicitWidth();
+  EXPECT_DOUBLE_EQ(initial_width, badge->property("implicitContentWidth").toDouble());
+  EXPECT_DOUBLE_EQ(label->implicitHeight(), badge->property("implicitContentHeight").toDouble());
+  ASSERT_TRUE(QMetaObject::invokeMethod(root.get(), "pixelFont"));
+  EXPECT_GT(label->implicitWidth(), initial_width);
+  EXPECT_EQ(label->property("font"), badge->property("font"));
+  label->setProperty("enabled", false);
+  EXPECT_EQ(label->property("color").value<QColor>(), QColor("#123456"));
+  label->setProperty("wrap", true);
+  label->setWidth(label->implicitWidth() * 0.65);
+  EXPECT_GT(label->implicitHeight(), badge->property("implicitContentHeight").toDouble());
+  ASSERT_TRUE(QMetaObject::invokeMethod(root.get(), "literal"));
+  EXPECT_EQ(label->property("spokenName").toString(), QStringLiteral("<b>Ctrl+/</b>"));
+  label->setWidth(label->implicitWidth());
+  EXPECT_DOUBLE_EQ(label->implicitHeight(), badge->property("implicitContentHeight").toDouble());
+}
+
+// GTest assertion macro expansion dominates the score of this small geometry matrix.
+// NOLINTNEXTLINE(readability-function-cognitive-complexity)
+TEST_F(QmlSmoke, Controls_KeyHintCompactGeometryCentersShortKeys) {
+  QQmlComponent comp{&engine_};
+  comp.setData(R"(
+    import QtQuick
+    import Holonight.Controls
+    HnKeyHint {
+      id: hint
+      property int size: 12
+      property int key: Qt.Key_R
+      keyGroups: [[key]]
+      font.family: "DejaVu Sans Mono"; font.pointSize: size
+      property real lineHeight: fm.height
+      FontMetrics { id: fm; font: hint.font }
+    }
+  )",
+               QUrl{});
+  ASSERT_EQ(comp.status(), QQmlComponent::Ready) << comp.errorString().toStdString();
+  std::unique_ptr<QObject> hint{comp.create()};
+  ASSERT_NE(hint, nullptr);
+  auto* content = hint->property("contentItem").value<QQuickItem*>();
+  ASSERT_NE(content, nullptr);
+  ASSERT_EQ(content->childItems().size(), 1);
+  auto* sequence = content->childItems().front();
+  for (int size : {8, 12, 18}) {
+    hint->setProperty("size", size);
+    for (int key : {Qt::Key_R, Qt::Key_1, Qt::Key_Return}) {
+      hint->setProperty("key", key);
+      QCoreApplication::processEvents();
+      const double line_height = hint->property("lineHeight").toDouble();
+      const double height = hint->property("implicitHeight").toDouble();
+      EXPECT_NEAR(height, line_height * 26 / 22, 0.001);
+      EXPECT_GE(hint->property("implicitWidth").toDouble(), height * 1.2);
+      EXPECT_NEAR(sequence->x() + (sequence->width() / 2), content->width() / 2, 0.001);
+      EXPECT_NEAR(sequence->y() + (sequence->height() / 2), content->height() / 2, 0.001);
+      EXPECT_DOUBLE_EQ(hint->property("background").value<QObject*>()->property("radius").toDouble(), 2);
+    }
+  }
+}
+
+TEST_F(QmlSmoke, Controls_KeyHintPreservesSquareAppearance) {
+  EnvGuard appearance_guard{"HOLONIGHT_APPEARANCE_FILE"};
+  QTemporaryDir dir;
+  ASSERT_TRUE(dir.isValid());
+  const QString path = dir.filePath(QStringLiteral("appearance.toml"));
+  auto appearance = HoloNight::Config::defaults();
+  appearance.shape.base_radius = 0.0;
+  ASSERT_TRUE(HoloNight::Config::writeAtomically(appearance, std::filesystem::path{path.toStdString()}));
+  qputenv("HOLONIGHT_APPEARANCE_FILE", path.toLocal8Bit());
+  QQmlComponent comp{&engine_};
+  comp.setData(R"(
+    import QtQuick
+    import Holonight.Controls
+    HnKeyHint { keyGroups: [[Qt.Key_R]] }
+  )",
+               QUrl{});
+  ASSERT_EQ(comp.status(), QQmlComponent::Ready) << comp.errorString().toStdString();
+  std::unique_ptr<QObject> hint{comp.create()};
+  ASSERT_NE(hint, nullptr);
+  EXPECT_DOUBLE_EQ(hint->property("background").value<QObject*>()->property("radius").toDouble(), 0);
+}
