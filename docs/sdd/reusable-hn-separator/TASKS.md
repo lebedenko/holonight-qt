@@ -124,3 +124,49 @@ entries); `holonight_controls_qml_qmllint` (existing unrelated advisory warnings
 `cmake --build build -j4`; `task test` (96/96, including package installation, QML policy and example
 startup checks); `git diff --check`. The task workflow required execution outside the sandbox because
 its dependency build writes to the sibling `holonight-config/build-provider` directory.
+
+## Default minor-axis occupancy correction — 2026-09-21
+
+- [x] T-020: Bind the actual horizontal `height` and vertical `width` defaults to the non-negative
+  requested thickness, while retaining implicit sizes and caller ownership of explicit dimensions.
+- [x] T-021: Add anchor-only root-geometry and rendered-line coverage to QML smoke and physical-pixel
+  rendering tests across every existing DPR process.
+- [x] T-022: Add Files-window integration assertions for the header, sidebar, directory-header and
+  footer dividers using stable separator object names.
+
+Verification:
+
+- `ctest --test-dir build --output-on-failure -R '^holonight_separator_rendering_dpr_'` passed at DPR
+  1.0, 1.25, 1.5, 1.75 and 2.0.
+- `QT_QPA_PLATFORM=offscreen QML_IMPORT_PATH=<build>/qml build/tests/holonight_qml_smoke_tests
+  --gtest_filter='QmlSmoke.HnSeparator*'` passed (8 tests).
+- Files' `Files.WindowAnchorOnlySeparatorsOccupyAndPaint` focused smoke test passed against its real
+  `Main` window; both changed-repository QML lint targets and Files' format check passed.
+
+
+## Complete geometry contract and connected consumers — 2026-09-21
+
+This accepted redesign supersedes the earlier API and the follow-up limitations listed above.
+
+- [x] T-023: Replace offsets with a complete scene-space snapped rectangle; preserve signed built-in
+  scale, event-driven ancestry/window updates, exact physical thickness and invalid-geometry recovery.
+- [x] T-024: Introduce Leading/Center/Trailing, integer thickness=1, borderPassive and ordinary opacity;
+  remove legacy opacity properties and migrate shared controls, gallery and usage documentation.
+- [x] T-025: Render a unit rectangle scaled on both axes with the specified three-stop fade profiles.
+- [x] T-026: Cover complete strokes and junctions on explicit software and accelerated OpenGL backends,
+  DPR 1/1.25/1.5/1.5625/1.75/2, thickness 1–3, transparency, fractional translations, signed scaling,
+  anchors/layouts, explicit slots, lifecycle changes and simulated render-target DPR transitions.
+- [x] T-027: Reproduce implicit-size binding-loop warnings at DPR 1.5625, split occupancy notifications
+  from paint notifications, and assert that no QML binding-loop warning occurs in rendered tests.
+- [x] T-028: Explicitly rebuild/stage the working-tree provider into Files and the other consumer prefixes.
+
+Verification: full build including demo/gallery; full default CTest suite 96/96 before the added DPR;
+final affected CTest selection 16/16 (all twelve renderer/DPR processes, QML smoke, example startup and
+package installation). Controls/gallery qmllint and policy checks pass with existing unrelated advisories.
+Full clang-tidy was inspected; new helper/rendering-test diagnostics were corrected and focused tidy
+passes. Formatting and diff checks pass. Hardware renderer: Mesa Intel(R) Graphics (RPL-S), Qt 6.11.2.
+
+OpenGL tests use public QQuickRenderControl with an FBO so fractional offscreen backing-buffer sizes
+cannot silently invalidate capture. They reject software fallback. This does not simulate a real monitor
+move; the native user check and library identity are recorded in Files' local SDD. Arbitrary rotation,
+shear and custom-transform-object updates remain outside the contract. The user subsequently authorized repository commits, publication and umbrella pin updates.

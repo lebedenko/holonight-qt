@@ -16,33 +16,28 @@ Item {
         FadeEnd
     }
 
+    enum CrossAxisAlignment {
+        Leading,
+        Center,
+        Trailing
+    }
+
     property int orientation: Qt.Horizontal
-    property color color: HoloniightPalette.borderSubtle
-    property real thickness: HnMetrics.separatorWidth
+    property color color: HoloniightPalette.borderPassive
+    property int thickness: 1
     property int fadeMode: HnSeparator.Solid
-    property real centerOpacity: 1.0
-    property real edgeOpacity: 0.0
+    property int crossAxisAlignment: HnSeparator.Leading
 
     readonly property int effectiveOrientation: orientation === Qt.Vertical ? Qt.Vertical : Qt.Horizontal
     readonly property int effectiveFadeMode: fadeMode >= HnSeparator.Solid && fadeMode <= HnSeparator.FadeEnd
                                             ? fadeMode : HnSeparator.Solid
-    readonly property real effectiveCenterOpacity: Math.max(0, Math.min(1, centerOpacity))
-    readonly property real effectiveEdgeOpacity: Math.max(0, Math.min(1, edgeOpacity))
-    readonly property color centerColor: Qt.rgba(color.r, color.g, color.b,
-                                                 color.a * effectiveCenterOpacity)
-    readonly property color edgeColor: Qt.rgba(color.r, color.g, color.b,
-                                               color.a * effectiveEdgeOpacity)
-    readonly property color middleColor: {
-        if (effectiveFadeMode === HnSeparator.FadeStart
-                || effectiveFadeMode === HnSeparator.FadeEnd) {
-            return Qt.rgba(color.r, color.g, color.b,
-                           color.a * (effectiveCenterOpacity + effectiveEdgeOpacity) / 2)
-        }
-        return centerColor
-    }
+    readonly property color transparentColor: Qt.rgba(color.r, color.g, color.b, 0)
 
-    implicitWidth: effectiveOrientation === Qt.Vertical ? Math.max(0, thickness) : 0
-    implicitHeight: effectiveOrientation === Qt.Horizontal ? Math.max(0, thickness) : 0
+    implicitWidth: effectiveOrientation === Qt.Vertical ? geometry.logicalThickness : 0
+    implicitHeight: effectiveOrientation === Qt.Horizontal ? geometry.logicalThickness : 0
+    // Explicit dimensions define the slot; they never stretch the physical stroke.
+    width: implicitWidth
+    height: implicitHeight
     Accessible.ignored: true
 
     HnSeparatorGeometry {
@@ -51,24 +46,23 @@ Item {
         objectName: "separatorGeometry"
         orientation: root.effectiveOrientation
         requestedThickness: root.thickness
-        standardThickness: HnMetrics.separatorWidth
+        crossAxisAlignment: root.crossAxisAlignment
     }
 
     Rectangle {
         id: line
 
         objectName: "separatorLine"
-        x: root.effectiveOrientation === Qt.Vertical ? geometry.paintedOffset : 0
-        y: root.effectiveOrientation === Qt.Horizontal ? geometry.paintedOffset : 0
-        width: root.effectiveOrientation === Qt.Vertical ? 1 : root.width
-        height: root.effectiveOrientation === Qt.Horizontal ? 1 : root.height
-        visible: geometry.paintedThickness > 0 && width > 0 && height > 0
+        x: geometry.paintedRect.x
+        y: geometry.paintedRect.y
+        width: 1
+        height: 1
+        visible: geometry.paintedRect.width > 0 && geometry.paintedRect.height > 0
         antialiasing: false
-        // A fractional Rectangle minor size can paint extra pixels in the software backend.
-        // Scale a unit-size primitive to retain the same bounds on both renderers.
+        // Normalize both axes: fractional Rectangle sizes overpaint with software rendering.
         transform: Scale {
-            xScale: root.effectiveOrientation === Qt.Vertical ? geometry.paintedThickness : 1
-            yScale: root.effectiveOrientation === Qt.Horizontal ? geometry.paintedThickness : 1
+            xScale: geometry.paintedRect.width
+            yScale: geometry.paintedRect.height
         }
         gradient: Gradient {
             orientation: root.effectiveOrientation === Qt.Horizontal
@@ -78,19 +72,19 @@ Item {
                 position: 0
                 color: root.effectiveFadeMode === HnSeparator.FadeBoth
                        || root.effectiveFadeMode === HnSeparator.FadeStart
-                       ? root.edgeColor : root.centerColor
+                       ? root.transparentColor : root.color
             }
             GradientStop {
                 objectName: "separatorMiddleStop"
                 position: 0.5
-                color: root.middleColor
+                color: root.color
             }
             GradientStop {
                 objectName: "separatorEndStop"
                 position: 1
                 color: root.effectiveFadeMode === HnSeparator.FadeBoth
                        || root.effectiveFadeMode === HnSeparator.FadeEnd
-                       ? root.edgeColor : root.centerColor
+                       ? root.transparentColor : root.color
             }
         }
     }

@@ -219,16 +219,24 @@ add_dependencies(holonight_qml_smoke_tests
     holonight_controls_qml
 )
 
+find_package(Qt6 REQUIRED COMPONENTS OpenGL)
 add_executable(holonight_separator_rendering_tests main.cpp test_separator_rendering.cpp)
 target_compile_definitions(holonight_separator_rendering_tests PRIVATE
     HOLONIGHT_QML_IMPORT_PATH="${CMAKE_BINARY_DIR}/qml")
 target_link_libraries(holonight_separator_rendering_tests PRIVATE
-    Qt6::Qml Qt6::Quick Qt6::Widgets Qt6::Test GTest::gtest)
+    Qt6::Qml Qt6::Quick Qt6::OpenGL Qt6::Widgets Qt6::Test GTest::gtest)
 add_dependencies(holonight_separator_rendering_tests holonight_controls_qml)
-foreach(ratio IN ITEMS 1.0 1.25 1.5 1.75 2.0)
+option(HOLONIGHT_ACCELERATED_SEPARATOR_TESTS "Run GPU separator acceptance (requires OpenGL)" OFF)
+foreach(ratio IN ITEMS 1.0 1.25 1.5 1.5625 1.75 2.0)
   add_test(NAME holonight_separator_rendering_dpr_${ratio} COMMAND holonight_separator_rendering_tests)
   set_property(TEST holonight_separator_rendering_dpr_${ratio} PROPERTY ENVIRONMENT
       "${HOLONIGHT_TEST_ENV};QT_QUICK_BACKEND=software;QT_SCALE_FACTOR=${ratio}")
+  if(HOLONIGHT_ACCELERATED_SEPARATOR_TESTS)
+    add_test(NAME holonight_separator_opengl_dpr_${ratio} COMMAND holonight_separator_rendering_tests)
+    set_property(TEST holonight_separator_opengl_dpr_${ratio} PROPERTY ENVIRONMENT
+        "${HOLONIGHT_TEST_ENV};QT_QUICK_BACKEND=rhi;QSG_RHI_BACKEND=opengl;HN_SEPARATOR_BACKEND=opengl;QT_SCALE_FACTOR=${ratio}")
+    set_property(TEST holonight_separator_opengl_dpr_${ratio} PROPERTY LABELS "accelerated")
+  endif()
 endforeach()
 
 add_test(NAME holonight_qml_smoke_tests COMMAND holonight_qml_smoke_tests

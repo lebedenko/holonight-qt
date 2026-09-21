@@ -120,6 +120,7 @@ FocusScope {
     }
 
     HnSeparator {
+        crossAxisAlignment: HnSeparator.Trailing
         objectName: "settingsRowDivider"
         anchors.left: parent.left
         anchors.right: parent.right

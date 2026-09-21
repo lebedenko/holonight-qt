@@ -15,11 +15,6 @@ namespace {
 
 constexpr qreal kGeometryTolerance = 0.000001;
 
-[[nodiscard]] bool differs(qreal lhs, qreal rhs) {
-  // A transition to/from zero must always update painting visibility, even at very large scales.
-  return lhs == 0.0 || rhs == 0.0 ? lhs != rhs : std::abs(lhs - rhs) > kGeometryTolerance;
-}
-
 }  // namespace
 
 HnSeparatorGeometry::HnSeparatorGeometry(QQuickItem* parent) : QQuickItem{parent} {
@@ -38,7 +33,7 @@ void HnSeparatorGeometry::setOrientation(int orientation) {
   updateGeometry();
 }
 
-void HnSeparatorGeometry::setRequestedThickness(qreal thickness) {
+void HnSeparatorGeometry::setRequestedThickness(int thickness) {
   if (requested_thickness_ == thickness) {
     return;
   }
@@ -47,12 +42,12 @@ void HnSeparatorGeometry::setRequestedThickness(qreal thickness) {
   updateGeometry();
 }
 
-void HnSeparatorGeometry::setStandardThickness(qreal thickness) {
-  if (standard_thickness_ == thickness) {
+void HnSeparatorGeometry::setCrossAxisAlignment(int alignment) {
+  if (cross_axis_alignment_ == alignment) {
     return;
   }
-  standard_thickness_ = thickness;
-  emit standardThicknessChanged();
+  cross_axis_alignment_ = alignment;
+  emit crossAxisAlignmentChanged();
   updateGeometry();
 }
 
@@ -87,6 +82,8 @@ void HnSeparatorGeometry::observeWindow(QQuickWindow* window) {
   }
 
   observer_connections_.append(
+      connect(window, &QQuickWindow::devicePixelRatioChanged, this, &HnSeparatorGeometry::updateGeometry));
+  observer_connections_.append(
       connect(window, &QWindow::screenChanged, this, [this](QScreen*) { rebuildObservers(); }));
   if (window->screen() != nullptr) {
     observer_connections_.append(
@@ -95,33 +92,41 @@ void HnSeparatorGeometry::observeWindow(QQuickWindow* window) {
 }
 
 void HnSeparatorGeometry::updateGeometry() {
-  qreal scene_coordinate = 0.0;
-  qreal minor_axis_scale = 1.0;
+  const qreal dpr = window() != nullptr ? window()->effectiveDevicePixelRatio() : 1.0;
+  QPointF origin;
+  QPointF scale;
+  QRectF slot;
   if (parentItem() != nullptr) {
-    const QPointF scene_origin = parentItem()->mapToScene(QPointF{});
-    const QPointF x_axis = parentItem()->mapToScene(QPointF{1, 0}) - scene_origin;
-    const QPointF y_axis = parentItem()->mapToScene(QPointF{0, 1}) - scene_origin;
-    if (!std::isfinite(scene_origin.x()) || !std::isfinite(scene_origin.y()) || !std::isfinite(x_axis.x()) ||
-        !std::isfinite(x_axis.y()) || !std::isfinite(y_axis.x()) || !std::isfinite(y_axis.y())) {
-      minor_axis_scale = 0.0;
-    } else if (std::abs(x_axis.y()) <= kGeometryTolerance && std::abs(y_axis.x()) <= kGeometryTolerance) {
-      minor_axis_scale = orientation_ == Qt::Vertical ? x_axis.x() : y_axis.y();
+    origin = parentItem()->mapToScene(QPointF{});
+    const QPointF x_axis = parentItem()->mapToScene(QPointF{1, 0}) - origin;
+    const QPointF y_axis = parentItem()->mapToScene(QPointF{0, 1}) - origin;
+    // Arbitrary rotation/shear/custom transforms are outside the crispness contract.
+    if (std::abs(x_axis.y()) <= kGeometryTolerance && std::abs(y_axis.x()) <= kGeometryTolerance) {
+      scale = QPointF(x_axis.x(), y_axis.y());
     }
-    // Preserve the previous rendering for rotation/shear; pixel alignment is not guaranteed there.
-    scene_coordinate = orientation_ == Qt::Vertical ? scene_origin.x() : scene_origin.y();
+    slot = parentItem()->boundingRect();
   }
-  const Holonight::SeparatorAlignment alignment = Holonight::separatorAlignment(
-      requested_thickness_, standard_thickness_, window() != nullptr ? window()->devicePixelRatio() : 1.0,
-      scene_coordinate, minor_axis_scale);
-
-  if (!differs(effective_dpr_, alignment.device_pixel_ratio) &&
-      !differs(painted_thickness_, alignment.painted_thickness) &&
-      !differs(painted_offset_, alignment.painted_offset)) {
+  const qreal minor_scale = orientation_ == Qt::Vertical ? scale.x() : scale.y();
+  qreal logical_thickness = requested_thickness_ > 0 ? requested_thickness_ / (dpr * std::abs(minor_scale)) : 0;
+  if (!std::isfinite(logical_thickness) || dpr <= 0) {
+    logical_thickness = 0;
+  }
+  const auto alignment = cross_axis_alignment_ >= 0 && cross_axis_alignment_ <= 2
+                             ? static_cast<Holonight::SeparatorCrossAlignment>(cross_axis_alignment_)
+                             : Holonight::SeparatorCrossAlignment::Leading;
+  const QRectF rectangle = Holonight::separatorRectangle(slot, origin, scale, dpr, requested_thickness_,
+                                                         orientation_ == Qt::Vertical, alignment);
+  if (effective_dpr_ == dpr && logical_thickness_ == logical_thickness && painted_rect_ == rectangle) {
     return;
   }
-
-  effective_dpr_ = alignment.device_pixel_ratio;
-  painted_thickness_ = alignment.painted_thickness;
-  painted_offset_ = alignment.painted_offset;
+  const bool thickness_changed = logical_thickness_ != logical_thickness;
+  effective_dpr_ = dpr;
+  logical_thickness_ = logical_thickness;
+  painted_rect_ = rectangle;
   emit geometryChanged();
+  // Slot changes only affect paint. Never notify the implicit-size binding while it
+  // is responding to a thickness change and updating the parent's actual size.
+  if (thickness_changed) {
+    emit logicalThicknessChanged();
+  }
 }

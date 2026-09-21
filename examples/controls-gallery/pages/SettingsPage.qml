@@ -275,14 +275,14 @@ Controls.ScrollView {
 
             HnSeparator {
                 orientation: Qt.Vertical
-                color: HoloniightPalette.borderPassive
-                thickness: HnMetrics.separatorWidth * 2
+                color: HoloniightPalette.borderSubtle
+                thickness: 2
                 Layout.fillHeight: true
             }
 
             HnLabel {
                 role: HnTypographyRole.Caption
-                rawText: qsTr("Vertical, passive, and increased-thickness variants")
+                rawText: qsTr("Vertical, subtle, and two-physical-pixel variants")
                 color: HoloniightPalette.textMuted
                 Layout.fillWidth: true
             }

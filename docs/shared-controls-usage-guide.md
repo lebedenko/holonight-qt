@@ -160,21 +160,21 @@ properties on caller-owned children. A single tab-focusable control receives
 forwarded row focus; a non-focusable compound layout adds no Tab stop, so its
 actionable children retain their natural keyboard order.
 
-`HnSeparator` defaults to a horizontal `borderSubtle` line using the semantic
-`separatorWidth`. Set `orientation: Qt.Vertical` for a vertical divider and use
-`fadeMode: HnSeparator.FadeBoth`, `FadeStart`, or `FadeEnd` when a divider
-should blend into adjacent content. `centerOpacity` and `edgeOpacity` are
-clamped to `0`–`1`. Give a horizontal separator an explicit width, or a
-vertical separator an explicit height; the component aligns its painted
-thickness to device pixels, including at fractional display scale factors and under positive or negative
-built-in `Item.scale` on the separator or nested ancestors. Scaling changes the length and layout footprint,
-but the requested painted physical thickness stays constant. Negative scale mirrors the fade direction;
-start/end refer to local coordinates. Zero scale suppresses painting until scale becomes valid again.
-Ancestor resizing around a transform origin and reparenting update alignment automatically.
+`HnSeparator` defaults to a horizontal `borderPassive` line, one physical pixel thick.
+Set integer `thickness: 2` for two physical pixels; do not divide by DPR. Use inherited `opacity`
+for strength. `FadeStart` reaches full strength at the center, `FadeEnd` stays full through the
+center, and `FadeBoth` fades to transparent at both ends. Color alpha and ancestor opacity compose normally.
 
-The pixel-alignment guarantee applies to axis-aligned transforms. Rotation/shear, explicit
-`Translate`/`Scale` object invalidation, clipping containment and native DPR transitions remain follow-ups.
-Snapping can move the painted edge outside the layout footprint; avoid relying on a tight clip to contain it.
+Anchors, layouts or explicit dimensions determine length. Default minor occupancy is the logical
+physical thickness; an explicit width/height defines a slot without stretching the stroke.
+Use `crossAxisAlignment: HnSeparator.Trailing` for bottom/right boundaries, `Leading` (default)
+for top/left, and `Center` for a centered stroke in a larger slot. Connect rules using shared logical
+boundaries, with one owner at intersections; stop a column rule at the bottom rule's top.
+
+Both endpoints and the stroke boundary snap to the same physical grid. Built-in positive/negative
+`Item.scale`, ancestor movement/resizing, reparenting and window DPR notifications update geometry.
+Rotation, shear and custom transform-object updates are outside the crispness guarantee. Avoid tight
+fractional clips around boundary painting: an ancestor clip can truncate a snapped edge.
 
 ## Model-backed examples
 

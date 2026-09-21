@@ -36,6 +36,7 @@ Item {
     }
 
     HnSeparator {
+        crossAxisAlignment: HnSeparator.Trailing
         objectName: "headerDivider"
         visible: root.dividerVisible
         color: root.dividerColor
