@@ -1,0 +1,14 @@
+{
+  "providerRevision": "9723cef7371a4ca5f2967d869b26ee7ff1e3c789",
+  "qt": "6.11.2",
+  "sha256": {
+    "main.cpp": "aeff72181a555c3dd5aeee41686fdc1bd97ffefb680799765f6d32351dd8b9e3",
+    "run.py": "1e82a491d9cca14afdf8a323eea25bb6c5c2eab46c99033cf200fdcbe12c6434",
+    "measure.py": "df6e143009568d337937603cea24266f90131d129e38075f3a25e08fa250bc97",
+    "view-capture.cpp": "aeff72181a555c3dd5aeee41686fdc1bd97ffefb680799765f6d32351dd8b9e3",
+    "rendercontrol.cpp": "c8d8caa4cfbd47faa38e9f7afd41fdee74fd73b9deebeac5e047b1de13dd7853",
+    "reduce.py": "dda35a793ce1ea6abc9f9565966086735e7000e48920052bc1b61f505112a49d",
+    "observer.cpp": "d1f17564a5559e62839c1826d1f53d1133c40f344d43f78b9aedc14b3bc514db",
+    "analyze.py": "00534418d59851f4cbcb6defd76972223079399ef6912dafb668e62d708064b8"
+  }
+}

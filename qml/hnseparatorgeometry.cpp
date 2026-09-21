@@ -15,7 +15,10 @@ namespace {
 
 constexpr qreal kGeometryTolerance = 0.000001;
 
-[[nodiscard]] bool differs(qreal lhs, qreal rhs) { return std::abs(lhs - rhs) > kGeometryTolerance; }
+[[nodiscard]] bool differs(qreal lhs, qreal rhs) {
+  // A transition to/from zero must always update painting visibility, even at very large scales.
+  return lhs == 0.0 || rhs == 0.0 ? lhs != rhs : std::abs(lhs - rhs) > kGeometryTolerance;
+}
 
 }  // namespace
 
@@ -70,6 +73,8 @@ void HnSeparatorGeometry::observeItem(QQuickItem* item) {
   const auto update = [this] { updateGeometry(); };
   observer_connections_.append(connect(item, &QQuickItem::xChanged, this, update));
   observer_connections_.append(connect(item, &QQuickItem::yChanged, this, update));
+  observer_connections_.append(connect(item, &QQuickItem::widthChanged, this, update));
+  observer_connections_.append(connect(item, &QQuickItem::heightChanged, this, update));
   observer_connections_.append(connect(item, &QQuickItem::rotationChanged, this, update));
   observer_connections_.append(connect(item, &QQuickItem::scaleChanged, this, update));
   observer_connections_.append(connect(item, &QQuickItem::transformOriginChanged, this, update));
@@ -91,13 +96,23 @@ void HnSeparatorGeometry::observeWindow(QQuickWindow* window) {
 
 void HnSeparatorGeometry::updateGeometry() {
   qreal scene_coordinate = 0.0;
+  qreal minor_axis_scale = 1.0;
   if (parentItem() != nullptr) {
     const QPointF scene_origin = parentItem()->mapToScene(QPointF{});
+    const QPointF x_axis = parentItem()->mapToScene(QPointF{1, 0}) - scene_origin;
+    const QPointF y_axis = parentItem()->mapToScene(QPointF{0, 1}) - scene_origin;
+    if (!std::isfinite(scene_origin.x()) || !std::isfinite(scene_origin.y()) || !std::isfinite(x_axis.x()) ||
+        !std::isfinite(x_axis.y()) || !std::isfinite(y_axis.x()) || !std::isfinite(y_axis.y())) {
+      minor_axis_scale = 0.0;
+    } else if (std::abs(x_axis.y()) <= kGeometryTolerance && std::abs(y_axis.x()) <= kGeometryTolerance) {
+      minor_axis_scale = orientation_ == Qt::Vertical ? x_axis.x() : y_axis.y();
+    }
+    // Preserve the previous rendering for rotation/shear; pixel alignment is not guaranteed there.
     scene_coordinate = orientation_ == Qt::Vertical ? scene_origin.x() : scene_origin.y();
   }
-  const Holonight::SeparatorAlignment alignment =
-      Holonight::separatorAlignment(requested_thickness_, standard_thickness_,
-                                    window() != nullptr ? window()->devicePixelRatio() : 1.0, scene_coordinate);
+  const Holonight::SeparatorAlignment alignment = Holonight::separatorAlignment(
+      requested_thickness_, standard_thickness_, window() != nullptr ? window()->devicePixelRatio() : 1.0,
+      scene_coordinate, minor_axis_scale);
 
   if (!differs(effective_dpr_, alignment.device_pixel_ratio) &&
       !differs(painted_thickness_, alignment.painted_thickness) &&

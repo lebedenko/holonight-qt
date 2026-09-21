@@ -60,10 +60,16 @@ Item {
         objectName: "separatorLine"
         x: root.effectiveOrientation === Qt.Vertical ? geometry.paintedOffset : 0
         y: root.effectiveOrientation === Qt.Horizontal ? geometry.paintedOffset : 0
-        width: root.effectiveOrientation === Qt.Vertical ? geometry.paintedThickness : root.width
-        height: root.effectiveOrientation === Qt.Horizontal ? geometry.paintedThickness : root.height
-        visible: width > 0 && height > 0
+        width: root.effectiveOrientation === Qt.Vertical ? 1 : root.width
+        height: root.effectiveOrientation === Qt.Horizontal ? 1 : root.height
+        visible: geometry.paintedThickness > 0 && width > 0 && height > 0
         antialiasing: false
+        // A fractional Rectangle minor size can paint extra pixels in the software backend.
+        // Scale a unit-size primitive to retain the same bounds on both renderers.
+        transform: Scale {
+            xScale: root.effectiveOrientation === Qt.Vertical ? geometry.paintedThickness : 1
+            yScale: root.effectiveOrientation === Qt.Horizontal ? geometry.paintedThickness : 1
+        }
         gradient: Gradient {
             orientation: root.effectiveOrientation === Qt.Horizontal
                          ? Gradient.Horizontal : Gradient.Vertical

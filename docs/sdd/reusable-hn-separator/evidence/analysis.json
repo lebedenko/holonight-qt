@@ -1,0 +1,10 @@
+{
+  "samples": 131190,
+  "fadeMaxError8bit": 0.8810352941176447,
+  "componentVsAlignedGradientMaxDifference8bit": 1,
+  "normalizedCandidate": "all simple matrix coverage == 1",
+  "captureCounts": {
+    "software": 215,
+    "gpu": 215
+  }
+}

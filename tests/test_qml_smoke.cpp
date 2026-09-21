@@ -27,6 +27,7 @@
 #include <filesystem>
 #include <gtest/gtest.h>
 #include <holonight/config/config.h>
+#include <limits>
 #include <memory>
 
 namespace {
@@ -4242,7 +4243,7 @@ TEST_F(QmlSmoke, HnSeparator_TracksScenePositionAndPaintedGeometry) {
   const qreal dpr = geometry->property("effectiveDevicePixelRatio").toReal();
   const qreal scene_y = separator->mapToScene(QPointF{}).y();
   EXPECT_NEAR(std::round((scene_y + line->y()) * dpr), (scene_y + line->y()) * dpr, 0.000001);
-  EXPECT_NEAR(line->height() * dpr, 1.0, 0.000001);
+  EXPECT_NEAR(line->mapRectToScene(line->boundingRect()).height() * dpr, 1.0, 0.000001);
 
   ASSERT_TRUE(root->setProperty("y", 0.6));
   const qreal moved_scene_y = separator->mapToScene(QPointF{}).y();
@@ -4252,10 +4253,44 @@ TEST_F(QmlSmoke, HnSeparator_TracksScenePositionAndPaintedGeometry) {
   EXPECT_FALSE(line->isVisible());
   ASSERT_TRUE(separator->setProperty("height", 80.0));
   EXPECT_TRUE(line->isVisible());
-  EXPECT_NEAR(line->width() * dpr, 1.0, 0.000001);
+  EXPECT_NEAR(line->mapRectToScene(line->boundingRect()).width() * dpr, 1.0, 0.000001);
   EXPECT_DOUBLE_EQ(line->height(), 80.0);
   ASSERT_TRUE(separator->setProperty("thickness", 0.0));
   EXPECT_FALSE(line->isVisible());
+}
+
+TEST_F(QmlSmoke, HnSeparator_CenterOriginResizeUpdatesAlignment) {
+  QQmlComponent component(&engine_);
+  component.setData(R"(
+    import QtQuick
+    import Holonight.Controls
+    Item {
+      width: 80; height: 80; scale: 0.5
+      Item {
+        scale: 2; width: 40; height: 40
+        HnSeparator { objectName: "separator"; width: 30; height: 30 }
+      }
+    }
+  )",
+                    QUrl());
+  ASSERT_TRUE(component.isReady()) << component.errorString().toStdString();
+  std::unique_ptr<QObject> object(component.create());
+  auto* root = qobject_cast<QQuickItem*>(object.get());
+  ASSERT_NE(root, nullptr);
+  auto* separator = root->findChild<QQuickItem*>("separator");
+  ASSERT_NE(separator, nullptr);
+  auto* line = separator->findChild<QQuickItem*>("separatorLine");
+  ASSERT_NE(line, nullptr);
+  for (bool vertical : {false, true}) {
+    separator->setProperty("orientation", vertical ? Qt::Vertical : Qt::Horizontal);
+    for (qreal size : {81.3, 83.7, 80.0}) {
+      root->setWidth(size);
+      root->setHeight(size);
+      const QPointF origin = separator->mapToScene(QPointF{});
+      const QRectF bounds = line->mapRectToScene(line->boundingRect());
+      EXPECT_NEAR(vertical ? bounds.left() : bounds.top(), std::round(vertical ? origin.x() : origin.y()), 1e-6);
+    }
+  }
 }
 
 TEST_F(QmlSmoke, HnSeparator_AlignmentIsStableAcrossFractionalDprAndOffsets) {
@@ -4267,6 +4302,68 @@ TEST_F(QmlSmoke, HnSeparator_AlignmentIsStableAcrossFractionalDprAndOffsets) {
   EXPECT_DOUBLE_EQ(Holonight::separatorAlignment(0.0, 1.0, 1.5, 0.2).painted_thickness, 0.0);
   EXPECT_DOUBLE_EQ(Holonight::separatorAlignment(-1.0, 1.0, 1.5, 0.2).painted_thickness, 0.0);
   EXPECT_NEAR(Holonight::separatorAlignment(2.0, 1.0, 1.75, 0.2).painted_thickness * 1.75, 2.0, 0.000001);
+}
+
+TEST_F(QmlSmoke, HnSeparator_ZeroScaleSuppressesTinyPaintedGeometryAndRecovers) {
+  QQmlComponent component(&engine_);
+  component.setData(R"(
+    import QtQuick
+    import Holonight.Controls
+    Item {
+      scale: 10000000; transformOrigin: Item.TopLeft
+      HnSeparator { width: 40 }
+    }
+  )",
+                    QUrl());
+  ASSERT_TRUE(component.isReady()) << component.errorString().toStdString();
+  std::unique_ptr<QObject> object(component.create());
+  auto* root = qobject_cast<QQuickItem*>(object.get());
+  ASSERT_NE(root, nullptr);
+  auto* geometry = root->findChild<QObject*>("separatorGeometry");
+  auto* line = root->findChild<QQuickItem*>("separatorLine");
+  ASSERT_TRUE(geometry && line);
+  EXPECT_TRUE(line->isVisible());
+  EXPECT_GT(geometry->property("paintedThickness").toReal(), 0);
+  EXPECT_LT(geometry->property("paintedThickness").toReal(), 1e-6);
+  root->setScale(0);
+  EXPECT_FALSE(line->isVisible());
+  EXPECT_DOUBLE_EQ(geometry->property("paintedThickness").toReal(), 0);
+  EXPECT_DOUBLE_EQ(geometry->property("paintedOffset").toReal(), 0);
+  root->setScale(10000000);
+  EXPECT_TRUE(line->isVisible());
+  EXPECT_GT(geometry->property("paintedThickness").toReal(), 0);
+}
+
+TEST_F(QmlSmoke, HnSeparator_SignedScaleAlignmentAndInvalidGeometry) {
+  for (qreal dpr : {1.0, 1.25, 1.5, 1.75, 2.0}) {
+    for (qreal scale : {0.5, -0.5, 1.0, -1.0, 1.25, -1.25, 2.0, -2.0}) {
+      for (qreal physical_origin : {-12.501, -12.5, -12.499, -0.5, 0.0, 0.499, 0.5, 0.501, 12.5}) {
+        for (qreal stroke : {1.0, 2.0, 3.0}) {
+          SCOPED_TRACE(::testing::Message()
+                       << "dpr=" << dpr << " scale=" << scale << " origin=" << physical_origin << " stroke=" << stroke);
+          const auto alignment = Holonight::separatorAlignment(stroke, 1, dpr, physical_origin / dpr, scale);
+          EXPECT_GT(alignment.painted_thickness, 0);
+          EXPECT_NEAR(alignment.painted_thickness * dpr * std::abs(scale), stroke, 1e-9);
+          EXPECT_NEAR(physical_origin + alignment.painted_offset * scale * dpr, std::round(physical_origin), 1e-9);
+        }
+      }
+    }
+  }
+  const qreal infinity = std::numeric_limits<qreal>::infinity();
+  const qreal nan = std::numeric_limits<qreal>::quiet_NaN();
+  for (qreal invalid : {0.0, infinity, -infinity, nan}) {
+    const auto alignment = Holonight::separatorAlignment(1, 1, 1.25, 0.3, invalid);
+    EXPECT_DOUBLE_EQ(alignment.painted_thickness, 0);
+    EXPECT_DOUBLE_EQ(alignment.painted_offset, 0);
+  }
+  for (qreal invalid : {infinity, -infinity, nan}) {
+    const auto alignment = Holonight::separatorAlignment(1, 1, 1.25, invalid, -0.5);
+    EXPECT_DOUBLE_EQ(alignment.painted_thickness, 0);
+    EXPECT_DOUBLE_EQ(alignment.painted_offset, 0);
+  }
+  const auto overflow = Holonight::separatorAlignment(1, 1, 2, std::numeric_limits<qreal>::max(), 1);
+  EXPECT_DOUBLE_EQ(overflow.painted_thickness, 0);
+  EXPECT_DOUBLE_EQ(overflow.painted_offset, 0);
 }
 
 TEST_F(QmlSmoke, Controls_ColorPickerDefaultColorsMatchPalette) {

@@ -166,7 +166,15 @@ actionable children retain their natural keyboard order.
 should blend into adjacent content. `centerOpacity` and `edgeOpacity` are
 clamped to `0`–`1`. Give a horizontal separator an explicit width, or a
 vertical separator an explicit height; the component aligns its painted
-thickness to device pixels, including at fractional display scale factors.
+thickness to device pixels, including at fractional display scale factors and under positive or negative
+built-in `Item.scale` on the separator or nested ancestors. Scaling changes the length and layout footprint,
+but the requested painted physical thickness stays constant. Negative scale mirrors the fade direction;
+start/end refer to local coordinates. Zero scale suppresses painting until scale becomes valid again.
+Ancestor resizing around a transform origin and reparenting update alignment automatically.
+
+The pixel-alignment guarantee applies to axis-aligned transforms. Rotation/shear, explicit
+`Translate`/`Scale` object invalidation, clipping containment and native DPR transitions remain follow-ups.
+Snapping can move the painted edge outside the layout footprint; avoid relying on a tight clip to contain it.
 
 ## Model-backed examples
 

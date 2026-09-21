@@ -68,7 +68,7 @@ physical pixel count is:
 
 ```text
 requestedPixels = thickness <= 0 ? 0 : max(1, round(thickness / separatorWidth))
-paintedLogicalThickness = requestedPixels / effectiveDpr
+paintedLogicalThickness = requestedPixels / (effectiveDpr * abs(minorAxisScale))
 ```
 
 This preserves one logical unit of layout occupancy by default while allowing the painted line to contract to
@@ -80,16 +80,35 @@ coordinate `s`, the internal painted item uses:
 
 ```text
 snappedSceneCoordinate = round(s * effectiveDpr) / effectiveDpr
-localOffset = snappedSceneCoordinate - s
+localOffset = (snappedSceneCoordinate - s) / minorAxisScale
 ```
 
-The painted rectangle uses `localOffset` on the minor axis, `paintedLogicalThickness` as its minor dimension,
-and the root's current major dimension. It is visible only when both dimensions are positive. Rectangle
-antialiasing is disabled.
+The helper maps the root origin and both unit-axis points into scene coordinates. For axis-aligned
+transforms, `minorAxisScale` is the signed mapped minor-axis unit length, including nested built-in
+`Item.scale` products. Positive and negative scales preserve the requested physical thickness. The
+local-origin edge is snapped; a negative scale reverses the scene stroke direction and gradient, while
+local painted thickness stays positive. Zero scale or nonfinite geometry suppresses painting with finite
+zero thickness and offset; valid geometry restores painting. Public layout occupancy is unchanged.
+For rotation/shear that breaks axis alignment, the previous rendering is retained without a pixel-alignment
+guarantee.
+
+The painted rectangle uses `localOffset` on the minor axis, a unit local minor dimension, and a minor-axis
+`Scale` of `paintedLogicalThickness`. Its major dimension follows the root. This keeps the same scene bounds
+while avoiding extra software-rendered coverage from fractional Rectangle dimensions. It is visible only
+when painted thickness and major length are positive. Rectangle antialiasing is disabled.
+
+Process-isolated software rendering tests sample actual pixels at all five DPRs, in both orientations,
+with all fade modes, runtime property changes, translated ancestors, nonintegral lengths, thicknesses
+1–3 and nonpositive thickness. Signed-scale tests also cover mirrored alpha profiles, nested scale products,
+zero-scale recovery, center-origin resizing, transform-origin changes and reparenting. Raw Rectangle controls
+demonstrate excess coverage at DPR > 1.
 
 The helper reads DPR from the separator's actual `QQuickWindow`. Before window association it reports DPR 1
-and a safe zero offset. It reconnects when the item changes parent or window, when the window's screen or DPR
-changes, and when any ancestor changes position, transform, or parent. Recalculation uses public
+and snaps the scene origin using that fallback DPR. It observes parent/window changes, screen changes and
+screen logical-DPI changes, plus ancestor position, size, built-in scale/rotation/origin and parent signals.
+Connections are rebuilt after parent/window/screen changes.
+Explicit transform-object invalidation is not observed; see the
+[rendering audit](RENDERING-AUDIT.md). Recalculation uses public
 `QQuickItem::mapToScene()` and `QWindow`/`QQuickWindow` APIs.
 
 ### Why a small C++ helper is required
@@ -103,7 +122,7 @@ missing reactive value without private Qt APIs, a custom renderer, or per-frame 
 
 One internal `Rectangle` owns a constant three-stop `Gradient`. Horizontal gradients run left to right and
 vertical gradients top to bottom. Layout mirroring is not consulted, so start and end retain geometric
-meaning.
+meaning in local coordinates. Negative built-in scale mirrors those profiles in the scene.
 
 The profiles resolve to:
 
@@ -111,8 +130,8 @@ The profiles resolve to:
 |---|---:|---:|---:|
 | `Solid` | center | center | center |
 | `FadeBoth` | edge | center | edge |
-| `FadeStart` | edge | center | center |
-| `FadeEnd` | center | center | edge |
+| `FadeStart` | edge | (edge + center) / 2 | center |
+| `FadeEnd` | center | (edge + center) / 2 | edge |
 
 `centerOpacity` and `edgeOpacity` are clamped internally to `[0, 1]`. Each stop retains the supplied color's
 RGB channels and uses `color.a * effectiveStopOpacity` as alpha. The separator root's inherited `opacity`
@@ -180,3 +199,7 @@ Verification order is:
 - Compatibility aliases for `ContentSeparator`.
 - Specialized behavior for rotated, sheared, or non-axis-aligned separators; the public contract covers
   horizontal and vertical separators in ordinary translated/scaled UI trees.
+
+Native DPR transitions, clipping containment and explicit `Translate`/`Scale` object invalidation remain
+follow-ups. Durable OpenGL regression coverage is the next validation step; this correction is covered by
+software rendering tests.
