@@ -27,12 +27,6 @@ void replaceClassColor(QString* svg, const QRegularExpression& block_expression,
   svg->replace(block_expression, QStringLiteral("\\1%1\\3").arg(cssColor(color)));
 }
 
-void replaceLiteralPaintColors(QString* svg, const QColor& color) {
-  static const QRegularExpression paint_expression{
-      QStringLiteral("((?:\\b(?:fill|stroke|stop-color|color)\\s*(?:=\\s*[\"']|:\\s*)))(#[0-9A-Fa-f]{3,8})")};
-  svg->replace(paint_expression, QStringLiteral("\\1%1").arg(cssColor(color)));
-}
-
 [[nodiscard]] QSize targetSize(QSize target_size) {
   if (!target_size.isValid() || target_size.isEmpty()) {
     target_size = QSize{24, 24};
@@ -61,13 +55,19 @@ QByteArray IconRenderer::applySemanticColors(const QByteArray& svg_bytes, const 
     replaceClassColor(&svg, positive_expression, colors.positive);
     replaceClassColor(&svg, neutral_expression, colors.neutral);
     replaceClassColor(&svg, negative_expression, colors.negative);
-  } else {
-    replaceLiteralPaintColors(&svg, colors.text);
   }
   return svg.toUtf8();
 }
 
-QImage IconRenderer::renderSvg(const QByteArray& svg_bytes, QSize target_size, const IconSemanticColors& colors) {
+bool IconRenderer::hasSemanticRoles(const QByteArray& svg_bytes) {
+  const QString svg = QString::fromUtf8(svg_bytes);
+  static const QRegularExpression assigned_role{QStringLiteral(
+      "\\bclass\\s*=\\s*[\"'][^\"']*\\bColorScheme-(?:Text|Highlight|PositiveText|NeutralText|NegativeText)\\b")};
+  return svg.contains(QStringLiteral("currentColor")) && assigned_role.match(svg).hasMatch();
+}
+
+QImage IconRenderer::renderSvg(const QByteArray& svg_bytes, QSize target_size, const IconSemanticColors& colors,
+                               bool symbolic) {
   const QByteArray themed_svg = applySemanticColors(svg_bytes, colors);
   QSvgRenderer renderer = QSvgRenderer{themed_svg};
   if (!renderer.isValid()) {
@@ -80,6 +80,12 @@ QImage IconRenderer::renderSvg(const QByteArray& svg_bytes, QSize target_size, c
 
   QPainter painter = QPainter{&image};
   renderer.render(&painter, QRectF{QPointF{0.0, 0.0}, QSizeF{pixel_size}});
+  painter.end();
+  if (symbolic && !hasSemanticRoles(svg_bytes)) {
+    QPainter mask_painter{&image};
+    mask_painter.setCompositionMode(QPainter::CompositionMode_SourceIn);
+    mask_painter.fillRect(image.rect(), colors.text);
+  }
   return image;
 }
 

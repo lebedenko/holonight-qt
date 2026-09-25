@@ -29,6 +29,7 @@ C.ComboBox {
 
     property int sizeRole: HnControlSize.Normal
     property string iconRole: "icon"
+    property int iconRendering: HnIcon.Semantic
 
     readonly property int resolvedSizeRole: HnMetrics.normalizedSizeRole(root.sizeRole)
     readonly property url currentIconSource: root.roleValue(root.currentIndex, root.iconRole)
@@ -93,6 +94,7 @@ C.ComboBox {
             anchors.left: parent.left
             anchors.verticalCenter: parent.verticalCenter
             source: root.currentIconSource
+            rendering: root.iconRendering
             size: HnMetrics.iconSize(root.resolvedSizeRole)
             iconState: root.enabled ? HnIcon.Normal : HnIcon.Disabled
             visible: source.toString().length > 0 && !selectedIcon.hasError
@@ -277,6 +279,7 @@ C.ComboBox {
                 anchors.leftMargin: HnMetrics.horizontalPadding(root.resolvedSizeRole)
                 anchors.verticalCenter: parent.verticalCenter
                 source: delegateRoot.iconSource
+                rendering: root.iconRendering
                 size: HnMetrics.iconSize(root.resolvedSizeRole)
                 iconState: delegateRoot.enabled ? HnIcon.Normal : HnIcon.Disabled
                 visible: source.toString().length > 0 && !delegateIcon.hasError

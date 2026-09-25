@@ -3,6 +3,7 @@
 
 #include "holonighttheme.h"
 
+#include "hniconengine.h"
 #include "holonight/palette.h"
 #include "themeresolver.h"
 
@@ -19,7 +20,6 @@ HoloniightTheme::HoloniightTheme()
       font_fixed_{config_.monospace_font, config_.monospace_font_size},
       font_small_{config_.ui_font, config_.captionSize()},
       font_mini_{config_.ui_font, (std::max)(6, config_.bodySize() - 2)} {
-  QIcon::setThemeName(config_.icon_theme);
   QIcon::setFallbackThemeName(config_.fallback_icon_theme);
 }
 
@@ -71,4 +71,8 @@ const QFont* HoloniightTheme::font(Font type) const {
     default:
       return QPlatformTheme::font(type);
   }
+}
+
+QIconEngine* HoloniightTheme::createIconEngine(const QString& icon_name) const {
+  return new Holonight::HnIconEngine{icon_name};
 }

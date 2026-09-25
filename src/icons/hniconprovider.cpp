@@ -27,12 +27,6 @@ constexpr int kMaximumIconExtent = 1024;
   return QString::number(qHash(colors), 16);
 }
 
-[[nodiscard]] bool hasSemanticColorClasses(const QByteArray& svg_bytes) {
-  return svg_bytes.contains("ColorScheme-Text") || svg_bytes.contains("ColorScheme-Highlight") ||
-         svg_bytes.contains("ColorScheme-PositiveText") || svg_bytes.contains("ColorScheme-NeutralText") ||
-         svg_bytes.contains("ColorScheme-NegativeText");
-}
-
 }  // namespace
 
 HnIconProvider::HnIconProvider(QObject* parent) : QObject{parent} {}
@@ -49,25 +43,27 @@ void HnIconProvider::ensureProviderRegistered() {
 
 QString HnIconProvider::sourceUrl(const QUrl& source, int size, const QColor& color, const QColor& highlight,
                                   const QColor& positive, const QColor& neutral, const QColor& negative,
-                                  int palette_revision) {
+                                  int palette_revision, bool semantic) {
   const QString source_string = source.toString();
-  if (source_string.isEmpty()) {
+  if (source_string.isEmpty() || source_string.startsWith(QStringLiteral("image://"))) {
     return {};
   }
 
   ensureProviderRegistered();
   if (qEnvironmentVariableIsSet("HOLONIGHT_RENDER_DIAGNOSTICS")) {
     qInfo() << "HN_ICON" << source_string << "theme" << QIcon::themeName() << "fallback" << QIcon::fallbackThemeName()
-            << "paths" << QIcon::themeSearchPaths() << "qtFound" << QIcon::hasThemeIcon(source_string)
-            << "providerBytes" << Holonight::IconThemeResolver::resolveSvgBytes(source_string).size();
+            << "paths" << QIcon::themeSearchPaths() << "qtFound" << QIcon::hasThemeIcon(source_string) << "providerPath"
+            << Holonight::IconThemeResolver::resolveIconPath(source_string, QSize{size, size});
   }
 
   QUrlQuery query;
-  query.addQueryItem(
-      QStringLiteral("sourceRevision"),
-      QString::fromLatin1(QCryptographicHash::hash(Holonight::IconThemeResolver::resolveSvgBytes(source_string),
-                                                   QCryptographicHash::Sha256)
-                              .toHex()));
+  query.addQueryItem(QStringLiteral("sourceRevision"),
+                     QString::fromLatin1(QCryptographicHash::hash(Holonight::IconThemeResolver::readIconBytes(
+                                                                      Holonight::IconThemeResolver::resolveIconPath(
+                                                                          source_string, QSize{size, size})),
+                                                                  QCryptographicHash::Sha256)
+                                             .toHex()));
+  query.addQueryItem(QStringLiteral("semantic"), semantic ? QStringLiteral("1") : QStringLiteral("0"));
   query.addQueryItem(QStringLiteral("size"), QString::number(std::clamp(size, 1, kMaximumIconExtent)));
   query.addQueryItem(QStringLiteral("color"), colorString(color));
   query.addQueryItem(QStringLiteral("highlight"), colorString(highlight));
@@ -78,12 +74,4 @@ QString HnIconProvider::sourceUrl(const QUrl& source, int size, const QColor& co
   query.addQueryItem(QStringLiteral("revision"), QString::number((std::max)(palette_revision, 0)));
   return QStringLiteral("image://hnicons/%1?%2")
       .arg(QString::fromLatin1(QUrl::toPercentEncoding(source_string)), query.toString(QUrl::FullyEncoded));
-}
-
-bool HnIconProvider::supportsSemanticColors(const QUrl& source) const {
-  const QString source_string = source.toString();
-  if (source_string.isEmpty()) {
-    return false;
-  }
-  return hasSemanticColorClasses(Holonight::IconThemeResolver::resolveSvgBytes(source_string));
 }

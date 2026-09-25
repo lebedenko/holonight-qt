@@ -19,6 +19,7 @@ target_link_libraries(qholonight PRIVATE
     holonight_theme
     holonight_theme_catalog
     holonight_palette
+    holonight_icons
     Qt6::Gui
     Qt6::GuiPrivate
 )

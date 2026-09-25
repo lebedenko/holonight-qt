@@ -17,6 +17,7 @@ class HoloniightTheme : public QPlatformTheme {
   [[nodiscard]] QVariant themeHint(ThemeHint hint) const override;
   [[nodiscard]] Qt::ColorScheme colorScheme() const override;
   [[nodiscard]] const QFont* font(Font type = SystemFont) const override;
+  [[nodiscard]] QIconEngine* createIconEngine(const QString& icon_name) const override;
 
  private:
   Holonight::AppearanceReader appearance_reader_;

@@ -13,18 +13,29 @@ Item {
         Active = 3
     }
 
-    required property url source
+    enum Rendering {
+        Original = 0,
+        Semantic = 1
+    }
+
+    property string name: ""
+    property url source: ""
 
     property int size: 24
     property int iconState: HnIcon.Normal
-    property bool tinted: true
+    property int rendering: HnIcon.Semantic
 
     property color normalColor: HoloniightPalette.textSecondary
     property color mutedColor: HoloniightPalette.textMuted
     property color disabledColor: HoloniightPalette.textDisabled
     property color activeColor: HoloniightPalette.primary
 
-    readonly property bool hasError: iconImage.status === Image.Error
+    readonly property bool _invalidInput: (root.name.length > 0 && String(root.source).length > 0)
+                                          || root.name.indexOf("/") >= 0 || root.name.indexOf(":") >= 0
+                                          || (root.rendering !== HnIcon.Original && root.rendering !== HnIcon.Semantic)
+                                          || (root.rendering === HnIcon.Semantic
+                                              && String(root.source).startsWith("image://"))
+    readonly property bool hasError: root._invalidInput || iconImage.status === Image.Error
     readonly property color resolvedColor: {
         switch (root.iconState) {
         case HnIcon.Muted: return root.mutedColor
@@ -34,17 +45,20 @@ Item {
         }
     }
 
-    readonly property string _sourceString: String(root.source)
-    readonly property bool _usesShellIconProvider: root._sourceString.indexOf("image://icon/") === 0
-    readonly property url _renderSource: root.tinted && !root._usesShellIconProvider
-                                      ? HnIconProvider.sourceUrl(root.source, root.size,
-                                                                 root.resolvedColor,
-                                                                 HoloniightPalette.primary,
-                                                                 HoloniightPalette.success,
-                                                                 HoloniightPalette.warning,
-                                                                 HoloniightPalette.error,
-                                                                 HoloniightPalette.revision)
-                                      : root.source
+    readonly property url _renderSource: {
+        if (root._invalidInput)
+            return ""
+        const input = root.name.length > 0 ? root.name : root.source
+        if (String(input).length === 0)
+            return ""
+        if (root.name.length === 0 && root.rendering === HnIcon.Original)
+            return root.source
+        return HnIconProvider.sourceUrl(input, root.size, root.resolvedColor,
+                                        HoloniightPalette.primary, HoloniightPalette.success,
+                                        HoloniightPalette.warning, HoloniightPalette.error,
+                                        HoloniightPalette.revision,
+                                        root.rendering === HnIcon.Semantic)
+    }
 
     implicitWidth: root.size
     implicitHeight: root.size

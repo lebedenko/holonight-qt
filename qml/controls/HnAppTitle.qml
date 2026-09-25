@@ -90,7 +90,7 @@ Item {
             readonly property bool accessibilityIgnored: Accessible.ignored
             source: root.iconSource
             size: HnMetrics.appTitleIconSize
-            tinted: root.iconTinted
+            rendering: root.iconTinted ? HnIcon.Semantic : HnIcon.Original
             Accessible.ignored: true
         }
     }

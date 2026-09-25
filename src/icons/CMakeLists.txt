@@ -1,6 +1,8 @@
 add_library(holonight_icons STATIC
     iconrenderer.cpp
     iconrenderer.h
+    hniconengine.cpp
+    hniconengine.h
     iconthemeresolver.cpp
     iconthemeresolver.h
     hniconimageprovider.cpp

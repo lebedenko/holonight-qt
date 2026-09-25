@@ -8,6 +8,8 @@
 
 #include <QCryptographicHash>
 #include <QMutexLocker>
+#include <QPainter>
+#include <QSvgRenderer>
 #include <QUrl>
 #include <QUrlQuery>
 
@@ -64,18 +66,25 @@ QImage HnIconImageProvider::requestImage(const QString& id, QSize* size, const Q
 
   // Resolve before cache lookup: the same name may now select another theme or
   // changed file. Cache rendered pixels by content, never stale source names.
-  const QByteArray svg_bytes = IconThemeResolver::resolveSvgBytes(source);
-  if (svg_bytes.isEmpty()) {
+  const QString path = IconThemeResolver::resolveIconPath(source, logical_size);
+  const QByteArray source_bytes = IconThemeResolver::readIconBytes(path);
+  if (source_bytes.isEmpty()) {
     if (size != nullptr) *size = {};
     return {};
   }
-  const auto source_hash = QString::fromLatin1(QCryptographicHash::hash(svg_bytes, QCryptographicHash::Sha256).toHex());
+  const auto source_hash =
+      QString::fromLatin1(QCryptographicHash::hash(source_bytes, QCryptographicHash::Sha256).toHex());
+  const bool semantic = query.queryItemValue(QStringLiteral("semantic")) != QStringLiteral("0");
+  const bool symbolic = source.endsWith(QStringLiteral("-symbolic")) ||
+                        (semantic && (source.contains(QLatin1Char('/')) || source.contains(QLatin1Char(':'))));
   const QString cache_key =
       source_hash + QLatin1Char('|') + QString::number(logical_size.width()) + QLatin1Char('x') +
       QString::number(logical_size.height()) + QLatin1Char('|') + colors.text.name(QColor::HexArgb) + QLatin1Char('|') +
       colors.highlight.name(QColor::HexArgb) + QLatin1Char('|') + colors.positive.name(QColor::HexArgb) +
       QLatin1Char('|') + colors.neutral.name(QColor::HexArgb) + QLatin1Char('|') +
-      colors.negative.name(QColor::HexArgb) + QLatin1Char('|') + query.queryItemValue(QStringLiteral("palette"));
+      colors.negative.name(QColor::HexArgb) + QLatin1Char('|') + query.queryItemValue(QStringLiteral("palette")) +
+      QLatin1Char('|') + (semantic ? QLatin1Char('1') : QLatin1Char('0')) + QLatin1Char('|') +
+      (symbolic ? QLatin1Char('1') : QLatin1Char('0'));
 
   {
     QMutexLocker locker = QMutexLocker{&mutex_};
@@ -113,7 +122,28 @@ QImage HnIconImageProvider::requestImage(const QString& id, QSize* size, const Q
     cache_ready_.wakeAll();
   };
 
-  const QImage image = IconRenderer::renderSvg(svg_bytes, logical_size, colors);
+  QImage image;
+  if (path.endsWith(QStringLiteral(".svg"), Qt::CaseInsensitive)) {
+    if (semantic) {
+      image = IconRenderer::renderSvg(source_bytes, logical_size, colors, symbolic);
+    } else {
+      // Original rendering must retain the source stylesheet as authored.
+      QSvgRenderer renderer{source_bytes};
+      if (renderer.isValid()) {
+        image = QImage{logical_size, QImage::Format_ARGB32_Premultiplied};
+        image.fill(Qt::transparent);
+        QPainter painter{&image};
+        renderer.render(&painter);
+      }
+    }
+  } else {
+    image = QImage::fromData(source_bytes).scaled(logical_size, Qt::KeepAspectRatio, Qt::SmoothTransformation);
+    if (semantic && symbolic && !image.isNull()) {
+      QPainter painter{&image};
+      painter.setCompositionMode(QPainter::CompositionMode_SourceIn);
+      painter.fillRect(image.rect(), colors.text);
+    }
+  }
   if (size != nullptr) {
     *size = image.size();
   }

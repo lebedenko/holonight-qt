@@ -8,9 +8,10 @@
 
 #include <gtest/gtest.h>
 
-TEST(PlatformThemeIcons, ThemeNameIsHoloNight) {
+TEST(PlatformThemeIcons, DoesNotOverrideUserThemeName) {
+  const QString user_theme = QIcon::themeName();
   HoloniightTheme theme;
-  EXPECT_EQ(QIcon::themeName(), QStringLiteral("HoloNight"));
+  EXPECT_EQ(QIcon::themeName(), user_theme);
 }
 
 TEST(PlatformThemeIcons, FallbackThemeNameIsPapirus) {

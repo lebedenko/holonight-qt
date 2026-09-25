@@ -10,6 +10,7 @@ T.AbstractButton {
     id: root
 
     property int sizeRole: HnControlSize.Normal
+    property int iconRendering: HnIcon.Semantic
     property int iconState: root.enabled ? (root.down ? HnIcon.Active : HnIcon.Normal) : HnIcon.Disabled
     readonly property int resolvedSizeRole: HnMetrics.normalizedSizeRole(root.sizeRole)
 
@@ -23,6 +24,7 @@ T.AbstractButton {
             objectName: "hnIconButtonIcon"
             anchors.centerIn: parent
             source: root.icon.source
+            rendering: root.iconRendering
             size: HnMetrics.iconSize(root.resolvedSizeRole)
             iconState: root.iconState
             normalColor: root.icon.color.a > 0 ? root.icon.color : HoloniightPalette.textSecondary

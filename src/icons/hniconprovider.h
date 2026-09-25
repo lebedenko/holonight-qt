@@ -19,8 +19,7 @@ class HnIconProvider : public QObject {
 
   Q_INVOKABLE QString sourceUrl(const QUrl& source, int size, const QColor& color, const QColor& highlight,
                                 const QColor& positive, const QColor& neutral, const QColor& negative,
-                                int palette_revision = 0);
-  Q_INVOKABLE bool supportsSemanticColors(const QUrl& source) const;
+                                int palette_revision = 0, bool semantic = true);
 
  private:
   void ensureProviderRegistered();

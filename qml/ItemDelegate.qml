@@ -43,7 +43,8 @@ T.ItemDelegate {
         LayoutMirroring.enabled: root.mirrored
 
         HnIcon {
-            source: root.icon.source.toString().length > 0 ? root.icon.source : root.icon.name
+            source: root.icon.source
+            name: root.icon.source.toString().length > 0 ? "" : root.icon.name
             visible: root.icon.name.length > 0 || root.icon.source.toString().length > 0
             size: HnMetrics.iconSize(HnControlSize.Compact)
             iconState: root.enabled ? HnIcon.Normal : HnIcon.Disabled

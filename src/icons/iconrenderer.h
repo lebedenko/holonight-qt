@@ -21,8 +21,9 @@ struct IconSemanticColors {
 class IconRenderer {
  public:
   [[nodiscard]] static QImage renderSvg(const QByteArray& svg_bytes, QSize target_size,
-                                        const IconSemanticColors& colors);
+                                        const IconSemanticColors& colors, bool symbolic = false);
   [[nodiscard]] static QByteArray applySemanticColors(const QByteArray& svg_bytes, const IconSemanticColors& colors);
+  [[nodiscard]] static bool hasSemanticRoles(const QByteArray& svg_bytes);
 };
 
 }  // namespace Holonight

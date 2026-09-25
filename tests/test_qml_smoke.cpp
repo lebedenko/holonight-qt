@@ -410,7 +410,7 @@ TEST_F(QmlSmoke, Core_MigratedTypesExposeCanonicalContracts) {
                                                           HnAppearance.revision).radius >= 0
       property bool profileValid: HnShapeProfile.resolve(HnSurfaceRole.Card, HnCornerStyle.Rounded,
                                                         80, 40, NaN, NaN).kind === HnShapeKind.Rounded
-      property bool providerValid: !HnIconProvider.supportsSemanticColors("file:///missing.svg")
+      property bool providerValid: HnIconProvider.sourceUrl("image://unknown/icon", 24, "white", "white", "white", "white", "white") === ""
       property int cornerMask: HnCornerMask.All
       property HnIcon icon: HnIcon {
         source: "file:///missing.svg"
@@ -2034,7 +2034,7 @@ TEST_F(QmlSmoke, HnIcon_ExposesLoadFailure) {
     import Holonight.Core
     HnIcon {
       source: "file:///holonight/definitely-missing.svg"
-      tinted: false
+      rendering: HnIcon.Original
       property bool loadFailed: hasError
     }
   )",
@@ -2048,6 +2048,40 @@ TEST_F(QmlSmoke, HnIcon_ExposesLoadFailure) {
     QCoreApplication::processEvents(QEventLoop::AllEvents, 50);
   }
   EXPECT_TRUE(object->property("loadFailed").toBool());
+}
+
+TEST_F(QmlSmoke, HnIcon_ExplicitSourceAndRenderingContract) {
+  QQmlComponent comp{&engine_};
+  comp.setData(R"(
+    import QtQuick
+    import Holonight.Core
+    Item {
+      property HnIcon themeIcon: HnIcon { name: "folder"; rendering: HnIcon.Original }
+      property HnIcon assetIcon: HnIcon {
+        source: "qrc:/qt/qml/Holonight/Controls/assets/folder.svg"
+        rendering: HnIcon.Semantic
+      }
+      property HnIcon originalProvider: HnIcon {
+        source: "image://icon/example"
+        rendering: HnIcon.Original
+      }
+      property HnIcon unsupportedProvider: HnIcon {
+        source: "image://icon/example"
+        rendering: HnIcon.Semantic
+      }
+    }
+  )",
+               QUrl{});
+  ASSERT_EQ(comp.status(), QQmlComponent::Ready) << comp.errorString().toStdString();
+  std::unique_ptr<QObject> object{comp.create()};
+  ASSERT_NE(object, nullptr);
+  const auto child = [&](const char* property) { return object->property(property).value<QObject*>(); };
+  ASSERT_NE(child("themeIcon"), nullptr);
+  EXPECT_TRUE(child("themeIcon")->property("_renderSource").toString().startsWith(QStringLiteral("image://hnicons/")));
+  EXPECT_TRUE(child("assetIcon")->property("_renderSource").toString().startsWith(QStringLiteral("image://hnicons/")));
+  EXPECT_EQ(child("originalProvider")->property("_renderSource").toUrl().toString(),
+            QStringLiteral("image://icon/example"));
+  EXPECT_TRUE(child("unsupportedProvider")->property("hasError").toBool());
 }
 
 TEST_F(QmlSmoke, HnSurfaceFrame_ResolvesSemanticGeometry) {
@@ -3009,7 +3043,7 @@ TEST_F(QmlSmoke, Controls_AppTitleUsesSemanticPresentationAndAccessibility) {
   EXPECT_EQ(brand->property("font").value<QFont>().weight(), QFont::DemiBold);
   EXPECT_EQ(application->property("font").value<QFont>(), brand->property("font").value<QFont>());
   EXPECT_EQ(icon->property("size").toInt(), 32);
-  EXPECT_TRUE(icon->property("tinted").toBool());
+  EXPECT_EQ(icon->property("rendering").toInt(), 1);
   EXPECT_TRUE(icon->property("accessibilityIgnored").toBool());
   EXPECT_EQ(title->property("reportedAccessibleName").toString(), QStringLiteral("HoloNight Settings"));
   EXPECT_EQ(title->property("reportedAccessibleRole").toInt(), QAccessible::StaticText);
