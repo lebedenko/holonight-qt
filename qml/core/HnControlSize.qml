@@ -10,6 +10,7 @@ QtObject {
         Compact = 0,
         Normal = 1,
         Large = 2,
-        Hero = 3
+        Hero = 3,
+        Xs = 4
     }
 }

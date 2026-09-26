@@ -26,6 +26,7 @@ T.Switch {
 
     readonly property real indicatorTrackWidth: {
         switch (root.resolvedSizeRole) {
+        case HnControlSize.Xs: return 24
         case HnControlSize.Compact: return 28
         case HnControlSize.Large: return 44
         case HnControlSize.Hero: return 56
@@ -34,6 +35,7 @@ T.Switch {
     }
     readonly property real indicatorTrackHeight: {
         switch (root.resolvedSizeRole) {
+        case HnControlSize.Xs: return 12
         case HnControlSize.Compact: return 14
         case HnControlSize.Large: return 22
         case HnControlSize.Hero: return 28
@@ -42,6 +44,7 @@ T.Switch {
     }
     readonly property real indicatorThumbSize: {
         switch (root.resolvedSizeRole) {
+        case HnControlSize.Xs: return 8
         case HnControlSize.Compact: return 10
         case HnControlSize.Large: return 16
         case HnControlSize.Hero: return 22
@@ -67,6 +70,7 @@ T.Switch {
 
     padding: {
         switch (root.resolvedSizeRole) {
+        case HnControlSize.Xs: return 2
         case HnControlSize.Compact: return 3
         case HnControlSize.Large: return 6
         case HnControlSize.Hero: return 8

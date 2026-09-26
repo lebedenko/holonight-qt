@@ -3,15 +3,11 @@
 
 #include "iconthemeresolver.h"
 
-#include "holonight/appearance_reader.h"
-
 #include <QFile>
 #include <QFileInfo>
 #include <QIcon>
-#include <QRegularExpression>
 #include <QSet>
 #include <QSettings>
-#include <QStandardPaths>
 #include <QUrl>
 
 #include <limits>
@@ -49,17 +45,9 @@ constexpr qsizetype kMaximumSvgBytes = 1024 * 1024;
 }
 
 [[nodiscard]] QStringList iconThemeNames() {
-  const AppearanceReader reader;
-  const ResolvedAppearance& config = reader.appearance();
   QStringList names;
   if (!QIcon::themeName().isEmpty()) {
     names << QIcon::themeName();
-  }
-  if (!config.icon_theme.isEmpty()) {
-    names << config.icon_theme;
-  }
-  if (!config.fallback_icon_theme.isEmpty()) {
-    names << config.fallback_icon_theme;
   }
   if (!QIcon::fallbackThemeName().isEmpty()) {
     names << QIcon::fallbackThemeName();
@@ -69,13 +57,7 @@ constexpr qsizetype kMaximumSvgBytes = 1024 * 1024;
   return names;
 }
 
-[[nodiscard]] QStringList iconSearchRoots() {
-  QStringList roots = QIcon::themeSearchPaths();
-  roots << QStandardPaths::standardLocations(QStandardPaths::GenericDataLocation)
-               .replaceInStrings(QRegularExpression{QStringLiteral("$")}, QStringLiteral("/icons"));
-  roots.removeDuplicates();
-  return roots;
-}
+[[nodiscard]] QStringList iconSearchRoots() { return QIcon::themeSearchPaths(); }
 
 [[nodiscard]] int directoryDistance(const QSettings& index, const QString& directory, int requested,
                                     qreal requested_scale) {
@@ -114,6 +96,9 @@ constexpr qsizetype kMaximumSvgBytes = 1024 * 1024;
     const QString theme_path = root + QLatin1Char('/') + theme;
     if (!QFileInfo::exists(theme_path + QStringLiteral("/index.theme"))) continue;
     QSettings index(theme_path + QStringLiteral("/index.theme"), QSettings::IniFormat);
+    // QSettings parses INI sections lazily. Icon directories contain slashes in their section names;
+    // enumerate them before looking up nested keys so those sections are available on first access.
+    index.allKeys();
     index.beginGroup(QStringLiteral("Icon Theme"));
     QStringList directories = index.value(QStringLiteral("Directories")).toStringList();
     directories.append(index.value(QStringLiteral("ScaledDirectories")).toStringList());

@@ -23,6 +23,8 @@ Item {
     readonly property alias leadingItem: leadingLoader.item
     readonly property alias trailingItem: trailingLoader.item
     readonly property int resolvedSizeRole: HnMetrics.normalizedSizeRole(root.sizeRole)
+    readonly property bool compactTypography: root.resolvedSizeRole === HnControlSize.Compact
+                                            || root.resolvedSizeRole === HnControlSize.Xs
     readonly property real semanticSpacing: HnMetrics.internalSpacing(root.resolvedSizeRole)
 
     implicitWidth: content.implicitWidth
@@ -35,10 +37,10 @@ Item {
         id: content
 
         anchors.fill: parent
-        spacing: root.resolvedSizeRole === HnControlSize.Compact ? Math.max(2, root.semanticSpacing / 2) : root.semanticSpacing
+        spacing: root.compactTypography ? Math.max(2, root.semanticSpacing / 2) : root.semanticSpacing
 
         RowLayout {
-            spacing: root.resolvedSizeRole === HnControlSize.Compact ? Math.max(2, root.semanticSpacing / 2) : root.semanticSpacing
+            spacing: root.compactTypography ? Math.max(2, root.semanticSpacing / 2) : root.semanticSpacing
             visible: root.titleText.length > 0 || root.descriptionText.length > 0
                      || root.leadingContent !== null || root.trailingContent !== null
             Layout.fillWidth: true
@@ -59,13 +61,13 @@ Item {
                 HnLabel {
                     objectName: "sectionTitleLabel"
                     role: root.isCategoryMode ? HnTypographyRole.MicroHeader
-                                              : (root.resolvedSizeRole === HnControlSize.Compact ? HnTypographyRole.Caption : HnTypographyRole.Subheading)
+                                              : (root.compactTypography ? HnTypographyRole.Caption : HnTypographyRole.Subheading)
                     rawText: root.isCategoryMode && root.showPrefix ? root.prefixText + root.titleText : root.titleText
                     color: root.isCategoryMode ? HoloniightPalette.textAccent
-                                               : (root.resolvedSizeRole === HnControlSize.Compact
+                                               : (root.compactTypography
                                                   ? HoloniightPalette.textSecondary : HoloniightPalette.textPrimary)
                     font.pointSize: root.isCategoryMode ? HolonightTheme.microSize
-                                                        : (root.resolvedSizeRole === HnControlSize.Compact
+                                                        : (root.compactTypography
                                                            ? HolonightTheme.microSize : HolonightTheme.subheadingSize)
                     font.letterSpacing: 0
                     wrapMode: Text.WordWrap

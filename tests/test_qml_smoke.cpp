@@ -290,22 +290,26 @@ TEST_F(QmlSmoke, Core_ControlSizeAndMetricsContract) {
       property int normal: HnControlSize.Normal
       property int large: HnControlSize.Large
       property int hero: HnControlSize.Hero
+      property int xs: HnControlSize.Xs
       property var heights: [HnMetrics.controlHeight(compact),
                              HnMetrics.controlHeight(normal),
                              HnMetrics.controlHeight(large),
-                             HnMetrics.controlHeight(hero)]
+                             HnMetrics.controlHeight(hero), HnMetrics.controlHeight(xs)]
       property var paddings: [HnMetrics.horizontalPadding(compact),
                               HnMetrics.horizontalPadding(normal),
                               HnMetrics.horizontalPadding(large),
-                              HnMetrics.horizontalPadding(hero)]
+                              HnMetrics.horizontalPadding(hero), HnMetrics.horizontalPadding(xs)]
       property var icons: [HnMetrics.iconSize(compact),
                            HnMetrics.iconSize(normal),
                            HnMetrics.iconSize(large),
-                           HnMetrics.iconSize(hero)]
+                           HnMetrics.iconSize(hero), HnMetrics.iconSize(xs)]
       property var spacings: [HnMetrics.internalSpacing(compact),
                               HnMetrics.internalSpacing(normal),
                               HnMetrics.internalSpacing(large),
-                              HnMetrics.internalSpacing(hero)]
+                              HnMetrics.internalSpacing(hero), HnMetrics.internalSpacing(xs)]
+      property var headerHeights: [HnMetrics.headerHeightForSize(xs), HnMetrics.headerHeightForSize(compact),
+                                   HnMetrics.headerHeightForSize(normal), HnMetrics.headerHeightForSize(large),
+                                   HnMetrics.headerHeightForSize(hero)]
       property int invalidRole: HnMetrics.normalizedSizeRole(999)
       property int invalidHeight: HnMetrics.controlHeight(-1)
       property int headerHeight: HnMetrics.headerHeight
@@ -323,10 +327,12 @@ TEST_F(QmlSmoke, Core_ControlSizeAndMetricsContract) {
   EXPECT_EQ(object->property("normal").toInt(), 1);
   EXPECT_EQ(object->property("large").toInt(), 2);
   EXPECT_EQ(object->property("hero").toInt(), 3);
-  EXPECT_EQ(object->property("heights").toList(), QVariantList({28, 32, 40, 52}));
-  EXPECT_EQ(object->property("paddings").toList(), QVariantList({8, 8, 12, 16}));
-  EXPECT_EQ(object->property("icons").toList(), QVariantList({16, 16, 20, 24}));
-  EXPECT_EQ(object->property("spacings").toList(), QVariantList({4, 6, 8, 10}));
+  EXPECT_EQ(object->property("xs").toInt(), 4);
+  EXPECT_EQ(object->property("heights").toList(), QVariantList({28, 32, 40, 52, 24}));
+  EXPECT_EQ(object->property("paddings").toList(), QVariantList({8, 8, 12, 16, 6}));
+  EXPECT_EQ(object->property("icons").toList(), QVariantList({16, 16, 20, 24, 16}));
+  EXPECT_EQ(object->property("spacings").toList(), QVariantList({4, 6, 8, 10, 4}));
+  EXPECT_EQ(object->property("headerHeights").toList(), QVariantList({42, 48, 56, 64, 72}));
   EXPECT_EQ(object->property("invalidRole").toInt(), 1);
   EXPECT_EQ(object->property("invalidHeight").toInt(), 32);
   EXPECT_EQ(object->property("headerHeight").toInt(), 56);
@@ -339,9 +345,13 @@ TEST_F(QmlSmoke, Controls_HeaderBarKeepsFixedHeightAndLoadsContent) {
   QQmlComponent comp = QQmlComponent{&engine_};
   comp.setData(R"(
     import QtQuick
+    import QtQuick.Layouts
     import Holonight.Controls
     Item {
       property alias bar: bar
+      property real headerMinimum: bar.Layout.minimumHeight
+      property real headerPreferred: bar.Layout.preferredHeight
+      property real headerMaximum: bar.Layout.maximumHeight
       HnHeaderBar {
         id: bar
         width: 320
@@ -363,6 +373,16 @@ TEST_F(QmlSmoke, Controls_HeaderBarKeepsFixedHeightAndLoadsContent) {
   ASSERT_NE(divider, nullptr);
   EXPECT_EQ(bar->property("implicitHeight").toInt(), 56);
   EXPECT_EQ(bar->property("height").toInt(), 56);
+  for (const auto [role, expected] : {std::pair{4, 42}, {0, 48}, {1, 56}, {2, 64}, {3, 72}}) {
+    bar->setProperty("sizeRole", role);
+    QCoreApplication::processEvents();
+    EXPECT_EQ(bar->property("implicitHeight").toInt(), expected);
+    EXPECT_EQ(bar->property("height").toInt(), expected);
+    EXPECT_EQ(object->property("headerMinimum").toInt(), expected);
+    EXPECT_EQ(object->property("headerPreferred").toInt(), expected);
+    EXPECT_EQ(object->property("headerMaximum").toInt(), expected);
+  }
+  bar->setProperty("sizeRole", 1);
   EXPECT_TRUE(bar->property("dividerVisible").toBool());
   EXPECT_TRUE(divider->isVisible());
   EXPECT_EQ(bar->property("horizontalPadding").toInt(), 12);
@@ -1594,12 +1614,14 @@ TEST_F(QmlSmoke, Switch_SizeRoles) {
     import Holonight.Core
 
     Item {
+      property alias xs: xs
       property alias compact: compact
       property alias normal: normal
       property alias large: large
       property alias hero: hero
       property alias invalid: invalid
 
+      Switch { id: xs; sizeRole: HnControlSize.Xs }
       Switch { id: compact; sizeRole: HnControlSize.Compact }
       Switch { id: normal }
       Switch { id: large; sizeRole: HnControlSize.Large }
@@ -1613,18 +1635,24 @@ TEST_F(QmlSmoke, Switch_SizeRoles) {
   ASSERT_NE(root, nullptr);
 
   QObject* compact = root->property("compact").value<QObject*>();
+  QObject* xs = root->property("xs").value<QObject*>();
   QObject* normal = root->property("normal").value<QObject*>();
   QObject* large = root->property("large").value<QObject*>();
   QObject* hero = root->property("hero").value<QObject*>();
   QObject* invalid = root->property("invalid").value<QObject*>();
 
   ASSERT_NE(compact, nullptr);
+  ASSERT_NE(xs, nullptr);
   ASSERT_NE(normal, nullptr);
   ASSERT_NE(large, nullptr);
   ASSERT_NE(hero, nullptr);
   ASSERT_NE(invalid, nullptr);
 
   EXPECT_EQ(compact->property("resolvedSizeRole").toInt(), 0);
+  EXPECT_EQ(xs->property("resolvedSizeRole").toInt(), 4);
+  EXPECT_EQ(xs->property("indicatorTrackWidth").toDouble(), 24.0);
+  EXPECT_EQ(xs->property("indicatorTrackHeight").toDouble(), 12.0);
+  EXPECT_EQ(xs->property("indicatorThumbSize").toDouble(), 8.0);
   EXPECT_EQ(normal->property("resolvedSizeRole").toInt(), 1);
   EXPECT_EQ(large->property("resolvedSizeRole").toInt(), 2);
   EXPECT_EQ(hero->property("resolvedSizeRole").toInt(), 3);

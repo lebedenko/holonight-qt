@@ -15,7 +15,7 @@ const MetricTokens& metricTokens() {
 }
 
 ControlSize normalizedControlSize(int value) {
-  if (value < static_cast<int>(ControlSize::Compact) || value > static_cast<int>(ControlSize::Hero)) {
+  if (value < static_cast<int>(ControlSize::Compact) || value > static_cast<int>(ControlSize::Xs)) {
     return ControlSize::Normal;
   }
   return static_cast<ControlSize>(value);

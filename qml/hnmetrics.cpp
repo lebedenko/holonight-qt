@@ -22,3 +22,19 @@ int HnMetrics::iconSize(int size_role) const {
 int HnMetrics::internalSpacing(int size_role) const {
   return tokens().control(Holonight::normalizedControlSize(size_role)).internal_spacing;
 }
+
+int HnMetrics::headerHeightForSize(int size_role) const {
+  switch (Holonight::normalizedControlSize(size_role)) {
+    case Holonight::ControlSize::Xs:
+      return 42;
+    case Holonight::ControlSize::Compact:
+      return 48;
+    case Holonight::ControlSize::Large:
+      return 64;
+    case Holonight::ControlSize::Hero:
+      return 72;
+    case Holonight::ControlSize::Normal:
+      return headerHeight();
+  }
+  return headerHeight();
+}

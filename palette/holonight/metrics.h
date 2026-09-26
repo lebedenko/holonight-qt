@@ -9,7 +9,7 @@
 
 namespace Holonight {
 
-enum class ControlSize : std::uint8_t { Compact, Normal, Large, Hero };
+enum class ControlSize : std::uint8_t { Compact, Normal, Large, Hero, Xs };
 
 struct ControlMetrics {
   int height;
@@ -28,11 +28,12 @@ struct MetricTokens {
   int app_title_icon_size = 32;
   int app_title_icon_spacing = 12;
   int app_title_text_spacing = 8;
-  std::array<ControlMetrics, 4> controls{{
+  std::array<ControlMetrics, 5> controls{{
       {.height = 28, .horizontal_padding = 8, .icon_size = 16, .internal_spacing = 4},
       {.height = 32, .horizontal_padding = 8, .icon_size = 16, .internal_spacing = 6},
       {.height = 40, .horizontal_padding = 12, .icon_size = 20, .internal_spacing = 8},
       {.height = 52, .horizontal_padding = 16, .icon_size = 24, .internal_spacing = 10},
+      {.height = 24, .horizontal_padding = 6, .icon_size = 16, .internal_spacing = 4},
   }};
 
   [[nodiscard]] const ControlMetrics& control(ControlSize size) const;

@@ -8,6 +8,9 @@ Item {
     id: root
 
     property Component content
+    property int sizeRole: HnControlSize.Normal
+    readonly property int resolvedSizeRole: HnMetrics.normalizedSizeRole(root.sizeRole)
+    readonly property int resolvedHeight: HnMetrics.headerHeightForSize(root.resolvedSizeRole)
     property real horizontalPadding: 12
     property real verticalPadding: 8
     property bool dividerVisible: true
@@ -15,11 +18,11 @@ Item {
     property real dividerInset: 0
     readonly property alias contentItem: contentLoader.item
 
-    implicitHeight: HnMetrics.headerHeight
-    height: HnMetrics.headerHeight
-    Layout.minimumHeight: HnMetrics.headerHeight
-    Layout.preferredHeight: HnMetrics.headerHeight
-    Layout.maximumHeight: HnMetrics.headerHeight
+    implicitHeight: root.resolvedHeight
+    height: root.resolvedHeight
+    Layout.minimumHeight: root.resolvedHeight
+    Layout.preferredHeight: root.resolvedHeight
+    Layout.maximumHeight: root.resolvedHeight
 
     Loader {
         id: contentLoader

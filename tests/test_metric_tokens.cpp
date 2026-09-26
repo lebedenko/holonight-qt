@@ -22,6 +22,7 @@ TEST(MetricTokens, ControlRolesMatchAcceptedContract) {
   EXPECT_EQ(tokens.control(Holonight::ControlSize::Normal), (Holonight::ControlMetrics{32, 8, 16, 6}));
   EXPECT_EQ(tokens.control(Holonight::ControlSize::Large), (Holonight::ControlMetrics{40, 12, 20, 8}));
   EXPECT_EQ(tokens.control(Holonight::ControlSize::Hero), (Holonight::ControlMetrics{52, 16, 24, 10}));
+  EXPECT_EQ(tokens.control(Holonight::ControlSize::Xs), (Holonight::ControlMetrics{24, 6, 16, 4}));
 }
 
 TEST(MetricTokens, InvalidControlRoleNormalizesToNormal) {

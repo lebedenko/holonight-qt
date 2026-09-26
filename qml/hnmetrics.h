@@ -38,6 +38,7 @@ class HnMetrics : public QObject {
   [[nodiscard]] Q_INVOKABLE int horizontalPadding(int size_role) const;
   [[nodiscard]] Q_INVOKABLE int iconSize(int size_role) const;
   [[nodiscard]] Q_INVOKABLE int internalSpacing(int size_role) const;
+  [[nodiscard]] Q_INVOKABLE int headerHeightForSize(int size_role) const;
 
  private:
   [[nodiscard]] static const Holonight::MetricTokens& tokens() { return Holonight::metricTokens(); }
