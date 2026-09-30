@@ -211,3 +211,8 @@ shared package/startup scratch directories; the final isolated `task verify` run
 passed every check. Legacy URLs without DPR preserve their original asset lookup
 behavior; options URLs use logical size and DPR for lookup and requested physical
 size directly for rendering. No companion repository files were changed.
+
+## Deferred palette audit
+
+[Selection color consistency](../selection-color-consistency/TASKS.md) records
+the proposed contrast and scheme/accent audit. It does not change palette behavior.
