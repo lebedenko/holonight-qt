@@ -11,6 +11,8 @@ import Holonight.Core
 Item {
     id: root
 
+    property var paletteContext: null
+
     property int sizeRole: HnControlSize.Normal
     property url iconSource
     property string titleText
@@ -46,6 +48,7 @@ Item {
         }
 
         HnIcon {
+            paletteContext: root.paletteContext
             id: defaultIcon
 
             source: root.iconSource

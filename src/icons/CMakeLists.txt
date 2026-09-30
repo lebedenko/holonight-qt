@@ -19,6 +19,7 @@ target_include_directories(holonight_icons PUBLIC
 )
 
 target_link_libraries(holonight_icons PUBLIC
+    holonight_theme
     holonight_appearance
     holonight_theme_catalog
     holonight_palette

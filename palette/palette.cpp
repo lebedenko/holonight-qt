@@ -1128,7 +1128,7 @@ QPalette buildPalette(const ColorTokens& tok) {
   auto dim = [&](const QColor& col) -> QColor {
     return QColor::fromRgbF(static_cast<float>((col.redF() * 0.5) + (tok.background.redF() * 0.5)),
                             static_cast<float>((col.greenF() * 0.5) + (tok.background.greenF() * 0.5)),
-                            static_cast<float>((col.blueF() * 0.5) + (tok.background.blueF() * 0.5)));
+                            static_cast<float>((col.blueF() * 0.5) + (tok.background.blueF() * 0.5)), col.alphaF());
   };
 
   QPalette pal;
@@ -1154,6 +1154,10 @@ QPalette buildPalette(const ColorTokens& tok) {
   pal.setColor(QPalette::Active, QPalette::ToolTipBase, tok.surfaceInverse);
   pal.setColor(QPalette::Active, QPalette::ToolTipText, tok.textInverse);
   pal.setColor(QPalette::Active, QPalette::PlaceholderText, tok.textMuted);
+
+#if QT_VERSION >= QT_VERSION_CHECK(6, 6, 0)
+  pal.setColor(QPalette::Active, QPalette::Accent, tok.primary);
+#endif
 
   // Inactive group — identical to Active for tiling WM use
   for (int role = 0; role < static_cast<int>(QPalette::NColorRoles); ++role) {
@@ -1183,6 +1187,9 @@ QPalette buildPalette(const ColorTokens& tok) {
   pal.setColor(QPalette::Disabled, QPalette::Link, dim(tok.primary));
   pal.setColor(QPalette::Disabled, QPalette::LinkVisited, dim(tok.error));
 
+#if QT_VERSION >= QT_VERSION_CHECK(6, 6, 0)
+  pal.setColor(QPalette::Disabled, QPalette::Accent, dim(tok.primary));
+#endif
   return pal;
 }
 

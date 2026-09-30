@@ -89,6 +89,7 @@ C.TextField {
                          customLeadingLoader.implicitHeight)
 
         HnIcon {
+            paletteContext: root.palette
             objectName: "hnSearchDefaultIcon"
             anchors.centerIn: parent
             source: Qt.resolvedUrl("assets/search.svg")
@@ -145,9 +146,10 @@ C.TextField {
             }
 
             contentItem: HnIcon {
+                paletteContext: root.palette
                 source: Qt.resolvedUrl("assets/clear.svg")
                 size: HnMetrics.iconSize(root.resolvedSizeRole)
-                iconState: clearButton.down ? HnIcon.Active : HnIcon.Muted
+                iconState: !clearButton.enabled ? HnIcon.Disabled : (clearButton.down ? HnIcon.Active : HnIcon.Muted)
             }
 
             background: Item {}

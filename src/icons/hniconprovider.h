@@ -6,6 +6,7 @@
 #include <QColor>
 #include <QObject>
 #include <QUrl>
+#include <QVariantMap>
 #include <QtQml/qqml.h>
 
 class HnIconProvider : public QObject {
@@ -20,6 +21,8 @@ class HnIconProvider : public QObject {
   Q_INVOKABLE QString sourceUrl(const QUrl& source, int size, const QColor& color, const QColor& highlight,
                                 const QColor& positive, const QColor& neutral, const QColor& negative,
                                 int palette_revision = 0, bool semantic = true);
+
+  Q_INVOKABLE QString sourceUrlWithOptions(const QUrl& source, int size, const QVariantMap& options);
 
  private:
   void ensureProviderRegistered();

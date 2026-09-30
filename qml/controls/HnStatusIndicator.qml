@@ -10,6 +10,8 @@ import Holonight.Core
 C.Control {
     id: root
 
+    property var paletteContext: null
+
     enum Status {
         Neutral,
         Info,
@@ -47,6 +49,7 @@ C.Control {
             Accessible.ignored: true
         }
         HnIcon {
+            paletteContext: root.paletteContext
             source: root.iconSource
             size: 14
             normalColor: root.statusColor

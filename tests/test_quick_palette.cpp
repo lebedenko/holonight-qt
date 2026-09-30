@@ -3,12 +3,14 @@
 
 #include "themeresolver.h"
 
+#include <QFile>
 #include <QGuiApplication>
 #include <QPalette>
 #include <QQmlComponent>
 #include <QQmlEngine>
 #include <QQuickItem>
 #include <QQuickWindow>
+#include <QTemporaryDir>
 #include <QTest>
 #include <QtQuickTemplates2/private/qquickcontrol_p.h>
 
@@ -797,3 +799,69 @@ ApplicationWindow {
             appearanceTokens().textPrimary);
 }
 }  // namespace
+
+TEST_F(QuickPalette, SemanticIconsFollowApplicationControlSelectionAndAlphaUpdates) {
+#if QT_VERSION >= QT_VERSION_CHECK(6, 6, 0)
+  QTemporaryDir directory;
+  QFile svg(directory.filePath("roles.svg"));
+  ASSERT_TRUE(svg.open(QIODevice::WriteOnly));
+  svg.write(R"(<svg xmlns='http://www.w3.org/2000/svg' width='32' height='32'>
+    <style id='current-color-scheme'>.ColorScheme-Text{color:#111111}
+      .ColorScheme-Accent{color:#222222}</style>
+    <rect class='ColorScheme-Text' fill='currentColor' width='16' height='32'/>
+    <rect class='ColorScheme-Accent' fill='currentColor' x='16' width='16' height='32'/>
+    </svg>)");
+  svg.close();
+  const QByteArray source = QUrl::fromLocalFile(svg.fileName()).toString().toUtf8();
+  auto object = create(R"(
+    import QtQuick
+    import QtQuick.Controls as C
+    import Holonight.Core
+    Window {
+      width: 100; height: 100; visible: true; color: "black"
+      C.Control { id: owner; objectName: "owner"
+        HnIcon { id: icon; objectName: "icon"; source: ")" +
+                       source + R"("; size: 32; paletteContext: owner.palette }
+      }
+      function selectIcon(value) { icon.iconState = value }
+      function controlAccent(value) { owner.palette.accent = value }
+    })");
+  ASSERT_TRUE(object);
+  auto* window = qobject_cast<QQuickWindow*>(object.get());
+  ASSERT_TRUE(QTest::qWaitForWindowExposed(window));
+  auto* icon = object->findChild<QObject*>("icon");
+  ASSERT_TRUE(icon);
+  auto pixel = [&](int x) {
+    return logicalPixel(window->grabWindow(), window, x * icon->property("size").toInt() / 32, 8);
+  };
+  for (const auto background : {QColor(Qt::black), QColor(Qt::white)}) {
+    QPalette palette;
+    palette.setColor(QPalette::WindowText, QColor("#dddddd"));
+    palette.setColor(QPalette::Window, background);
+    palette.setColor(QPalette::Highlight, Qt::blue);
+    palette.setColor(QPalette::HighlightedText, Qt::white);
+    palette.setColor(QPalette::Disabled, QPalette::WindowText, Qt::gray);
+    palette.setColor(QPalette::Disabled, QPalette::Accent, QColor("#003399"));
+    for (const auto accent : {QColor(Qt::cyan), QColor(Qt::yellow), QColor(Qt::cyan)}) {
+      palette.setColor(QPalette::Active, QPalette::Accent, accent);
+      QGuiApplication::setPalette(palette);
+      ASSERT_TRUE(QTest::qWaitFor([&] { return pixel(24) == accent; }));
+      EXPECT_EQ(pixel(8), QColor("#dddddd"));
+      ASSERT_TRUE(QMetaObject::invokeMethod(object.get(), "selectIcon", Q_ARG(QVariant, 4)));
+      ASSERT_TRUE(QTest::qWaitFor([&] { return pixel(8) == Qt::white; }));
+      EXPECT_NE(pixel(24), pixel(8));
+      ASSERT_TRUE(QMetaObject::invokeMethod(object.get(), "selectIcon", Q_ARG(QVariant, 2)));
+      ASSERT_TRUE(QTest::qWaitFor([&] { return pixel(8) == Qt::gray && pixel(24) == QColor("#003399"); }));
+      ASSERT_TRUE(QMetaObject::invokeMethod(object.get(), "selectIcon", Q_ARG(QVariant, 0)));
+      ASSERT_TRUE(QTest::qWaitFor([&] { return pixel(24) == accent && pixel(8) == QColor("#dddddd"); }));
+    }
+  }
+  ASSERT_TRUE(icon->setProperty("size", 24));
+  ASSERT_TRUE(QMetaObject::invokeMethod(object.get(), "controlAccent", Q_ARG(QVariant, QColor(Qt::red))));
+  ASSERT_TRUE(QTest::qWaitFor([&] { return pixel(24) == Qt::red; }));
+  const auto old_url = icon->property("_renderSource").toUrl();
+  ASSERT_TRUE(QMetaObject::invokeMethod(object.get(), "controlAccent", Q_ARG(QVariant, QColor(255, 0, 0, 128))));
+  ASSERT_TRUE(QTest::qWaitFor([&] { return pixel(24).red() >= 127 && pixel(24).red() <= 129; }));
+  EXPECT_NE(icon->property("_renderSource").toUrl(), old_url);
+#endif
+}

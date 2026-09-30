@@ -144,3 +144,19 @@ INSTANTIATE_TEST_SUITE_P(
                       Holonight::ThemeSchemeKind::HoloNightDracula, Holonight::ThemeSchemeKind::HoloNightAlucard,
                       Holonight::ThemeSchemeKind::HoloNightFrost, Holonight::ThemeSchemeKind::HoloNightSnow,
                       Holonight::ThemeSchemeKind::HoloNightCanopy, Holonight::ThemeSchemeKind::HoloNightGlade));
+
+TEST_P(PaletteTest, AccentIsIndependentAndDisabledBlendRetainsAlpha) {
+#if QT_VERSION >= QT_VERSION_CHECK(6, 6, 0)
+  auto tokens = tok_;
+  tokens.primary.setAlpha(120);
+  const auto palette = Holonight::buildPalette(tokens);
+  EXPECT_EQ(palette.color(QPalette::Active, QPalette::Accent), tokens.primary);
+  EXPECT_EQ(palette.color(QPalette::Inactive, QPalette::Accent), tokens.primary);
+  EXPECT_EQ(palette.color(QPalette::Disabled, QPalette::Accent).alpha(), 120);
+  auto overridden = palette;
+  overridden.setColor(QPalette::Accent, Qt::red);
+  overridden.setColor(QPalette::Highlight, Qt::blue);
+  EXPECT_EQ(overridden.color(QPalette::Accent), Qt::red);
+  EXPECT_EQ(overridden.color(QPalette::Highlight), Qt::blue);
+#endif
+}

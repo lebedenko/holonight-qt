@@ -52,6 +52,8 @@ target_link_libraries(holonight_tests PRIVATE
     HoloNight::Config
 )
 
+target_compile_definitions(holonight_tests PRIVATE HOLONIGHT_ICON_FIXTURE_DIR="${CMAKE_CURRENT_SOURCE_DIR}/fixtures/icons")
+
 add_test(NAME holonight_tests COMMAND holonight_tests
     WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
 )

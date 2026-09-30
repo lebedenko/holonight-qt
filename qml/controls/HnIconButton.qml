@@ -21,16 +21,17 @@ T.AbstractButton {
 
     contentItem: Item {
         HnIcon {
+            id: buttonIcon
+            paletteContext: root.palette
             objectName: "hnIconButtonIcon"
             anchors.centerIn: parent
             source: root.icon.source
             rendering: root.iconRendering
             size: HnMetrics.iconSize(root.resolvedSizeRole)
             iconState: root.iconState
-            normalColor: root.icon.color.a > 0 ? root.icon.color : HoloniightPalette.textSecondary
-            mutedColor: root.icon.color.a > 0 ? root.icon.color : HoloniightPalette.textMuted
-            disabledColor: HoloniightPalette.textDisabled
-            activeColor: root.icon.color.a > 0 ? root.icon.color : HoloniightPalette.primary
+            normalColor: root.icon.color.a > 0 ? root.icon.color : (buttonIcon.hasContextForeground ? buttonIcon.contextForeground : HoloniightPalette.textSecondary)
+            mutedColor: root.icon.color.a > 0 ? root.icon.color : (buttonIcon.hasContextForeground ? buttonIcon.contextForeground : HoloniightPalette.textMuted)
+            activeColor: root.icon.color.a > 0 ? root.icon.color : (buttonIcon.hasContextForeground ? buttonIcon.contextForeground : HoloniightPalette.primary)
         }
     }
 

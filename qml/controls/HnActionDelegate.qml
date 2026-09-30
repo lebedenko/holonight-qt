@@ -19,6 +19,8 @@ HnListDelegate {
     Component {
         id: iconComponent
         HnIcon {
+            paletteContext: root.palette
+            iconState: root.enabled ? HnIcon.Normal : HnIcon.Disabled
             source: root.iconSource
             size: HnMetrics.iconSize(root.resolvedSizeRole)
         }

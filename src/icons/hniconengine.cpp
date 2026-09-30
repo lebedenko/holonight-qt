@@ -3,8 +3,10 @@
 
 #include "hniconengine.h"
 
+#include "holonight/appearance_reader.h"
 #include "iconrenderer.h"
 #include "iconthemeresolver.h"
+#include "themeresolver.h"
 
 #include <QGuiApplication>
 #include <QPainter>
@@ -18,14 +20,31 @@ namespace Holonight {
 namespace {
 
 [[nodiscard]] IconSemanticColors colorsForMode(QIcon::Mode mode) {
-  const QPalette palette = QGuiApplication::palette();
-  const QPalette::ColorGroup group = mode == QIcon::Disabled ? QPalette::Disabled : QPalette::Active;
-  const QPalette::ColorRole foreground = mode == QIcon::Selected ? QPalette::HighlightedText : QPalette::Text;
-  return {.text = palette.color(group, foreground),
-          .highlight = palette.color(group, QPalette::Highlight),
-          .positive = palette.color(group, QPalette::Text),
-          .neutral = palette.color(group, QPalette::Text),
-          .negative = palette.color(group, QPalette::Text)};
+  static AppearanceReader reader;
+  const auto tokens = ThemeResolver::resolve(reader.appearance());
+  const QPalette palette = QGuiApplication::palette().resolve(buildPalette(tokens));
+  auto colors = [&](QPalette::ColorGroup group) -> IconSemanticColors {
+    const auto background = palette.color(group, QPalette::Window);
+    const bool disabled = group == QPalette::Disabled;
+    auto status = [&](const QColor& color) { return disabled ? blendIconColor(color, background, 0.5) : color; };
+    return {palette.color(group, QPalette::Text),
+            palette.color(group, QPalette::Highlight),
+            status(tokens.success),
+            status(tokens.warning),
+            status(tokens.error),
+#if QT_VERSION >= QT_VERSION_CHECK(6, 6, 0)
+            palette.color(group, QPalette::Accent),
+#else
+            status(tokens.primary),
+#endif
+            background,
+            palette.color(group, QPalette::HighlightedText)};
+  };
+  // QIconEngine has no owning-widget palette; use the live application palette.
+  return resolveIconColors(colors(QPalette::Active), colors(QPalette::Disabled),
+                           mode == QIcon::Selected   ? IconState::Selected
+                           : mode == QIcon::Disabled ? IconState::Disabled
+                                                     : IconState::Normal);
 }
 
 }  // namespace

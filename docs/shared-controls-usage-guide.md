@@ -255,3 +255,66 @@ selection: it can fire with a stationary pointer. The observer never consumes in
 HoloNight standard controls and owned composites use this policy for hover
 rendering. Fusion keeps its standard-control rendering. An unattached item has no
 window authority; suppression requested before attachment applies when attached.
+
+### Semantic SVG icon colors
+
+`HnIcon` supports KDE's eight exact class tokens: `ColorScheme-Text`,
+`ColorScheme-Accent`, `ColorScheme-Background`, `ColorScheme-Highlight`,
+`ColorScheme-HighlightedText`, `ColorScheme-PositiveText`,
+`ColorScheme-NeutralText`, and `ColorScheme-NegativeText`. Declare their `color`
+inside `<style id="current-color-scheme">` and use `currentColor` on the assigned
+shapes. Other styles, fixed paints, gradients and layer opacity remain authored.
+Assigned semantic classes, including Accent alone, suppress the whole-image
+symbolic mask even when an omitted color leaves their declarations untouched.
+
+Pass a control's Qt Quick palette with `paletteContext: owner.palette`. Core's
+adapter observes application palette events, supplied palette changes and appearance
+updates without importing a Controls style. QML contexts use WindowText as the
+foreground. Explicit foreground roles take precedence
+over token defaults; `normalColor`, `mutedColor`, `disabledColor` and `activeColor`
+remain available as direct overrides. Accent and Highlight are independent even
+though the default palette assigns both the primary token. Override individual roles
+with `accentColor`, `backgroundColor`, `highlightColor`, `highlightedTextColor`,
+`positiveColor`, `neutralColor` and `negativeColor`. Disabled equivalents are
+`disabledAccentColor`, `disabledBackgroundColor`, `disabledHighlightColor`,
+`disabledHighlightedTextColor`, `disabledPositiveColor`, `disabledNeutralColor`
+and `disabledNegativeColor`. Item composites (`HnAppTitle`, `HnEmptyState`,
+`HnStatusIndicator`) forward an optional `paletteContext`; control composites
+forward their owning palette automatically.
+
+Normal uses the context foreground, Window background, Highlight selection color,
+HighlightedText selection foreground, independent Accent, and appearance success,
+warning and error tokens. Muted and Active change the foreground through their
+existing override properties. `HnIcon.Selected` is enum value 4; existing values
+0–3 are unchanged. Selected maps Text, Highlight and status roles to HighlightedText,
+and maps Background and HighlightedText to Highlight. Accent blends 15% toward
+HighlightedText while retaining its alpha, following
+[KDE's selected-state mapping](https://github.com/KDE/kiconthemes/blob/master/src/kiconcolors.cpp).
+Combo-box highlighted popup icons use Selected; disabled takes precedence.
+Pressed buttons remain Active. Qt's `QIcon::Active` and `QIcon::On` do not select.
+
+Disabled uses disabled-group palette roles. Default Accent and status colors blend
+50% toward the background, retaining source alpha. This HoloNight token policy
+preserves decorative layers and does not apply KDE's whole-image disabled effect.
+The Qt icon engine resolves the live application palette and appearance tokens on
+rendering, using Text as its foreground. `QIconEngine` has no owning-widget palette
+context; QML can supply that context explicitly.
+
+`HnIconProvider.sourceUrl(source, size, color, highlight, positive, neutral,
+negative, revision, semantic)` retains its original signature. New callers use
+`sourceUrlWithOptions(source, size, options)`: `color`, `highlight`, `positive`,
+`neutral`, `negative`, `accent`, `background`, `highlightedText`, optional
+`disabledColor`, `disabledHighlight`, `disabledPositive`, `disabledNeutral`,
+`disabledNegative`, `disabledAccent`, `disabledBackground`,
+`disabledHighlightedText`, `state`, `revision`, `semantic` and `dpr`.
+State is resolved once before the eight RGBA colors are serialized. Old URLs
+retain white fallbacks for invalid/missing original five colors; missing or invalid
+new colors leave authored declarations unchanged. Their state is already represented
+by serialized colors, so image decoding never applies the state a second time.
+
+URLs include every resolved RGBA color, revision, state, DPR and source digest.
+Rendered caches also include source content, physical dimensions and symbolic mode.
+Accent-only, alpha-only and selection changes therefore update displayed icons
+without renaming sources or clearing caches. Asset lookup uses logical size and DPR;
+Qt Quick's requested physical render size is used directly. `Original` bypasses
+semantic recoloring and state effects and renders authored SVG bytes.

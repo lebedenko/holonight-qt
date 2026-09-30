@@ -62,11 +62,20 @@ QImage HnIconImageProvider::requestImage(const QString& id, QSize* size, const Q
       .positive = queryColor(query, QStringLiteral("positive"), QColor{QStringLiteral("#ffffffff")}),
       .neutral = queryColor(query, QStringLiteral("neutral"), QColor{QStringLiteral("#ffffffff")}),
       .negative = queryColor(query, QStringLiteral("negative"), QColor{QStringLiteral("#ffffffff")}),
+      .accent = queryColor(query, QStringLiteral("accent"), {}),
+      .background = queryColor(query, QStringLiteral("background"), {}),
+      .highlightedText = queryColor(query, QStringLiteral("highlightedText"), {}),
   };
 
   // Resolve before cache lookup: the same name may now select another theme or
   // changed file. Cache rendered pixels by content, never stale source names.
-  const QString path = IconThemeResolver::resolveIconPath(source, logical_size);
+  qreal dpr = query.queryItemValue(QStringLiteral("dpr")).toDouble();
+  if (!qIsFinite(dpr) || dpr < 1 || dpr > 8) dpr = 1;
+  const int extent = query.queryItemValue(QStringLiteral("size")).toInt();
+  const QSize asset_size = query.hasQueryItem(QStringLiteral("dpr")) && extent > 0 && extent <= kMaximumIconExtent
+                               ? QSize{extent, extent}
+                               : logical_size;
+  const QString path = IconThemeResolver::resolveIconPath(source, asset_size, dpr);
   const QByteArray source_bytes = IconThemeResolver::readIconBytes(path);
   if (source_bytes.isEmpty()) {
     if (size != nullptr) *size = {};
@@ -78,12 +87,17 @@ QImage HnIconImageProvider::requestImage(const QString& id, QSize* size, const Q
   const bool symbolic = source.endsWith(QStringLiteral("-symbolic")) ||
                         (semantic && (source.contains(QLatin1Char('/')) || source.contains(QLatin1Char(':'))));
   const QString cache_key =
-      source_hash + QLatin1Char('|') + QString::number(logical_size.width()) + QLatin1Char('x') +
-      QString::number(logical_size.height()) + QLatin1Char('|') + colors.text.name(QColor::HexArgb) + QLatin1Char('|') +
-      colors.highlight.name(QColor::HexArgb) + QLatin1Char('|') + colors.positive.name(QColor::HexArgb) +
-      QLatin1Char('|') + colors.neutral.name(QColor::HexArgb) + QLatin1Char('|') +
-      colors.negative.name(QColor::HexArgb) + QLatin1Char('|') + query.queryItemValue(QStringLiteral("palette")) +
-      QLatin1Char('|') + (semantic ? QLatin1Char('1') : QLatin1Char('0')) + QLatin1Char('|') +
+      QString::number(colors.accent.isValid()) + QString::number(colors.background.isValid()) +
+      QString::number(colors.highlightedText.isValid()) + QLatin1Char('|') + colors.accent.name(QColor::HexArgb) +
+      QLatin1Char('|') + colors.background.name(QColor::HexArgb) + QLatin1Char('|') +
+      colors.highlightedText.name(QColor::HexArgb) + QLatin1Char('|') + query.queryItemValue(QStringLiteral("state")) +
+      QLatin1Char('|') + QString::number(dpr) + QLatin1Char('|') + source_hash + QLatin1Char('|') +
+      QString::number(logical_size.width()) + QLatin1Char('x') + QString::number(logical_size.height()) +
+      QLatin1Char('|') + colors.text.name(QColor::HexArgb) + QLatin1Char('|') + colors.highlight.name(QColor::HexArgb) +
+      QLatin1Char('|') + colors.positive.name(QColor::HexArgb) + QLatin1Char('|') +
+      colors.neutral.name(QColor::HexArgb) + QLatin1Char('|') + colors.negative.name(QColor::HexArgb) +
+      QLatin1Char('|') + query.queryItemValue(QStringLiteral("palette")) + QLatin1Char('|') +
+      (semantic ? QLatin1Char('1') : QLatin1Char('0')) + QLatin1Char('|') +
       (symbolic ? QLatin1Char('1') : QLatin1Char('0'));
 
   {

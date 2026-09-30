@@ -10,7 +10,8 @@ Item {
         Normal = 0,
         Muted = 1,
         Disabled = 2,
-        Active = 3
+        Active = 3,
+        Selected = 4
     }
 
     enum Rendering {
@@ -25,10 +26,35 @@ Item {
     property int iconState: HnIcon.Normal
     property int rendering: HnIcon.Semantic
 
-    property color normalColor: HoloniightPalette.textSecondary
-    property color mutedColor: HoloniightPalette.textMuted
-    property color disabledColor: HoloniightPalette.textDisabled
-    property color activeColor: HoloniightPalette.primary
+    property var paletteContext: null
+    property color accentColor: iconPalette.colors.Accent ?? HoloniightPalette.primary
+    property color backgroundColor: iconPalette.colors.Background ?? HoloniightPalette.background
+    property color highlightColor: iconPalette.colors.Highlight ?? HoloniightPalette.primary
+    property color highlightedTextColor: iconPalette.colors.HighlightedText ?? HoloniightPalette.onPrimary
+    property color positiveColor: HoloniightPalette.success
+    property color neutralColor: HoloniightPalette.warning
+    property color negativeColor: HoloniightPalette.error
+
+    property var disabledAccentColor: iconPalette.colors.disabledExplicitAccent ? iconPalette.colors.disabledAccent : undefined
+    property color disabledBackgroundColor: iconPalette.colors.disabledBackground ?? backgroundColor
+    property color disabledHighlightColor: iconPalette.colors.disabledHighlight ?? highlightColor
+    property color disabledHighlightedTextColor: iconPalette.colors.disabledHighlightedText ?? highlightedTextColor
+    property var disabledPositiveColor
+    property var disabledNeutralColor
+    property var disabledNegativeColor
+
+    HnIconPalette {
+        id: iconPalette
+        palette: root.paletteContext
+    }
+
+    readonly property bool hasContextForeground: iconPalette.colors.ExplicitText ?? false
+    readonly property color contextForeground: iconPalette.colors.Text ?? HoloniightPalette.textSecondary
+
+    property color normalColor: root.hasContextForeground ? root.contextForeground : HoloniightPalette.textSecondary
+    property color mutedColor: iconPalette.colors.ExplicitText ? iconPalette.colors.Text : HoloniightPalette.textMuted
+    property color disabledColor: iconPalette.colors.disabledExplicitText ? iconPalette.colors.disabledText : HoloniightPalette.textDisabled
+    property color activeColor: iconPalette.colors.ExplicitText ? iconPalette.colors.Text : HoloniightPalette.primary
 
     readonly property bool _invalidInput: (root.name.length > 0 && String(root.source).length > 0)
                                           || root.name.indexOf("/") >= 0 || root.name.indexOf(":") >= 0
@@ -53,11 +79,22 @@ Item {
             return ""
         if (root.name.length === 0 && root.rendering === HnIcon.Original)
             return root.source
-        return HnIconProvider.sourceUrl(input, root.size, root.resolvedColor,
-                                        HoloniightPalette.primary, HoloniightPalette.success,
-                                        HoloniightPalette.warning, HoloniightPalette.error,
-                                        HoloniightPalette.revision,
-                                        root.rendering === HnIcon.Semantic)
+        return HnIconProvider.sourceUrlWithOptions(input, root.size, {
+            color: root.resolvedColor, highlight: root.highlightColor,
+            positive: root.positiveColor, neutral: root.neutralColor, negative: root.negativeColor,
+            accent: root.accentColor, background: root.backgroundColor,
+            highlightedText: root.highlightedTextColor,
+            disabledColor: root.disabledColor,
+            disabledAccent: root.disabledAccentColor,
+            disabledBackground: root.disabledBackgroundColor,
+            disabledHighlight: root.disabledHighlightColor,
+            disabledHighlightedText: root.disabledHighlightedTextColor,
+            disabledPositive: root.disabledPositiveColor, disabledNeutral: root.disabledNeutralColor,
+            disabledNegative: root.disabledNegativeColor,
+            state: root.iconState, revision: HoloniightPalette.revision,
+            dpr: root.Screen.devicePixelRatio,
+            semantic: root.rendering === HnIcon.Semantic
+        })
     }
 
     implicitWidth: root.size

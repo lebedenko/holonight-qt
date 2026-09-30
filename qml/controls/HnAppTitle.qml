@@ -11,6 +11,8 @@ import Holonight.Core
 Item {
     id: root
 
+    property var paletteContext: null
+
     required property string applicationName
     property url iconSource
     property bool iconTinted: false
@@ -86,6 +88,7 @@ Item {
         id: iconComponent
 
         HnIcon {
+            paletteContext: root.paletteContext
             objectName: "appTitleIcon"
             readonly property bool accessibilityIgnored: Accessible.ignored
             source: root.iconSource

@@ -20,6 +20,7 @@
 #include <QString>
 #include <QTemporaryDir>
 #include <QTest>
+#include <QUrlQuery>
 #include <QVariant>
 
 #include <array>
@@ -5028,4 +5029,36 @@ TEST_F(QmlSmoke, Controls_KeyHintPreservesSquareAppearance) {
   std::unique_ptr<QObject> hint{comp.create()};
   ASSERT_NE(hint, nullptr);
   EXPECT_DOUBLE_EQ(hint->property("background").value<QObject*>()->property("radius").toDouble(), 0);
+}
+
+TEST_F(QmlSmoke, IconProviderOptionsKeepLegacyApiAndResolveSelectionOnce) {
+  QQmlComponent component{&engine_};
+  component.setData(R"(
+    import QtQuick
+    import Holonight.Core
+    Item {
+      property string legacy: HnIconProvider.sourceUrl("folder", 24, "red", "blue", "green", "yellow", "magenta", 7, true)
+      property string selected: HnIconProvider.sourceUrlWithOptions("folder", 24, {
+        color: "red", highlight: "blue", positive: "green", neutral: "yellow", negative: "magenta",
+        accent: "#80123456", background: "black", highlightedText: "white", state: 4, dpr: 2
+      })
+      property string normal: HnIconProvider.sourceUrlWithOptions("folder", 24, {
+        color: "red", highlight: "blue", positive: "green", neutral: "yellow", negative: "magenta",
+        accent: "#80123456", background: "black", highlightedText: "white", state: 0, dpr: 2
+      })
+    })",
+                    QUrl{});
+  ASSERT_EQ(component.status(), QQmlComponent::Ready) << component.errorString().toStdString();
+  const std::unique_ptr<QObject> object{component.create()};
+  ASSERT_TRUE(object);
+  const QUrlQuery legacy{QUrl(object->property("legacy").toString())};
+  EXPECT_FALSE(legacy.hasQueryItem("accent"));
+  EXPECT_EQ(legacy.queryItemValue("revision"), "7");
+  EXPECT_EQ(legacy.queryItemValue("color"), "#ffff0000");
+  const QUrlQuery selected{QUrl(object->property("selected").toString())};
+  EXPECT_EQ(selected.queryItemValue("color"), "#ffffffff");
+  EXPECT_EQ(selected.queryItemValue("highlight"), "#ffffffff");
+  EXPECT_EQ(selected.queryItemValue("background"), "#ff0000ff");
+  EXPECT_EQ(QColor(selected.queryItemValue("accent")).alpha(), 128);
+  EXPECT_NE(object->property("selected"), object->property("normal"));
 }

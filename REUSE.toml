@@ -10,3 +10,10 @@ path = "wayland/wlr-layer-shell-unstable-v1.xml"
 precedence = "override"
 SPDX-FileCopyrightText = "2017 Drew DeVault"
 SPDX-License-Identifier = "MIT"
+
+# Papirus-derived semantic icon rendering fixture.
+[[annotations]]
+path = "tests/fixtures/icons/application-xml.svg"
+precedence = "override"
+SPDX-FileCopyrightText = ["Papirus Development Team", "2026 Andrii L <lebeden@gmail.com>"]
+SPDX-License-Identifier = "GPL-3.0-only"

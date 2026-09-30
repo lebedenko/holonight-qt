@@ -89,6 +89,7 @@ C.ComboBox {
         verticalAlignment: Text.AlignVCenter
 
         HnIcon {
+            paletteContext: root.palette
             id: selectedIcon
 
             anchors.left: parent.left
@@ -281,7 +282,8 @@ C.ComboBox {
                 source: delegateRoot.iconSource
                 rendering: root.iconRendering
                 size: HnMetrics.iconSize(root.resolvedSizeRole)
-                iconState: delegateRoot.enabled ? HnIcon.Normal : HnIcon.Disabled
+                paletteContext: delegateRoot.palette
+                iconState: !delegateRoot.enabled ? HnIcon.Disabled : (delegateRoot.highlighted ? HnIcon.Selected : HnIcon.Normal)
                 visible: source.toString().length > 0 && !delegateIcon.hasError
             }
         }
