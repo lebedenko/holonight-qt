@@ -37,6 +37,7 @@ class HolonightTheme : public QObject {
   Q_PROPERTY(QVariantList themeVariants READ themeVariants CONSTANT)
 
  public:
+  ~HolonightTheme() override = default;
   Q_DISABLE_COPY_MOVE(HolonightTheme)
   [[nodiscard]] static HolonightTheme* create(QQmlEngine* engine, QJSEngine* script_engine);
 
@@ -60,8 +61,8 @@ class HolonightTheme : public QObject {
   [[nodiscard]] QVariantList themeFamilies() const;
   [[nodiscard]] QVariantList themeVariants() const;
 
-  Q_INVOKABLE QVariantList accentOptionsForScheme(const QString& scheme_id) const;
-  Q_INVOKABLE QColor accentColorForScheme(const QString& scheme_id, const QString& accent_id) const;
+  Q_INVOKABLE [[nodiscard]] QVariantList accentOptionsForScheme(const QString& scheme_id) const;
+  Q_INVOKABLE [[nodiscard]] QColor accentColorForScheme(const QString& scheme_id, const QString& accent_id) const;
   Q_INVOKABLE void reload();
 
  Q_SIGNALS:

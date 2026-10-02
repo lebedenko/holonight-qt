@@ -4,6 +4,8 @@ qt_add_executable(holonight_controls_gallery
     main.cpp
 )
 
+# Keep the gallery's existing directory imports while declaring the Qt 6.8 policy.
+qt_policy(SET QTP0004 OLD)
 qt_add_qml_module(holonight_controls_gallery
     URI "HolonightControlsGallery"
     VERSION 1.0

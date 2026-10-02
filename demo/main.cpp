@@ -15,6 +15,7 @@
 
 #include <holonight/config/config.h>
 #include <holonight/theme_catalog.h>
+#include <span>
 
 namespace {
 
@@ -22,11 +23,11 @@ QString normalizedThemeValue(const QString& value) { return value.trimmed().toLo
 
 bool isThemeValue(const QString& value) { return !Holonight::normalizeSchemeId(value).isEmpty(); }
 
-QString findThemeArgument(int argc, char* argv[]) {
-  for (int i = 1; i < argc; ++i) {
-    const QString arg = QString::fromLocal8Bit(argv[i]);
-    if ((arg == QStringLiteral("--theme") || arg == QStringLiteral("-t")) && i + 1 < argc) {
-      const QString value = normalizedThemeValue(QString::fromLocal8Bit(argv[i + 1]));
+QString findThemeArgument(std::span<char*> arguments) {
+  for (std::size_t i = 1; i < arguments.size(); ++i) {
+    const QString arg = QString::fromLocal8Bit(arguments[i]);
+    if ((arg == QStringLiteral("--theme") || arg == QStringLiteral("-t")) && i + 1 < arguments.size()) {
+      const QString value = normalizedThemeValue(QString::fromLocal8Bit(arguments[i + 1]));
       if (isThemeValue(value)) {
         return value;
       }
@@ -72,7 +73,7 @@ int main(int argc, char* argv[]) {
   // Check for the --theme argument before creating QGuiApplication, as the
   // platform theme plugin is initialized in its constructor.
   QTemporaryDir themeConfigDir;
-  const QString theme = findThemeArgument(argc, argv);
+  const QString theme = findThemeArgument({argv, static_cast<std::size_t>(argc)});
   if (!theme.isEmpty() && !writeAppearance(themeConfigDir, theme)) {
     return 1;
   }

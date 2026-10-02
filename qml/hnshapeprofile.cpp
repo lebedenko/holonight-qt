@@ -1,3 +1,5 @@
+// QML properties and invokables are instance APIs used by Qt meta-object dispatch.
+// NOLINTBEGIN(readability-convert-member-functions-to-static)
 // SPDX-License-Identifier: GPL-3.0-or-later
 // SPDX-FileCopyrightText: 2026 Andrii L <lebeden@gmail.com>
 
@@ -51,3 +53,5 @@ QVariantMap HnShapeProfile::resolve(
       {QStringLiteral("corners"), shape.chamfered_corners.toInt()},
   };
 }
+
+// NOLINTEND(readability-convert-member-functions-to-static)

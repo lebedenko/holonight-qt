@@ -21,9 +21,9 @@ class HnIconPalette : public QObject, public QQmlParserStatus {
   Q_PROPERTY(QVariantMap colors READ colors NOTIFY changed)
  public:
   explicit HnIconPalette(QObject* parent = nullptr);
-  QQuickPalette* palette() const { return palette_; }
+  [[nodiscard]] QQuickPalette* palette() const { return palette_; }
   void setPalette(QQuickPalette* palette);
-  QVariantMap colors() const;
+  [[nodiscard]] QVariantMap colors() const;
   void classBegin() override {}
   void componentComplete() override;
  signals:

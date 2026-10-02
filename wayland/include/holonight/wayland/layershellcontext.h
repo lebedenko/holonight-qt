@@ -29,6 +29,7 @@ class LayerShellContext final : public QObject {
   friend class WaylandLayerSurfaceBackend;
   explicit LayerShellContext(QObject* parent = nullptr);
   ~LayerShellContext() override;
+  Q_DISABLE_COPY_MOVE(LayerShellContext)
 
   void initialize();
   void setUnavailable(const QString& diagnostic);

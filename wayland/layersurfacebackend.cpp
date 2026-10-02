@@ -21,20 +21,26 @@ namespace Holonight::Wayland {
 
 static QString qmlErrors(const QQuickView* view) {
   QStringList messages;
-  for (const QQmlError& error : view->errors()) messages.append(error.toString());
+  for (const QQmlError& error : view->errors()) {
+    messages.append(error.toString());
+  }
   return messages.join(QStringLiteral("; "));
 }
 
 class WaylandLayerSurfaceBackend final : public QObject, public LayerSurfaceBackend {
+  Q_DISABLE_COPY_MOVE(WaylandLayerSurfaceBackend)
  public:
+  WaylandLayerSurfaceBackend() = default;
   ~WaylandLayerSurfaceBackend() override {
     destroyRole();
-    if (view_ != nullptr) delete view_.data();
+    if (view_ != nullptr) {
+      delete view_.data();
+    }
   }
 
-  bool isAvailable() const override { return LayerShellContext::instance()->isAvailable(); }
-  quint32 version() const override { return LayerShellContext::instance()->version(); }
-  QString diagnostic() const override { return LayerShellContext::instance()->diagnostic(); }
+  [[nodiscard]] bool isAvailable() const override { return LayerShellContext::instance()->isAvailable(); }
+  [[nodiscard]] quint32 version() const override { return LayerShellContext::instance()->version(); }
+  [[nodiscard]] QString diagnostic() const override { return LayerShellContext::instance()->diagnostic(); }
 
   bool create(const LayerSurfaceSpec& spec, ConfigureHandler configure, CloseHandler close, FailureHandler failure,
               QString* reason) override {
@@ -61,7 +67,7 @@ class WaylandLayerSurfaceBackend final : public QObject, public LayerSurfaceBack
     surface_ = native_window->surface();
     coordinate_factor_ = QHighDpiScaling::factor(candidate);
     candidate->installEventFilter(this);
-    QObject::connect(candidate, &QWindow::screenChanged, this, [this]() { scheduleCoordinateRefresh(); });
+    QObject::connect(candidate, &QWindow::screenChanged, this, [this] { scheduleCoordinateRefresh(); });
     const QByteArray name_space = spec.name_space.toUtf8();
     role_ = zwlr_layer_shell_v1_get_layer_surface(
         static_cast<zwlr_layer_shell_v1*>(LayerShellContext::instance()->nativeLayerShell()), surface_,
@@ -80,9 +86,11 @@ class WaylandLayerSurfaceBackend final : public QObject, public LayerSurfaceBack
         .closed = [](void* data, zwlr_layer_surface_v1*) { static_cast<WaylandLayerSurfaceBackend*>(data)->close_(); },
     };
     zwlr_layer_surface_v1_add_listener(role_, &listener, this);
-    QObject::connect(spec.output, &QObject::destroyed, candidate, [this]() { close_(); });
-    QObject::connect(LayerShellContext::instance(), &LayerShellContext::availabilityChanged, candidate, [this]() {
-      if (!isAvailable()) close_();
+    QObject::connect(spec.output, &QObject::destroyed, candidate, [this] { close_(); });
+    QObject::connect(LayerShellContext::instance(), &LayerShellContext::availabilityChanged, candidate, [this] {
+      if (!isAvailable()) {
+        close_();
+      }
     });
     setSize(spec.width, spec.height);
     setAnchors(spec.anchors);
@@ -90,7 +98,9 @@ class WaylandLayerSurfaceBackend final : public QObject, public LayerSurfaceBack
     setMargins(spec.margin_top, spec.margin_right, spec.margin_bottom, spec.margin_left);
     setKeyboardInteractivity(spec.keyboard_interactivity);
     setInputRegion(spec.input_region_policy, spec.input_region);
-    if (spec.before_load) spec.before_load(candidate->engine());
+    if (spec.before_load) {
+      spec.before_load(candidate->engine());
+    }
     candidate->setInitialProperties(spec.initial_properties);
     candidate->setSource(spec.qml_url);
     if (candidate->status() == QQuickView::Error) {
@@ -105,10 +115,10 @@ class WaylandLayerSurfaceBackend final : public QObject, public LayerSurfaceBack
     return true;
   }
 
-  QQuickView* view() const override { return view_; }
-  QObject* rootObject() const override { return view_ != nullptr ? view_->rootObject() : nullptr; }
-  QQmlEngine* engine() const override { return view_ != nullptr ? view_->engine() : nullptr; }
-  bool hasRole() const override { return role_ != nullptr; }
+  [[nodiscard]] QQuickView* view() const override { return view_; }
+  [[nodiscard]] QObject* rootObject() const override { return view_ != nullptr ? view_->rootObject() : nullptr; }
+  [[nodiscard]] QQmlEngine* engine() const override { return view_ != nullptr ? view_->engine() : nullptr; }
+  [[nodiscard]] bool hasRole() const override { return role_ != nullptr; }
   void ackConfigure(quint32 serial) override { zwlr_layer_surface_v1_ack_configure(role_, serial); }
   void applyConfigureSize(quint32 width, quint32 height) override {
     // Configure dimensions are surface coordinates, not buffer pixels. Qt's
@@ -156,18 +166,23 @@ class WaylandLayerSurfaceBackend final : public QObject, public LayerSurfaceBack
       return;
     }
     auto* native = qGuiApp->nativeInterface<QNativeInterface::QWaylandApplication>();
-    if (native == nullptr || native->compositor() == nullptr) return;
+    if (native == nullptr || native->compositor() == nullptr) {
+      return;
+    }
     wl_region* region = wl_compositor_create_region(native->compositor());
     if (policy == InputRegionPolicy::Region) {
-      for (const QRect& rectangle : QHighDpi::toNativeLocalRegion(requested_region, view_.data()))
+      for (const QRect& rectangle : QHighDpi::toNativeLocalRegion(requested_region, view_.data())) {
         wl_region_add(region, rectangle.x(), rectangle.y(), rectangle.width(), rectangle.height());
+      }
     }
     wl_surface_set_input_region(surface_, region);
     wl_region_destroy(region);
   }
   void commit() override { wl_surface_commit(surface_); }
   void destroyRole() override {
-    if (role_ == nullptr) return;
+    if (role_ == nullptr) {
+      return;
+    }
     zwlr_layer_surface_v1_destroy(role_);
     role_ = nullptr;
     surface_ = nullptr;
@@ -175,7 +190,9 @@ class WaylandLayerSurfaceBackend final : public QObject, public LayerSurfaceBack
   void queueWindowDestruction() override {
     QPointer<QQuickView> doomed = view_;
     view_.clear();
-    if (doomed != nullptr) doomed->deleteLater();
+    if (doomed != nullptr) {
+      doomed->deleteLater();
+    }
   }
 
  private:
@@ -192,7 +209,7 @@ class WaylandLayerSurfaceBackend final : public QObject, public LayerSurfaceBack
       return;
     }
     coordinate_refresh_pending_ = true;
-    QTimer::singleShot(0, this, [this]() {
+    QTimer::singleShot(0, this, [this] {
       coordinate_refresh_pending_ = false;
       if (view_ == nullptr || role_ == nullptr) {
         return;

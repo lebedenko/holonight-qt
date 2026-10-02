@@ -79,9 +79,16 @@ QString HnIconProvider::sourceUrl(const QUrl& source, int size, const QColor& co
 
 QString HnIconProvider::sourceUrlWithOptions(const QUrl& source, int size, const QVariantMap& options) {
   auto color = [&](const char* key) { return options.value(QLatin1String(key)).value<QColor>(); };
-  Holonight::IconSemanticColors base{color("color"),      color("highlight"),      color("positive"),
-                                     color("neutral"),    color("negative"),       color("accent"),
-                                     color("background"), color("highlightedText")};
+  Holonight::IconSemanticColors base{
+      .text = color("color"),
+      .highlight = color("highlight"),
+      .positive = color("positive"),
+      .neutral = color("neutral"),
+      .negative = color("negative"),
+      .accent = color("accent"),
+      .background = color("background"),
+      .highlightedText = color("highlightedText"),
+  };
   auto disabled = base;
   auto disabledColor = [&](const char* key, const QColor& fallback) {
     const auto value = color(key);
@@ -103,16 +110,24 @@ QString HnIconProvider::sourceUrlWithOptions(const QUrl& source, int size, const
   QString url = sourceUrl(source, size, resolved.text, resolved.highlight, resolved.positive, resolved.neutral,
                           resolved.negative, options.value(QStringLiteral("revision"), 0).toInt(),
                           options.value(QStringLiteral("semantic"), true).toBool());
-  if (url.isEmpty()) return url;
+  if (url.isEmpty()) {
+    return url;
+  }
   QUrl parsed{url};
   QUrlQuery query{parsed};
-  for (const auto& entry : {qMakePair(QStringLiteral("accent"), resolved.accent),
-                            qMakePair(QStringLiteral("background"), resolved.background),
-                            qMakePair(QStringLiteral("highlightedText"), resolved.highlightedText)}) {
-    if (entry.second.isValid()) query.addQueryItem(entry.first, colorString(entry.second));
+  for (const auto& entry : {
+           qMakePair(QStringLiteral("accent"), resolved.accent),
+           qMakePair(QStringLiteral("background"), resolved.background),
+           qMakePair(QStringLiteral("highlightedText"), resolved.highlightedText),
+       }) {
+    if (entry.second.isValid()) {
+      query.addQueryItem(entry.first, colorString(entry.second));
+    }
   }
   qreal dpr = options.value(QStringLiteral("dpr"), 1.0).toDouble();
-  if (!qIsFinite(dpr) || dpr < 1 || dpr > 8) dpr = 1;
+  if (!qIsFinite(dpr) || dpr < 1 || dpr > 8) {
+    dpr = 1;
+  }
   query.addQueryItem(QStringLiteral("state"), QString::number(state));
   query.addQueryItem(QStringLiteral("dpr"), QString::number(dpr));
   const auto path = Holonight::IconThemeResolver::resolveIconPath(source.toString(), QSize{size, size}, dpr);

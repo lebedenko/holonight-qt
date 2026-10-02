@@ -20,9 +20,13 @@ struct IconSemanticColors {
   // leave the corresponding authored CSS declarations unchanged.
   QColor accent;
   QColor background;
+  // Matches the existing Qt palette-role API and consumer field name.
+  // NOLINTNEXTLINE(readability-identifier-naming)
   QColor highlightedText;
 };
 
+// Preserve the public enum representation and existing Qt/API compatibility.
+// NOLINTNEXTLINE(performance-enum-size)
 enum class IconState { Normal = 0, Muted = 1, Disabled = 2, Active = 3, Selected = 4 };
 
 [[nodiscard]] IconSemanticColors resolveIconColors(IconSemanticColors base, const IconSemanticColors& disabled,

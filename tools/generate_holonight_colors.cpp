@@ -8,6 +8,7 @@
 #include <filesystem>
 #include <fstream>
 #include <iostream>
+#include <span>
 #include <sstream>
 #include <stdexcept>
 #include <string>
@@ -90,7 +91,7 @@ Holonight::ThemeSchemeKind parseScheme(std::string_view value) {
       "holonight-alucard, holonight-frost, holonight-snow, holonight-canopy, or holonight-glade"};
 }
 
-std::string schemeName(Holonight::ThemeSchemeKind scheme) {
+std::string_view schemeName(Holonight::ThemeSchemeKind scheme) {
   switch (scheme) {
     case Holonight::ThemeSchemeKind::HoloNightDark:
       return "HoloNight Dark";
@@ -128,7 +129,7 @@ std::string schemeName(Holonight::ThemeSchemeKind scheme) {
   return "HoloNight Dark";
 }
 
-std::string schemeId(Holonight::ThemeSchemeKind scheme) {
+std::string_view schemeId(Holonight::ThemeSchemeKind scheme) {
   switch (scheme) {
     case Holonight::ThemeSchemeKind::HoloNightDark:
       return "holonight-dark";
@@ -168,8 +169,8 @@ std::string schemeId(Holonight::ThemeSchemeKind scheme) {
 
 std::string generatedColors(Holonight::ThemeSchemeKind scheme) {
   const auto tok = Holonight::tokensForScheme(scheme);
-  const std::string name = schemeName(scheme);
-  const std::string id = schemeId(scheme);
+  const std::string_view name = schemeName(scheme);
+  const std::string_view scheme_id = schemeId(scheme);
   std::ostringstream out;
 
   out << "[ColorScheme]\n";
@@ -179,7 +180,7 @@ std::string generatedColors(Holonight::ThemeSchemeKind scheme) {
   out << "[General]\n";
   out << "ColorScheme=" << name << '\n';
   out << "Name=" << name << '\n';
-  out << "X-HoloNight-Scheme=" << id << '\n';
+  out << "X-HoloNight-Scheme=" << scheme_id << '\n';
   out << "shadeSortColumn=true\n\n";
 
   out << "[Colors:Window]\n";
@@ -233,13 +234,13 @@ std::string generatedColors(Holonight::ThemeSchemeKind scheme) {
 }
 
 std::string readFile(const std::filesystem::path& path) {
-  std::ifstream in = std::ifstream{path};
-  if (!in) {
+  std::ifstream input = std::ifstream{path};
+  if (!input) {
     throw std::runtime_error{"failed to open " + path.string()};
   }
   std::ostringstream data;
-  data << in.rdbuf();
-  if (in.bad() || !data) {
+  data << input.rdbuf();
+  if (input.bad() || !data) {
     throw std::runtime_error{"failed to read " + path.string()};
   }
   return data.str();
@@ -263,20 +264,20 @@ struct Arguments {
   std::filesystem::path output;
 };
 
-Arguments parseArguments(int argc, char** argv) {
+Arguments parseArguments(std::span<char*> values) {
   Arguments arguments;
-  for (int index = 1; index < argc; ++index) {
-    const std::string_view arg{argv[index]};
+  for (std::size_t index = 1; index < values.size(); ++index) {
+    const std::string_view arg{values[index]};
     if (arg == "--scheme") {
-      if (index + 1 >= argc) {
+      if (index + 1 >= values.size()) {
         throw std::runtime_error{"--scheme requires a scheme ID"};
       }
-      arguments.scheme = parseScheme(argv[++index]);
+      arguments.scheme = parseScheme(values[++index]);
     } else if (arg == "--mode") {
-      if (index + 1 >= argc) {
+      if (index + 1 >= values.size()) {
         throw std::runtime_error{"--mode requires dark or light"};
       }
-      const std::string_view mode = argv[++index];
+      const std::string_view mode = values[++index];
       if (mode == "dark") {
         arguments.scheme = Holonight::ThemeSchemeKind::HoloNightStorm;
       } else if (mode == "light") {
@@ -287,7 +288,7 @@ Arguments parseArguments(int argc, char** argv) {
     } else if (arg == "--check") {
       arguments.check = true;
     } else if (arguments.output.empty()) {
-      arguments.output = argv[index];
+      arguments.output = values[index];
     } else {
       throw std::runtime_error{"unexpected argument '" + std::string{arg} + "'"};
     }
@@ -299,7 +300,7 @@ Arguments parseArguments(int argc, char** argv) {
 
 int main(int argc, char** argv) {
   try {
-    const Arguments arguments = parseArguments(argc, argv);
+    const Arguments arguments = parseArguments({argv, static_cast<std::size_t>(argc)});
     const std::string content = generatedColors(arguments.scheme);
     if (arguments.check) {
       if (arguments.output.empty()) {

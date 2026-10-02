@@ -12,8 +12,12 @@
 
 HnIconPalette::HnIconPalette(QObject* parent) : QObject(parent) {}
 void HnIconPalette::setPalette(QQuickPalette* palette) {
-  if (palette_ == palette) return;
-  if (palette_) disconnect(palette_, nullptr, this, nullptr);
+  if (palette_ == palette) {
+    return;
+  }
+  if (palette_) {
+    disconnect(palette_, nullptr, this, nullptr);
+  }
   palette_ = palette;
   if (palette_) {
     connect(palette_, &QQuickPalette::changed, this, &HnIconPalette::changed);
@@ -28,15 +32,21 @@ void HnIconPalette::componentComplete() {
   emit changed();
 }
 bool HnIconPalette::eventFilter(QObject* watched, QEvent* event) {
-  if (watched == qGuiApp && event->type() == QEvent::ApplicationPaletteChange) emit changed();
+  if (watched == qGuiApp && event->type() == QEvent::ApplicationPaletteChange) {
+    emit changed();
+  }
   return QObject::eventFilter(watched, event);
 }
 QVariantMap HnIconPalette::colors() const {
-  if (!reader_) return {};
+  if (!reader_) {
+    return {};
+  }
   const auto tokens = Holonight::ThemeResolver::resolve(reader_->appearance());
   const auto defaults = Holonight::buildPalette(tokens);
   auto palette = QGuiApplication::palette().resolve(defaults);
-  if (palette_) palette = palette_->toQPalette().resolve(palette);
+  if (palette_) {
+    palette = palette_->toQPalette().resolve(palette);
+  }
   QVariantMap result;
   for (const auto group : {QPalette::Active, QPalette::Disabled}) {
     const QString prefix = group == QPalette::Disabled ? QStringLiteral("disabled") : QString{};

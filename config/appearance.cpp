@@ -50,17 +50,31 @@ AppearanceResolution resolveAppearance(const HoloNight::Config::Appearance& appe
   const QString requested_scheme = fromUtf8(appearance.theme.scheme).trimmed().toLower();
   const ThemeVariantCatalogEntry* variant = themeVariantForSchemeId(requested_scheme);
   if (variant == nullptr) {
-    return {.value = std::nullopt,
-            .diagnostics = {{.code = AppearanceDiagnosticCode::UnsupportedScheme,
-                             .message = QStringLiteral("Unsupported HoloNight scheme: %1").arg(requested_scheme)}}};
+    return {
+        .value = std::nullopt,
+        .diagnostics =
+            {
+                {
+                    .code = AppearanceDiagnosticCode::UnsupportedScheme,
+                    .message = QStringLiteral("Unsupported HoloNight scheme: %1").arg(requested_scheme),
+                },
+            },
+    };
   }
 
   const QString requested_accent = fromUtf8(appearance.theme.accent).trimmed().toLower();
   const QString normalized_accent = normalizeAccentId(requested_accent);
   if (normalized_accent != requested_accent) {
-    return {.value = std::nullopt,
-            .diagnostics = {{.code = AppearanceDiagnosticCode::UnsupportedAccent,
-                             .message = QStringLiteral("Unsupported HoloNight accent: %1").arg(requested_accent)}}};
+    return {
+        .value = std::nullopt,
+        .diagnostics =
+            {
+                {
+                    .code = AppearanceDiagnosticCode::UnsupportedAccent,
+                    .message = QStringLiteral("Unsupported HoloNight accent: %1").arg(requested_accent),
+                },
+            },
+    };
   }
 
   ResolvedAppearance result{
@@ -93,11 +107,13 @@ AppearanceResolution resolveAppearance(const HoloNight::Config::Appearance& appe
 }
 
 AppearanceDiagnostic qtDiagnostic(const HoloNight::Config::Diagnostic& diagnostic) {
-  return {.code = AppearanceDiagnosticCode::Configuration,
-          .severity = diagnostic.severity == HoloNight::Config::Severity::Info ? AppearanceDiagnosticSeverity::Info
-                                                                               : AppearanceDiagnosticSeverity::Error,
-          .message = fromUtf8(diagnostic.message),
-          .path = diagnostic.path.has_value() ? QString::fromStdString(diagnostic.path->string()) : QString{}};
+  return {
+      .code = AppearanceDiagnosticCode::Configuration,
+      .severity = diagnostic.severity == HoloNight::Config::Severity::Info ? AppearanceDiagnosticSeverity::Info
+                                                                           : AppearanceDiagnosticSeverity::Error,
+      .message = fromUtf8(diagnostic.message),
+      .path = diagnostic.path.has_value() ? QString::fromStdString(diagnostic.path->string()) : QString{},
+  };
 }
 
 }  // namespace Holonight

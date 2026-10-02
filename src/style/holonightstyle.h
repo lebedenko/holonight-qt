@@ -18,6 +18,7 @@ class HoloniightStyle : public QProxyStyle {
   Q_OBJECT
  public:
   explicit HoloniightStyle();
+  ~HoloniightStyle() override = default;
   Q_DISABLE_COPY_MOVE(HoloniightStyle)
 
   void polish(QPalette& palette) override;
@@ -47,6 +48,11 @@ class HoloniightStyle : public QProxyStyle {
   [[nodiscard]] QPalette standardPalette() const override;
 
  private:
+  bool drawShapedFrameImpl(const QStyleOption* option, QPainter* painter) const;
+  bool drawMenuItemImpl(const QStyleOption* option, QPainter* painter, const QWidget* widget) const;
+  void drawPanelToolButtonImpl(const QStyleOption* option, QPainter* painter, const QWidget* widget) const;
+  void drawFrameImpl(const QStyleOption* option, QPainter* painter, const QWidget* widget) const;
+  [[nodiscard]] static QRect scrollBarGrooveRect(QRect rect, bool horizontal);
   [[nodiscard]] int scaledMetric(int value) const;
   void reloadTheme();
 

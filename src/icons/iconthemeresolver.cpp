@@ -21,7 +21,7 @@ constexpr qsizetype kMaximumSvgBytes = 1024 * 1024;
   if (!file.open(QIODevice::ReadOnly)) {
     return {};
   }
-  const QByteArray bytes = file.read(limit + 1);
+  QByteArray bytes = file.read(limit + 1);
   if (file.error() != QFileDevice::NoError || bytes.size() > limit) {
     return {};
   }
@@ -38,9 +38,15 @@ constexpr qsizetype kMaximumSvgBytes = 1024 * 1024;
 
 [[nodiscard]] QString directPath(const QString& source) {
   const QUrl url{source};
-  if (url.scheme() == QStringLiteral("qrc")) return qrcPathFromUrl(url);
-  if (url.isLocalFile()) return url.toLocalFile();
-  if (source.startsWith(QStringLiteral(":/")) || QFileInfo::exists(source)) return source;
+  if (url.scheme() == QStringLiteral("qrc")) {
+    return qrcPathFromUrl(url);
+  }
+  if (url.isLocalFile()) {
+    return url.toLocalFile();
+  }
+  if (source.startsWith(QStringLiteral(":/")) || QFileInfo::exists(source)) {
+    return source;
+  }
   return {};
 }
 
@@ -63,7 +69,9 @@ constexpr qsizetype kMaximumSvgBytes = 1024 * 1024;
                                     qreal requested_scale) {
   const QString group = directory.endsWith(QStringLiteral("/.")) ? directory.chopped(2) : directory;
   const int size = index.value(group + QStringLiteral("/Size"), 0).toInt();
-  if (size <= 0) return (std::numeric_limits<int>::max)();
+  if (size <= 0) {
+    return std::numeric_limits<int>::max();
+  }
   const int scale = (std::max)(1, index.value(group + QStringLiteral("/Scale"), 1).toInt());
   const QString type = index.value(group + QStringLiteral("/Type"), QStringLiteral("Threshold")).toString();
   int minimum = size;
@@ -77,24 +85,32 @@ constexpr qsizetype kMaximumSvgBytes = 1024 * 1024;
     maximum += threshold;
   }
   int distance = 0;
-  if (requested < minimum) distance = minimum - requested;
-  if (requested > maximum) distance = requested - maximum;
-  return distance * 1000 + qRound(qAbs(scale - requested_scale) * 100);
+  if (requested < minimum) {
+    distance = minimum - requested;
+  }
+  if (requested > maximum) {
+    distance = requested - maximum;
+  }
+  return (distance * 1000) + qRound(qAbs(scale - requested_scale) * 100);
 }
 
 // Search every root of a theme before walking its inherited themes.
 [[nodiscard]] QString resolvePathInTheme(const QString& name, const QString& theme, const QStringList& roots,
                                          int requested, qreal scale, QSet<QString>& visited) {
-  if (visited.contains(theme)) return {};
+  if (visited.contains(theme)) {
+    return {};
+  }
   visited.insert(theme);
   struct Candidate {
     QString path;
-    int distance = (std::numeric_limits<int>::max)();
+    int distance = std::numeric_limits<int>::max();
   } best;
   QStringList parents;
   for (const auto& root : roots) {
     const QString theme_path = root + QLatin1Char('/') + theme;
-    if (!QFileInfo::exists(theme_path + QStringLiteral("/index.theme"))) continue;
+    if (!QFileInfo::exists(theme_path + QStringLiteral("/index.theme"))) {
+      continue;
+    }
     QSettings index(theme_path + QStringLiteral("/index.theme"), QSettings::IniFormat);
     // QSettings parses INI sections lazily. Icon directories contain slashes in their section names;
     // enumerate them before looking up nested keys so those sections are available on first access.
@@ -106,20 +122,26 @@ constexpr qsizetype kMaximumSvgBytes = 1024 * 1024;
     index.endGroup();
     for (const auto& directory : directories) {
       const int distance = directoryDistance(index, directory, requested, scale);
-      if (distance > best.distance) continue;
+      if (distance > best.distance) {
+        continue;
+      }
       for (const auto& extension : {QStringLiteral(".svg"), QStringLiteral(".png"), QStringLiteral(".xpm")}) {
         const QString path = theme_path + QLatin1Char('/') + directory + QLatin1Char('/') + name + extension;
         if (QFileInfo{path}.isFile() && distance < best.distance) {
-          best = {path, distance};
+          best = {.path = path, .distance = distance};
         }
       }
     }
   }
-  if (!best.path.isEmpty()) return best.path;
+  if (!best.path.isEmpty()) {
+    return best.path;
+  }
   parents.removeDuplicates();
   for (const auto& parent : parents) {
     const QString path = resolvePathInTheme(name, parent, roots, requested, scale, visited);
-    if (!path.isEmpty()) return path;
+    if (!path.isEmpty()) {
+      return path;
+    }
   }
   return {};
 }
@@ -128,8 +150,12 @@ constexpr qsizetype kMaximumSvgBytes = 1024 * 1024;
 
 QString IconThemeResolver::resolveIconPath(const QString& source, QSize size, qreal scale) {
   const QString direct = directPath(source);
-  if (!direct.isEmpty()) return QFileInfo{direct}.isFile() ? direct : QString{};
-  if (source.contains(QLatin1Char('/')) || source.contains(QLatin1Char(':'))) return {};
+  if (!direct.isEmpty()) {
+    return QFileInfo{direct}.isFile() ? direct : QString{};
+  }
+  if (source.contains(QLatin1Char('/')) || source.contains(QLatin1Char(':'))) {
+    return {};
+  }
   QString name = source.endsWith(QStringLiteral(".svg")) ? source.chopped(4) : source;
   const QStringList roots = iconSearchRoots();
   const QStringList themes = iconThemeNames();
@@ -138,11 +164,17 @@ QString IconThemeResolver::resolveIconPath(const QString& source, QSize size, qr
     for (const auto& theme : themes) {
       QSet<QString> visited;
       const QString path = resolvePathInTheme(name, theme, roots, requested, scale, visited);
-      if (!path.isEmpty()) return path;
+      if (!path.isEmpty()) {
+        return path;
+      }
     }
-    if (name.endsWith(QStringLiteral("-symbolic"))) break;
-    const int separator = name.lastIndexOf(QLatin1Char('-'));
-    if (separator < 0) break;
+    if (name.endsWith(QStringLiteral("-symbolic"))) {
+      break;
+    }
+    const qsizetype separator = name.lastIndexOf(QLatin1Char('-'));
+    if (separator < 0) {
+      break;
+    }
     name.truncate(separator);
   }
   return {};

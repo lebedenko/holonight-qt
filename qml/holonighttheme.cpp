@@ -1,3 +1,5 @@
+// QML properties and invokables are instance APIs used by Qt meta-object dispatch.
+// NOLINTBEGIN(readability-convert-member-functions-to-static)
 // SPDX-License-Identifier: GPL-3.0-or-later
 // SPDX-FileCopyrightText: 2026 Andrii L <lebeden@gmail.com>
 
@@ -81,3 +83,5 @@ QVariantList HolonightTheme::accentOptionsForScheme(const QString& scheme_id) co
 QColor HolonightTheme::accentColorForScheme(const QString& scheme_id, const QString& accent_id) const {
   return Holonight::accentColorForScheme(scheme_id, accent_id);
 }
+
+// NOLINTEND(readability-convert-member-functions-to-static)

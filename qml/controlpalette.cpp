@@ -10,33 +10,53 @@
 #include <QGuiApplication>
 #include <QQmlEngine>
 
+#include <algorithm>
+#include <array>
+
 namespace {
-QColor blend(const QColor& from, const QColor& to, qreal amount) {
-  return QColor::fromRgbF(
-      from.redF() * (1 - amount) + to.redF() * amount, from.greenF() * (1 - amount) + to.greenF() * amount,
-      from.blueF() * (1 - amount) + to.blueF() * amount, from.alphaF() * (1 - amount) + to.alphaF() * amount);
+QColor blend(const QColor& from, const QColor& target, qreal amount) {
+  return QColor::fromRgbF(static_cast<float>((from.redF() * (1 - amount)) + (target.redF() * amount)),
+                          static_cast<float>((from.greenF() * (1 - amount)) + (target.greenF() * amount)),
+                          static_cast<float>((from.blueF() * (1 - amount)) + (target.blueF() * amount)),
+                          static_cast<float>((from.alphaF() * (1 - amount)) + (target.alphaF() * amount)));
 }
 }  // namespace
 void ControlPalette::setPalette(QQuickPalette* palette) {
-  if (source_ == palette) return;
-  if (source_) disconnect(source_, nullptr, this, nullptr);
+  if (source_ == palette) {
+    return;
+  }
+  if (source_) {
+    disconnect(source_, nullptr, this, nullptr);
+  }
   source_ = palette;
-  if (source_) connect(source_, &QQuickPalette::changed, this, &ControlPalette::refreshPalette);
+  if (source_) {
+    connect(source_, &QQuickPalette::changed, this, &ControlPalette::refreshPalette);
+  }
   refreshPalette();
 }
 void ControlPalette::setInheritFrom(QQuickPalette* palette) {
-  if (inherit_from_ == palette) return;
-  if (inherit_from_) disconnect(inherit_from_, nullptr, this, nullptr);
+  if (inherit_from_ == palette) {
+    return;
+  }
+  if (inherit_from_) {
+    disconnect(inherit_from_, nullptr, this, nullptr);
+  }
   inherit_from_ = palette;
-  if (inherit_from_) connect(inherit_from_, &QQuickPalette::changed, this, &ControlPalette::refreshPalette);
+  if (inherit_from_) {
+    connect(inherit_from_, &QQuickPalette::changed, this, &ControlPalette::refreshPalette);
+  }
   refreshPalette();
 }
 void ControlPalette::refreshPalette() {
-  if (refreshing_) return;
+  if (refreshing_) {
+    return;
+  }
   refreshing_ = true;
   // ComboBox owns its popup: inherit its palette through Qt's resolve masks,
   // rather than assigning a palette that would replace popup-local roles.
-  if (source_ && inherit_from_) source_->inheritPalette(inherit_from_->toQPalette());
+  if (source_ && inherit_from_) {
+    source_->inheritPalette(inherit_from_->toQPalette());
+  }
   palette_ = source_ ? source_->toQPalette() : QPalette{};
   refreshing_ = false;
   emit changed();
@@ -55,13 +75,12 @@ void ControlPalette::componentComplete() {
 }
 bool ControlPalette::defaultDisabled() const {
   const auto defaults = appearancePalette();
-  for (const auto role : {static_cast<QPalette::ColorRole>(fill_role_), QPalette::Mid}) {
-    if (QGuiApplication::palette().isBrushSet(QPalette::Disabled, role) ||
-        palette_.isBrushSet(QPalette::Disabled, role) ||
-        palette_.color(QPalette::Disabled, role) != defaults.color(QPalette::Disabled, role))
-      return false;
-  }
-  return true;
+  const std::array roles{static_cast<QPalette::ColorRole>(fill_role_), QPalette::Mid};
+  return std::ranges::none_of(roles, [&](auto role) {
+    return QGuiApplication::palette().isBrushSet(QPalette::Disabled, role) ||
+           palette_.isBrushSet(QPalette::Disabled, role) ||
+           palette_.color(QPalette::Disabled, role) != defaults.color(QPalette::Disabled, role);
+  });
 }
 QVariantMap ControlPalette::colors() const {
   const auto group = static_cast<QPalette::ColorGroup>(group_);
@@ -70,15 +89,13 @@ QVariantMap ControlPalette::colors() const {
   const auto fill = static_cast<QPalette::ColorRole>(fill_role_);
   auto color = [&](QPalette::ColorRole role) { return palette_.color(group, role); };
   auto matches = [&](std::initializer_list<QPalette::ColorRole> roles) {
-    for (auto role : roles)
-      if (color(role) != defaults.color(group, role)) return false;
-    return true;
+    return std::ranges::all_of(roles, [&](auto role) { return color(role) == defaults.color(group, role); });
   };
   QVariantMap result;
   result.insert(QStringLiteral("link"), color(QPalette::Link));
   auto overlay = [&](qreal opacity) {
     auto shadow = color(QPalette::Shadow);
-    shadow.setAlphaF(shadow.alphaF() * opacity);
+    shadow.setAlphaF(static_cast<float>(shadow.alphaF() * opacity));
     return shadow;
   };
   result.insert(QStringLiteral("modalOverlay"), overlay(0.5));
@@ -86,9 +103,9 @@ QVariantMap ControlPalette::colors() const {
   auto direct = [&](const char* name, QPalette::ColorRole role, const QColor& token) {
     result.insert(QLatin1String(name), matches({role}) ? token : color(role));
   };
-  auto derived = [&](const char* name, QPalette::ColorRole a, QPalette::ColorRole b, qreal amount,
+  auto derived = [&](const char* name, QPalette::ColorRole first, QPalette::ColorRole second, qreal amount,
                      const QColor& token) {
-    result.insert(QLatin1String(name), matches({a, b}) ? token : blend(color(a), color(b), amount));
+    result.insert(QLatin1String(name), matches({first, second}) ? token : blend(color(first), color(second), amount));
   };
   direct("background", QPalette::Window, tokens_.background);
   direct("surface", QPalette::Base, tokens_.surface);

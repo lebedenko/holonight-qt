@@ -24,27 +24,31 @@ class ControlPalette : public QObject, public QQmlParserStatus {
   Q_PROPERTY(QQuickPalette* appearancePalette READ qmlAppearancePalette NOTIFY changed)
   Q_PROPERTY(bool defaultDisabled READ defaultDisabled NOTIFY changed)
  public:
+  // Preserve the public enum representation and existing Qt/API compatibility.
+  // NOLINTNEXTLINE(performance-enum-size,cppcoreguidelines-use-enum-class)
   enum ColorGroup { Active = QPalette::Active, Disabled = QPalette::Disabled, Inactive = QPalette::Inactive };
   Q_ENUM(ColorGroup)
+  // Preserve the public enum representation and existing Qt/API compatibility.
+  // NOLINTNEXTLINE(performance-enum-size,cppcoreguidelines-use-enum-class)
   enum Role {
     WindowText = QPalette::WindowText,
     Text = QPalette::Text,
     ButtonText = QPalette::ButtonText,
     Base = QPalette::Base,
-    Button = QPalette::Button
+    Button = QPalette::Button,
   };
   Q_ENUM(Role)
   explicit ControlPalette(QObject* parent = nullptr) : QObject(parent) {}
-  QQuickPalette* palette() const { return source_; }
+  [[nodiscard]] QQuickPalette* palette() const { return source_; }
   void setPalette(QQuickPalette* palette);
-  QQuickPalette* inheritFrom() const { return inherit_from_; }
+  [[nodiscard]] QQuickPalette* inheritFrom() const { return inherit_from_; }
   void setInheritFrom(QQuickPalette* palette);
   void classBegin() override {}
   void componentComplete() override;
-  QVariantMap colors() const;
+  [[nodiscard]] QVariantMap colors() const;
   QQuickPalette* qmlAppearancePalette() { return &appearance_palette_; }
-  QPalette appearancePalette() const { return Holonight::buildPalette(tokens_); }
-  bool defaultDisabled() const;
+  [[nodiscard]] QPalette appearancePalette() const { return Holonight::buildPalette(tokens_); }
+  [[nodiscard]] bool defaultDisabled() const;
  signals:
   void changed();
 

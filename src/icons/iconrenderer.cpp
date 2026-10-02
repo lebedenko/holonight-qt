@@ -9,6 +9,8 @@
 #include <QXmlStreamReader>
 
 #include <algorithm>
+#include <array>
+#include <ranges>
 
 namespace Holonight {
 namespace {
@@ -27,14 +29,19 @@ namespace {
 }  // namespace
 
 QColor blendIconColor(const QColor& source, const QColor& background, qreal amount) {
-  if (!source.isValid() || !background.isValid()) return source;
-  return QColor::fromRgbF(source.redF() * (1 - amount) + background.redF() * amount,
-                          source.greenF() * (1 - amount) + background.greenF() * amount,
-                          source.blueF() * (1 - amount) + background.blueF() * amount, source.alphaF());
+  if (!source.isValid() || !background.isValid()) {
+    return source;
+  }
+  return QColor::fromRgbF(static_cast<float>((source.redF() * (1 - amount)) + (background.redF() * amount)),
+                          static_cast<float>((source.greenF() * (1 - amount)) + (background.greenF() * amount)),
+                          static_cast<float>((source.blueF() * (1 - amount)) + (background.blueF() * amount)),
+                          source.alphaF());
 }
 
 IconSemanticColors resolveIconColors(IconSemanticColors base, const IconSemanticColors& disabled, IconState state) {
-  if (state == IconState::Disabled) return disabled;
+  if (state == IconState::Disabled) {
+    return disabled;
+  }
   if (state == IconState::Selected) {
     base.text = base.highlightedText;
     base.positive = base.neutral = base.negative = base.highlightedText;
@@ -47,13 +54,75 @@ IconSemanticColors resolveIconColors(IconSemanticColors base, const IconSemantic
 }
 
 namespace {
+struct Declaration {
+  qsizetype start;
+  qsizetype length;
+  QColor color;
+};
+
+QList<Declaration> colorDeclarations(const QString& parsed_css, const IconSemanticColors& colors) {
+  const std::array roles{
+      std::pair{QStringLiteral("Text"), colors.text},
+      std::pair{QStringLiteral("Highlight"), colors.highlight},
+      std::pair{QStringLiteral("PositiveText"), colors.positive},
+      std::pair{QStringLiteral("NeutralText"), colors.neutral},
+      std::pair{QStringLiteral("NegativeText"), colors.negative},
+      std::pair{QStringLiteral("Accent"), colors.accent},
+      std::pair{QStringLiteral("Background"), colors.background},
+      std::pair{QStringLiteral("HighlightedText"), colors.highlightedText},
+  };
+  QList<Declaration> declarations;
+  for (const auto& [name, value] : roles) {
+    if (!value.isValid()) {
+      continue;
+    }
+    const QRegularExpression rule{QStringLiteral("\\.ColorScheme-%1\\s*\\{([^}]*)\\}").arg(name)};
+    auto rules = rule.globalMatch(parsed_css);
+    while (rules.hasNext()) {
+      const auto block = rules.next();
+      static const QRegularExpression color_declaration{
+          QStringLiteral("(?:^|;)\\s*color\\s*:\\s*([^;]*?)(\\s*(?:!important\\s*)?)(?=;|$)")};
+      auto matches = color_declaration.globalMatch(block.captured(1));
+      while (matches.hasNext()) {
+        const auto declaration = matches.next();
+        declarations.append({
+            .start = block.capturedStart(1) + declaration.capturedStart(1),
+            .length = declaration.capturedLength(1),
+            .color = value,
+        });
+      }
+    }
+  }
+  return declarations;
+}
+
+QString recolorCss(QString css, const IconSemanticColors& colors, bool rendering) {
+  QString parsed_css = css;
+  static const QRegularExpression comments{QStringLiteral("/\\*[\\s\\S]*?\\*/")};
+  auto comment_matches = comments.globalMatch(parsed_css);
+  while (comment_matches.hasNext()) {
+    const auto comment = comment_matches.next();
+    for (qsizetype index = comment.capturedStart(); index < comment.capturedEnd(); ++index) {
+      parsed_css[index] = QLatin1Char(' ');
+    }
+  }
+  auto declarations = colorDeclarations(parsed_css, colors);
+  std::ranges::sort(declarations,
+                    [](const Declaration& left, const Declaration& right) { return left.start > right.start; });
+  for (const auto& declaration : declarations) {
+    QString replacement = cssColor(declaration.color);
+    // QtSvg does not parse RGBA CSS colors. Its color-opacity property affects
+    // currentColor alone, leaving authored layer/fill/stroke opacity intact.
+    if (rendering && declaration.color.alpha() != 255) {
+      replacement = declaration.color.name(QColor::HexRgb) +
+                    QStringLiteral(";color-opacity:%1").arg(declaration.color.alphaF(), 0, 'g', 8);
+    }
+    css.replace(declaration.start, declaration.length, replacement);
+  }
+  return css;
+}
+
 QByteArray recolorSvg(const QByteArray& svg_bytes, const IconSemanticColors& colors, bool rendering) {
-  const QString names[] = {QStringLiteral("Text"),         QStringLiteral("Highlight"),
-                           QStringLiteral("PositiveText"), QStringLiteral("NeutralText"),
-                           QStringLiteral("NegativeText"), QStringLiteral("Accent"),
-                           QStringLiteral("Background"),   QStringLiteral("HighlightedText")};
-  const QColor values[] = {colors.text,     colors.highlight, colors.positive,   colors.neutral,
-                           colors.negative, colors.accent,    colors.background, colors.highlightedText};
   QString svg = QString::fromUtf8(svg_bytes);
   struct Block {
     qsizetype start;
@@ -64,58 +133,22 @@ QByteArray recolorSvg(const QByteArray& svg_bytes, const IconSemanticColors& col
   while (!xml.atEnd()) {
     xml.readNext();
     if (!xml.isStartElement() || xml.name() != QStringLiteral("style") ||
-        xml.attributes().value(QStringLiteral("id")) != QStringLiteral("current-color-scheme"))
+        xml.attributes().value(QStringLiteral("id")) != QStringLiteral("current-color-scheme")) {
       continue;
+    }
     const qsizetype start = xml.characterOffset();
     xml.readElementText(QXmlStreamReader::SkipChildElements);
     const qsizetype end = svg.lastIndexOf(QStringLiteral("</"), xml.characterOffset() - 1);
-    if (end >= start) blocks.append({start, end - start});
+    if (end >= start) {
+      blocks.append({.start = start, .length = end - start});
+    }
   }
-  if (xml.hasError()) return svg_bytes;
-  for (auto it = blocks.crbegin(); it != blocks.crend(); ++it) {
-    QString css = svg.mid(it->start, it->length);
-    QString parsed_css = css;
-    static const QRegularExpression comments{QStringLiteral("/\\*[\\s\\S]*?\\*/")};
-    auto comment_matches = comments.globalMatch(parsed_css);
-    while (comment_matches.hasNext()) {
-      const auto comment = comment_matches.next();
-      for (qsizetype index = comment.capturedStart(); index < comment.capturedEnd(); ++index)
-        parsed_css[index] = QLatin1Char(' ');
-    }
-    struct Declaration {
-      qsizetype start;
-      qsizetype length;
-      QColor color;
-    };
-    QList<Declaration> declarations;
-    for (int role = 0; role < 8; ++role) {
-      if (!values[role].isValid()) continue;
-      const QRegularExpression rule{QStringLiteral("\\.ColorScheme-%1\\s*\\{([^}]*)\\}").arg(names[role])};
-      auto rules = rule.globalMatch(parsed_css);
-      while (rules.hasNext()) {
-        const auto block = rules.next();
-        static const QRegularExpression color_declaration{
-            QStringLiteral("(?:^|;)\\s*color\\s*:\\s*([^;]*?)(\\s*(?:!important\\s*)?)(?=;|$)")};
-        auto matches = color_declaration.globalMatch(block.captured(1));
-        while (matches.hasNext()) {
-          const auto declaration = matches.next();
-          declarations.append(
-              {block.capturedStart(1) + declaration.capturedStart(1), declaration.capturedLength(1), values[role]});
-        }
-      }
-    }
-    std::sort(declarations.begin(), declarations.end(),
-              [](const Declaration& left, const Declaration& right) { return left.start > right.start; });
-    for (const auto& declaration : declarations) {
-      QString replacement = cssColor(declaration.color);
-      // QtSvg does not parse RGBA CSS colors. Its color-opacity property affects
-      // currentColor alone, leaving authored layer/fill/stroke opacity intact.
-      if (rendering && declaration.color.alpha() != 255)
-        replacement = declaration.color.name(QColor::HexRgb) +
-                      QStringLiteral(";color-opacity:%1").arg(declaration.color.alphaF(), 0, 'g', 8);
-      css.replace(declaration.start, declaration.length, replacement);
-    }
-    svg.replace(it->start, it->length, css);
+  if (xml.hasError()) {
+    return svg_bytes;
+  }
+  for (auto block : std::views::reverse(blocks)) {
+    const QString css = recolorCss(svg.mid(block.start, block.length), colors, rendering);
+    svg.replace(block.start, block.length, css);
   }
   return svg.toUtf8();
 }
@@ -131,13 +164,18 @@ bool IconRenderer::hasSemanticRoles(const QByteArray& svg_bytes) {
   QXmlStreamReader xml{svg_bytes};
   while (!xml.atEnd()) {
     xml.readNext();
-    if (!xml.isStartElement()) continue;
+    if (!xml.isStartElement()) {
+      continue;
+    }
     const auto tokens = xml.attributes()
                             .value(QStringLiteral("class"))
                             .toString()
                             .split(QRegularExpression{QStringLiteral("\\s+")}, Qt::SkipEmptyParts);
-    for (const auto& token : tokens)
-      if (role.match(token).hasMatch()) return true;
+    for (const auto& token : tokens) {
+      if (role.match(token).hasMatch()) {
+        return true;
+      }
+    }
   }
   return false;
 }

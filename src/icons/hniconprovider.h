@@ -16,6 +16,7 @@ class HnIconProvider : public QObject {
 
  public:
   explicit HnIconProvider(QObject* parent = nullptr);
+  ~HnIconProvider() override = default;
   Q_DISABLE_COPY_MOVE(HnIconProvider)
 
   Q_INVOKABLE QString sourceUrl(const QUrl& source, int size, const QColor& color, const QColor& highlight,

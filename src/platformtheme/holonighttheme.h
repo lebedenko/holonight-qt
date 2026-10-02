@@ -11,6 +11,7 @@
 class HoloniightTheme : public QPlatformTheme {
  public:
   HoloniightTheme();
+  ~HoloniightTheme() override = default;
   Q_DISABLE_COPY_MOVE(HoloniightTheme)
 
   [[nodiscard]] const QPalette* palette(Palette type = SystemPalette) const override;

@@ -21,11 +21,14 @@ class LayerSurfaceHost final : public QObject {
   Q_PROPERTY(QString diagnostic READ diagnostic NOTIFY diagnosticChanged)
 
  public:
+  // Preserve the public enum representation and existing Qt/API compatibility.
+  // NOLINTNEXTLINE(performance-enum-size)
   enum class State { Idle, WaitingForConfigure, Configured, Closing, Closed, Failed };
   Q_ENUM(State)
 
   explicit LayerSurfaceHost(QObject* parent = nullptr);
   ~LayerSurfaceHost() override;
+  Q_DISABLE_COPY_MOVE(LayerSurfaceHost)
 
   bool open(const LayerSurfaceSpec& spec);
   Q_INVOKABLE void close();

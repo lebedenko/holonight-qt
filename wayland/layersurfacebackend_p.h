@@ -18,6 +18,8 @@ class LayerSurfaceBackend {
   using CloseHandler = std::function<void()>;
   using FailureHandler = std::function<void(const QString&)>;
 
+  LayerSurfaceBackend() = default;
+  Q_DISABLE_COPY_MOVE(LayerSurfaceBackend)
   virtual ~LayerSurfaceBackend() = default;
   [[nodiscard]] virtual bool isAvailable() const = 0;
   [[nodiscard]] virtual quint32 version() const = 0;

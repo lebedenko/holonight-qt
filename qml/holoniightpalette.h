@@ -99,6 +99,7 @@ class HoloniightPalette : public QObject {
   Q_PROPERTY(int revision READ revision NOTIFY paletteChanged)
 
  public:
+  ~HoloniightPalette() override = default;
   Q_DISABLE_COPY_MOVE(HoloniightPalette)
   [[nodiscard]] static HoloniightPalette* create(QQmlEngine* engine, QJSEngine* script_engine);
 

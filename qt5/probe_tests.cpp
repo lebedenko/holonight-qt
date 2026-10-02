@@ -19,11 +19,14 @@
 #include <set>
 
 namespace {
-int failures = 0;
+int& failureCount() {
+  static int count = 0;
+  return count;
+}
 void expect(bool condition, const char* message) {
   if (!condition) {
     std::cerr << "FAIL: " << message << '\n';
-    ++failures;
+    ++failureCount();
   }
 }
 double luminance(const QColor& color) {
@@ -31,7 +34,7 @@ double luminance(const QColor& color) {
     value /= 255.0;
     return value <= 0.04045 ? value / 12.92 : std::pow((value + 0.055) / 1.055, 2.4);
   };
-  return 0.2126 * channel(color.red()) + 0.7152 * channel(color.green()) + 0.0722 * channel(color.blue());
+  return (0.2126 * channel(color.red())) + (0.7152 * channel(color.green())) + (0.0722 * channel(color.blue()));
 }
 double contrast(const QColor& first, const QColor& second) {
   const double light = (std::max)(luminance(first), luminance(second));
@@ -44,8 +47,13 @@ int main(int argc, char** argv) {
   QApplication app(argc, argv);
   std::set<std::string> contrast_failures;
   for (const auto& variant : Holonight::themeVariants()) {
-    for (const QString& accent : {QStringLiteral("default"), QStringLiteral("cyan"), QStringLiteral("blue"),
-                                  QStringLiteral("violet"), QStringLiteral("yellow")}) {
+    for (const QString& accent : {
+             QStringLiteral("default"),
+             QStringLiteral("cyan"),
+             QStringLiteral("blue"),
+             QStringLiteral("violet"),
+             QStringLiteral("yellow"),
+         }) {
       qputenv("HOLONIGHT_QT5_SCHEME", variant.id.toUtf8());
       qputenv("HOLONIGHT_QT5_ACCENT", accent.toUtf8());
       const auto appearance = Holonight::qt5ProbeAppearance();
@@ -58,8 +66,9 @@ int main(int argc, char** argv) {
       expect(palette.color(QPalette::HighlightedText) == tokens.onPrimary, "selected text maps exactly");
       expect(palette.color(QPalette::Disabled, QPalette::Text) == tokens.textDisabled, "disabled text maps exactly");
       expect(contrast(tokens.textPrimary, tokens.background) >= 4.5, "primary text contrast passes WCAG AA");
-      if (contrast(tokens.onPrimary, tokens.primary) < 3.0)
+      if (contrast(tokens.onPrimary, tokens.primary) < 3.0) {
         contrast_failures.insert(variant.id.toStdString() + '/' + accent.toStdString());
+      }
     }
   }
   expect(contrast_failures ==
@@ -96,5 +105,5 @@ int main(int argc, char** argv) {
   expect(theme.font(QPlatformTheme::SystemFont)->pointSize() == 12, "platform theme exposes font hint");
   expect(theme.palette()->color(QPalette::Highlight) == QColor(QStringLiteral("#5EA2FF")),
          "platform theme exposes semantic palette");
-  return failures == 0 ? 0 : 1;
+  return failureCount() == 0 ? 0 : 1;
 }

@@ -12,6 +12,8 @@
 
 #include <holonight/config/config.h>
 
+// Qt generates this registration symbol from the module URI.
+// NOLINTNEXTLINE(readability-identifier-naming)
 void qml_register_types_Holonight();
 
 class HolonightStylePlugin : public QQuickStylePlugin {
@@ -22,13 +24,14 @@ class HolonightStylePlugin : public QQuickStylePlugin {
     volatile auto registration = &qml_register_types_Holonight;
     Q_UNUSED(registration);
   }
+  Q_DISABLE_COPY_MOVE(HolonightStylePlugin)
   ~HolonightStylePlugin() override {
     if (reader_) {
       reader_->disconnect();
       reader_->deleteLater();
     }
   }
-  QString name() const override { return QStringLiteral("Holonight"); }
+  [[nodiscard]] QString name() const override { return QStringLiteral("Holonight"); }
   void initializeTheme(QQuickTheme* theme) override {
     active_ = true;
     // The loader blocks the GUI thread here. Read synchronously without constructing watchers.
@@ -36,15 +39,21 @@ class HolonightStylePlugin : public QQuickStylePlugin {
     const auto path = HoloNight::Config::resolveAppearancePath();
     if (path) {
       const auto loaded = HoloNight::Config::load(*path.value);
-      if (loaded) appearance = loaded.value->appearance;
+      if (loaded) {
+        appearance = loaded.value->appearance;
+      }
     }
     auto resolved = Holonight::resolveAppearance(appearance);
-    if (!resolved) resolved = Holonight::resolveAppearance(HoloNight::Config::defaults());
+    if (!resolved) {
+      resolved = Holonight::resolveAppearance(HoloNight::Config::defaults());
+    }
     theme->setUsePlatformPalette(false);
     tokens_ = Holonight::ThemeResolver::resolve(*resolved.value);
     applyPalette(theme);
     QMetaObject::invokeMethod(qGuiApp, [guard = QPointer<HolonightStylePlugin>(this)] {
-      if (!guard || !guard->active_) return;
+      if (!guard || !guard->active_) {
+        return;
+      }
       auto* self = guard.data();
       self->startWatcher();
     });
@@ -79,10 +88,14 @@ class HolonightStylePlugin : public QQuickStylePlugin {
     }
   }
   void startWatcher() {
-    if (reader_) return;
+    if (reader_) {
+      return;
+    }
     reader_ = new Holonight::AppearanceReader(qGuiApp);
     connect(reader_, &Holonight::AppearanceReader::paletteChanged, reader_, [this] {
-      if (!QQuickTheme::instance()) return;
+      if (!QQuickTheme::instance()) {
+        return;
+      }
       tokens_ = Holonight::ThemeResolver::resolve(reader_->appearance());
       applyPalette(QQuickTheme::instance());
       notifyWindows();

@@ -16,10 +16,12 @@ class HnIconImageProvider final : public QQuickImageProvider {
  public:
   HnIconImageProvider();
 
-  [[nodiscard]] QImage requestImage(const QString& id, QSize* size, const QSize& requested_size) override;
+  [[nodiscard]] QImage requestImage(const QString& identifier, QSize* size, const QSize& requested_size) override;
   [[nodiscard]] int cacheSize() const;
 
  private:
+  QImage beginRequest(const QString& cache_key, QSize* size);
+  void finishRequest(const QString& cache_key, const QImage& image);
   static constexpr qsizetype kMaximumCacheCostBytes = 16 * 1024 * 1024;
 
   mutable QMutex mutex_;

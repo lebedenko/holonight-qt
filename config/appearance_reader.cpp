@@ -57,7 +57,7 @@ AppearanceReader::AppearanceReader(QString config_file, QObject* parent)
   reload_timer_.setInterval(0);
   connect(&reload_timer_, &QTimer::timeout, this, &AppearanceReader::reload);
   initialize();
-  if (QAbstractEventDispatcher::instance()) {
+  if (QAbstractEventDispatcher::instance() != nullptr) {
     initializeWatcher();
   } else {
     QMetaObject::invokeMethod(this, &AppearanceReader::initializeWatcher, Qt::QueuedConnection);

@@ -15,12 +15,20 @@ class QScreen;
 
 namespace Holonight::Wayland {
 
+// Preserve the public enum representation and existing Qt/API compatibility.
+// NOLINTNEXTLINE(performance-enum-size)
 enum class Layer : quint32 { Background = 0, Bottom = 1, Top = 2, Overlay = 3 };
 
+// Preserve the public enum representation and existing Qt/API compatibility.
+// NOLINTNEXTLINE(performance-enum-size)
 enum class Anchor : quint32 { Top = 1, Bottom = 2, Left = 4, Right = 8 };
 Q_DECLARE_FLAGS(Anchors, Anchor)
 
+// Preserve the public enum representation and existing Qt/API compatibility.
+// NOLINTNEXTLINE(performance-enum-size)
 enum class KeyboardInteractivity : quint32 { None = 0, Exclusive = 1, OnDemand = 2 };
+// Preserve the public enum representation and existing Qt/API compatibility.
+// NOLINTNEXTLINE(performance-enum-size)
 enum class InputRegionPolicy { Default, Empty, Region };
 
 // Geometry uses Qt logical coordinates, including surface-local input regions.
@@ -31,7 +39,7 @@ struct LayerSurfaceSpec {
   QScreen* output{nullptr};
   QString name_space;
   Layer layer{Layer::Top};
-  Anchors anchors{};
+  Anchors anchors;
   int width{0};
   int height{0};
   int margin_top{0};

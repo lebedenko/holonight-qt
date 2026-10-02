@@ -60,7 +60,8 @@ namespace HnCornerMask {
 Q_NAMESPACE
 QML_NAMED_ELEMENT(HnCornerMask)
 
-// NOLINTNEXTLINE(cppcoreguidelines-use-enum-class)
+// Keep the public Qt flags representation and existing ABI.
+// NOLINTNEXTLINE(cppcoreguidelines-use-enum-class,performance-enum-size)
 enum Corner : int {
   Inherit = -1,
   None = 0,

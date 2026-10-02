@@ -22,13 +22,17 @@ HnWindowPalette::~HnWindowPalette() {
     window_->removeEventFilter(this);
     disconnect(window_, nullptr, this, nullptr);
   }
-  if (qGuiApp) qGuiApp->removeEventFilter(this);
+  if (qGuiApp) {
+    qGuiApp->removeEventFilter(this);
+  }
 }
 
 QQuickWindow* HnWindowPalette::window() const { return window_; }
 
 void HnWindowPalette::setWindow(QQuickWindow* window) {
-  if (window_ == window) return;
+  if (window_ == window) {
+    return;
+  }
   if (window_) {
     window_->removeEventFilter(this);
     disconnect(window_, nullptr, this, nullptr);
@@ -68,7 +72,9 @@ bool HnWindowPalette::eventFilter(QObject* watched, QEvent* event) {
 }
 
 void HnWindowPalette::refresh() {
-  if (refreshing_ || !window_ || !reader_) return;
+  if (refreshing_ || !window_ || !reader_) {
+    return;
+  }
   const QScopedValueRollback guard(refreshing_, true);
   const auto defaults = Holonight::buildPalette(Holonight::ThemeResolver::resolve(reader_->appearance()));
   const auto application = QGuiApplication::palette();

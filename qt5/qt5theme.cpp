@@ -18,7 +18,7 @@ HoloniightQt5Theme::HoloniightQt5Theme()
   QIcon::setThemeName(config_.icon_theme);
   QIcon::setFallbackThemeName(config_.fallback_icon_theme);
 }
-const QPalette* HoloniightQt5Theme::palette(Palette) const { return &palette_; }
+const QPalette* HoloniightQt5Theme::palette(Palette /*type*/) const { return &palette_; }
 QVariant HoloniightQt5Theme::themeHint(ThemeHint hint) const {
   switch (hint) {
     case StyleNames:
@@ -29,8 +29,9 @@ QVariant HoloniightQt5Theme::themeHint(ThemeHint hint) const {
       return config_.fallback_icon_theme;
     case IconThemeSearchPaths: {
       QStringList paths;
-      for (const QString& directory : QStandardPaths::standardLocations(QStandardPaths::GenericDataLocation))
+      for (const QString& directory : QStandardPaths::standardLocations(QStandardPaths::GenericDataLocation)) {
         paths << directory + QStringLiteral("/icons");
+      }
       return paths;
     }
     default:

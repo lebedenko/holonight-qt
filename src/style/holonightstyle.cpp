@@ -449,24 +449,101 @@ int HoloniightStyle::scaledMetric(int value) const {
   return (std::max)(1, static_cast<int>(std::lround(static_cast<qreal>(value) * config_.layout_scale)));
 }
 
+bool HoloniightStyle::drawShapedFrameImpl(const QStyleOption* option, QPainter* painter) const {
+  const auto* frameOpt = qstyleoption_cast<const QStyleOptionFrame*>(option);
+  if (frameOpt != nullptr) {
+    const int frameShape = frameOpt->frameShape;
+    if (frameShape == QFrame::HLine || frameShape == QFrame::VLine) {
+      const auto& tok = tokens();
+      painter->save();
+      const Qt::Orientation orientation = frameShape == QFrame::HLine ? Qt::Horizontal : Qt::Vertical;
+      drawSeparator(painter, option->rect, orientation, tok.borderPassive);
+      painter->restore();
+      return true;
+    }
+  }
+  return false;
+}
+
+bool HoloniightStyle::drawMenuItemImpl(const QStyleOption* option, QPainter* painter, const QWidget* widget) const {
+  const auto* opt = qstyleoption_cast<const QStyleOptionMenuItem*>(option);
+  if (opt == nullptr) {
+    return false;
+  }
+  if (opt->menuItemType == QStyleOptionMenuItem::Separator) {
+    painter->save();
+    const int mid = option->rect.center().y();
+    painter->setPen(option->palette.color(QPalette::Mid));
+    painter->drawLine(option->rect.left() + 8, mid, option->rect.right() - 8, mid);
+    painter->restore();
+    return true;
+  }
+  if ((opt->state & (State_Selected | State_MouseOver)) != 0U) {
+    painter->save();
+    painter->setRenderHint(QPainter::Antialiasing);
+    painter->setPen(Qt::NoPen);
+    painter->setBrush(option->palette.color(QPalette::Highlight));
+    const QRectF panel_rect = option->rect.adjusted(2, 1, -2, -1);
+    painter->drawRoundedRect(panel_rect, controlRadius(panel_rect), controlRadius(panel_rect));
+    painter->restore();
+  }
+  QProxyStyle::drawControl(CE_MenuItem, option, painter, widget);
+  return true;
+}
+
+void HoloniightStyle::drawPanelToolButtonImpl(const QStyleOption* option, QPainter* painter,
+                                              const QWidget* widget) const {
+  const auto& tok = tokens();
+
+  const auto* toolOpt = qstyleoption_cast<const QStyleOptionToolButton*>(option);
+  const bool flatAutoRaise =
+      toolOpt != nullptr ? isFlatAutoRaiseToolButton(toolOpt, widget) : isAutoRaiseToolButton(option, widget);
+  const bool hovered = (option->state & State_MouseOver) != 0U;
+  const bool pressed = (option->state & State_Sunken) != 0U;
+  const bool checked = (option->state & State_On) != 0U;
+
+  if (flatAutoRaise) {
+    if (!hovered && !pressed && !checked) {
+      return;
+    }
+
+    painter->save();
+    painter->setRenderHint(QPainter::Antialiasing);
+    painter->setPen(Qt::NoPen);
+    painter->setBrush((pressed || checked) ? tok.surface : tok.surfaceHover);
+    const QRectF panel_rect = option->rect.adjusted(1, 1, -1, -1);
+    painter->drawRoundedRect(panel_rect, controlRadius(panel_rect), controlRadius(panel_rect));
+    painter->restore();
+    return;
+  }
+
+  drawPanelButtonImpl(option, painter);
+}
+
+void HoloniightStyle::drawFrameImpl(const QStyleOption* option, QPainter* painter, const QWidget* widget) const {
+  const auto& tok = tokens();
+
+  if (shouldSuppressScrollAreaFrame(widget)) {
+    return;
+  }
+  if (isTextEditLikeWidget(widget)) {
+    const bool focused = (option->state & State_HasFocus) != 0U;
+    const qreal borderWidth = 1.0;
+    drawInputPanel(painter, option->rect, option->palette.color(QPalette::Base),
+                   focused ? tok.borderFocus : tok.borderPassive, borderWidth);
+    return;
+  }
+  drawPlainFrame(painter, option->rect, tok.borderPassive);
+}
+
 void HoloniightStyle::drawControl(ControlElement element, const QStyleOption* option, QPainter* painter,
                                   const QWidget* widget) const {
   switch (element) {
-    case CE_ShapedFrame: {
-      const auto* frameOpt = qstyleoption_cast<const QStyleOptionFrame*>(option);
-      if (frameOpt != nullptr) {
-        const int frameShape = frameOpt->frameShape;
-        if (frameShape == QFrame::HLine || frameShape == QFrame::VLine) {
-          const auto& tok = tokens();
-          painter->save();
-          const Qt::Orientation orientation = frameShape == QFrame::HLine ? Qt::Horizontal : Qt::Vertical;
-          drawSeparator(painter, option->rect, orientation, tok.borderPassive);
-          painter->restore();
-          return;
-        }
+    case CE_ShapedFrame:
+      if (drawShapedFrameImpl(option, painter)) {
+        return;
       }
       break;
-    }
     case CE_PushButton:
       drawControl(CE_PushButtonBevel, option, painter, widget);
       drawControl(CE_PushButtonLabel, option, painter, widget);
@@ -491,31 +568,11 @@ void HoloniightStyle::drawControl(ControlElement element, const QStyleOption* op
     case CE_RadioButton:
       drawRadioButtonImpl(option, painter, widget);
       return;
-    case CE_MenuItem: {
-      const auto* opt = qstyleoption_cast<const QStyleOptionMenuItem*>(option);
-      if (opt == nullptr) {
-        break;
-      }
-      if (opt->menuItemType == QStyleOptionMenuItem::Separator) {
-        painter->save();
-        const int mid = option->rect.center().y();
-        painter->setPen(option->palette.color(QPalette::Mid));
-        painter->drawLine(option->rect.left() + 8, mid, option->rect.right() - 8, mid);
-        painter->restore();
+    case CE_MenuItem:
+      if (drawMenuItemImpl(option, painter, widget)) {
         return;
       }
-      if ((opt->state & (State_Selected | State_MouseOver)) != 0U) {
-        painter->save();
-        painter->setRenderHint(QPainter::Antialiasing);
-        painter->setPen(Qt::NoPen);
-        painter->setBrush(option->palette.color(QPalette::Highlight));
-        const QRectF panel_rect = option->rect.adjusted(2, 1, -2, -1);
-        painter->drawRoundedRect(panel_rect, controlRadius(panel_rect), controlRadius(panel_rect));
-        painter->restore();
-      }
-      QProxyStyle::drawControl(element, option, painter, widget);
-      return;
-    }
+      break;
     case CE_MenuBarItem: {
       if ((option->state & (State_Selected | State_Sunken)) != 0U) {
         painter->save();
@@ -942,13 +999,14 @@ void HoloniightStyle::drawItemViewItemImpl(const QStyleOption* option, QPainter*
   if (!opt->font.defaultFamily().isEmpty()) {
     painter->setFont(opt->font);
   }
-  const QFontMetrics fm{painter->font()};
+  const QFontMetrics font_metrics{painter->font()};
   const Qt::Alignment alignment =
       decorationOnTop ? Qt::AlignHCenter | Qt::AlignTop : (opt->displayAlignment | Qt::AlignVCenter);
   if ((opt->features & QStyleOptionViewItem::WrapText) != 0U) {
-    painter->drawText(textRect, alignment | Qt::TextWordWrap, opt->text);
+    painter->drawText(textRect, static_cast<int>(alignment | Qt::TextWordWrap), opt->text);
   } else {
-    painter->drawText(textRect, alignment, fm.elidedText(opt->text, opt->textElideMode, textRect.width()));
+    painter->drawText(textRect, static_cast<int>(alignment),
+                      font_metrics.elidedText(opt->text, opt->textElideMode, textRect.width()));
   }
   painter->setFont(oldFont);
 
@@ -972,32 +1030,9 @@ void HoloniightStyle::drawPrimitive(PrimitiveElement element, const QStyleOption
       drawPanelButtonImpl(option, painter);
       return;
 
-    case PE_PanelButtonTool: {
-      const auto* toolOpt = qstyleoption_cast<const QStyleOptionToolButton*>(option);
-      const bool flatAutoRaise =
-          toolOpt != nullptr ? isFlatAutoRaiseToolButton(toolOpt, widget) : isAutoRaiseToolButton(option, widget);
-      const bool hovered = (option->state & State_MouseOver) != 0U;
-      const bool pressed = (option->state & State_Sunken) != 0U;
-      const bool checked = (option->state & State_On) != 0U;
-
-      if (flatAutoRaise) {
-        if (!hovered && !pressed && !checked) {
-          return;
-        }
-
-        painter->save();
-        painter->setRenderHint(QPainter::Antialiasing);
-        painter->setPen(Qt::NoPen);
-        painter->setBrush((pressed || checked) ? tok.surface : tok.surfaceHover);
-        const QRectF panel_rect = option->rect.adjusted(1, 1, -1, -1);
-        painter->drawRoundedRect(panel_rect, controlRadius(panel_rect), controlRadius(panel_rect));
-        painter->restore();
-        return;
-      }
-
-      drawPanelButtonImpl(option, painter);
+    case PE_PanelButtonTool:
+      drawPanelToolButtonImpl(option, painter, widget);
       return;
-    }
 
     case PE_FrameDefaultButton: {
       painter->save();
@@ -1010,20 +1045,9 @@ void HoloniightStyle::drawPrimitive(PrimitiveElement element, const QStyleOption
       return;
     }
 
-    case PE_Frame: {
-      if (shouldSuppressScrollAreaFrame(widget)) {
-        return;
-      }
-      if (isTextEditLikeWidget(widget)) {
-        const bool focused = (option->state & State_HasFocus) != 0U;
-        const qreal borderWidth = 1.0;
-        drawInputPanel(painter, option->rect, option->palette.color(QPalette::Base),
-                       focused ? tok.borderFocus : tok.borderPassive, borderWidth);
-        return;
-      }
-      drawPlainFrame(painter, option->rect, tok.borderPassive);
+    case PE_Frame:
+      drawFrameImpl(option, painter, widget);
       return;
-    }
 
     case PE_FrameLineEdit: {
       const bool focused = (option->state & State_HasFocus) != 0U;
@@ -1299,6 +1323,10 @@ void HoloniightStyle::drawComplexControl(ComplexControl control, const QStyleOpt
   QProxyStyle::drawComplexControl(control, option, painter, widget);
 }
 
+QRect HoloniightStyle::scrollBarGrooveRect(QRect rect, bool horizontal) {
+  return rect.adjusted(horizontal ? 2 : 1, horizontal ? 1 : 2, horizontal ? -2 : -1, horizontal ? -1 : -2);
+}
+
 QRect HoloniightStyle::subControlRect(ComplexControl control, const QStyleOptionComplex* option, SubControl subControl,
                                       const QWidget* widget) const {
   if (control == CC_ScrollBar) {
@@ -1307,8 +1335,7 @@ QRect HoloniightStyle::subControlRect(ComplexControl control, const QStyleOption
       return {};
     }
     const bool horizontal = opt->orientation == Qt::Horizontal;
-    const QRect grooveRect =
-        option->rect.adjusted(horizontal ? 2 : 1, horizontal ? 1 : 2, horizontal ? -2 : -1, horizontal ? -1 : -2);
+    const QRect grooveRect = scrollBarGrooveRect(option->rect, horizontal);
     if (subControl == SC_ScrollBarGroove || subControl == SC_ScrollBarAddPage || subControl == SC_ScrollBarSubPage) {
       return grooveRect;
     }
@@ -1348,8 +1375,7 @@ void HoloniightStyle::drawScrollBarImpl(const QStyleOptionComplex* option, QPain
   }
   const auto& tok = tokens();
   const bool horizontal = opt->orientation == Qt::Horizontal;
-  const QRect grooveRect =
-      option->rect.adjusted(horizontal ? 2 : 1, horizontal ? 1 : 2, horizontal ? -2 : -1, horizontal ? -1 : -2);
+  const QRect grooveRect = scrollBarGrooveRect(option->rect, horizontal);
   if (!grooveRect.isValid()) {
     return;
   }

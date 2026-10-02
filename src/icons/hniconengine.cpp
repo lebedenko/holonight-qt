@@ -27,24 +27,29 @@ namespace {
     const auto background = palette.color(group, QPalette::Window);
     const bool disabled = group == QPalette::Disabled;
     auto status = [&](const QColor& color) { return disabled ? blendIconColor(color, background, 0.5) : color; };
-    return {palette.color(group, QPalette::Text),
-            palette.color(group, QPalette::Highlight),
-            status(tokens.success),
-            status(tokens.warning),
-            status(tokens.error),
+    return {
+        .text = palette.color(group, QPalette::Text),
+        .highlight = palette.color(group, QPalette::Highlight),
+        .positive = status(tokens.success),
+        .neutral = status(tokens.warning),
+        .negative = status(tokens.error),
 #if QT_VERSION >= QT_VERSION_CHECK(6, 6, 0)
-            palette.color(group, QPalette::Accent),
+        .accent = palette.color(group, QPalette::Accent),
 #else
-            status(tokens.primary),
+        .accent = status(tokens.primary),
 #endif
-            background,
-            palette.color(group, QPalette::HighlightedText)};
+        .background = background,
+        .highlightedText = palette.color(group, QPalette::HighlightedText),
+    };
   };
   // QIconEngine has no owning-widget palette; use the live application palette.
-  return resolveIconColors(colors(QPalette::Active), colors(QPalette::Disabled),
-                           mode == QIcon::Selected   ? IconState::Selected
-                           : mode == QIcon::Disabled ? IconState::Disabled
-                                                     : IconState::Normal);
+  IconState state = IconState::Normal;
+  if (mode == QIcon::Selected) {
+    state = IconState::Selected;
+  } else if (mode == QIcon::Disabled) {
+    state = IconState::Disabled;
+  }
+  return resolveIconColors(colors(QPalette::Active), colors(QPalette::Disabled), state);
 }
 
 }  // namespace
@@ -63,11 +68,17 @@ QPixmap HnIconEngine::pixmap(const QSize& size, QIcon::Mode mode, QIcon::State s
 }
 
 QPixmap HnIconEngine::scaledPixmap(const QSize& size, QIcon::Mode mode, QIcon::State /*state*/, qreal scale) {
-  if (size.isEmpty() || scale <= 0 || scale > 8) return {};
+  if (size.isEmpty() || scale <= 0 || scale > 8) {
+    return {};
+  }
   const QSize pixels{(std::max)(1, qRound(size.width() * scale)), (std::max)(1, qRound(size.height() * scale))};
-  if (pixels.width() > 4096 || pixels.height() > 4096) return {};
+  if (pixels.width() > 4096 || pixels.height() > 4096) {
+    return {};
+  }
   const QString path = IconThemeResolver::resolveIconPath(name_, size, scale);
-  if (path.isEmpty()) return {};
+  if (path.isEmpty()) {
+    return {};
+  }
   QImage image;
   if (path.endsWith(QStringLiteral(".svg"), Qt::CaseInsensitive)) {
     const QByteArray bytes = IconThemeResolver::readIconBytes(path);
@@ -80,7 +91,9 @@ QPixmap HnIconEngine::scaledPixmap(const QSize& size, QIcon::Mode mode, QIcon::S
       painter.fillRect(image.rect(), colorsForMode(mode).text);
     }
   }
-  if (image.isNull()) return {};
+  if (image.isNull()) {
+    return {};
+  }
   image.setDevicePixelRatio(scale);
   return QPixmap::fromImage(image);
 }

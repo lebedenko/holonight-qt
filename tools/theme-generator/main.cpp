@@ -10,6 +10,7 @@
 #include <holonight/palette.h>
 #include <holonight/theme_catalog.h>
 #include <iostream>
+#include <span>
 
 int main(int argc, char** argv) {
   if (argc != 2) {
@@ -17,7 +18,8 @@ int main(int argc, char** argv) {
     return 2;
   }
 
-  const QString outputDir = QString::fromLocal8Bit(argv[1]);
+  const std::span<char*> arguments{argv, static_cast<std::size_t>(argc)};
+  const QString outputDir = QString::fromLocal8Bit(arguments[1]);
   if (!QDir{}.mkpath(outputDir)) {
     std::cerr << "failed to create output directory " << outputDir.toStdString() << '\n';
     return 1;

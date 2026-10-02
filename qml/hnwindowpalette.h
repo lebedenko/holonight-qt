@@ -23,6 +23,7 @@ class HnWindowPalette : public QObject, public QQmlParserStatus {
  public:
   explicit HnWindowPalette(QObject* parent = nullptr);
   ~HnWindowPalette() override;
+  Q_DISABLE_COPY_MOVE(HnWindowPalette)
   [[nodiscard]] QQuickWindow* window() const;
   void setWindow(QQuickWindow* window);
   void classBegin() override {}
