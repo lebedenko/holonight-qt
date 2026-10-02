@@ -13,7 +13,7 @@ Use Task when available:
 ```bash
 task build      # Configure Debug with tests and build
 task test       # Run headless CTest with QT_QPA_PLATFORM=offscreen
-task lint       # Run run-clang-tidy against build/
+task lint       # Run run-clang-tidy against build/test/
 task verify     # Build, lint, and test
 task demo       # Build and run the demo app from the build tree
 ```
@@ -60,3 +60,6 @@ style-specific properties so explicit Fusion loads without invalid-property erro
 
 When changing examples, enable `BUILD_DEMO` and `BUILD_CONTROLS_GALLERY` and run their `startup_` tests plus
 `holonight_package_install_test`. Run the QML policy checks for the provider and both example directories.
+
+Developer tooling uses `build/debug`, `build/test`, `build/release` and module-owned `build/deps`.
+See tooling/README.md; run task tooling:refresh explicitly after configuring/building for editor metadata.
