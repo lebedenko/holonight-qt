@@ -5062,3 +5062,26 @@ TEST_F(QmlSmoke, IconProviderOptionsKeepLegacyApiAndResolveSelectionOnce) {
   EXPECT_EQ(QColor(selected.queryItemValue("accent")).alpha(), 128);
   EXPECT_NE(object->property("selected"), object->property("normal"));
 }
+
+TEST_F(QmlSmoke, Controls_KeyHintLowercasesOnlyLettersWhenOptedIn) {
+  QQmlComponent comp{&engine_};
+  comp.setData(R"(
+    import QtQuick
+    import Holonight.Controls
+    HnKeyHint {
+      keyGroups: [[Qt.Key_Control, Qt.Key_R], [Qt.Key_Shift, Qt.Key_G], [Qt.Key_Left], [Qt.Key_Plus]]
+      property string spokenName: Accessible.name
+      function literal() { keyGroups = []; text = "Literal GG" }
+    }
+  )",
+               QUrl{});
+  ASSERT_EQ(comp.status(), QQmlComponent::Ready) << comp.errorString().toStdString();
+  std::unique_ptr<QObject> hint{comp.create()};
+  ASSERT_NE(hint, nullptr);
+  EXPECT_FALSE(hint->property("lowercaseLetters").toBool());
+  EXPECT_EQ(hint->property("spokenName").toString(), "Ctrl plus R or Shift plus G or Left or +");
+  ASSERT_TRUE(hint->setProperty("lowercaseLetters", true));
+  EXPECT_EQ(hint->property("spokenName").toString(), "Ctrl plus r or Shift plus g or Left or +");
+  ASSERT_TRUE(QMetaObject::invokeMethod(hint.get(), "literal"));
+  EXPECT_EQ(hint->property("spokenName").toString(), "Literal GG");
+}

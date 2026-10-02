@@ -13,6 +13,7 @@ Item {
     property string text
     property var keyGroups: []
     property bool wrap: false
+    property bool lowercaseLetters: false
     readonly property string accessibleText: keyGroups.length > 0
         ? keyGroups.map(group => group.map(key => d.keyName(key)).join(qsTr(" plus "))).join(qsTr(" or "))
         : text
@@ -79,7 +80,8 @@ Item {
             case Qt.Key_Plus: return "+"
             case Qt.Key_Slash: return "/"
             }
-            return KeyHintNames.keyName(key)
+            const name = KeyHintNames.keyName(key)
+            return root.lowercaseLetters && key >= Qt.Key_A && key <= Qt.Key_Z ? name.toLowerCase() : name
         }
 
         // Common 16 x 12 grid; 1-unit stroke remains within the capital region.

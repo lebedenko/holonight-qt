@@ -10,6 +10,7 @@ C.Control {
     property string text
     property var keyGroups: []
     property bool wrap: false
+    property bool lowercaseLetters: false
     readonly property string accessibleText: sequence.accessibleText
 
     font.family: HolonightTheme.monospaceFont
@@ -44,6 +45,7 @@ C.Control {
             text: root.text
             font: root.font
             wrap: root.wrap
+            lowercaseLetters: root.lowercaseLetters
             Accessible.ignored: true
         }
     }
