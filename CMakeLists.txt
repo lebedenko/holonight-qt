@@ -13,6 +13,7 @@ install(FILES LICENSE THIRD_PARTY_NOTICES.md LICENSES/GPL-3.0-or-later.txt LICEN
   DESTINATION "${CMAKE_INSTALL_DATADIR}/licenses/${PROJECT_NAME}")
 include(CMakePackageConfigHelpers)
 
+include("${CMAKE_CURRENT_SOURCE_DIR}/tooling/dependencies.cmake")
 find_package(Qt6 6.11 REQUIRED COMPONENTS Core Gui Widgets Quick QuickControls2 QuickShapes Svg)
 find_package(Qt6 REQUIRED COMPONENTS GuiPrivate)
 find_package(HoloNightConfig CONFIG REQUIRED)

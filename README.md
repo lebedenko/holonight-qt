@@ -75,8 +75,8 @@ WCAG AA contrast (4.5:1) is enforced by the test suite for text and selection pa
 ## Build from source
 
 ```bash
-cmake -B build -G Ninja -DCMAKE_BUILD_TYPE=Release
-cmake --build build -j$(nproc)
+cmake -B build/debug -G Ninja -DCMAKE_BUILD_TYPE=Release
+cmake --build build/debug -j$(nproc)
 sudo cmake --install build --prefix /usr
 ```
 
@@ -205,9 +205,9 @@ task demo -- --theme=holonight-day
 Manual equivalents:
 
 ```bash
-cmake -B build -G Ninja -DCMAKE_BUILD_TYPE=Debug -DBUILD_TESTS=ON
-cmake --build build -j$(nproc)
-QT_QPA_PLATFORM=offscreen ctest --test-dir build --output-on-failure
+cmake -B build/debug -G Ninja -DCMAKE_BUILD_TYPE=Debug -DBUILD_TESTS=ON
+cmake --build build/debug -j$(nproc)
+QT_QPA_PLATFORM=offscreen ctest --test-dir build/test --output-on-failure
 ```
 
 ## Architecture
@@ -242,3 +242,8 @@ palettes, while HoloNight adds and adjusts roles for its own semantic and access
 The demo and controls gallery use namespaced runtime Controls with an embedded HoloNight default. Explicit style
 overrides remain supported. Follow the [selection and deployment guide](docs/automatic-quick-controls-style-selection.md)
 when adopting the shared library in another application.
+
+## Standalone developer tooling
+
+See [tooling/README.md](tooling/README.md) for presets, local dependency overrides, editor refresh,
+`task tooling:doctor`, and the independent Serena project.

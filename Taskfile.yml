@@ -1,150 +1,193 @@
-version: "3"
-
+version: '3'
 vars:
-  BUILD_DIR: build
-  RELEASE_BUILD_DIR: build-release
-  HOLONIGHT_CONFIG_BUILD_DIR: ../holonight-config/build-provider
-  HOLONIGHT_CONFIG_PREFIX: /tmp/holonight-config-prefix
+  BUILD_DIR: build/debug
+  RELEASE_BUILD_DIR: build/release
+  HOLONIGHT_CONFIG_BUILD_DIR: build/deps/holonight-config
+  HOLONIGHT_CONFIG_PREFIX: '{{default (printf "%s/build/deps/prefix" .TASKFILE_DIR) .HOLONIGHT_DEPENDENCY_PREFIX}}'
   NPROC:
     sh: nproc
-
+  PRESET: '{{default "debug" .PRESET}}'
 tasks:
   license-check:
     desc: Validate REUSE licensing metadata
-    cmds: [reuse lint]
-
+    cmds:
+    - reuse lint
   configure:
-    desc: Configure (Debug + tests)
-    deps: [build:config-dependency]
+    desc: configure using standalone tooling
     cmds:
-      - cmake -B {{.BUILD_DIR}} -G Ninja -DCMAKE_BUILD_TYPE=Debug -DBUILD_TESTS=ON -DCMAKE_PREFIX_PATH={{.HOLONIGHT_CONFIG_PREFIX}}
-    sources:
-      - CMakeLists.txt
-      - "*/CMakeLists.txt"
-    generates:
-      - "{{.BUILD_DIR}}/build.ninja"
-
+    - python3 tooling/workflow.py configure --preset {{.PRESET}}
   configure:release:
-    desc: Configure (Release)
-    deps: [build:config-dependency]
+    desc: configure using standalone tooling
     cmds:
-      - |
-        if [ -f "{{.RELEASE_BUILD_DIR}}/CMakeCache.txt" ] && ! grep -Fxq "CMAKE_HOME_DIRECTORY:INTERNAL={{.TASKFILE_DIR}}" "{{.RELEASE_BUILD_DIR}}/CMakeCache.txt"; then
-          cmake -E echo "Removing stale {{.RELEASE_BUILD_DIR}} CMake cache from another source directory"
-          cmake -E rm -rf "{{.RELEASE_BUILD_DIR}}"
-        fi
-      - cmake -S . -B {{.RELEASE_BUILD_DIR}} -G Ninja -DCMAKE_BUILD_TYPE=Release -DBUILD_TESTS=ON -DCMAKE_PREFIX_PATH={{.HOLONIGHT_CONFIG_PREFIX}}
-
+    - python3 tooling/workflow.py configure --preset release
   build:config-dependency:
-    desc: Build and install the canonical appearance configuration provider
+    desc: deps using standalone tooling
     cmds:
-      - cmake -S ../holonight-config -B {{.HOLONIGHT_CONFIG_BUILD_DIR}} -G Ninja -DCMAKE_BUILD_TYPE=Debug -DBUILD_TESTING=OFF
-      - cmake --build {{.HOLONIGHT_CONFIG_BUILD_DIR}} --parallel
-      - cmake --install {{.HOLONIGHT_CONFIG_BUILD_DIR}} --prefix {{.HOLONIGHT_CONFIG_PREFIX}}
-
+    - python3 tooling/workflow.py deps
   configure:demo:
     desc: Configure (Debug + demo app)
-    deps: [build:config-dependency]
+    deps:
+    - build:config-dependency
     cmds:
-      - cmake -B {{.BUILD_DIR}} -G Ninja -DCMAKE_BUILD_TYPE=Debug -DBUILD_DEMO=ON -DCMAKE_PREFIX_PATH={{.HOLONIGHT_CONFIG_PREFIX}}
-
+    - cmake -B {{.BUILD_DIR}} -G Ninja -DCMAKE_BUILD_TYPE=Debug -DBUILD_DEMO=ON -DCMAKE_PREFIX_PATH={{.HOLONIGHT_CONFIG_PREFIX}}
   build:
-    desc: Build
-    deps: [configure]
+    desc: build using standalone tooling
     cmds:
-      - cmake --build {{.BUILD_DIR}} -j{{.NPROC}}
-
+    - python3 tooling/workflow.py build --preset {{.PRESET}}
   build:release:
-    desc: Build (Release)
-    deps: [configure:release]
+    desc: build using standalone tooling
     cmds:
-      - cmake --build {{.RELEASE_BUILD_DIR}} -j{{.NPROC}}
-
+    - python3 tooling/workflow.py build --preset release
   test:
-    desc: Run tests (headless)
-    deps: [build]
+    desc: test using standalone tooling
     cmds:
-      - QT_QPA_PLATFORM=offscreen ctest --test-dir {{.BUILD_DIR}} --output-on-failure
-
+    - python3 tooling/workflow.py test --preset {{.PRESET}}
   lint:
-    desc: Run clang-tidy
-    deps: [configure]
+    desc: Run C++ and QML lint
     cmds:
-      - cmake --build {{.BUILD_DIR}} --target tidy
-
+    - task: tidy
+    - task: qml-lint
   verify:
     desc: Build + lint + test (pre-commit checklist)
     cmds:
-      - task: build
-      - task: lint
-      - task: test
-
+    - task: build
+    - task: lint
+    - task: test
   colors:generate:
     desc: Regenerate KDE color scheme from palette tokens
-    deps: [build]
+    deps:
+    - build
     cmds:
-      - ./{{.BUILD_DIR}}/tools/generate_holonight_colors --scheme holonight-dark data/holonight-dark.colors
-      - ./{{.BUILD_DIR}}/tools/generate_holonight_colors --scheme holonight-light data/holonight-light.colors
-      - ./{{.BUILD_DIR}}/tools/generate_holonight_colors --scheme holonight-mocha data/holonight-mocha.colors
-      - ./{{.BUILD_DIR}}/tools/generate_holonight_colors --scheme holonight-latte data/holonight-latte.colors
-      - ./{{.BUILD_DIR}}/tools/generate_holonight_colors --scheme holonight-storm data/holonight-storm.colors
-      - ./{{.BUILD_DIR}}/tools/generate_holonight_colors --scheme holonight-day data/holonight-day.colors
-      - ./{{.BUILD_DIR}}/tools/generate_holonight_colors --scheme holonight-ember data/holonight-ember.colors
-      - ./{{.BUILD_DIR}}/tools/generate_holonight_colors --scheme holonight-sol data/holonight-sol.colors
-      - ./{{.BUILD_DIR}}/tools/generate_holonight_colors --scheme holonight-cyber-d data/holonight-cyber-d.colors
-      - ./{{.BUILD_DIR}}/tools/generate_holonight_colors --scheme holonight-cyber-l data/holonight-cyber-l.colors
-      - ./{{.BUILD_DIR}}/tools/generate_holonight_colors --scheme holonight-dracula data/holonight-dracula.colors
-      - ./{{.BUILD_DIR}}/tools/generate_holonight_colors --scheme holonight-alucard data/holonight-alucard.colors
-      - ./{{.BUILD_DIR}}/tools/generate_holonight_colors --scheme holonight-frost data/holonight-frost.colors
-      - ./{{.BUILD_DIR}}/tools/generate_holonight_colors --scheme holonight-snow data/holonight-snow.colors
-      - ./{{.BUILD_DIR}}/tools/generate_holonight_colors --scheme holonight-canopy data/holonight-canopy.colors
-      - ./{{.BUILD_DIR}}/tools/generate_holonight_colors --scheme holonight-glade data/holonight-glade.colors
-
+    - ./{{.BUILD_DIR}}/tools/generate_holonight_colors --scheme holonight-dark data/holonight-dark.colors
+    - ./{{.BUILD_DIR}}/tools/generate_holonight_colors --scheme holonight-light data/holonight-light.colors
+    - ./{{.BUILD_DIR}}/tools/generate_holonight_colors --scheme holonight-mocha data/holonight-mocha.colors
+    - ./{{.BUILD_DIR}}/tools/generate_holonight_colors --scheme holonight-latte data/holonight-latte.colors
+    - ./{{.BUILD_DIR}}/tools/generate_holonight_colors --scheme holonight-storm data/holonight-storm.colors
+    - ./{{.BUILD_DIR}}/tools/generate_holonight_colors --scheme holonight-day data/holonight-day.colors
+    - ./{{.BUILD_DIR}}/tools/generate_holonight_colors --scheme holonight-ember data/holonight-ember.colors
+    - ./{{.BUILD_DIR}}/tools/generate_holonight_colors --scheme holonight-sol data/holonight-sol.colors
+    - ./{{.BUILD_DIR}}/tools/generate_holonight_colors --scheme holonight-cyber-d data/holonight-cyber-d.colors
+    - ./{{.BUILD_DIR}}/tools/generate_holonight_colors --scheme holonight-cyber-l data/holonight-cyber-l.colors
+    - ./{{.BUILD_DIR}}/tools/generate_holonight_colors --scheme holonight-dracula data/holonight-dracula.colors
+    - ./{{.BUILD_DIR}}/tools/generate_holonight_colors --scheme holonight-alucard data/holonight-alucard.colors
+    - ./{{.BUILD_DIR}}/tools/generate_holonight_colors --scheme holonight-frost data/holonight-frost.colors
+    - ./{{.BUILD_DIR}}/tools/generate_holonight_colors --scheme holonight-snow data/holonight-snow.colors
+    - ./{{.BUILD_DIR}}/tools/generate_holonight_colors --scheme holonight-canopy data/holonight-canopy.colors
+    - ./{{.BUILD_DIR}}/tools/generate_holonight_colors --scheme holonight-glade data/holonight-glade.colors
   install:local:
     desc: Install to ~/.local (no sudo)
-    deps: [build]
+    deps:
+    - build
     cmds:
-      - cmake --install {{.BUILD_DIR}} --prefix ~/.local
-
+    - cmake --install {{.BUILD_DIR}} --prefix ~/.local
   install:local:release:
     desc: Install Release build to ~/.local (for desktop apps)
-    deps: [build:release]
+    deps:
+    - build:release
     cmds:
-      - cmake --install {{.RELEASE_BUILD_DIR}} --prefix ~/.local
-
+    - cmake --install {{.RELEASE_BUILD_DIR}} --prefix ~/.local
   install:system:
     desc: Install to /usr (requires sudo)
-    deps: [build:release]
+    deps:
+    - build:release
     cmds:
-      - sudo cmake --install {{.RELEASE_BUILD_DIR}} --prefix /usr
-
+    - sudo cmake --install {{.RELEASE_BUILD_DIR}} --prefix /usr
   demo:
     desc: Build and run the visual demo app (from build tree, no platform theme)
     cmds:
-      - task: build:config-dependency
-      - cmake -B {{.BUILD_DIR}} -G Ninja -DCMAKE_BUILD_TYPE=Debug -DBUILD_DEMO=ON -DCMAKE_PREFIX_PATH={{.HOLONIGHT_CONFIG_PREFIX}}
-      - cmake --build {{.BUILD_DIR}} -j{{.NPROC}} --target holonight_demo
-      - QT_QPA_PLATFORMTHEME=holonight ./{{.BUILD_DIR}}/demo/holonight_demo {{.CLI_ARGS}}
-
+    - task: build:config-dependency
+    - cmake -B {{.BUILD_DIR}} -G Ninja -DCMAKE_BUILD_TYPE=Debug -DBUILD_DEMO=ON -DCMAKE_PREFIX_PATH={{.HOLONIGHT_CONFIG_PREFIX}}
+    - cmake --build {{.BUILD_DIR}} -j{{.NPROC}} --target holonight_demo
+    - QT_QPA_PLATFORMTHEME=holonight ./{{.BUILD_DIR}}/demo/holonight_demo {{.CLI_ARGS}}
   gallery:
     desc: Build and run the shared controls gallery
     cmds:
-      - task: build:config-dependency
-      - cmake -B {{.BUILD_DIR}} -G Ninja -DCMAKE_BUILD_TYPE=Debug -DBUILD_CONTROLS_GALLERY=ON -DCMAKE_PREFIX_PATH={{.HOLONIGHT_CONFIG_PREFIX}}
-      - cmake --build {{.BUILD_DIR}} -j{{.NPROC}} --target holonight_controls_gallery
-      - QT_QPA_PLATFORMTHEME= ./{{.BUILD_DIR}}/examples/controls-gallery/holonight_controls_gallery {{.CLI_ARGS}}
-
+    - task: build:config-dependency
+    - cmake -B {{.BUILD_DIR}} -G Ninja -DCMAKE_BUILD_TYPE=Debug -DBUILD_CONTROLS_GALLERY=ON -DCMAKE_PREFIX_PATH={{.HOLONIGHT_CONFIG_PREFIX}}
+    - cmake --build {{.BUILD_DIR}} -j{{.NPROC}} --target holonight_controls_gallery
+    - QT_QPA_PLATFORMTHEME= ./{{.BUILD_DIR}}/examples/controls-gallery/holonight_controls_gallery {{.CLI_ARGS}}
   demo:install:
     desc: Build, install demo + theme to ~/.local, then run with full platform theme
     cmds:
-      - task: build:config-dependency
-      - cmake -B {{.BUILD_DIR}} -G Ninja -DCMAKE_BUILD_TYPE=Debug -DBUILD_DEMO=ON -DCMAKE_PREFIX_PATH={{.HOLONIGHT_CONFIG_PREFIX}}
-      - cmake --build {{.BUILD_DIR}} -j{{.NPROC}}
-      - cmake --install {{.BUILD_DIR}} --prefix ~/.local
-      - QT_QPA_PLATFORMTHEME=holonight ~/.local/bin/holonight_demo {{.CLI_ARGS}}
-
-
+    - task: build:config-dependency
+    - cmake -B {{.BUILD_DIR}} -G Ninja -DCMAKE_BUILD_TYPE=Debug -DBUILD_DEMO=ON -DCMAKE_PREFIX_PATH={{.HOLONIGHT_CONFIG_PREFIX}}
+    - cmake --build {{.BUILD_DIR}} -j{{.NPROC}}
+    - cmake --install {{.BUILD_DIR}} --prefix ~/.local
+    - QT_QPA_PLATFORMTHEME=holonight ~/.local/bin/holonight_demo {{.CLI_ARGS}}
   clean:
     desc: Remove build directory
     cmds:
-      - rm -rf {{.BUILD_DIR}}
+    - rm -rf {{.BUILD_DIR}}
+  tooling:doctor:
+    desc: doctor using standalone tooling
+    cmds:
+    - python3 tooling/workflow.py doctor
+  tooling:refresh:
+    desc: refresh using standalone tooling
+    cmds:
+    - python3 tooling/workflow.py refresh --preset {{default "test" .EDITOR_PRESET}}
+  serena:serve:
+    desc: Start independent Serena server in codex context
+    cmds:
+    - serena start-mcp-server --project "{{.TASKFILE_DIR}}" --context codex
+  serena:index:
+    desc: Explicitly index this module
+    cmds:
+    - serena project index "{{.TASKFILE_DIR}}"
+  deps:
+    desc: deps using standalone tooling
+    cmds:
+    - python3 tooling/workflow.py deps --preset {{.PRESET}}
+  configure-tests:
+    desc: configure using standalone tooling
+    cmds:
+    - python3 tooling/workflow.py configure --preset test
+  format:
+    desc: format using standalone tooling
+    cmds:
+    - python3 tooling/workflow.py format
+  format-check:
+    desc: format-check using standalone tooling
+    cmds:
+    - python3 tooling/workflow.py format-check
+  tidy:
+    desc: tidy using standalone tooling
+    cmds:
+    - python3 tooling/workflow.py tidy --scope all
+  tidy-src:
+    desc: tidy using standalone tooling
+    cmds:
+    - python3 tooling/workflow.py tidy --scope src
+  tidy-tests:
+    desc: tidy using standalone tooling
+    cmds:
+    - python3 tooling/workflow.py tidy --scope tests
+  qml-import-check:
+    desc: Check QML runtime import contracts
+    cmds:
+    - python3 tooling/qml_policy.py
+  qmltypes-check:
+    desc: Build and verify generated QML metadata
+    cmds:
+    - task: build
+      vars:
+        PRESET: test
+    - python3 tooling/workflow.py qmltypes-check --preset test
+  qml-lint:
+    desc: Build and lint QML modules
+    cmds:
+    - task: build
+      vars:
+        PRESET: test
+    - cmake --build build/test --target all_qmllint
+  tooling:qmlls:
+    desc: Start configured Qt language server with resolved import paths
+    cmds:
+    - python3 tooling/workflow.py qmlls
+  check:
+    desc: Run existing acceptance workflow
+    cmds:
+    - task: verify
+    - task: format-check
+    - task: qml-import-check
+    - task: qmltypes-check
