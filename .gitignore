@@ -42,3 +42,5 @@ CLAUDE.md
 /build/
 /__pycache__/
 /tooling/__pycache__/
+
+**/__pycache__/

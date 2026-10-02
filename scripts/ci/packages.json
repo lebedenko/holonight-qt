@@ -1,0 +1,20 @@
+[
+  {
+    "name": "qt5-base",
+    "version": "5.15.19+kde+r96-1",
+    "sha256": "c772c6d18c29b58443cee96d9a6012baf8cb9622a14553e4759fdc418b93cf3c",
+    "url": "https://archive.archlinux.org/packages/q/qt5-base/qt5-base-5.15.19+kde+r96-1-x86_64.pkg.tar.zst"
+  },
+  {
+    "name": "ripgrep",
+    "version": "15.1.0-4",
+    "sha256": "ae0fa6de61916332aa28c78947dba7292d38fc793a107b23a702e3dd0db8bbc8",
+    "url": "https://archive.archlinux.org/packages/r/ripgrep/ripgrep-15.1.0-4-x86_64.pkg.tar.zst"
+  },
+  {
+    "name": "patchelf",
+    "version": "0.19.1-1",
+    "sha256": "5efa147d88f6d8fc40cd190e367ac5ff3898e77736cbf68d8779872e4589c6a8",
+    "url": "https://archive.archlinux.org/packages/p/patchelf/patchelf-0.19.1-1-x86_64.pkg.tar.zst"
+  }
+]

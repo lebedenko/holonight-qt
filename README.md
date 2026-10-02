@@ -247,3 +247,21 @@ when adopting the shared library in another application.
 
 See [tooling/README.md](tooling/README.md) for presets, local dependency overrides, editor refresh,
 `task tooling:doctor`, and the independent Serena project.
+
+## Local push CI rehearsal
+
+Run `task ci` with Git, Python 3, Task and an accessible Docker daemon (Podman is
+used when Docker is absent). The fixed linux/amd64 environment requires an amd64
+host or configured emulation. Registry, GitHub and Arch archive access are required.
+The immutable compiler/Qt6 image, checksum-pinned Qt5/probe tools and canonical
+Config revision are identical locally and remotely. The Release build covers tests,
+demo/gallery, Qt5 compatibility probes, formatting and source tidy; licensing uses
+REUSE 6.2.0. All required failures return nonzero and print complete failure logs.
+
+Tracked edits and non-ignored new files enter read-only snapshots; new inputs are
+reported to add before pushing. Each lane uses a disposable writable copy and fresh
+build/provider trees. Existing development builds stay untouched. Container layers
+may be cached; application artifacts are not reused. Logs and revision/dirty status,
+image identity, tool versions and lane results are saved under ignored `build/ci/`.
+Run launcher regressions with `python3 scripts/ci/test_launcher.py`. Registry
+publication, releases and artifact uploads remain remote operations.

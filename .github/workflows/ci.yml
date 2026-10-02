@@ -6,59 +6,8 @@ on:
 
 jobs:
   build-and-test:
-    runs-on: ubuntu-latest
-
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
-
-      - name: Checkout canonical configuration dependency
-        uses: actions/checkout@v4
-        with:
-          repository: lebedenko/holonight-config
-          ref: fe69a59e6b73167fd5349223a4d265d75386c139
-          path: holonight-config-dep
-
-      - name: Install dependencies
-        run: |
-          sudo apt-get update -q
-          sudo apt-get install -y ninja-build libgtest-dev libtomlplusplus-dev libwayland-dev wayland-protocols qtbase5-dev qtbase5-private-dev ripgrep patchelf
-
-      - name: Install Qt 6.11
-        uses: jurplel/install-qt-action@v3
-        with:
-          version: '6.11.*'
-          arch: linux_gcc_64
-          cache: true
-
-      - name: Build and install canonical configuration dependency
-        run: |
-          cmake -S holonight-config-dep -B build/dependencies/config -G Ninja -DCMAKE_BUILD_TYPE=Release -DBUILD_TESTING=OFF
-          cmake --build build/dependencies/config --parallel
-          cmake --install build/dependencies/config --prefix "$PWD/build/dependencies/prefix"
-
-      - name: Reject system configuration headers that mask missing target dependencies
-        run: |
-          test ! -e /usr/include/holonight/config/config.h
-          test ! -e /usr/local/include/holonight/config/config.h
-
-      - name: Configure
-        run: >
-          cmake -B build -G Ninja
-          -DCMAKE_BUILD_TYPE=Release
-          -DCMAKE_PREFIX_PATH="$PWD/build/dependencies/prefix"
-          -DBUILD_TESTS=ON
-          -DBUILD_DEMO=ON
-          -DBUILD_CONTROLS_GALLERY=ON
-          -DBUILD_QT5_PROBES=ON
-
-      - name: Build
-        run: cmake --build build -j$(nproc)
-
-      - name: Test
-        run: ctest --test-dir build --output-on-failure
-
-      - name: Format check
-        run: cmake --build build --target format-check
-
-      - name: Clang tidy
-        run: cmake --build build --target tidy-src
+      - name: Build, compatibility tests and static checks
+        run: python3 scripts/ci/run.py --lane build-test
