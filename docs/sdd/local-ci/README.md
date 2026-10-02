@@ -50,3 +50,9 @@ Complete logs were reviewed. The frozen Qt private-ABI warnings are expected; Vu
 and KF6 theme-generator support remain optional as in the original job. Explicitly
 preserving QTP0004 OLD leaves its future-major-version deprecation warning; changing
 gallery import behavior is outside this compatibility-preserving rollout.
+
+
+Rootless Podman uses `--userns=keep-id` so preserved private file modes remain
+readable under the requested UID/GID. A fake-runtime launcher regression verifies
+user mapping and the read-only input mount. Podman is not installed on this host;
+its real-runtime integration is unverified. The verified Docker path is unchanged.
