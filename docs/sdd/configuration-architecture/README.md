@@ -82,3 +82,7 @@ passed without that warning. Focused clang-tidy passed for appearance, reader, w
 Runtime tests cover sparse v2 warnings/invalid values, deletion and nested-parent recreation, and metadata-only
 v1/v2 changes without effective-value signals. The affected bootstrap, QML smoke, isolation and decoration tests
 passed after the enum spelling change. Installed-package follow-up results are recorded in TASKS.
+
+## CA-002a: symlink recovery
+
+Baseline `1067d0a717f0b24eaa399693a855d687d30e1f71`; Config provider `733781607124fc9bec0820c880e7467d08b34a50`. The published watcher misses recreation in the physical target directory after deletion. Regression reproduced with a GTest assertion around `QTest::qWaitFor`; Qt-only QTRY macros were replaced in this reader suite because they did not mark GTest failures. Watch both alias and physical target nearest existing parents, even when the target is absent. Existing invalid dangling-link reads retain diagnostics and last valid values.

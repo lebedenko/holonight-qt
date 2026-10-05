@@ -31,7 +31,7 @@ case "$lane" in
     /work/tools/usr/bin/qmake -query QT_VERSION
     test ! -e /usr/include/holonight/config/config.h
     test ! -e /usr/local/include/holonight/config/config.h
-    config_revision=7e83cacde8911452741420a29abbfe4465b7d52b
+    config_revision=733781607124fc9bec0820c880e7467d08b34a50
     config_source=/work/providers/config
     git init "$config_source"
     git -C "$config_source" remote add origin https://github.com/lebedenko/holonight-config.git

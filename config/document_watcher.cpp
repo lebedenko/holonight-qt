@@ -53,27 +53,27 @@ void DocumentWatcher::refresh() {
   if (!watched.isEmpty()) {
     watcher_->removePaths(watched);
   }
-  QString directory = QFileInfo{path_}.absolutePath();
-  while (!QFileInfo{directory}.isDir()) {
-    const auto parent = QFileInfo{directory}.absolutePath();
-    if (parent == directory) {
-      break;
+  const auto watch_parent = [this](const QString& file) {
+    QString directory = QFileInfo{file}.absolutePath();
+    while (!QFileInfo{directory}.isDir()) {
+      const auto parent = QFileInfo{directory}.absolutePath();
+      if (parent == directory) {
+        break;
+      }
+      directory = parent;
     }
-    directory = parent;
-  }
-  if (QFileInfo{directory}.isDir()) {
-    watcher_->addPath(directory);
-  }
+    if (QFileInfo{directory}.isDir() && !watcher_->directories().contains(directory)) {
+      watcher_->addPath(directory);
+    }
+  };
+  watch_parent(path_);
   if (QFileInfo{path_}.isFile()) {
     watcher_->addPath(path_);
   }
-  // A symlink target may be replaced in a different directory from the link.
-  const auto target = QFileInfo{path_}.canonicalFilePath();
-  if (!target.isEmpty() && target != QFileInfo{path_}.absoluteFilePath()) {
-    const auto target_parent = QFileInfo{target}.absolutePath();
-    if (!watcher_->directories().contains(target_parent)) {
-      watcher_->addPath(target_parent);
-    }
+  // Resolve even an absent physical target, so its recreation is observed.
+  const auto target = HoloNight::Config::resolveDocumentTarget(std::filesystem::path{path_.toStdString()});
+  if (target) {
+    watch_parent(QString::fromStdString(target.value->string()));
   }
 }
 
