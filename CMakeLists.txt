@@ -52,6 +52,7 @@ endif()
 add_subdirectory(palette)
 add_subdirectory(config)
 add_subdirectory(src)
+find_package(HoloNightSystemServices REQUIRED COMPONENTS Compositor)
 add_subdirectory(qml)
 add_subdirectory(tools)
 

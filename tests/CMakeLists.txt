@@ -394,11 +394,13 @@ foreach(ratio IN ITEMS 1.0 1.25)
 endforeach()
 
 add_executable(holonight_window_decoration_tests
-    quick_palette_main.cpp test_window_decoration.cpp
+    quick_palette_main.cpp test_window_decoration.cpp test_window_presentation.cpp
+    ${CMAKE_SOURCE_DIR}/qml/hnwindowpresentation.h
+    ${CMAKE_SOURCE_DIR}/qml/hnwindowpresentation.cpp
     ${CMAKE_SOURCE_DIR}/qml/hnwindowdecoration.h
     ${CMAKE_SOURCE_DIR}/qml/hnwindowdecoration.cpp)
 target_include_directories(holonight_window_decoration_tests PRIVATE ${CMAKE_SOURCE_DIR}/qml)
-target_link_libraries(holonight_window_decoration_tests PRIVATE Qt6::Quick Qt6::Widgets Qt6::Test GTest::gtest HoloNight::Config)
+target_link_libraries(holonight_window_decoration_tests PRIVATE Qt6::Quick Qt6::Widgets Qt6::Test GTest::gtest HoloNight::Config HoloNightSystem::Compositor)
 add_test(NAME holonight_window_decoration_tests COMMAND holonight_window_decoration_tests)
 set_property(TEST holonight_window_decoration_tests PROPERTY ENVIRONMENT "${HOLONIGHT_TEST_ENV}")
 target_compile_definitions(holonight_window_decoration_tests PRIVATE

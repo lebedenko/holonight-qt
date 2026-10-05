@@ -82,6 +82,8 @@ qt_add_qml_module(holonight_core_qml
         appearancecontext.cpp
         hniconpalette.h
         hniconpalette.cpp
+        hnwindowpresentation.h
+        hnwindowpresentation.cpp
         hnwindowdecoration.h
         hnwindowdecoration.cpp
         hnwindowpalette.h
@@ -326,3 +328,5 @@ if(BUILD_WAYLAND)
     target_compile_definitions(holonight_core_qml PRIVATE HOLONIGHT_WINDOW_DECORATION_WAYLAND)
     target_link_libraries(holonight_core_qml PRIVATE Qt6::WaylandClientPrivate)
 endif()
+
+target_link_libraries(holonight_core_qml PRIVATE HoloNightSystem::Compositor)
