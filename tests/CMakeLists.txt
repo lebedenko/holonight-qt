@@ -392,3 +392,15 @@ foreach(ratio IN ITEMS 1.0 1.25)
   set_property(TEST holonight_quick_rendering_dpr_${ratio} PROPERTY ENVIRONMENT
       "${HOLONIGHT_TEST_ENV};QT_QUICK_BACKEND=software;QT_QUICK_CONTROLS_STYLE=Holonight;QT_SCALE_FACTOR=${ratio}")
 endforeach()
+
+add_executable(holonight_window_decoration_tests
+    quick_palette_main.cpp test_window_decoration.cpp
+    ${CMAKE_SOURCE_DIR}/qml/hnwindowdecoration.h
+    ${CMAKE_SOURCE_DIR}/qml/hnwindowdecoration.cpp)
+target_include_directories(holonight_window_decoration_tests PRIVATE ${CMAKE_SOURCE_DIR}/qml)
+target_link_libraries(holonight_window_decoration_tests PRIVATE Qt6::Quick Qt6::Widgets Qt6::Test GTest::gtest HoloNight::Config)
+add_test(NAME holonight_window_decoration_tests COMMAND holonight_window_decoration_tests)
+set_property(TEST holonight_window_decoration_tests PROPERTY ENVIRONMENT "${HOLONIGHT_TEST_ENV}")
+target_compile_definitions(holonight_window_decoration_tests PRIVATE
+    HOLONIGHT_DECORATION_QML_PATH="${CMAKE_BINARY_DIR}/qml")
+add_dependencies(holonight_window_decoration_tests holonight_core_qml)

@@ -210,6 +210,8 @@ cmake --build build/debug -j$(nproc)
 QT_QPA_PLATFORM=offscreen ctest --test-dir build/test --output-on-failure
 ```
 
+See [window decoration observation](docs/window-decoration.md) for the native Wayland toolbar-title helper.
+
 ## Architecture
 
 - **All colors** originate in `palette/holonight/palette.h` (`tokensForScheme(ThemeSchemeKind)` → `buildPalette()`). Change colors there, nowhere else.
