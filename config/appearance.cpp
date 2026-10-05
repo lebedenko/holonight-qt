@@ -107,10 +107,15 @@ AppearanceResolution resolveAppearance(const HoloNight::Config::Appearance& appe
 }
 
 AppearanceDiagnostic qtDiagnostic(const HoloNight::Config::Diagnostic& diagnostic) {
+  AppearanceDiagnosticSeverity severity = AppearanceDiagnosticSeverity::Error;
+  if (diagnostic.severity == HoloNight::Config::Severity::Info) {
+    severity = AppearanceDiagnosticSeverity::Info;
+  } else if (diagnostic.severity == HoloNight::Config::Severity::Warning) {
+    severity = AppearanceDiagnosticSeverity::Warning;
+  }
   return {
       .code = AppearanceDiagnosticCode::Configuration,
-      .severity = diagnostic.severity == HoloNight::Config::Severity::Info ? AppearanceDiagnosticSeverity::Info
-                                                                           : AppearanceDiagnosticSeverity::Error,
+      .severity = severity,
       .message = fromUtf8(diagnostic.message),
       .path = diagnostic.path.has_value() ? QString::fromStdString(diagnostic.path->string()) : QString{},
   };

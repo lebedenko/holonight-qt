@@ -7,6 +7,8 @@ add_library(holonight_appearance STATIC
     holonight/appearance_reader.h
     appearance.cpp
     appearance_reader.cpp
+    holonight/document_watcher.h
+    document_watcher.cpp
 )
 
 target_include_directories(holonight_theme_catalog
@@ -25,8 +27,8 @@ target_include_directories(holonight_appearance
         $<INSTALL_INTERFACE:include>
 )
 target_link_libraries(holonight_appearance
-    PUBLIC holonight_palette Qt6::Core
-    PRIVATE holonight_theme_catalog HoloNight::Config
+    PUBLIC holonight_palette Qt6::Core HoloNight::Config
+    PRIVATE holonight_theme_catalog
 )
 set_target_properties(holonight_appearance PROPERTIES
     AUTOMOC ON
@@ -53,5 +55,6 @@ install(FILES
     holonight/appearance.h
     holonight/appearance_reader.h
     holonight/theme_catalog.h
+    holonight/document_watcher.h
     DESTINATION include/holonight
 )

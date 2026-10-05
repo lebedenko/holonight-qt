@@ -3,11 +3,9 @@
 
 #include "holonight/appearance_reader.h"
 
-#include <QAbstractEventDispatcher>
+#include "holonight/document_watcher.h"
+
 #include <QDebug>
-#include <QFileInfo>
-#include <QFileSystemWatcher>
-#include <QMetaObject>
 
 #include <holonight/config/config.h>
 
@@ -53,22 +51,18 @@ AppearanceReader::AppearanceReader(QObject* parent) : AppearanceReader{canonical
 
 AppearanceReader::AppearanceReader(QString config_file, QObject* parent)
     : QObject{parent}, config_file_{std::move(config_file)} {
-  reload_timer_.setSingleShot(true);
-  reload_timer_.setInterval(0);
-  connect(&reload_timer_, &QTimer::timeout, this, &AppearanceReader::reload);
+  watcher_ = std::make_unique<DocumentWatcher>(config_file_);
+  connect(watcher_.get(), &DocumentWatcher::documentChanged, this, &AppearanceReader::reload);
   initialize();
-  if (QAbstractEventDispatcher::instance() != nullptr) {
-    initializeWatcher();
-  } else {
-    QMetaObject::invokeMethod(this, &AppearanceReader::initializeWatcher, Qt::QueuedConnection);
-  }
 }
 
 AppearanceReader::~AppearanceReader() = default;
 
 void AppearanceReader::initialize() {
-  const HoloNight::Config::Result<HoloNight::Config::LoadedAppearance> loaded =
-      HoloNight::Config::load(std::filesystem::path{config_file_.toStdString()});
+  const auto snapshot = watcher_->read();
+  const auto loaded =
+      snapshot ? HoloNight::Config::decodeAppearanceDocument(*snapshot.value)
+               : HoloNight::Config::Result<HoloNight::Config::AppearanceDocument>::failure(snapshot.diagnostics);
   QVector<AppearanceDiagnostic> diagnostics = qtDiagnostics(loaded.diagnostics);
   HoloNight::Config::Appearance candidate = HoloNight::Config::defaults();
   if (loaded) {
@@ -82,20 +76,12 @@ void AppearanceReader::initialize() {
   publishDiagnostics(std::move(diagnostics));
 }
 
-void AppearanceReader::initializeWatcher() {
-  if (watcher_) {
-    return;
-  }
-  watcher_ = std::make_unique<QFileSystemWatcher>();
-  connect(watcher_.get(), &QFileSystemWatcher::fileChanged, this, &AppearanceReader::scheduleReload);
-  connect(watcher_.get(), &QFileSystemWatcher::directoryChanged, this, &AppearanceReader::scheduleReload);
-  rearmWatcher();
-}
-
 bool AppearanceReader::reload() {
-  const HoloNight::Config::Result<HoloNight::Config::LoadedAppearance> loaded =
-      HoloNight::Config::load(std::filesystem::path{config_file_.toStdString()});
-  rearmWatcher();
+  const auto snapshot = watcher_->read();
+  const auto loaded =
+      snapshot ? HoloNight::Config::decodeAppearanceDocument(*snapshot.value)
+               : HoloNight::Config::Result<HoloNight::Config::AppearanceDocument>::failure(snapshot.diagnostics);
+  watcher_->refresh();
   if (!loaded) {
     publishDiagnostics(qtDiagnostics(loaded.diagnostics));
     return false;
@@ -129,37 +115,6 @@ bool AppearanceReader::reload() {
     Q_EMIT shapeChanged();
   }
   return true;
-}
-
-void AppearanceReader::scheduleReload() {
-  rearmWatcher();
-  reload_timer_.start();
-}
-
-void AppearanceReader::rearmWatcher() {
-  if (!watcher_) {
-    return;
-  }
-
-  const QStringList watched = watcher_->files() + watcher_->directories();
-  if (!watched.isEmpty()) {
-    watcher_->removePaths(watched);
-  }
-
-  QString directory = QFileInfo{config_file_}.absolutePath();
-  while (!QFileInfo{directory}.isDir()) {
-    const QString parent = QFileInfo{directory}.absolutePath();
-    if (parent == directory) {
-      break;
-    }
-    directory = parent;
-  }
-  if (QFileInfo{directory}.isDir()) {
-    watcher_->addPath(directory);
-  }
-  if (QFileInfo{config_file_}.isFile()) {
-    watcher_->addPath(config_file_);
-  }
 }
 
 void AppearanceReader::publishDiagnostics(QVector<AppearanceDiagnostic> diagnostics) {

@@ -20,7 +20,7 @@ namespace Holonight {
 enum class ResolvedShapeStyle { Inherit, Hybrid, Rounded, Chamfered };
 
 enum class AppearanceDiagnosticCode { Configuration, UnsupportedScheme, UnsupportedAccent };
-enum class AppearanceDiagnosticSeverity { Info, Error };
+enum class AppearanceDiagnosticSeverity { Info, Error, Warning };
 
 struct AppearanceDiagnostic {
   AppearanceDiagnosticCode code = AppearanceDiagnosticCode::Configuration;

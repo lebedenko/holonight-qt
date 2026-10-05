@@ -31,7 +31,7 @@ case "$lane" in
     /work/tools/usr/bin/qmake -query QT_VERSION
     test ! -e /usr/include/holonight/config/config.h
     test ! -e /usr/local/include/holonight/config/config.h
-    config_revision=fe69a59e6b73167fd5349223a4d265d75386c139
+    config_revision=7e83cacde8911452741420a29abbfe4465b7d52b
     config_source=/work/providers/config
     git init "$config_source"
     git -C "$config_source" remote add origin https://github.com/lebedenko/holonight-config.git
@@ -41,6 +41,17 @@ case "$lane" in
     cmake -S "$config_source" -B /work/providers/config-build -G Ninja -DCMAKE_BUILD_TYPE=Release -DBUILD_TESTING=OFF
     cmake --build /work/providers/config-build --parallel
     cmake --install /work/providers/config-build --prefix /work/providers/prefix
+    services_revision=398804a7cce5a57f9f6870c4e7ec99e9b1f3ddaa
+    services_source=/work/providers/system-services
+    git init "$services_source"
+    git -C "$services_source" remote add origin https://github.com/lebedenko/holonight-system-services.git
+    git -C "$services_source" fetch --depth=1 origin "$services_revision"
+    git -C "$services_source" checkout --detach FETCH_HEAD
+    test "$(git -C "$services_source" rev-parse HEAD)" = "$services_revision"
+    cmake -S "$services_source" -B /work/providers/services-build -G Ninja -DCMAKE_BUILD_TYPE=Release \
+      '-DCMAKE_PREFIX_PATH=/work/tools/usr' -DBUILD_TESTS=OFF -DBUILD_AUDIO=OFF -DBUILD_STORAGE=OFF
+    cmake --build /work/providers/services-build --parallel
+    cmake --install /work/providers/services-build --prefix /work/providers/prefix
     export LD_LIBRARY_PATH=/work/providers/prefix/lib:/work/tools/usr/lib
     cmake -S . -B build/verification -G Ninja -DCMAKE_BUILD_TYPE=Release \
       '-DCMAKE_PREFIX_PATH=/work/providers/prefix;/work/tools/usr' \

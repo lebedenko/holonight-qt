@@ -8,8 +8,6 @@
 #include <QQuickWindow>
 #include <QtQml/qqmlregistration.h>
 
-#include <cstdint>
-
 namespace Holonight::Private {
 struct WindowDecorationState;
 }
@@ -23,7 +21,8 @@ class HnWindowDecoration : public QObject {
       bool externalDecorationPresent READ externalDecorationPresent NOTIFY externalDecorationPresentChanged FINAL)
 
  public:
-  enum class Mode : std::uint8_t { Unknown, ServerSide, ToolkitClientSide, Undecorated };
+  // The QML registrar recognizes this built-in spelling of the existing 8-bit base.
+  enum class Mode : unsigned char { Unknown, ServerSide, ToolkitClientSide, Undecorated };
   Q_ENUM(Mode)
   explicit HnWindowDecoration(QObject* parent = nullptr);
   ~HnWindowDecoration() override;

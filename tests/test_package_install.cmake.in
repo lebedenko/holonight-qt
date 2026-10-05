@@ -475,7 +475,9 @@ foreach(example IN ITEMS holonight_demo holonight_controls_gallery)
       OR (example STREQUAL "holonight_controls_gallery" AND @BUILD_CONTROLS_GALLERY@))
     find_program(example_python NAMES python3 REQUIRED)
     foreach(mode IN ITEMS default environment command-line configuration)
-      execute_process(COMMAND "${example_python}" "@CMAKE_CURRENT_SOURCE_DIR@/check_example_startup.py"
+      execute_process(COMMAND "@CMAKE_COMMAND@" -E env
+          "LD_LIBRARY_PATH=@HOLONIGHT_CONFIG_RUNTIME_DIR@:$ENV{LD_LIBRARY_PATH}"
+          "${example_python}" "@CMAKE_CURRENT_SOURCE_DIR@/check_example_startup.py"
           "${install_prefix}/bin/${example}" "${qml_root}" "${mode}"
           RESULT_VARIABLE result OUTPUT_VARIABLE output ERROR_VARIABLE error)
       if(NOT result EQUAL 0)

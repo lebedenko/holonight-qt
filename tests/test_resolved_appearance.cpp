@@ -150,3 +150,71 @@ TEST(AppearanceReader, SemanticallyUnchangedReplacementDoesNotPublishRevision) {
   EXPECT_EQ(reader.revision(), 0);
   EXPECT_EQ(appearance_spy.count(), 0);
 }
+
+TEST(AppearanceReader, SparseV2WarningsArePreservedAndInvalidKnownValuesRetainLastValid) {
+  QTemporaryDir directory;
+  ASSERT_TRUE(directory.isValid());
+  const auto file_path = directory.filePath(QStringLiteral("appearance.toml"));
+  {
+    QFile file(file_path);
+    ASSERT_TRUE(file.open(QIODevice::WriteOnly));
+    ASSERT_GT(file.write("version=2\n[theme]\nscheme='holonight-light'\nunknown=7\n"), 0);
+  }
+  Holonight::AppearanceReader reader{file_path};
+  EXPECT_EQ(reader.appearance().scheme, QStringLiteral("holonight-light"));
+  ASSERT_EQ(reader.diagnostics().size(), 1);
+  EXPECT_EQ(reader.diagnostics().front().severity, Holonight::AppearanceDiagnosticSeverity::Warning);
+  QSignalSpy changes{&reader, &Holonight::AppearanceReader::appearanceChanged};
+  {
+    QFile file(file_path);
+    ASSERT_TRUE(file.open(QIODevice::WriteOnly | QIODevice::Truncate));
+    ASSERT_GT(file.write("version=2\n[typography]\nui_size=1\n"), 0);
+  }
+  EXPECT_FALSE(reader.reload());
+  EXPECT_EQ(reader.appearance().scheme, QStringLiteral("holonight-light"));
+  EXPECT_EQ(changes.count(), 0);
+  EXPECT_FALSE(reader.diagnostics().isEmpty());
+}
+
+TEST(AppearanceReader, V2DeletionAndNestedParentRecreationRecoverWithoutReadTimeWrites) {
+  QTemporaryDir directory;
+  ASSERT_TRUE(directory.isValid());
+  const auto file_path = directory.filePath(QStringLiteral("nested/appearance.toml"));
+  const auto saved = HoloNight::Config::saveAppearanceDocument(
+      path(file_path), {
+                           {
+                               .key = {"theme", "scheme"},
+                               .baseline = std::nullopt,
+                               .pending = HoloNight::Config::Value{std::string{"holonight-light"}},
+                           },
+                       });
+  ASSERT_EQ(saved.status, HoloNight::Config::SaveStatus::Success);
+  Holonight::AppearanceReader reader{file_path};
+  QSignalSpy changes{&reader, &Holonight::AppearanceReader::appearanceChanged};
+  ASSERT_TRUE(QFile::remove(file_path));
+  ASSERT_TRUE(QDir{QFileInfo{file_path}.absolutePath()}.removeRecursively());
+  QTRY_COMPARE_WITH_TIMEOUT(reader.appearance().scheme, QStringLiteral("holonight-dark"), 2000);
+  EXPECT_FALSE(QFileInfo::exists(file_path));
+  EXPECT_TRUE(reader.diagnostics().isEmpty());
+  ASSERT_EQ(HoloNight::Config::saveAppearanceDocument(
+                path(file_path),
+                {{{"theme", "scheme"}, std::nullopt, HoloNight::Config::Value{std::string{"holonight-storm"}}}})
+                .status,
+            HoloNight::Config::SaveStatus::Success);
+  QTRY_COMPARE_WITH_TIMEOUT(reader.appearance().scheme, QStringLiteral("holonight-storm"), 2000);
+  EXPECT_EQ(changes.count(), 2);
+}
+
+TEST(AppearanceReader, V1ToV2MetadataUpgradeDoesNotEmitEffectiveChange) {
+  QTemporaryDir directory;
+  ASSERT_TRUE(directory.isValid());
+  const auto file_path = directory.filePath(QStringLiteral("appearance.toml"));
+  ASSERT_TRUE(HoloNight::Config::writeAtomically(HoloNight::Config::defaults(), path(file_path)));
+  Holonight::AppearanceReader reader{file_path};
+  QSignalSpy changes{&reader, &Holonight::AppearanceReader::appearanceChanged};
+  ASSERT_EQ(HoloNight::Config::saveAppearanceDocument(path(file_path), {}).status,
+            HoloNight::Config::SaveStatus::Success);
+  EXPECT_TRUE(reader.reload());
+  EXPECT_EQ(reader.revision(), 0);
+  EXPECT_EQ(changes.count(), 0);
+}

@@ -6,13 +6,12 @@
 #include "holonight/appearance.h"
 
 #include <QObject>
-#include <QTimer>
 
 #include <memory>
 
-class QFileSystemWatcher;
-
 namespace Holonight {
+
+class DocumentWatcher;
 
 class AppearanceReader : public QObject {
   Q_OBJECT
@@ -39,16 +38,12 @@ class AppearanceReader : public QObject {
 
  private:
   void initialize();
-  void initializeWatcher();
-  void scheduleReload();
-  void rearmWatcher();
   void publishDiagnostics(QVector<AppearanceDiagnostic> diagnostics);
 
   ResolvedAppearance appearance_;
   QVector<AppearanceDiagnostic> diagnostics_;
   QString config_file_;
-  std::unique_ptr<QFileSystemWatcher> watcher_;
-  QTimer reload_timer_;
+  std::unique_ptr<DocumentWatcher> watcher_;
   int revision_ = 0;
 };
 
