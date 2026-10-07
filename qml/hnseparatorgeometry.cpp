@@ -6,6 +6,7 @@
 #include "hnseparatoralignment.h"
 
 #include <QQuickWindow>
+#include <QScopedValueRollback>
 #include <QScreen>
 
 #include <cmath>
@@ -92,6 +93,13 @@ void HnSeparatorGeometry::observeWindow(QQuickWindow* window) {
 }
 
 void HnSeparatorGeometry::updateGeometry() {
+  // Reading the parent's geometry can evaluate its implicit-size bindings.
+  // Finish that evaluation before notifying a new logical thickness.
+  if (updating_geometry_) {
+    QMetaObject::invokeMethod(this, &HnSeparatorGeometry::updateGeometry, Qt::QueuedConnection);
+    return;
+  }
+  const QScopedValueRollback<bool> updating{updating_geometry_, true};
   const qreal dpr = window() != nullptr ? window()->effectiveDevicePixelRatio() : 1.0;
   QPointF origin;
   QPointF scale;
@@ -104,29 +112,30 @@ void HnSeparatorGeometry::updateGeometry() {
     if (std::abs(x_axis.y()) <= kGeometryTolerance && std::abs(y_axis.x()) <= kGeometryTolerance) {
       scale = QPointF(x_axis.x(), y_axis.y());
     }
-    slot = parentItem()->boundingRect();
   }
   const qreal minor_scale = orientation_ == Qt::Vertical ? scale.x() : scale.y();
   qreal logical_thickness = requested_thickness_ > 0 ? requested_thickness_ / (dpr * std::abs(minor_scale)) : 0;
   if (!std::isfinite(logical_thickness) || dpr <= 0) {
     logical_thickness = 0;
   }
+  if (logical_thickness_ != logical_thickness) {
+    logical_thickness_ = logical_thickness;
+    emit logicalThicknessChanged();
+  }
+  // The thickness notification may resize the slot. Paint against its new bounds.
+  if (parentItem() != nullptr) {
+    origin = parentItem()->mapToScene(QPointF{});
+    slot = parentItem()->boundingRect();
+  }
   const auto alignment = cross_axis_alignment_ >= 0 && cross_axis_alignment_ <= 2
                              ? static_cast<Holonight::SeparatorCrossAlignment>(cross_axis_alignment_)
                              : Holonight::SeparatorCrossAlignment::Leading;
   const QRectF rectangle = Holonight::separatorRectangle(slot, origin, scale, dpr, requested_thickness_,
                                                          orientation_ == Qt::Vertical, alignment);
-  if (effective_dpr_ == dpr && logical_thickness_ == logical_thickness && painted_rect_ == rectangle) {
+  if (effective_dpr_ == dpr && painted_rect_ == rectangle) {
     return;
   }
-  const bool thickness_changed = logical_thickness_ != logical_thickness;
   effective_dpr_ = dpr;
-  logical_thickness_ = logical_thickness;
   painted_rect_ = rectangle;
   emit geometryChanged();
-  // Slot changes only affect paint. Never notify the implicit-size binding while it
-  // is responding to a thickness change and updating the parent's actual size.
-  if (thickness_changed) {
-    emit logicalThicknessChanged();
-  }
 }

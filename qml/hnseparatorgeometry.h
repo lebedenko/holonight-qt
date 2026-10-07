@@ -58,5 +58,6 @@ class HnSeparatorGeometry : public QQuickItem {
   qreal effective_dpr_ = 1.0;
   qreal logical_thickness_ = 1.0;
   QRectF painted_rect_;
+  bool updating_geometry_ = false;
   QVector<QMetaObject::Connection> observer_connections_;
 };

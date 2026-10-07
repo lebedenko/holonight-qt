@@ -432,6 +432,30 @@ TEST(SeparatorRendering, ConnectedBoundariesHaveSingleCoverage) {
   }
 }
 
+TEST(SeparatorRendering, SettingsRowsAttachWithoutBindingLoops) {
+  SeparatorScene scene(R"(
+    import QtQuick
+    import QtQuick.Layouts
+    import Holonight.Controls
+    Item {
+      width: 480; height: 480
+      ColumnLayout {
+        width: parent.width
+        Repeater {
+          model: 6
+          HnSettingsRow {
+            Layout.fillWidth: true
+            titleText: "Settings preference"
+            dividerVisible: true
+          }
+        }
+      }
+    }
+  )");
+  ASSERT_NE(scene.root(), nullptr);
+  ASSERT_FALSE(scene.grab().isNull());
+}
+
 // GTest assertion macros contribute branches to the complexity metric.
 // NOLINTNEXTLINE(readability-function-cognitive-complexity)
 TEST(SeparatorRendering, LayoutAttachmentAndDprChanges) {
