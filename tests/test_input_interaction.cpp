@@ -14,7 +14,9 @@
 #include <memory>
 
 TEST(InputInteraction, KeyboardClearsStaleButtonHoverFeedback) {
-  if (qEnvironmentVariable("QT_QUICK_CONTROLS_STYLE") == "Fusion") GTEST_SKIP() << "Fusion owns standard rendering";
+  if (qEnvironmentVariable("QT_QUICK_CONTROLS_STYLE") == "Fusion") {
+    GTEST_SKIP() << "Fusion owns standard rendering";
+  }
   QQmlEngine engine;
   engine.addImportPath(qEnvironmentVariable("UQC_IMPORT_PATH", QStringLiteral(HOLONIGHT_QML_IMPORT_PATH)));
   QQmlComponent component(&engine);
@@ -49,9 +51,12 @@ Window {
 namespace {
 class InputInteractionTest : public testing::Test {
  protected:
+  // GTest fixtures share state with generated subclasses.
+  // NOLINTBEGIN(cppcoreguidelines-non-private-member-variables-in-classes)
   QQmlEngine engine;
   std::unique_ptr<QObject> root;
   QQuickWindow* window = nullptr;
+  // NOLINTEND(cppcoreguidelines-non-private-member-variables-in-classes)
 
   std::unique_ptr<QObject> createWindow() {
     QQmlComponent component(&engine);
@@ -93,7 +98,7 @@ Window {
     window = qobject_cast<QQuickWindow*>(root.get());
     ASSERT_TRUE(QTest::qWaitForWindowExposed(window));
   }
-  bool allowed() const { return root->property("allowed").toBool(); }
+  [[nodiscard]] bool allowed() const { return root->property("allowed").toBool(); }
   void suppress() { ASSERT_TRUE(QMetaObject::invokeMethod(root.get(), "suppress")); }
   void move(QPoint point) {
     QTest::mouseMove(window, point);
@@ -109,8 +114,8 @@ TEST_F(InputInteractionTest, OnlyChangedScreenCoordinatesRestoreHover) {
   const int movements = root->property("movements").toInt();
   QTest::keyClick(window, Qt::Key_Right);
   ASSERT_FALSE(allowed());
-  const QPoint position(60, 35);
-  const QPoint global = window->mapToGlobal(position);
+  const QPointF position(60, 35);
+  const QPointF global = window->mapToGlobal(position);
   QMouseEvent stationary(QEvent::MouseMove, position, global, Qt::NoButton, Qt::NoButton, Qt::NoModifier);
   QCoreApplication::sendEvent(window, &stationary);
   QEnterEvent enter(position, position, global);

@@ -210,7 +210,7 @@ cmake --build build/debug -j$(nproc)
 QT_QPA_PLATFORM=offscreen ctest --test-dir build/test --output-on-failure
 ```
 
-See [window decoration observation](docs/window-decoration.md) for the native Wayland toolbar-title helper.
+Application content headings are controlled by each application; native window titles remain available in all modes.
 
 ## Architecture
 

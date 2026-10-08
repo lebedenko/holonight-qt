@@ -1,5 +1,7 @@
 # Decoration-aware Viewer toolbar titles
 
+Archived: replaced by [Decoration-independent Viewer](../decoration-independent-viewer/README.md). The requirements below describe historical work, not the current API.
+
 Status: In Progress
 
 Work package: I-001

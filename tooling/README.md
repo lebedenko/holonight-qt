@@ -14,7 +14,7 @@ BUILD_TESTING option. Asset workflows retain their existing validation and accep
 
 Dependencies default to sibling checkouts and build under `build/deps/<module>`, installing into
 `build/deps/prefix`. Set HOLONIGHT_CONFIG_SOURCE, HOLONIGHT_QT_SOURCE, HOLONIGHT_IMAGES_SOURCE,
-HOLONIGHT_THUMBNAILS_SOURCE, HOLONIGHT_SEARCH_SOURCE or HOLONIGHT_SYSTEM_SERVICES_SOURCE to arbitrary local
+HOLONIGHT_THUMBNAILS_SOURCE, HOLONIGHT_SEARCH_SOURCE to arbitrary local
 source directories, including paths with spaces. An explicit HOLONIGHT_DEPENDENCY_PREFIX uses existing providers
 without rebuilding them. Supply CMAKE_PREFIX_PATH for direct CMake use. Missing packages/sources fail with remediation;
 there are no automatic downloads or global HoloNight package fallbacks. JOBS controls parallelism (default 2).
