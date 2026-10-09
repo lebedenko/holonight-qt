@@ -12,6 +12,7 @@
 
 #include <gtest/gtest.h>
 #include <memory>
+#include <optional>
 
 TEST(InputInteraction, KeyboardClearsStaleButtonHoverFeedback) {
   if (qEnvironmentVariable("QT_QUICK_CONTROLS_STYLE") == "Fusion") {
@@ -49,6 +50,22 @@ Window {
 }
 
 namespace {
+class MouseMoveRecorder : public QObject {
+ public:
+  [[nodiscard]] std::optional<QPointF> globalPosition() const { return global_position_; }
+
+ protected:
+  bool eventFilter(QObject*, QEvent* event) override {
+    if (event->type() == QEvent::MouseMove) {
+      global_position_ = static_cast<QMouseEvent*>(event)->globalPosition();
+    }
+    return false;
+  }
+
+ private:
+  std::optional<QPointF> global_position_;
+};
+
 class InputInteractionTest : public testing::Test {
  protected:
   // GTest fixtures share state with generated subclasses.
@@ -108,14 +125,18 @@ Window {
 }  // namespace
 
 TEST_F(InputInteractionTest, OnlyChangedScreenCoordinatesRestoreHover) {
+  MouseMoveRecorder recorder;
+  window->installEventFilter(&recorder);
   move(QPoint(350, 250));
   move(QPoint(60, 35));
+  ASSERT_TRUE(recorder.globalPosition().has_value());
+  // QTest's global-coordinate rounding at fractional scales differs across Qt versions.
+  const QPointF global = *recorder.globalPosition();
   ASSERT_TRUE(allowed());
   const int movements = root->property("movements").toInt();
   QTest::keyClick(window, Qt::Key_Right);
   ASSERT_FALSE(allowed());
   const QPointF position(60, 35);
-  const QPointF global = window->mapToGlobal(position);
   QMouseEvent stationary(QEvent::MouseMove, position, global, Qt::NoButton, Qt::NoButton, Qt::NoModifier);
   QCoreApplication::sendEvent(window, &stationary);
   QEnterEvent enter(position, position, global);
