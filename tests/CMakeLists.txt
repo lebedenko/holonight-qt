@@ -244,6 +244,7 @@ endforeach()
 add_test(NAME holonight_qml_smoke_tests COMMAND holonight_qml_smoke_tests
     WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
 )
+set_tests_properties(holonight_qml_smoke_tests PROPERTIES TIMEOUT 60)
 
 set_property(TEST holonight_qml_smoke_tests PROPERTY
     ENVIRONMENT "${HOLONIGHT_TEST_ENV};QML_IMPORT_PATH=${CMAKE_BINARY_DIR}/qml"

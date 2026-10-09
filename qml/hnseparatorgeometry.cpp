@@ -96,7 +96,16 @@ void HnSeparatorGeometry::updateGeometry() {
   // Reading the parent's geometry can evaluate its implicit-size bindings.
   // Finish that evaluation before notifying a new logical thickness.
   if (updating_geometry_) {
-    QMetaObject::invokeMethod(this, &HnSeparatorGeometry::updateGeometry, Qt::QueuedConnection);
+    if (!update_pending_) {
+      update_pending_ = true;
+      QMetaObject::invokeMethod(
+          this,
+          [this] {
+            update_pending_ = false;
+            updateGeometry();
+          },
+          Qt::QueuedConnection);
+    }
     return;
   }
   const QScopedValueRollback<bool> updating{updating_geometry_, true};
@@ -105,12 +114,15 @@ void HnSeparatorGeometry::updateGeometry() {
   QPointF scale;
   QRectF slot;
   if (parentItem() != nullptr) {
-    origin = parentItem()->mapToScene(QPointF{});
-    const QPointF x_axis = parentItem()->mapToScene(QPointF{1, 0}) - origin;
-    const QPointF y_axis = parentItem()->mapToScene(QPointF{0, 1}) - origin;
+    bool transform_valid = false;
+    const QTransform transform = parentItem()->itemTransform(nullptr, &transform_valid);
+    origin = transform.map(QPointF{});
     // Arbitrary rotation/shear/custom transforms are outside the crispness contract.
-    if (std::abs(x_axis.y()) <= kGeometryTolerance && std::abs(y_axis.x()) <= kGeometryTolerance) {
-      scale = QPointF(x_axis.x(), y_axis.y());
+    if (transform_valid && transform.isAffine() && std::isfinite(transform.m11()) && std::isfinite(transform.m22()) &&
+        std::isfinite(origin.x()) && std::isfinite(origin.y()) && std::abs(transform.m12()) <= kGeometryTolerance &&
+        std::abs(transform.m21()) <= kGeometryTolerance) {
+      // Linear coefficients are independent of scrolling translation.
+      scale = QPointF(transform.m11(), transform.m22());
     }
   }
   const qreal minor_scale = orientation_ == Qt::Vertical ? scale.x() : scale.y();
@@ -118,7 +130,7 @@ void HnSeparatorGeometry::updateGeometry() {
   if (!std::isfinite(logical_thickness) || dpr <= 0) {
     logical_thickness = 0;
   }
-  if (logical_thickness_ != logical_thickness) {
+  if (!qFuzzyCompare(1 + logical_thickness_, 1 + logical_thickness)) {
     logical_thickness_ = logical_thickness;
     emit logicalThicknessChanged();
   }

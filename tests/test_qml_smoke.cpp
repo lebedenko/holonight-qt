@@ -17,6 +17,7 @@
 #include <QQmlEngine>
 #include <QQuickItem>
 #include <QQuickWindow>
+#include <QSignalSpy>
 #include <QString>
 #include <QTemporaryDir>
 #include <QTest>
@@ -30,6 +31,7 @@
 #include <holonight/config/config.h>
 #include <limits>
 #include <memory>
+#include <vector>
 
 namespace {
 
@@ -4417,6 +4419,169 @@ TEST_F(QmlSmoke, HnSeparator_ZeroScaleSuppressesTinyPaintedGeometryAndRecovers) 
   root->setScale(10000000);
   EXPECT_TRUE(line->isVisible());
   EXPECT_GT(geometry->property("paintedRect").toRectF().height(), 0);
+}
+
+TEST_F(QmlSmoke, HnSeparator_FractionalScrollingKeepsLayoutStable) {
+  QQmlComponent component(&engine_);
+  component.setData(R"(
+    import QtQuick
+    import QtQuick.Layouts
+    import Holonight.Controls
+    Item {
+      width: 400; height: 300
+      Flickable {
+        id: flick; objectName: "scroll"; anchors.fill: parent
+        contentWidth: width; contentHeight: column.implicitHeight
+        ColumnLayout {
+          id: column; width: flick.width
+          Repeater {
+            model: 24
+            HnSettingsRow {
+              titleText: "Scrolling row"; dividerVisible: true
+              Layout.fillWidth: true
+            }
+          }
+          RowLayout {
+            Layout.fillWidth: true
+            HnSeparator { orientation: Qt.Vertical; Layout.preferredHeight: 40 }
+            ColumnLayout {
+              Layout.fillWidth: true
+              HnSeparator { Layout.fillWidth: true }
+              Item { Layout.preferredHeight: 40 }
+            }
+          }
+        }
+      }
+    }
+  )",
+                    QUrl());
+  ASSERT_TRUE(component.isReady()) << component.errorString().toStdString();
+  std::unique_ptr<QObject> object(component.create());
+  auto* root = qobject_cast<QQuickItem*>(object.get());
+  ASSERT_NE(root, nullptr);
+  auto* flick = root->findChild<QQuickItem*>("scroll");
+  ASSERT_NE(flick, nullptr);
+  QList<QObject*> geometries;
+  QList<QQuickItem*> pending{root};
+  while (!pending.isEmpty()) {
+    auto* item = pending.takeLast();
+    if (item->objectName() == QStringLiteral("separatorGeometry")) {
+      geometries.append(item);
+    }
+    pending.append(item->childItems());
+  }
+  ASSERT_EQ(geometries.size(), 26);
+  for (qreal scale : {1.3, -1.3, 0.7, -0.7}) {
+    root->setScale(scale);
+    for (int pass = 0; pass < 5; ++pass) {
+      QCoreApplication::processEvents();
+    }
+    std::vector<std::unique_ptr<QSignalSpy>> spies;
+    QList<QSizeF> sizes;
+    for (auto* geometry : geometries) {
+      spies.emplace_back(std::make_unique<QSignalSpy>(geometry, SIGNAL(logicalThicknessChanged())));
+      auto* slot = qobject_cast<QQuickItem*>(geometry)->parentItem();
+      sizes.append(QSizeF(slot->implicitWidth(), slot->implicitHeight()));
+    }
+    const qreal content_height = flick->property("contentHeight").toReal();
+    for (int step = 0; step < 4096; ++step) {
+      // Sweep both ways through integer and binary exponent boundaries.
+      const int offset = step < 2048 ? step : 4095 - step;
+      flick->setProperty("contentY", (offset * 0.731) + 0.13);
+      for (qsizetype index = 0; index < geometries.size(); ++index) {
+        auto* geometry = geometries[index];
+        auto* slot = qobject_cast<QQuickItem*>(geometry)->parentItem();
+        EXPECT_EQ(QSizeF(slot->implicitWidth(), slot->implicitHeight()), sizes[index]);
+        auto* line = slot->findChild<QQuickItem*>("separatorLine");
+        ASSERT_NE(line, nullptr);
+        const QRectF bounds = line->mapRectToScene(line->boundingRect());
+        const qreal dpr = geometry->property("effectiveDevicePixelRatio").toReal();
+        const bool vertical = geometry->property("orientation").toInt() == Qt::Vertical;
+        const qreal edge = (vertical ? bounds.left() : bounds.top()) * dpr;
+        EXPECT_NEAR(edge, std::round(edge), 1e-6);
+        EXPECT_NEAR((vertical ? bounds.width() : bounds.height()) * dpr, 1, 1e-6);
+      }
+      if (step % 128 == 0) {
+        bool heartbeat = false;
+        QMetaObject::invokeMethod(flick, [&] { heartbeat = true; }, Qt::QueuedConnection);
+        QCoreApplication::processEvents();
+        EXPECT_TRUE(heartbeat);
+        EXPECT_DOUBLE_EQ(flick->property("contentHeight").toReal(), content_height);
+      }
+    }
+    EXPECT_DOUBLE_EQ(flick->property("contentHeight").toReal(), content_height);
+    for (const auto& spy : spies) {
+      EXPECT_EQ(spy->count(), 0);
+    }
+  }
+}
+
+TEST_F(QmlSmoke, HnSeparator_ReentrantUpdatesCoalesceAndSurviveReparenting) {
+  class QueuedCounter : public QObject {
+   public:
+    int delivered = 0;
+    bool eventFilter(QObject* watched, QEvent* event) override {
+      Q_UNUSED(watched);
+      if (event->type() == QEvent::MetaCall) {
+        ++delivered;
+      }
+      return false;
+    }
+  } counter;
+  QQmlComponent component(&engine_);
+  component.setData(R"(
+    import QtQuick
+    import Holonight.Controls
+    Item {
+      id: root; width: 200; height: 200
+      property bool mutate: false
+      Item { id: other; objectName: "other"; width: 80; height: 80 }
+      HnSeparator {
+        id: separator; objectName: "separator"; width: 100
+        onImplicitHeightChanged: {
+          if (root.mutate) {
+            root.mutate = false
+            for (let i = 0; i < 32; ++i) { root.x = i * 0.13; root.y = i * 0.17 }
+            separator.parent = other
+          }
+        }
+      }
+    }
+  )",
+                    QUrl());
+  ASSERT_TRUE(component.isReady()) << component.errorString().toStdString();
+  std::unique_ptr<QObject> object(component.create());
+  auto* separator = object->findChild<QQuickItem*>("separator");
+  ASSERT_NE(separator, nullptr);
+  auto* geometry = separator->findChild<QObject*>("separatorGeometry");
+  ASSERT_NE(geometry, nullptr);
+  QCoreApplication::processEvents();
+  geometry->installEventFilter(&counter);
+  object->setProperty("mutate", true);
+  separator->setProperty("thickness", 2);
+  QCoreApplication::sendPostedEvents(geometry, QEvent::MetaCall);
+  EXPECT_EQ(counter.delivered, 1);
+  EXPECT_DOUBLE_EQ(separator->implicitHeight(), 2);
+  auto* line = separator->findChild<QQuickItem*>("separatorLine");
+  ASSERT_NE(line, nullptr);
+  const QRectF bounds = line->mapRectToScene(line->boundingRect());
+  EXPECT_NEAR(bounds.height(), 2, 1e-6);
+  EXPECT_NEAR(bounds.top(), std::round(separator->mapToScene(QPointF{}).y()), 1e-6);
+  for (int pass = 0; pass < 5; ++pass) {
+    QCoreApplication::processEvents();
+  }
+  EXPECT_EQ(counter.delivered, 1);
+  separator->setProperty("orientation", Qt::Vertical);
+  EXPECT_DOUBLE_EQ(separator->implicitWidth(), 2);
+  object->findChild<QQuickItem*>("other")->setScale(2);
+  EXPECT_DOUBLE_EQ(separator->implicitWidth(), 1);
+  separator->setProperty("orientation", Qt::Horizontal);
+  object->setProperty("mutate", true);
+  separator->setProperty("thickness", 3);
+  const int delivered_before_destruction = counter.delivered;
+  object.reset();
+  QCoreApplication::processEvents();
+  EXPECT_EQ(counter.delivered, delivered_before_destruction);
 }
 
 TEST_F(QmlSmoke, HnSeparator_CompleteRectangleAlignmentAndInvalidGeometry) {
