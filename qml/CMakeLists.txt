@@ -71,6 +71,7 @@ set_source_files_properties(
 set_source_files_properties(core/HnControlSize.qml PROPERTIES QT_RESOURCE_ALIAS HnControlSize.qml)
 set_source_files_properties(core/HnTypographyRole.qml PROPERTIES QT_RESOURCE_ALIAS HnTypographyRole.qml)
 set_source_files_properties(core/HnLabel.qml PROPERTIES QT_RESOURCE_ALIAS HnLabel.qml)
+set_source_files_properties(core/HnButtonSurface.qml PROPERTIES QT_RESOURCE_ALIAS HnButtonSurface.qml)
 
 qt_add_qml_module(holonight_core_qml
     URI "Holonight.Core"
@@ -103,6 +104,7 @@ qt_add_qml_module(holonight_core_qml
         core/HnControlSize.qml
         core/HnTypographyRole.qml
         core/HnLabel.qml
+        core/HnButtonSurface.qml
         HnIcon.qml
 )
 
@@ -146,6 +148,8 @@ set(HOLONIGHT_CONTROLS_PUBLIC_QML_FILES
     controls/HnColorPicker.qml
     controls/HnChoiceCard.qml
     controls/HnActionBar.qml
+    controls/HnPopupCard.qml
+    controls/HnPopupCloseButton.qml
     controls/HnIconButton.qml
     controls/HnSeparator.qml
     HnApplicationWindow.qml
@@ -168,6 +172,7 @@ set_source_files_properties(${HOLONIGHT_CONTROLS_INTERNAL_QML_FILES} PROPERTIES
     QT_RESOURCE_ALIAS HnSelectableDelegate.qml
     QT_QML_INTERNAL_TYPE TRUE
 )
+set_source_files_properties(controls/assets/close.svg PROPERTIES QT_RESOURCE_ALIAS assets/close.svg)
 set_source_files_properties(controls/assets/search.svg PROPERTIES QT_RESOURCE_ALIAS assets/search.svg)
 set_source_files_properties(controls/assets/clear.svg PROPERTIES QT_RESOURCE_ALIAS assets/clear.svg)
 set_source_files_properties(controls/assets/more-vertical.svg PROPERTIES QT_RESOURCE_ALIAS assets/more-vertical.svg)
@@ -195,6 +200,7 @@ qt_add_qml_module(holonight_controls_qml
         ${HOLONIGHT_CONTROLS_PUBLIC_QML_FILES}
         ${HOLONIGHT_CONTROLS_INTERNAL_QML_FILES}
     RESOURCES
+        controls/assets/close.svg
         controls/assets/search.svg
         controls/assets/clear.svg
         controls/assets/more-vertical.svg
@@ -285,6 +291,7 @@ install(FILES
     core/HnControlSize.qml
     core/HnTypographyRole.qml
     core/HnLabel.qml
+    core/HnButtonSurface.qml
     HnIcon.qml
     DESTINATION ${QT6_INSTALL_QML}/Holonight/Core
 )
@@ -300,6 +307,7 @@ install(FILES
     DESTINATION ${QT6_INSTALL_QML}/Holonight/Controls
 )
 install(FILES
+    controls/assets/close.svg
     controls/assets/search.svg
     controls/assets/clear.svg
     controls/assets/more-vertical.svg

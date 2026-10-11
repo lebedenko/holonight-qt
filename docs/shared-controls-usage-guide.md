@@ -318,3 +318,24 @@ Accent-only, alpha-only and selection changes therefore update displayed icons
 without renaming sources or clearing caches. Asset lookup uses logical size and DPR;
 Qt Quick's requested physical render size is used directly. `Original` bypasses
 semantic recoloring and state effects and renders authored SVG bytes.
+
+## Button surfaces and modal cards
+
+`Holonight.Core.HnButtonSurface` is a decorative Rectangle independent of Controls.
+Bind `pressed`, `hovered`, and `focusVisible` to the owning control. `floating`
+adds a passive border and a surface fill with alpha 0.85. Pressed wins over hover,
+which wins over floating; focus wins over the floating border. `cornerRadius`
+defaults to Compact internal spacing. The surface is ignored by accessibility.
+
+`Holonight.Controls.HnPopupCard` uses the selected runtime Controls Popup and
+centers in its overlay parent. It defaults to `maximumWidth: 480`,
+`viewportMargin: 12`, `dimmerOpacity: 0.22`, padding 16, a raised surface,
+passive border and Compact radius. `dimmerObjectName` optionally gives the dimmer
+an application-owned identity for inspection. Both dimensions are constrained to the parent.
+It is modal, requests focus and closes on Escape or a press outside. Applications
+own content, translated dialog identities and any additional closing shortcuts.
+
+`Holonight.Controls.HnPopupCloseButton` uses the selected runtime Button, Normal
+control and icon dimensions, a close glyph and `HnButtonSurface`. Supply a
+translated `Accessible.name` and connect `onClicked` to the popup's `close()`.
+These additive APIs do not alter HnIconButton or HnSurfaceFrame.

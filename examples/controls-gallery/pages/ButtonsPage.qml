@@ -12,11 +12,43 @@ import Holonight.Controls
 Controls.ScrollView {
     id: root
 
+    HnPopupCard {
+        id: card
+        contentItem: ColumnLayout {
+            Accessible.role: Accessible.Dialog
+            Accessible.name: qsTr("Popup card example")
+            RowLayout {
+                HnLabel { rawText: qsTr("Shared popup card"); Layout.fillWidth: true }
+                HnPopupCloseButton { Accessible.name: qsTr("Close example"); onClicked: card.close() }
+            }
+            HnLabel { rawText: qsTr("Escape or press outside to close."); wrapMode: Text.Wrap; Layout.fillWidth: true }
+        }
+    }
+
     contentWidth: availableWidth
 
     ColumnLayout {
         width: parent.width
         spacing: 16
+
+        RowLayout {
+            Layout.leftMargin: 32
+            Layout.topMargin: 24
+            Controls.Button { text: qsTr("Open shared card"); onClicked: card.open() }
+            Repeater {
+                model: ["idle", "hover", "pressed", "focus", "floating"]
+                delegate: HnButtonSurface {
+                    required property string modelData
+                    Layout.preferredWidth: 64
+                    Layout.preferredHeight: 40
+                    hovered: modelData === "hover"
+                    pressed: modelData === "pressed"
+                    focusVisible: modelData === "focus"
+                    floating: modelData === "floating"
+                    HnLabel { anchors.centerIn: parent; rawText: parent.modelData }
+                }
+            }
+        }
 
         HnLabel {
             role: HnTypographyRole.Heading
@@ -91,7 +123,7 @@ Controls.ScrollView {
 
             Controls.Button {
                 implicitWidth: implicitHeight
-                display: AbstractButton.IconOnly
+                display: Controls.AbstractButton.IconOnly
                 icon.source: "qrc:/qt/qml/Holonight/Controls/assets/edit.svg"
                 Accessible.name: qsTr("Edit")
             }

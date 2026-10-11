@@ -456,3 +456,102 @@ Window {
   ASSERT_TRUE(QMetaObject::invokeMethod(root.get(), "reload"));
 }
 }  // namespace
+
+TEST_F(CoreIsolation, ButtonSurfaceStatePrecedenceIsIndependentOfControls) {
+  auto root = create(R"(
+import QtQuick
+import Holonight.Core
+HnButtonSurface {
+    width: 48; height: 48
+    property color surface: HoloniightPalette.surface
+    property color hoverSurface: HoloniightPalette.surfaceHover
+    property color focusBorder: HoloniightPalette.borderFocus
+    property color passiveBorder: HoloniightPalette.borderPassive
+    property real compactRadius: HnMetrics.internalSpacing(HnControlSize.Compact)
+    property real borderWidth: border.width
+    property color borderColor: border.color
+})");
+  ASSERT_TRUE(root);
+  EXPECT_EQ(root->property("color").value<QColor>().alpha(), 0);
+  EXPECT_EQ(root->property("radius"), root->property("compactRadius"));
+  root->setProperty("floating", true);
+  EXPECT_NEAR(root->property("color").value<QColor>().alphaF(), 0.85, 0.01);
+  EXPECT_EQ(root->property("borderColor"), root->property("passiveBorder"));
+  root->setProperty("hovered", true);
+  EXPECT_EQ(root->property("color"), root->property("hoverSurface"));
+  root->setProperty("pressed", true);
+  EXPECT_EQ(root->property("color"), root->property("surface"));
+  root->setProperty("focusVisible", true);
+  EXPECT_EQ(root->property("borderColor"), root->property("focusBorder"));
+  root->setProperty("cornerRadius", 24);
+  EXPECT_EQ(root->property("radius").toReal(), 24);
+}
+
+TEST_F(RuntimeComposites, PopupCardGeometryClosePolicyAndAccessibleButton) {
+  auto root = create(R"(
+import QtQuick
+import QtQuick.Controls as C
+import Holonight.Core
+import Holonight.Controls
+Window {
+    id: window
+    width: 600; height: 400; visible: true
+    property alias card: card
+    property alias closeButton: closeButton
+    HnPopupCard {
+        id: card
+        parent: window.C.Overlay.overlay
+        dimmerObjectName: "testCardDimmer"
+        contentItem: Item {
+            implicitHeight: 500
+            HnPopupCloseButton {
+                id: closeButton
+                Accessible.name: "Close test card"
+                onClicked: card.close()
+            }
+        }
+    }
+})");
+  ASSERT_TRUE(root);
+  auto* window = qobject_cast<QQuickWindow*>(root.get());
+  auto* card = objectProperty(root.get(), "card");
+  auto* button = objectProperty(root.get(), "closeButton");
+  ASSERT_NE(window, nullptr);
+  ASSERT_NE(card, nullptr);
+  ASSERT_NE(button, nullptr);
+  const QString style =
+      qEnvironmentVariable("QT_QUICK_CONTROLS_STYLE") == "Fusion" ? "/QtQuick/Controls/Fusion/" : "/Holonight/";
+  expectOrigin(card, style + "Popup.qml");
+  expectOrigin(button, style + "Button.qml");
+  EXPECT_EQ(card->property("maximumWidth").toReal(), 480);
+  EXPECT_EQ(card->property("viewportMargin").toReal(), 12);
+  EXPECT_EQ(card->property("padding").toReal(), 16);
+  EXPECT_NEAR(card->property("dimmerOpacity").toReal(), 0.22, 0.001);
+  EXPECT_TRUE(card->property("modal").toBool());
+  auto* accessible = QAccessible::queryAccessibleInterface(button);
+  ASSERT_NE(accessible, nullptr);
+  EXPECT_EQ(accessible->text(QAccessible::Name), "Close test card");
+  ASSERT_TRUE(QMetaObject::invokeMethod(card, "open"));
+  ASSERT_TRUE(QTest::qWaitFor([&] { return card->property("opened").toBool(); }));
+  ASSERT_TRUE(QTest::qWaitFor([&] { return card->property("width").toReal() == 480; }));
+  EXPECT_EQ(card->property("height").toReal(), 376);
+  EXPECT_EQ(card->property("x").toReal(), 60);
+  EXPECT_EQ(card->property("y").toReal(), 12);
+  window->resize(320, 240);
+  ASSERT_TRUE(QTest::qWaitFor([&] { return card->property("width").toReal() == 296; }));
+  EXPECT_EQ(card->property("height").toReal(), 216);
+  QTest::keyClick(window, Qt::Key_Escape);
+  ASSERT_TRUE(QTest::qWaitFor([&] { return !card->property("visible").toBool(); }));
+  ASSERT_TRUE(QMetaObject::invokeMethod(card, "open"));
+  ASSERT_TRUE(QTest::qWaitFor([&] { return card->property("opened").toBool(); }));
+  ASSERT_TRUE(QMetaObject::invokeMethod(button, "click"));
+  ASSERT_TRUE(QTest::qWaitFor([&] { return !card->property("visible").toBool(); }));
+  ASSERT_TRUE(QMetaObject::invokeMethod(card, "open"));
+  ASSERT_TRUE(QTest::qWaitFor([&] { return card->property("opened").toBool(); }));
+  QTest::mouseClick(window, Qt::LeftButton, {}, QPoint(3, 3));
+  EXPECT_TRUE(QTest::qWaitFor([&] { return !card->property("visible").toBool(); }));
+  card->setProperty("maximumWidth", 200);
+  card->setProperty("viewportMargin", 20);
+  EXPECT_EQ(card->property("width").toReal(), 200);
+  EXPECT_EQ(card->property("height").toReal(), 200);
+}
