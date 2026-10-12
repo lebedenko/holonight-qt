@@ -18,10 +18,10 @@ using Holonight::Wayland::LayerSurfaceSpec;
 
 class FakeBackend final : public Holonight::Wayland::LayerSurfaceBackend {
  public:
-  bool isAvailable() const override { return available; }
-  quint32 version() const override { return protocol_version; }
-  QString diagnostic() const override { return QStringLiteral("fake protocol unavailable"); }
-  bool create(const LayerSurfaceSpec&, ConfigureHandler configure_handler, CloseHandler close_handler,
+  [[nodiscard]] bool isAvailable() const override { return available; }
+  [[nodiscard]] quint32 version() const override { return protocol_version; }
+  [[nodiscard]] QString diagnostic() const override { return QStringLiteral("fake protocol unavailable"); }
+  bool create(const LayerSurfaceSpec& /*spec*/, ConfigureHandler configure_handler, CloseHandler close_handler,
               FailureHandler failure_handler, QString* reason) override {
     if (!create_succeeds) {
       *reason = QStringLiteral("fake creation failure");
@@ -35,15 +35,19 @@ class FakeBackend final : public Holonight::Wayland::LayerSurfaceBackend {
     events.append(QStringLiteral("create"));
     return true;
   }
-  QQuickView* view() const override { return quick_view; }
-  QObject* rootObject() const override { return quick_view == nullptr ? nullptr : quick_view->rootObject(); }
-  QQmlEngine* engine() const override { return quick_view == nullptr ? nullptr : quick_view->engine(); }
-  bool hasRole() const override { return role; }
+  [[nodiscard]] QQuickView* view() const override { return quick_view; }
+  [[nodiscard]] QObject* rootObject() const override {
+    return quick_view == nullptr ? nullptr : quick_view->rootObject();
+  }
+  [[nodiscard]] QQmlEngine* engine() const override { return quick_view == nullptr ? nullptr : quick_view->engine(); }
+  [[nodiscard]] bool hasRole() const override { return role; }
   void ackConfigure(quint32 serial) override {
     acknowledgements.append(serial);
     events.append(QStringLiteral("ack"));
   }
-  void applyConfigureSize(quint32 width, quint32 height) override { sizes.append(QSize(width, height)); }
+  void applyConfigureSize(quint32 width, quint32 height) override {
+    sizes.append(QSize(static_cast<int>(width), static_cast<int>(height)));
+  }
   void show() override {
     ++show_count;
     events.append(QStringLiteral("show"));
@@ -200,10 +204,11 @@ TEST(WaylandLayerSurfaceHostLifecycle, ProtocolAndOutputClosuresUseCommonTeardow
     auto host = Holonight::Wayland::LayerSurfaceHostTestAccess::create(std::move(fake));
     ASSERT_TRUE(host->open(validSpec()));
     backend->configure(1, 0, 0);
-    if (event == 0)
+    if (event == 0) {
       backend->close();
-    else
+    } else {
       backend->close();
+    }
     EXPECT_EQ(host->state(), LayerSurfaceHost::State::Closed);
     EXPECT_FALSE(backend->role);
     EXPECT_EQ(host->view(), nullptr);

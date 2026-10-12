@@ -4,10 +4,11 @@
 #include "holonight/palette.h"
 #include "holonight/theme_catalog.h"
 
+#include <array>
 #include <gtest/gtest.h>
 
 TEST(BrandForegroundTokens, EveryBuiltInSchemeMatchesDocumentedValue) {
-  const std::pair<Holonight::ThemeSchemeKind, QColor> expected[] = {
+  const std::array<std::pair<Holonight::ThemeSchemeKind, QColor>, 16> expected{{
       {Holonight::ThemeSchemeKind::HoloNightDark, QColor{QStringLiteral("#9A8CFF")}},
       {Holonight::ThemeSchemeKind::HoloNightLight, QColor{QStringLiteral("#685BBD")}},
       {Holonight::ThemeSchemeKind::HoloNightMocha, QColor{QStringLiteral("#CBA6F7")}},
@@ -24,7 +25,7 @@ TEST(BrandForegroundTokens, EveryBuiltInSchemeMatchesDocumentedValue) {
       {Holonight::ThemeSchemeKind::HoloNightSnow, QColor{QStringLiteral("#5B4675")}},
       {Holonight::ThemeSchemeKind::HoloNightCanopy, QColor{QStringLiteral("#D3C6AA")}},
       {Holonight::ThemeSchemeKind::HoloNightGlade, QColor{QStringLiteral("#35683A")}},
-  };
+  }};
 
   for (const auto& [scheme, color] : expected) {
     EXPECT_EQ(Holonight::tokensForScheme(scheme).brandForeground, color);
@@ -32,7 +33,7 @@ TEST(BrandForegroundTokens, EveryBuiltInSchemeMatchesDocumentedValue) {
 }
 
 TEST(SelectionTokens, EveryBuiltInSchemeProvidesSemanticSelectionRoles) {
-  const Holonight::ThemeSchemeKind schemes[] = {
+  const std::array schemes{
       Holonight::ThemeSchemeKind::HoloNightDark,    Holonight::ThemeSchemeKind::HoloNightLight,
       Holonight::ThemeSchemeKind::HoloNightMocha,   Holonight::ThemeSchemeKind::HoloNightLatte,
       Holonight::ThemeSchemeKind::HoloNightStorm,   Holonight::ThemeSchemeKind::HoloNightDay,
@@ -56,7 +57,7 @@ TEST(SelectionTokens, EveryBuiltInSchemeProvidesSemanticSelectionRoles) {
 }
 
 TEST(TextAccentTokens, EveryBuiltInSchemeTracksPrimaryAccent) {
-  const Holonight::ThemeSchemeKind schemes[] = {
+  const std::array schemes{
       Holonight::ThemeSchemeKind::HoloNightDark,    Holonight::ThemeSchemeKind::HoloNightLight,
       Holonight::ThemeSchemeKind::HoloNightMocha,   Holonight::ThemeSchemeKind::HoloNightLatte,
       Holonight::ThemeSchemeKind::HoloNightStorm,   Holonight::ThemeSchemeKind::HoloNightDay,
@@ -248,9 +249,9 @@ TEST(HoloNightStormTokens, MetricAndAnsiTokens) {
 
 TEST(HoloNightStormTokens, SurfaceLuminanceOrdering) {
   const Holonight::ColorTokens tok = Holonight::tokensForScheme(Holonight::ThemeSchemeKind::HoloNightStorm);
-  auto lum = [](const QColor& c) -> double {
-    auto lin = [](double v) { return v <= 0.04045 ? v / 12.92 : std::pow((v + 0.055) / 1.055, 2.4); };
-    return 0.2126 * lin(c.redF()) + 0.7152 * lin(c.greenF()) + 0.0722 * lin(c.blueF());
+  auto lum = [](const QColor& color) -> double {
+    auto lin = [](double value) { return value <= 0.04045 ? value / 12.92 : std::pow((value + 0.055) / 1.055, 2.4); };
+    return (0.2126 * lin(color.redF())) + (0.7152 * lin(color.greenF())) + (0.0722 * lin(color.blueF()));
   };
   EXPECT_LT(lum(tok.background), lum(tok.surface)) << "background must be darker than surface";
   EXPECT_LT(lum(tok.surface), lum(tok.surfaceElevated)) << "surface must be darker than surfaceElevated";

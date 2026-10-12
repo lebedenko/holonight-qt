@@ -22,14 +22,18 @@ class PopulatedFontModel : public QStringListModel {
   Q_PROPERTY(QString retainedFamily READ retainedFamily WRITE setRetainedFamily NOTIFY retainedFamilyChanged)
  public:
   explicit PopulatedFontModel(QObject* parent = nullptr) : QStringListModel(parent) { rebuild(); }
-  QString retainedFamily() const { return retained_; }
+  [[nodiscard]] QString retainedFamily() const { return retained_; }
   void setRetainedFamily(const QString& value) {
-    if (retained_ == value) return;
+    if (retained_ == value) {
+      return;
+    }
     retained_ = value;
     emit retainedFamilyChanged();
     rebuild();
   }
-  Q_INVOKABLE int indexOf(const QString& value) const { return stringList().indexOf(value); }
+  Q_INVOKABLE [[nodiscard]] int indexOf(const QString& value) const {
+    return static_cast<int>(stringList().indexOf(value));
+  }
  signals:
   void retainedFamilyChanged();
 
@@ -37,18 +41,28 @@ class PopulatedFontModel : public QStringListModel {
   QString retained_;
   void rebuild() {
     auto names = QFontDatabase::families();
-    if (!retained_.isEmpty() && !names.contains(retained_)) names.prepend(retained_);
+    if (!retained_.isEmpty() && !names.contains(retained_)) {
+      names.prepend(retained_);
+    }
     setStringList(names);
   }
 };
 class DropdownInteraction : public testing::TestWithParam<const char*> {
  protected:
+  // GTest-derived tests intentionally share protected fixture state.
+  // NOLINTNEXTLINE(cppcoreguidelines-non-private-member-variables-in-classes)
   QQmlEngine engine;
+  // NOLINTNEXTLINE(cppcoreguidelines-non-private-member-variables-in-classes)
   QStringListModel fonts;
+  // NOLINTNEXTLINE(cppcoreguidelines-non-private-member-variables-in-classes)
   std::unique_ptr<QObject> root;
+  // NOLINTNEXTLINE(cppcoreguidelines-non-private-member-variables-in-classes)
   QQuickWindow* window = nullptr;
+  // NOLINTNEXTLINE(cppcoreguidelines-non-private-member-variables-in-classes)
   QQuickItem* combo = nullptr;
+  // NOLINTNEXTLINE(cppcoreguidelines-non-private-member-variables-in-classes)
   QObject* popup = nullptr;
+  // NOLINTNEXTLINE(cppcoreguidelines-non-private-member-variables-in-classes)
   QQuickItem* list = nullptr;
 
   void SetUp() override {
@@ -221,7 +235,9 @@ TEST_P(DropdownInteraction, CollapsedControlClosesPopupWithoutReopening) {
   const bool covered_by_list = list->contains(list->mapFromScene(center));
   QTest::mouseClick(window, Qt::LeftButton, Qt::NoModifier, center);
   EXPECT_TRUE(QTest::qWaitFor([&] { return !popup->property("visible").toBool(); }, 1000));
-  if (!covered_by_list) EXPECT_EQ(combo->property("currentIndex").toInt(), 15);
+  if (!covered_by_list) {
+    EXPECT_EQ(combo->property("currentIndex").toInt(), 15);
+  }
 }
 
 TEST_P(DropdownInteraction, ReopenShowsCurrentRowAndKeyboardStartsThere) {
@@ -292,8 +308,9 @@ TEST_P(DropdownInteraction, HoveredRowsRemainVisibleAndFirstLastCanBeSelected) {
 }
 
 TEST_P(DropdownInteraction, StationaryPointerDoesNotCompeteWithKeyboardHighlight) {
-  if (qEnvironmentVariable("QT_QUICK_CONTROLS_STYLE") == "Fusion" && QString(GetParam()) == "C.ComboBox")
+  if (qEnvironmentVariable("QT_QUICK_CONTROLS_STYLE") == "Fusion" && QString(GetParam()) == "C.ComboBox") {
     GTEST_SKIP() << "Fusion owns standard delegate rendering";
+  }
   ASSERT_NO_FATAL_FAILURE(open());
   QPointer<QQuickItem> hovered = currentItem();
   ASSERT_NE(hovered, nullptr);
@@ -319,8 +336,9 @@ TEST_P(DropdownInteraction, StationaryPointerDoesNotCompeteWithKeyboardHighlight
 }
 
 TEST_P(DropdownInteraction, TabSpaceOpenAndSpaceClosePreserveSelectionUnderStationaryPointer) {
-  if (qEnvironmentVariable("QT_QUICK_CONTROLS_STYLE") == "Fusion" && QString(GetParam()) == "C.ComboBox")
+  if (qEnvironmentVariable("QT_QUICK_CONTROLS_STYLE") == "Fusion" && QString(GetParam()) == "C.ComboBox") {
     GTEST_SKIP() << "Fusion owns standard dropdown interaction";
+  }
   ASSERT_TRUE(combo->setProperty("currentIndex", 0));
   ASSERT_NO_FATAL_FAILURE(open());
   auto* item = currentItem();
@@ -350,8 +368,9 @@ TEST_P(DropdownInteraction, TabSpaceOpenAndSpaceClosePreserveSelectionUnderStati
 }
 
 TEST_P(DropdownInteraction, KeyboardScrollDoesNotSelectRowUnderStationaryPointer) {
-  if (qEnvironmentVariable("QT_QUICK_CONTROLS_STYLE") == "Fusion" && QString(GetParam()) == "C.ComboBox")
+  if (qEnvironmentVariable("QT_QUICK_CONTROLS_STYLE") == "Fusion" && QString(GetParam()) == "C.ComboBox") {
     GTEST_SKIP() << "Fusion owns standard dropdown interaction";
+  }
   ASSERT_TRUE(combo->setProperty("currentIndex", 0));
   ASSERT_NO_FATAL_FAILURE(open());
   auto* item = currentItem();
@@ -372,14 +391,17 @@ TEST_P(DropdownInteraction, KeyboardScrollDoesNotSelectRowUnderStationaryPointer
 }
 
 TEST_P(DropdownInteraction, PointerMovementAndClickRecoverAfterKeyboardScroll) {
-  if (qEnvironmentVariable("QT_QUICK_CONTROLS_STYLE") == "Fusion" && QString(GetParam()) == "C.ComboBox")
+  if (qEnvironmentVariable("QT_QUICK_CONTROLS_STYLE") == "Fusion" && QString(GetParam()) == "C.ComboBox") {
     GTEST_SKIP() << "Fusion owns standard dropdown interaction";
+  }
   ASSERT_TRUE(combo->setProperty("currentIndex", 0));
   ASSERT_NO_FATAL_FAILURE(open());
   auto* item = currentItem();
   ASSERT_NE(item, nullptr);
   QTest::mouseMove(window, item->mapToScene(QPointF(item->width() / 2, item->height() / 2)).toPoint());
-  for (int index = 1; index <= 10; ++index) QTest::keyClick(window, Qt::Key_Down);
+  for (int index = 1; index <= 10; ++index) {
+    QTest::keyClick(window, Qt::Key_Down);
+  }
   QSignalSpy rendered(window, &QQuickWindow::frameSwapped);
   window->update();
   ASSERT_TRUE(rendered.wait(1000));
@@ -401,11 +423,13 @@ TEST_P(DropdownInteraction, PointerMovementAndClickRecoverAfterKeyboardScroll) {
 
 TEST_P(DropdownInteraction, FontModelResetsKeepPopupBoundedAtBothWindowEdges) {
   ASSERT_TRUE(root->setProperty("useFonts", true));
-  for (int y : {10, 340}) {
-    combo->setY(y);
+  for (int row_y : {10, 340}) {
+    combo->setY(row_y);
     for (int count : {3, 60, 1, 30}) {
       QStringList names;
-      for (int i = 0; i < count; ++i) names.append(QString("Font %1").arg(i));
+      for (int i = 0; i < count; ++i) {
+        names.append(QString("Font %1").arg(i));
+      }
       fonts.setStringList(names);
       ASSERT_TRUE(combo->setProperty("currentIndex", count - 1));
       ASSERT_NO_FATAL_FAILURE(open());

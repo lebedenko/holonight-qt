@@ -16,6 +16,7 @@
 #include <QThread>
 #include <QtQuick/private/qquickimage_p.h>
 
+#include <algorithm>
 #include <atomic>
 #include <gtest/gtest.h>
 #include <memory>
@@ -23,11 +24,18 @@
 namespace {
 class SharedRendering : public testing::Test {
  protected:
+  // GTest-derived tests intentionally share protected fixture state.
+  // NOLINTNEXTLINE(cppcoreguidelines-non-private-member-variables-in-classes)
   QQmlEngine engine;
+  // NOLINTNEXTLINE(cppcoreguidelines-non-private-member-variables-in-classes)
   QTemporaryDir icons;
+  // NOLINTNEXTLINE(cppcoreguidelines-non-private-member-variables-in-classes)
   QString old_theme = QIcon::themeName();
+  // NOLINTNEXTLINE(cppcoreguidelines-non-private-member-variables-in-classes)
   QStringList old_paths = QIcon::themeSearchPaths();
+  // NOLINTNEXTLINE(cppcoreguidelines-non-private-member-variables-in-classes)
   std::unique_ptr<QObject> root;
+  // NOLINTNEXTLINE(cppcoreguidelines-non-private-member-variables-in-classes)
   QQuickWindow* window = nullptr;
 
   void SetUp() override {
@@ -73,18 +81,24 @@ class SharedRendering : public testing::Test {
     ASSERT_TRUE(QTest::qWaitForWindowExposed(window));
   }
   QQuickItem* visualItem(QQuickItem* parent, const char* name) {
-    if (parent->objectName() == QLatin1String(name)) return parent;
-    for (auto* child : parent->childItems())
-      if (auto* found = visualItem(child, name)) return found;
+    if (parent->objectName() == QLatin1String(name)) {
+      return parent;
+    }
+    for (auto* child : parent->childItems()) {
+      if (auto* found = visualItem(child, name)) {
+        return found;
+      }
+    }
     return nullptr;
   }
   QQuickItem* item(const char* name) { return visualItem(window->contentItem(), name); }
   bool hasRenderedIcon(QQuickItem* parent) {
-    if (auto* image = qobject_cast<QQuickImage*>(parent))
-      if (image->isVisible() && image->status() == QQuickImage::Ready) return true;
-    for (auto* child : parent->childItems())
-      if (hasRenderedIcon(child)) return true;
-    return false;
+    if (auto* image = qobject_cast<QQuickImage*>(parent)) {
+      if (image->isVisible() && image->status() == QQuickImage::Ready) {
+        return true;
+      }
+    }
+    return std::ranges::any_of(parent->childItems(), [this](QQuickItem* child) { return hasRenderedIcon(child); });
   }
   QColor backgroundPixel(QQuickItem* item) {
     const auto point = item->mapToScene(QPointF(4, item->height() / 2));
@@ -95,8 +109,9 @@ class SharedRendering : public testing::Test {
 };
 
 TEST_F(SharedRendering, ComboPopupLabelsStayVerticallyCentered) {
-  if (qEnvironmentVariable("QT_QUICK_CONTROLS_STYLE") == QStringLiteral("Fusion"))
+  if (qEnvironmentVariable("QT_QUICK_CONTROLS_STYLE") == QStringLiteral("Fusion")) {
     GTEST_SKIP() << "Provider delegate label geometry";
+  }
   create(R"(
     C.ComboBox {
       id: combo; objectName: "combo"; x: 24; y: 24; width: 240
@@ -143,8 +158,9 @@ TEST_F(SharedRendering, ActionNamedAndUrlIconsRenderInMenuAndNavigation) {
   }
   root->setProperty("iconName", "");
   root->setProperty("iconUrl", QUrl::fromLocalFile(icons.filePath("uqc207-parent/16x16/actions/uqc207-configure.svg")));
-  for (const char* name : {"navigation", "entry"})
+  for (const char* name : {"navigation", "entry"}) {
     EXPECT_TRUE(QTest::qWaitFor([&] { return hasRenderedIcon(item(name)); })) << name;
+  }
 }
 
 TEST_F(SharedRendering, ListCurrentRowDoesNotImplySelectionWithReplacedContent) {
@@ -174,8 +190,9 @@ TEST_F(SharedRendering, ListCurrentRowDoesNotImplySelectionWithReplacedContent) 
   EXPECT_TRUE(QTest::qWaitFor([&] { return backgroundPixel(item("row0")) == backgroundPixel(item("row1")); }));
   item("row1")->setProperty("checkable", true);
   item("row1")->setProperty("checked", true);
-  if (qEnvironmentVariable("QT_QUICK_CONTROLS_STYLE") == "Holonight")
+  if (qEnvironmentVariable("QT_QUICK_CONTROLS_STYLE") == "Holonight") {
     EXPECT_TRUE(QTest::qWaitFor([&] { return backgroundPixel(item("row0")) != backgroundPixel(item("row1")); }));
+  }
   item("row1")->forceActiveFocus(Qt::TabFocusReason);
   EXPECT_TRUE(item("row1")->property("visualFocus").toBool());
   QTest::keyClick(window, Qt::Key_Space);
@@ -183,8 +200,9 @@ TEST_F(SharedRendering, ListCurrentRowDoesNotImplySelectionWithReplacedContent) 
 }
 
 TEST_F(SharedRendering, MenuIconColumnTracksVisibleItemsAndMirroring) {
-  if (qEnvironmentVariable("QT_QUICK_CONTROLS_STYLE") != "Holonight")
+  if (qEnvironmentVariable("QT_QUICK_CONTROLS_STYLE") != "Holonight") {
     GTEST_SKIP() << "Conditional menu spacing is the HoloNight convention.";
+  }
   create(R"(
     property bool mirror: false
     property string iconName: ""
@@ -283,9 +301,12 @@ TEST_F(SharedRendering, KeyboardButtonActivationRetainsOwnerReasonAndFeedback) {
   EXPECT_TRUE(item("button")->property("visualFocus").toBool());
 }
 
+// Keep the complete state/provenance matrix together for this scenario.
+// NOLINTNEXTLINE(readability-function-cognitive-complexity)
 TEST_F(SharedRendering, SwitchFocusOutlineSurroundsTrackInBothStates) {
-  if (qEnvironmentVariable("QT_QUICK_CONTROLS_STYLE") != "Holonight")
+  if (qEnvironmentVariable("QT_QUICK_CONTROLS_STYLE") != "Holonight") {
     GTEST_SKIP() << "Track-only outline is the requested HoloNight convention.";
+  }
   create(R"(
     property bool mirror: false
     C.Switch { objectName: "switch"; x: 30; y: 30; width: 180; height: 48; text: "Enabled";
@@ -314,9 +335,13 @@ TEST_F(SharedRendering, SwitchFocusOutlineSurroundsTrackInBothStates) {
         QRect changed;
         const auto dpr = window->devicePixelRatio();
         const QRect region(qRound(30 * dpr), qRound(30 * dpr), qRound(180 * dpr), qRound(48 * dpr));
-        for (int y = region.top(); y <= region.bottom(); ++y)
-          for (int x = region.left(); x <= region.right(); ++x)
-            if (before.pixel(x, y) != after.pixel(x, y)) changed |= QRect(x, y, 1, 1);
+        for (int pixel_y = region.top(); pixel_y <= region.bottom(); ++pixel_y) {
+          for (int pixel_x = region.left(); pixel_x <= region.right(); ++pixel_x) {
+            if (before.pixel(pixel_x, pixel_y) != after.pixel(pixel_x, pixel_y)) {
+              changed |= QRect(pixel_x, pixel_y, 1, 1);
+            }
+          }
+        }
         auto* indicator = control->property("indicator").value<QQuickItem*>();
         ASSERT_TRUE(indicator);
         const auto origin = indicator->mapToScene(QPointF());
@@ -324,12 +349,15 @@ TEST_F(SharedRendering, SwitchFocusOutlineSurroundsTrackInBothStates) {
                           qRound(indicator->height() * dpr));
         EXPECT_GT(changed.width(), track.width());
         EXPECT_GT(changed.height(), track.height());
-        EXPECT_LT(changed.width(), track.width() + 12 * dpr);
-        EXPECT_LT(changed.height(), track.height() + 12 * dpr);
+        EXPECT_LT(changed.width(), track.width() + (12 * dpr));
+        EXPECT_LT(changed.height(), track.height() + (12 * dpr));
         EXPECT_NEAR(changed.center().x(), track.center().x(), 1);
         EXPECT_NEAR(changed.center().y(), track.center().y(), 1);
-        for (int y = track.top() + 3; y < track.bottom() - 3; ++y)
-          for (int x = track.left() + 3; x < track.right() - 3; ++x) EXPECT_EQ(before.pixel(x, y), after.pixel(x, y));
+        for (int pixel_y = track.top() + 3; pixel_y < track.bottom() - 3; ++pixel_y) {
+          for (int pixel_x = track.left() + 3; pixel_x < track.right() - 3; ++pixel_x) {
+            EXPECT_EQ(before.pixel(pixel_x, pixel_y), after.pixel(pixel_x, pixel_y));
+          }
+        }
         QTest::keyClick(window, Qt::Key_Space);
         EXPECT_EQ(control->property("checked").toBool(), !checked);
         EXPECT_EQ(window->activeFocusItem(), control);
@@ -342,7 +370,9 @@ TEST_F(SharedRendering, SwitchFocusOutlineSurroundsTrackInBothStates) {
 TEST_F(SharedRendering, ClosedComboBoxChevronRenders) {
   QQmlComponent available(&engine);
   available.setData("import org.kde.kirigamiaddons.formcard as F\nF.FormComboBoxDelegate {}", QUrl());
-  if (available.isError()) GTEST_SKIP() << available.errorString().toStdString();
+  if (available.isError()) {
+    GTEST_SKIP() << available.errorString().toStdString();
+  }
   QQmlComponent component(&engine);
   component.setData(R"(
     import QtQuick
@@ -384,10 +414,12 @@ TEST_F(SharedRendering, ClosedComboBoxChevronRenders) {
   const auto dpr = window->devicePixelRatio();
   const QColor surface = image.pixelColor(qRound((origin.x() - 2) * dpr), qRound(origin.y() * dpr));
   int ink = 0;
-  for (int y = 0; y < qRound(indicator->height() * dpr); ++y) {
-    for (int x = 0; x < qRound(indicator->width() * dpr); ++x) {
-      const auto color = image.pixelColor(qRound(origin.x() * dpr) + x, qRound(origin.y() * dpr) + y);
-      if (std::abs(color.lightness() - surface.lightness()) > 60) ++ink;
+  for (int pixel_y = 0; pixel_y < qRound(indicator->height() * dpr); ++pixel_y) {
+    for (int pixel_x = 0; pixel_x < qRound(indicator->width() * dpr); ++pixel_x) {
+      const auto color = image.pixelColor(qRound(origin.x() * dpr) + pixel_x, qRound(origin.y() * dpr) + pixel_y);
+      if (std::abs(color.lightness() - surface.lightness()) > 60) {
+        ++ink;
+      }
     }
   }
   EXPECT_GT(ink, 5) << "Closed ComboBox indicator must contain visible chevron pixels";
@@ -396,7 +428,9 @@ TEST_F(SharedRendering, ClosedComboBoxChevronRenders) {
 TEST_F(SharedRendering, InstalledFormComboPopupBackground) {
   QQmlComponent available(&engine);
   available.setData("import org.kde.kirigamiaddons.formcard as F\nF.FormComboBoxDelegate {}", QUrl());
-  if (available.isError()) GTEST_SKIP() << available.errorString().toStdString();
+  if (available.isError()) {
+    GTEST_SKIP() << available.errorString().toStdString();
+  }
   QQmlComponent component(&engine);
   component.setData(R"(
     import QtQuick
@@ -438,8 +472,7 @@ TEST_F(SharedRendering, InstalledFormComboPopupBackground) {
             << " origin=" << background->mapToScene(QPointF()).x() << "," << background->mapToScene(QPointF()).y()
             << " dimensions=" << background->width() << "x" << background->height()
             << " visible=" << background->isVisible() << " opacity=" << background->opacity()
-            << " color=" << color.name(QColor::HexArgb).toStdString() << " dpr=" << window->devicePixelRatio()
-            << std::endl;
+            << " color=" << color.name(QColor::HexArgb).toStdString() << " dpr=" << window->devicePixelRatio() << '\n';
   EXPECT_DOUBLE_EQ(background->width(), popup->property("width").toDouble());
   EXPECT_DOUBLE_EQ(background->height(), popup->property("height").toDouble());
   EXPECT_TRUE(background->isVisible());
@@ -451,14 +484,16 @@ TEST_F(SharedRendering, InstalledFormComboPopupBackground) {
       pixels.pixelColor(qRound(point.x() * window->devicePixelRatio()), qRound(point.y() * window->devicePixelRatio())),
       color);
   if (qEnvironmentVariable("QT_QUICK_CONTROLS_STYLE") == "Holonight") {
-    for (const char* inset : {"leftInset", "rightInset", "topInset", "bottomInset"})
+    for (const char* inset : {"leftInset", "rightInset", "topInset", "bottomInset"}) {
       ASSERT_TRUE(popup->setProperty(inset, 3));
+    }
     EXPECT_DOUBLE_EQ(background->x(), 3);
     EXPECT_DOUBLE_EQ(background->y(), 3);
     EXPECT_DOUBLE_EQ(background->width(), popup->property("width").toDouble() - 6);
     EXPECT_DOUBLE_EQ(background->height(), popup->property("height").toDouble() - 6);
-    for (const char* inset : {"leftInset", "rightInset", "topInset", "bottomInset"})
+    for (const char* inset : {"leftInset", "rightInset", "topInset", "bottomInset"}) {
       ASSERT_TRUE(popup->setProperty(inset, 0));
+    }
     const QColor override_color("#804488cc");
     ASSERT_TRUE(QQmlProperty(combo, "palette.base").write(override_color));
     EXPECT_TRUE(QTest::qWaitFor([&] { return background->property("color").value<QColor>() == override_color; }));
@@ -559,7 +594,9 @@ TEST_F(SharedRendering, ScrollViewSurvivesPageTeardown) {
 TEST_F(SharedRendering, InstalledFormCardPageSurvivesTeardown) {
   QQmlComponent available(&engine);
   available.setData("import org.kde.kirigamiaddons.formcard as F\nF.FormCardPage {}", QUrl());
-  if (available.isError()) GTEST_SKIP() << available.errorString().toStdString();
+  if (available.isError()) {
+    GTEST_SKIP() << available.errorString().toStdString();
+  }
   QQmlComponent component(&engine);
   component.setData(R"(
     import QtQuick
@@ -661,14 +698,16 @@ TEST_F(SharedRendering, AsyncSettingsDelegatesKeepGuiThreadAffinity) {
         ASSERT_TRUE(list->setProperty("currentIndex", index));
         ASSERT_TRUE(QMetaObject::invokeMethod(list, "positionViewAtIndex", Q_ARG(int, index), Q_ARG(int, 0)));
         QTest::qWait(30);  // Permit delegate reuse and scene-graph synchronization.
-        for (auto* child : settings->findChildren<QObject*>())
+        for (auto* child : settings->findChildren<QObject*>()) {
           EXPECT_EQ(child->thread(), engine.thread()) << child->metaObject()->className();
+        }
       }
       EXPECT_TRUE(synchronized.load());
-      if (qEnvironmentVariable("QSG_RENDER_LOOP") == "threaded" && qEnvironmentVariable("QT_QUICK_BACKEND") == "rhi")
+      if (qEnvironmentVariable("QSG_RENDER_LOOP") == "threaded" && qEnvironmentVariable("QT_QUICK_BACKEND") == "rhi") {
         EXPECT_TRUE(threaded.load());
+      }
       std::cout << "SETTINGS dpr=" << settings_window->devicePixelRatio() << " threadedSync=" << threaded.load()
-                << std::endl;
+                << '\n';
     }
     ASSERT_TRUE(loader->setProperty("active", false));
     QCoreApplication::sendPostedEvents(nullptr, QEvent::DeferredDelete);
@@ -698,6 +737,8 @@ TEST_F(SharedRendering, ScrollBarApplicationEngineTeardown) {
 }
 }  // namespace
 
+// Keep the complete state/provenance matrix together for this scenario.
+// NOLINTNEXTLINE(readability-function-cognitive-complexity)
 TEST_F(SharedRendering, KeyHintSymbolsRenderDistinctlyAcrossFontsAndSizes) {
   QQmlComponent component(&engine);
   component.setData(R"(

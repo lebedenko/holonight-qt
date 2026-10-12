@@ -10,6 +10,7 @@
 #include <QFile>
 #include <QTemporaryDir>
 
+#include <array>
 #include <gtest/gtest.h>
 
 // Guard: if ColorTokens shrinks unexpectedly, operator== silently covers fewer fields.
@@ -49,10 +50,12 @@ Holonight::ResolvedAppearance makeConfig(Holonight::ColorMode mode, const QStrin
                                          const QString& scheme = {}) {
   Holonight::ResolvedAppearance cfg;
   cfg.accent = accent;
-  cfg.theme_scheme = scheme.isEmpty()
-                         ? (mode == Holonight::ColorMode::Light ? Holonight::ThemeSchemeKind::HoloNightLight
-                                                                : Holonight::ThemeSchemeKind::HoloNightDark)
-                         : Holonight::themeVariantForSchemeId(scheme)->scheme;
+  if (scheme.isEmpty()) {
+    cfg.theme_scheme = mode == Holonight::ColorMode::Light ? Holonight::ThemeSchemeKind::HoloNightLight
+                                                           : Holonight::ThemeSchemeKind::HoloNightDark;
+  } else {
+    cfg.theme_scheme = Holonight::themeVariantForSchemeId(scheme)->scheme;
+  }
   return cfg;
 }
 
@@ -251,16 +254,24 @@ TEST(ThemeCatalog, NordAndEverforestVariantsExposeCompleteMetadata) {
     QString kde_name;
     Holonight::ColorMode mode;
   };
-  const Expected expected[] = {
-      {QStringLiteral("holonight-frost"), QStringLiteral("nord"), QStringLiteral("HoloNight Frost"),
-       Holonight::ColorMode::Dark},
-      {QStringLiteral("holonight-snow"), QStringLiteral("nord"), QStringLiteral("HoloNight Snow"),
-       Holonight::ColorMode::Light},
-      {QStringLiteral("holonight-canopy"), QStringLiteral("everforest"), QStringLiteral("HoloNight Canopy"),
-       Holonight::ColorMode::Dark},
-      {QStringLiteral("holonight-glade"), QStringLiteral("everforest"), QStringLiteral("HoloNight Glade"),
-       Holonight::ColorMode::Light},
-  };
+  const std::array<Expected, 4> expected{{
+      {.id = QStringLiteral("holonight-frost"),
+       .family = QStringLiteral("nord"),
+       .kde_name = QStringLiteral("HoloNight Frost"),
+       .mode = Holonight::ColorMode::Dark},
+      {.id = QStringLiteral("holonight-snow"),
+       .family = QStringLiteral("nord"),
+       .kde_name = QStringLiteral("HoloNight Snow"),
+       .mode = Holonight::ColorMode::Light},
+      {.id = QStringLiteral("holonight-canopy"),
+       .family = QStringLiteral("everforest"),
+       .kde_name = QStringLiteral("HoloNight Canopy"),
+       .mode = Holonight::ColorMode::Dark},
+      {.id = QStringLiteral("holonight-glade"),
+       .family = QStringLiteral("everforest"),
+       .kde_name = QStringLiteral("HoloNight Glade"),
+       .mode = Holonight::ColorMode::Light},
+  }};
   for (const Expected& item : expected) {
     const auto* variant =
         Holonight::themeVariantForSchemeId(QStringLiteral("  ") + item.id.toUpper() + QStringLiteral("  "));
@@ -326,11 +337,12 @@ TEST(ThemeResolver, ValidSchemeWinsWhenModeDisagrees) {
   EXPECT_EQ(tok.background, Holonight::tokensForScheme(Holonight::ThemeSchemeKind::HoloNightDay).background);
 }
 
-TEST(ThemeResolver, MetricsRemainStableAcrossSchemes) {
+TEST(ThemeResolver, BuiltInDarkAndLightSchemesProduceDistinctTokens) {
   const Holonight::ColorTokens dark = Holonight::ThemeResolver::resolve(
       makeConfig(Holonight::ColorMode::Dark, QStringLiteral("cyan"), QStringLiteral("holonight-dark")));
   const Holonight::ColorTokens light = Holonight::ThemeResolver::resolve(
       makeConfig(Holonight::ColorMode::Dark, QStringLiteral("cyan"), QStringLiteral("holonight-light")));
+  EXPECT_NE(dark, light);
 }
 
 // ── reload() suppression (tested at resolver level) ──────────────────────────

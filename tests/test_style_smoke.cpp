@@ -248,6 +248,8 @@ TEST(StyleSmoke, ReloadPreservesApplicationPaletteRolesAndResolveMask) {
   auto* style = new HoloniightStyle;
   QApplication::setStyle(style);
   auto* reader = style->findChild<Holonight::AppearanceReader*>();
+  // QApplication owns the installed style, including this assertion's early return path.
+  // NOLINTNEXTLINE(clang-analyzer-cplusplus.NewDeleteLeaks)
   ASSERT_TRUE(reader);
   const QPalette saved = QApplication::palette();
   QPalette chosen;
@@ -256,7 +258,7 @@ TEST(StyleSmoke, ReloadPreservesApplicationPaletteRolesAndResolveMask) {
   chosen.setColor(QPalette::Disabled, QPalette::Text, QColor("#80654321"));
   QApplication::setPalette(chosen);
   const auto mask = QApplication::palette().resolveMask();
-  for (const QByteArray scheme :
+  for (const QByteArray& scheme :
        {QByteArray("holonight-light"), QByteArray("holonight-dark"), QByteArray("holonight-light")}) {
     appearance.theme.scheme = scheme.toStdString();
     ASSERT_TRUE(HoloNight::Config::writeAtomically(appearance, std::filesystem::path(path.toStdString())));

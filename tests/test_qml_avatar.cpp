@@ -18,18 +18,27 @@ namespace {
 class AvatarImages : public QQuickImageProvider {
  public:
   AvatarImages() : QQuickImageProvider(Image, ForceAsynchronousImageLoading) {}
-  QImage requestImage(const QString& id, QSize* size, const QSize&) override {
+  QImage requestImage(const QString& image_id, QSize* size, const QSize& /*requestedSize*/) override {
     // Keep loading observable without depending on disk cache or network
     // timing.
     QThread::msleep(50);
-    if (id == "missing") {
+    if (image_id == "missing") {
       return {};
     }
-    QImage image{id == "wide"   ? QSize{240, 80}
-                 : id == "tall" ? QSize{80, 240}
-                                : QSize{80, 80},
-                 QImage::Format_ARGB32_Premultiplied};
-    image.fill(id == "fallback" ? Qt::yellow : id == "transparent" ? QColor{0, 0, 255, 128} : Qt::blue);
+    QSize image_size{80, 80};
+    if (image_id == "wide") {
+      image_size = QSize{240, 80};
+    } else if (image_id == "tall") {
+      image_size = QSize{80, 240};
+    }
+    QImage image{image_size, QImage::Format_ARGB32_Premultiplied};
+    QColor color = Qt::blue;
+    if (image_id == "fallback") {
+      color = Qt::yellow;
+    } else if (image_id == "transparent") {
+      color = QColor{0, 0, 255, 128};
+    }
+    image.fill(color);
     *size = image.size();
     return image;
   }
@@ -37,11 +46,18 @@ class AvatarImages : public QQuickImageProvider {
 
 class QmlAvatar : public testing::Test {
  protected:
+  // GTest-derived tests intentionally share protected fixture state.
+  // NOLINTNEXTLINE(cppcoreguidelines-non-private-member-variables-in-classes)
   QQmlEngine engine;
+  // NOLINTNEXTLINE(cppcoreguidelines-non-private-member-variables-in-classes)
   std::unique_ptr<QQuickWindow> window;
+  // NOLINTNEXTLINE(cppcoreguidelines-non-private-member-variables-in-classes)
   QObject* avatar{};
+  // NOLINTNEXTLINE(cppcoreguidelines-non-private-member-variables-in-classes)
   QObject* image{};
+  // NOLINTNEXTLINE(cppcoreguidelines-non-private-member-variables-in-classes)
   QObject* fallback{};
+  // NOLINTNEXTLINE(cppcoreguidelines-non-private-member-variables-in-classes)
   QObject* effect{};
 
   void SetUp() override {
@@ -123,7 +139,9 @@ TEST_F(QmlAvatar, ShaderMaskCropRingAndTransparencyAtBothSizes) {
             QDir{capture_dir}.filePath(QStringLiteral("avatar-%1-%2.png").arg(size).arg(QString::fromLatin1(shape)))));
       }
       const qreal scale = static_cast<qreal>(rendered.width()) / window->width();
-      const auto pixel = [&](qreal x, qreal y) { return rendered.pixelColor(qRound(x * scale), qRound(y * scale)); };
+      const auto pixel = [&](qreal pixel_x, qreal pixel_y) {
+        return rendered.pixelColor(qRound(pixel_x * scale), qRound(pixel_y * scale));
+      };
       EXPECT_EQ(pixel(0, 0), QColor{Qt::black});
       EXPECT_EQ(pixel(4, 4), QColor{Qt::black});
       EXPECT_GT(pixel(size / 2.0, 0).green(), 100);
@@ -138,9 +156,9 @@ TEST_F(QmlAvatar, ShaderMaskCropRingAndTransparencyAtBothSizes) {
         EXPECT_EQ(pixel(size / 2.0, 7), QColor{Qt::blue});
         EXPECT_EQ(pixel(7, size / 2.0), QColor{Qt::blue});
         bool blended_edge = false;
-        for (int y = qRound(4 * scale); y < qRound((size - 4) * scale); ++y) {
-          for (int x = qRound(4 * scale); x < qRound((size - 4) * scale); ++x) {
-            const QColor color = rendered.pixelColor(x, y);
+        for (int pixel_y = qRound(4 * scale); pixel_y < qRound((size - 4) * scale); ++pixel_y) {
+          for (int pixel_x = qRound(4 * scale); pixel_x < qRound((size - 4) * scale); ++pixel_x) {
+            const QColor color = rendered.pixelColor(pixel_x, pixel_y);
             blended_edge |= color.blue() > 10 && color.blue() < 245 && color.red() > 10;
           }
         }

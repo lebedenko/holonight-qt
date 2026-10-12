@@ -40,10 +40,10 @@ ControlPalette {
     EXPECT_NEAR(actual.alphaF(), expected.alphaF(), 0.00002);
   };
   near(colors.value("surfaceHover").value<QColor>(), QColor::fromRgbF(0.1, 0.1, 0.1, 0.1));
-  near(colors.value("primaryPressed").value<QColor>(), QColor::fromRgbF(0.8, 0, 0.2, 0.8 + 0.2 * 128.0 / 255));
-  near(colors.value("surfaceSelected").value<QColor>(), QColor::fromRgbF(0.12, 0, 0.88, 0.12 + 0.88 * 128.0 / 255));
-  near(colors.value("surfaceSelectedHover").value<QColor>(), QColor::fromRgbF(0.2, 0, 0.8, 0.2 + 0.8 * 128.0 / 255));
-  near(colors.value("borderSubtle").value<QColor>(), QColor::fromRgbF(0, 0.5, 0.5, 0.5 + 0.5 * 128.0 / 255));
+  near(colors.value("primaryPressed").value<QColor>(), QColor::fromRgbF(0.8, 0, 0.2, 0.8 + (0.2 * 128.0 / 255)));
+  near(colors.value("surfaceSelected").value<QColor>(), QColor::fromRgbF(0.12, 0, 0.88, 0.12 + (0.88 * 128.0 / 255)));
+  near(colors.value("surfaceSelectedHover").value<QColor>(), QColor::fromRgbF(0.2, 0, 0.8, 0.2 + (0.8 * 128.0 / 255)));
+  near(colors.value("borderSubtle").value<QColor>(), QColor::fromRgbF(0, 0.5, 0.5, 0.5 + (0.5 * 128.0 / 255)));
   EXPECT_EQ(colors.value("surfaceRaised").value<QColor>(), QColor(Qt::transparent));
   EXPECT_EQ(colors.value("surface").value<QColor>(), QColor("#800000ff"));
   EXPECT_EQ(colors.value("borderFocus").value<QColor>(), QColor(Qt::red));

@@ -24,6 +24,8 @@
 namespace {
 class RuntimeComposites : public testing::Test {
  protected:
+  // GTest-derived tests intentionally share protected fixture state.
+  // NOLINTNEXTLINE(cppcoreguidelines-non-private-member-variables-in-classes)
   QQmlEngine engine;
   void SetUp() override {
     engine.addImportPath(qEnvironmentVariable("UQC_IMPORT_PATH", QStringLiteral(HOLONIGHT_QML_IMPORT_PATH)));
@@ -42,16 +44,18 @@ void expectOrigin(QObject* object, const QString& suffix) {
   auto* data = QQmlData::get(object);
   ASSERT_NE(data, nullptr);
   QStringList origins;
-  for (auto context = data->context; context; context = context->parent().data()) {
+  for (auto* context = data->context; context != nullptr; context = context->parent().data()) {
     const auto url = context->url().toString();
     origins.append(url);
-    if (url.endsWith(suffix)) return;
+    if (url.endsWith(suffix)) {
+      return;
+    }
   }
   FAIL() << "Expected " << suffix.toStdString() << " in " << origins.join(", ").toStdString();
 }
 
 QObject* objectProperty(QObject* object, const char* property) {
-  return object ? object->property(property).value<QObject*>() : nullptr;
+  return (object != nullptr) ? object->property(property).value<QObject*>() : nullptr;
 }
 
 using CoreIsolation = RuntimeComposites;
@@ -102,7 +106,7 @@ Item {
 }
 
 TEST_F(CoreIsolation, WindowPaletteRetargetingAndDestructionStayIndependentOfControls) {
-  const auto source = R"(
+  const auto* const source = R"(
 import QtQuick
 import Holonight.Core
 Window {
@@ -159,11 +163,11 @@ Window {
 TEST_F(RuntimeComposites, EveryPublicCompositeLoadsAndHonorsDisabledState) {
   for (const auto& type : QStringLiteral(HOLONIGHT_COMPOSITE_TYPES).split(',')) {
     SCOPED_TRACE(type.toStdString());
-    const auto required = type == "HnAppTitle" ? "applicationName: \"Acceptance\"" : "";
+    const auto* const required = type == "HnAppTitle" ? "applicationName: \"Acceptance\"" : "";
     auto control = create(QString("import QtQuick\nimport Holonight.Controls\n%1 { %2 }").arg(type, required).toUtf8());
     ASSERT_NE(control, nullptr);
     expectOrigin(control.get(), "/Holonight/Controls/" + type + ".qml");
-    if (qobject_cast<QQuickItem*>(control.get())) {
+    if (qobject_cast<QQuickItem*>(control.get()) != nullptr) {
       ASSERT_TRUE(control->setProperty("enabled", false));
       EXPECT_FALSE(control->property("enabled").toBool());
       ASSERT_TRUE(control->setProperty("enabled", true));
@@ -211,13 +215,17 @@ Window {
   auto* attached = qmlAttachedPropertiesObject<QQuickScrollBar>(list);
   ASSERT_NE(attached, nullptr);
   expectOrigin(objectProperty(attached, "vertical"), style + "ScrollBar.qml");
-  for (const auto name : {"area", "picker"}) {
+  for (const auto* const name : {"area", "picker"}) {
     auto* composite = objectProperty(root.get(), name);
     QObject* scroll = nullptr;
     QObject* editor = nullptr;
     for (auto* child : composite->findChildren<QObject*>()) {
-      if (child->inherits("QQuickScrollView")) scroll = child;
-      if (child->inherits("QQuickTextArea")) editor = child;
+      if (child->inherits("QQuickScrollView")) {
+        scroll = child;
+      }
+      if (child->inherits("QQuickTextArea")) {
+        editor = child;
+      }
     }
     ASSERT_NE(scroll, nullptr) << name;
     expectOrigin(scroll, style + "ScrollView.qml");
@@ -234,10 +242,11 @@ Window {
   ASSERT_TRUE(maps.open(QIODevice::ReadOnly));
   const auto mappings = maps.readAll();
   const auto importRoot = qEnvironmentVariable("UQC_IMPORT_PATH", QStringLiteral(HOLONIGHT_QML_IMPORT_PATH)).toUtf8();
-  for (const auto module :
+  for (const auto* const module :
        {"/Holonight/Core/libholonight_core_qml.so", "/Holonight/Controls/libholonight_controls_qml.so",
-        "/Holonight/impl/libholonight_impl_qml.so"})
+        "/Holonight/impl/libholonight_impl_qml.so"}) {
     EXPECT_TRUE(mappings.contains(importRoot + module)) << module;
+  }
 }
 
 TEST_F(RuntimeComposites, EmptyIconRoleKeepsVariantListDelegatesTextOnly) {
@@ -369,7 +378,9 @@ Item {
   ASSERT_NE(area, nullptr);
   QObject* editor = nullptr;
   for (auto* child : area->findChildren<QObject*>()) {
-    if (child->inherits("QQuickTextArea")) editor = child;
+    if (child->inherits("QQuickTextArea")) {
+      editor = child;
+    }
   }
   ASSERT_NE(editor, nullptr);
   EXPECT_EQ(editor->property("inputMethodHints").toInt(), int(Qt::ImhNoPredictiveText));

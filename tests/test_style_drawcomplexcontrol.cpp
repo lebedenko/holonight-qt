@@ -241,10 +241,10 @@ TEST_F(DrawComplexTest, RenderedSplitterUsesOnePixelHandleBetweenDifferentSurfac
   splitter.render(&painter);
   painter.end();
 
-  const int y = handleRect.center().y();
-  EXPECT_EQ(image.pixelColor(handleRect.left(), y), leftColor);
+  const int row_y = handleRect.center().y();
+  EXPECT_EQ(image.pixelColor(handleRect.left(), row_y), leftColor);
   EXPECT_EQ(image.pixelColor(handleRect.center()), style_.standardPalette().color(QPalette::Mid));
-  EXPECT_EQ(image.pixelColor(handleRect.right(), y), rightColor);
+  EXPECT_EQ(image.pixelColor(handleRect.right(), row_y), rightColor);
 }
 
 TEST_F(DrawComplexTest, MainWindowDockSeparatorIsOnePixelWide) {
@@ -282,10 +282,10 @@ TEST_F(DrawComplexTest, MainWindowDockSeparatorIsOnePixelWide) {
   painter.end();
 
   int separatorPixels = 0;
-  const int y = image.height() / 2;
+  const int row_y = image.height() / 2;
   const QColor separatorColor = style_.standardPalette().color(QPalette::Mid);
-  for (int x = 0; x < image.width(); ++x) {
-    if (image.pixelColor(x, y) == separatorColor) {
+  for (int pixel_x = 0; pixel_x < image.width(); ++pixel_x) {
+    if (image.pixelColor(pixel_x, row_y) == separatorColor) {
       ++separatorPixels;
     }
   }

@@ -19,7 +19,10 @@
 namespace {
 class WindowPalette : public testing::Test {
  protected:
+  // GTest-derived tests intentionally share protected fixture state.
+  // NOLINTNEXTLINE(cppcoreguidelines-non-private-member-variables-in-classes)
   QPalette saved_ = QGuiApplication::palette();
+  // NOLINTNEXTLINE(cppcoreguidelines-non-private-member-variables-in-classes)
   QQmlEngine engine_;
   void SetUp() override {
     engine_.addImportPath(qEnvironmentVariable("UQC_IMPORT_PATH", QStringLiteral(HOLONIGHT_QML_IMPORT_PATH)));
@@ -31,7 +34,7 @@ class WindowPalette : public testing::Test {
     writeAppearance(false);
     QCoreApplication::processEvents();
   }
-  void writeAppearance(bool light) {
+  static void writeAppearance(bool light) {
     auto config = HoloNight::Config::defaults();
     config.theme.scheme = light ? "holonight-light" : "holonight-dark";
     ASSERT_TRUE(
@@ -73,7 +76,7 @@ HnApplicationWindow {
 )" + extra + "\n}");
   }
   static QQuickPalette* palette(QObject* object) { return object->property("palette").value<QQuickPalette*>(); }
-  void transition(QObject* object, bool light) {
+  static void transition(QObject* object, bool light) {
     writeAppearance(light);
     ASSERT_TRUE(QTest::qWaitFor(
         [&] {
@@ -81,15 +84,16 @@ HnApplicationWindow {
         },
         5000));
   }
-  void expectRoles(QObject* object, const QPalette& expected) {
+  static void expectRoles(QObject* object, const QPalette& expected) {
     for (const auto* name : {"field", "spin", "combo", "disabled"}) {
       SCOPED_TRACE(name);
       auto* control = object->findChild<QObject*>(name);
       ASSERT_TRUE(control);
       ASSERT_TRUE(palette(control));
       for (auto group : {QPalette::Active, QPalette::Inactive, QPalette::Disabled}) {
-        for (auto role : {QPalette::Base, QPalette::Button, QPalette::Text, QPalette::Window, QPalette::Highlight})
+        for (auto role : {QPalette::Base, QPalette::Button, QPalette::Text, QPalette::Window, QPalette::Highlight}) {
           EXPECT_EQ(palette(control)->toQPalette().color(group, role), expected.color(group, role));
+        }
       }
     }
   }
@@ -148,7 +152,9 @@ TEST_F(WindowPalette, CompleteWindowPaletteRemainsCallerOwned) {
   auto custom = defaults(false);
   for (auto group : {QPalette::Active, QPalette::Inactive, QPalette::Disabled}) {
     for (int role = 0; role < QPalette::NColorRoles; ++role) {
-      if (role != QPalette::NoRole) custom.setColor(group, static_cast<QPalette::ColorRole>(role), QColor("#456789"));
+      if (role != QPalette::NoRole) {
+        custom.setColor(group, static_cast<QPalette::ColorRole>(role), QColor("#456789"));
+      }
     }
   }
   palette(root.get())->fromQPalette(custom);
@@ -215,7 +221,9 @@ TEST_F(WindowPalette, BackgroundsAndRenderedSamplesRoundTripIncludingRecreation)
       const auto pixel = image.pixelColor(point.toPoint());
       result.insert(name, {backgroundColor, pixel});
       // Fusion ComboBox uses a native gradient; other enabled fills are flat.
-      if (QString(name) != "combo" && QString(name) != "disabled") EXPECT_EQ(pixel, backgroundColor);
+      if (QString(name) != "combo" && QString(name) != "disabled") {
+        EXPECT_EQ(pixel, backgroundColor);
+      }
     }
     return result;
   };

@@ -13,8 +13,12 @@ class PaletteTest : public ::testing::TestWithParam<Holonight::ThemeSchemeKind> 
     palette_ = QPalette{Holonight::buildPalette(tok_)};
   }
 
+  // GTest-derived tests intentionally share protected fixture state.
+  // NOLINTNEXTLINE(cppcoreguidelines-non-private-member-variables-in-classes)
   Holonight::ColorTokens tok_;
+  // NOLINTNEXTLINE(cppcoreguidelines-non-private-member-variables-in-classes)
   QPalette palette_;
+  // NOLINTNEXTLINE(cppcoreguidelines-non-private-member-variables-in-classes)
   QPalette defaultPalette_;
 };
 

@@ -151,6 +151,8 @@ class QmlSmoke : public ::testing::Test {
     engine_.addImportPath(qEnvironmentVariable("UQC_IMPORT_PATH", QStringLiteral(HOLONIGHT_QML_IMPORT_PATH)));
   }
 
+  // GTest-derived tests intentionally share protected fixture state.
+  // NOLINTNEXTLINE(cppcoreguidelines-non-private-member-variables-in-classes)
   QQmlEngine engine_;
 };
 
@@ -179,15 +181,18 @@ TEST_F(QmlSmoke, Button_UsesSemanticIconSizeAndIconOnlyPadding) {
 
       Button {
         id: textButton
+        font.pixelSize: 12
         text: "Text"
       }
       Button {
         id: textAndIconButton
+        font.pixelSize: 12
         text: "Text and icon"
         icon.source: "missing-test-icon.svg"
       }
       Button {
         id: iconOnlyButton
+        font.pixelSize: 12
         implicitWidth: implicitHeight
         display: AbstractButton.IconOnly
         icon.source: "missing-test-icon.svg"
@@ -199,9 +204,9 @@ TEST_F(QmlSmoke, Button_UsesSemanticIconSizeAndIconOnlyPadding) {
   std::unique_ptr<QObject> root{comp.create()};
   ASSERT_NE(root, nullptr);
 
-  QObject* text_button = root->property("textButton").value<QObject*>();
-  QObject* text_and_icon_button = root->property("textAndIconButton").value<QObject*>();
-  QObject* icon_only_button = root->property("iconOnlyButton").value<QObject*>();
+  auto* text_button = root->property("textButton").value<QObject*>();
+  auto* text_and_icon_button = root->property("textAndIconButton").value<QObject*>();
+  auto* icon_only_button = root->property("iconOnlyButton").value<QObject*>();
   ASSERT_NE(text_button, nullptr);
   ASSERT_NE(text_and_icon_button, nullptr);
   ASSERT_NE(icon_only_button, nullptr);
@@ -253,11 +258,11 @@ TEST_F(QmlSmoke, Button_HoverEnabledAndStateColors) {
   std::unique_ptr<QObject> root{comp.create()};
   ASSERT_NE(root, nullptr);
 
-  QObject* defaultBtn = root->property("defaultBtn").value<QObject*>();
-  QObject* defaultPressedBtn = root->property("defaultPressedBtn").value<QObject*>();
+  auto* defaultBtn = root->property("defaultBtn").value<QObject*>();
+  auto* defaultPressedBtn = root->property("defaultPressedBtn").value<QObject*>();
 
-  QObject* primaryBtn = root->property("primaryBtn").value<QObject*>();
-  QObject* primaryPressedBtn = root->property("primaryPressedBtn").value<QObject*>();
+  auto* primaryBtn = root->property("primaryBtn").value<QObject*>();
+  auto* primaryPressedBtn = root->property("primaryPressedBtn").value<QObject*>();
 
   ASSERT_NE(defaultBtn, nullptr);
   ASSERT_NE(primaryBtn, nullptr);
@@ -366,11 +371,11 @@ TEST_F(QmlSmoke, Controls_HeaderBarKeepsFixedHeightAndLoadsContent) {
   ASSERT_EQ(comp.status(), QQmlComponent::Ready) << comp.errorString().toStdString();
   std::unique_ptr<QObject> object{comp.create()};
   ASSERT_NE(object, nullptr);
-  QObject* bar = object->property("bar").value<QObject*>();
+  auto* bar = object->property("bar").value<QObject*>();
   ASSERT_NE(bar, nullptr);
   QQuickItem* content_item = qobject_cast<QQuickItem*>(bar->property("contentItem").value<QObject*>());
-  QQuickItem* content_loader = bar->findChild<QQuickItem*>(QStringLiteral("headerContentLoader"));
-  QQuickItem* divider = bar->findChild<QQuickItem*>(QStringLiteral("headerDivider"));
+  auto* content_loader = bar->findChild<QQuickItem*>(QStringLiteral("headerContentLoader"));
+  auto* divider = bar->findChild<QQuickItem*>(QStringLiteral("headerDivider"));
   ASSERT_NE(content_item, nullptr);
   ASSERT_NE(content_loader, nullptr);
   ASSERT_NE(divider, nullptr);
@@ -451,7 +456,7 @@ TEST_F(QmlSmoke, Core_MigratedTypesExposeCanonicalContracts) {
   EXPECT_TRUE(object->property("profileValid").toBool());
   EXPECT_TRUE(object->property("providerValid").toBool());
   EXPECT_EQ(object->property("cornerMask").toInt(), 15);
-  QObject* icon = object->property("icon").value<QObject*>();
+  auto* icon = object->property("icon").value<QObject*>();
   ASSERT_NE(icon, nullptr);
   EXPECT_EQ(icon->property("iconState").toInt(), 3);
 }
@@ -486,10 +491,10 @@ TEST_F(QmlSmoke, Core_HnLabelAndTypographyRoles) {
   std::unique_ptr<QObject> root{comp.create()};
   ASSERT_NE(root, nullptr);
 
-  QObject* body = root->property("bodyLabel").value<QObject*>();
-  QObject* micro = root->property("microLabel").value<QObject*>();
-  QObject* display = root->property("displayLabel").value<QObject*>();
-  QObject* code = root->property("codeLabel").value<QObject*>();
+  auto* body = root->property("bodyLabel").value<QObject*>();
+  auto* micro = root->property("microLabel").value<QObject*>();
+  auto* display = root->property("displayLabel").value<QObject*>();
+  auto* code = root->property("codeLabel").value<QObject*>();
   ASSERT_NE(body, nullptr);
   ASSERT_NE(micro, nullptr);
   ASSERT_NE(display, nullptr);
@@ -543,8 +548,8 @@ TEST_F(QmlSmoke, Controls_MigratedFrameAndWindowExposeCanonicalContracts) {
   ASSERT_EQ(comp.status(), QQmlComponent::Ready) << comp.errorString().toStdString();
   std::unique_ptr<QObject> object{comp.create()};
   ASSERT_NE(object, nullptr);
-  QObject* frame = object->property("frame").value<QObject*>();
-  QObject* window = object->property("windowObject").value<QObject*>();
+  auto* frame = object->property("frame").value<QObject*>();
+  auto* window = object->property("windowObject").value<QObject*>();
   ASSERT_NE(frame, nullptr);
   ASSERT_NE(window, nullptr);
   EXPECT_NE(frame->findChild<QObject*>(QStringLiteral("canonicalFrameContent")), nullptr);
@@ -598,7 +603,7 @@ TEST_F(QmlSmoke, Controls_ActionBarKeepsOptionalSlotsAligned) {
   root_item->setParentItem(window.contentItem());
   window.show();
   QCoreApplication::processEvents();
-  QObject* bar = object->property("bar").value<QObject*>();
+  auto* bar = object->property("bar").value<QObject*>();
   ASSERT_NE(bar, nullptr);
 
   const auto setSlots = [&](int mask) {
@@ -616,13 +621,13 @@ TEST_F(QmlSmoke, Controls_ActionBarKeepsOptionalSlotsAligned) {
     EXPECT_EQ(bar->property("leadingItem").value<QObject*>() != nullptr, (mask & 1) != 0);
     EXPECT_EQ(bar->property("centerItem").value<QObject*>() != nullptr, (mask & 2) != 0);
     EXPECT_EQ(bar->property("trailingItem").value<QObject*>() != nullptr, (mask & 4) != 0);
-    if (mask & 1) {
+    if ((mask & 1) != 0) {
       EXPECT_NEAR(coordinate("leadingX"), 0.0, 0.01);
     }
-    if (mask & 2) {
+    if ((mask & 2) != 0) {
       EXPECT_NEAR(coordinate("centerMidpoint"), bar->property("width").toDouble() / 2, 0.01);
     }
-    if (mask & 4) {
+    if ((mask & 4) != 0) {
       EXPECT_NEAR(coordinate("trailingRight"), bar->property("width").toDouble(), 0.01);
     }
   }
@@ -678,7 +683,7 @@ TEST_F(QmlSmoke, Controls_SearchFieldSizesAndInvalidFallback) {
   EXPECT_EQ(root->property("normal").value<QObject*>()->property("verticalAlignment").toInt(), Qt::AlignVCenter);
   EXPECT_EQ(root->property("large").value<QObject*>()->property("verticalAlignment").toInt(), Qt::AlignVCenter);
   EXPECT_EQ(root->property("hero").value<QObject*>()->property("verticalAlignment").toInt(), Qt::AlignVCenter);
-  QObject* defaultIcon =
+  auto* defaultIcon =
       root->property("normal").value<QObject*>()->findChild<QObject*>(QStringLiteral("hnSearchDefaultIcon"));
   ASSERT_NE(defaultIcon, nullptr);
   QCoreApplication::processEvents(QEventLoop::AllEvents, 50);
@@ -728,7 +733,7 @@ TEST_F(QmlSmoke, Controls_IconComboBoxContracts) {
   EXPECT_EQ(root->property("large").value<QObject*>()->property("implicitHeight").toInt(), 40);
   EXPECT_EQ(root->property("hero").value<QObject*>()->property("implicitHeight").toInt(), 52);
   EXPECT_EQ(root->property("invalid").value<QObject*>()->property("resolvedSizeRole").toInt(), 1);
-  QObject* listCombo = root->property("listCombo").value<QObject*>();
+  auto* listCombo = root->property("listCombo").value<QObject*>();
   EXPECT_EQ(listCombo->property("currentText").toString(), QStringLiteral("Second"));
   EXPECT_EQ(listCombo->property("currentValue").toInt(), 20);
   EXPECT_EQ(listCombo->property("iconRole").toString(), QStringLiteral("icon"));
@@ -763,7 +768,7 @@ TEST_F(QmlSmoke, Controls_TextAreaNormalizesBoundsAndForwardsEditing) {
   EXPECT_EQ(area->property("text").toString(), QStringLiteral("abcdef"));
   EXPECT_EQ(area->property("selectedText").toString(), QStringLiteral("bcd"));
   EXPECT_GT(area->property("implicitHeight").toReal(), 12.0);
-  QObject* footer = area->findChild<QObject*>(QStringLiteral("hnTextAreaFooter"));
+  auto* footer = area->findChild<QObject*>(QStringLiteral("hnTextAreaFooter"));
   ASSERT_NE(footer, nullptr);
   EXPECT_EQ(footer->property("x").toReal(), 8.0);
   EXPECT_EQ(footer->property("width").toReal(), 284.0);
@@ -793,7 +798,7 @@ TEST_F(QmlSmoke, Controls_FormFieldOwnsOneControlAndSelectsSupportingText) {
   std::unique_ptr<QObject> field{comp.create()};
   ASSERT_NE(field, nullptr);
 
-  QObject* control = field->property("controlItem").value<QObject*>();
+  auto* control = field->property("controlItem").value<QObject*>();
   ASSERT_NE(control, nullptr);
   EXPECT_EQ(control->objectName(), QStringLiteral("field"));
   EXPECT_TRUE(field->property("hasError").toBool());
@@ -816,10 +821,10 @@ TEST_F(QmlSmoke, Controls_SearchFieldSlotsAndIconsCompose) {
   std::unique_ptr<QObject> field{comp.create()};
   ASSERT_NE(field, nullptr);
 
-  QObject* leadingLoader = field->findChild<QObject*>(QStringLiteral("hnSearchCustomLeading"));
-  QObject* trailingLoader = field->findChild<QObject*>(QStringLiteral("hnSearchCustomTrailing"));
-  QObject* defaultIcon = field->findChild<QObject*>(QStringLiteral("hnSearchDefaultIcon"));
-  QObject* clearButton = field->findChild<QObject*>(QStringLiteral("hnSearchClearButton"));
+  auto* leadingLoader = field->findChild<QObject*>(QStringLiteral("hnSearchCustomLeading"));
+  auto* trailingLoader = field->findChild<QObject*>(QStringLiteral("hnSearchCustomTrailing"));
+  auto* defaultIcon = field->findChild<QObject*>(QStringLiteral("hnSearchDefaultIcon"));
+  auto* clearButton = field->findChild<QObject*>(QStringLiteral("hnSearchClearButton"));
   ASSERT_NE(leadingLoader, nullptr);
   ASSERT_NE(trailingLoader, nullptr);
   ASSERT_NE(defaultIcon, nullptr);
@@ -849,8 +854,8 @@ TEST_F(QmlSmoke, Controls_SearchFieldClearActionRestoresFocusAndHonorsStates) {
   ASSERT_EQ(comp.status(), QQmlComponent::Ready) << comp.errorString().toStdString();
   std::unique_ptr<QObject> window{comp.create()};
   ASSERT_NE(window, nullptr);
-  QObject* field = window->property("field").value<QObject*>();
-  QObject* clearButton = field->findChild<QObject*>(QStringLiteral("hnSearchClearButton"));
+  auto* field = window->property("field").value<QObject*>();
+  auto* clearButton = field->findChild<QObject*>(QStringLiteral("hnSearchClearButton"));
   ASSERT_NE(clearButton, nullptr);
 
   ASSERT_TRUE(QMetaObject::invokeMethod(clearButton, "clicked", Qt::DirectConnection));
@@ -896,7 +901,7 @@ TEST_F(QmlSmoke, Controls_SearchFieldEscapeClearsThenPropagatesWhenEmpty) {
   ASSERT_NE(object, nullptr);
   auto* window = qobject_cast<QQuickWindow*>(object.get());
   ASSERT_NE(window, nullptr);
-  QObject* field = object->property("field").value<QObject*>();
+  auto* field = object->property("field").value<QObject*>();
   ASSERT_NE(field, nullptr);
   field->setProperty("focus", true);
   QCoreApplication::processEvents(QEventLoop::AllEvents, 50);
@@ -929,8 +934,8 @@ TEST_F(QmlSmoke, ScrollBar_HoverEnabledAndOrientations) {
   std::unique_ptr<QObject> root{comp.create()};
   ASSERT_NE(root, nullptr);
 
-  QObject* vBar = root->property("vBar").value<QObject*>();
-  QObject* hBar = root->property("hBar").value<QObject*>();
+  auto* vBar = root->property("vBar").value<QObject*>();
+  auto* hBar = root->property("hBar").value<QObject*>();
   ASSERT_NE(vBar, nullptr);
   ASSERT_NE(hBar, nullptr);
 
@@ -962,9 +967,9 @@ TEST_F(QmlSmoke, ItemDelegate_SelectionAndStateColors) {
   std::unique_ptr<QObject> root{comp.create()};
   ASSERT_NE(root, nullptr);
 
-  QObject* normalDelegate = root->property("normalDelegate").value<QObject*>();
-  QObject* highlightedDelegate = root->property("highlightedDelegate").value<QObject*>();
-  QObject* pressedDelegate = root->property("pressedDelegate").value<QObject*>();
+  auto* normalDelegate = root->property("normalDelegate").value<QObject*>();
+  auto* highlightedDelegate = root->property("highlightedDelegate").value<QObject*>();
+  auto* pressedDelegate = root->property("pressedDelegate").value<QObject*>();
 
   ASSERT_NE(normalDelegate, nullptr);
   ASSERT_NE(highlightedDelegate, nullptr);
@@ -973,8 +978,8 @@ TEST_F(QmlSmoke, ItemDelegate_SelectionAndStateColors) {
   const Holonight::ColorTokens tok = canonicalDefaultTokens();
 
   // Highlighted delegates use a quiet surface while retaining primary text.
-  QObject* highlightedBase = highlightedDelegate->findChild<QObject*>(QStringLiteral("hnItemDelegateBase"));
-  QObject* highlightedSelection =
+  auto* highlightedBase = highlightedDelegate->findChild<QObject*>(QStringLiteral("hnItemDelegateBase"));
+  auto* highlightedSelection =
       highlightedDelegate->findChild<QObject*>(QStringLiteral("hnItemDelegateSelectedOverlay"));
   ASSERT_NE(highlightedBase, nullptr);
   ASSERT_NE(highlightedSelection, nullptr);
@@ -986,7 +991,7 @@ TEST_F(QmlSmoke, ItemDelegate_SelectionAndStateColors) {
   EXPECT_EQ(label->property("color").value<QColor>(), tok.textPrimary);
 
   // Pressed item delegates use the same opaque resolved surface as segmented controls.
-  QObject* pressedBase = pressedDelegate->findChild<QObject*>(QStringLiteral("hnItemDelegateBase"));
+  auto* pressedBase = pressedDelegate->findChild<QObject*>(QStringLiteral("hnItemDelegateBase"));
   ASSERT_NE(pressedBase, nullptr);
   EXPECT_EQ(pressedBase->property("color").value<QColor>(), tok.surfaceElevated);
 }
@@ -1073,8 +1078,8 @@ TEST_P(ComboBoxGeometry, ScaledPopupMatchesControlSceneGeometry) {
   for (const qreal scale : {0.78, 1.0, 1.25}) {
     for (const bool rightEdge : {false, true}) {
       for (const bool opensAbove : {false, true}) {
-        const qreal wrapper_x = rightEdge ? 480 - (19 + 160) * scale - 11 : 11 - 19 * scale;
-        const qreal wrapper_y = opensAbove ? 335 - 23 * scale : 41;
+        const qreal wrapper_x = rightEdge ? 480 - ((19 + 160) * scale) - 11 : 11 - (19 * scale);
+        const qreal wrapper_y = opensAbove ? 335 - (23 * scale) : 41;
         QQmlComponent comp = QQmlComponent{&engine_};
         comp.setData(QString{R"(
           import QtQuick
@@ -1132,7 +1137,7 @@ TEST_P(ComboBoxGeometry, ScaledPopupMatchesControlSceneGeometry) {
         ASSERT_NE(window, nullptr);
         QCoreApplication::processEvents(QEventLoop::AllEvents, 50);
 
-        QObject* combo = window->property("combo").value<QObject*>();
+        auto* combo = window->property("combo").value<QObject*>();
         ASSERT_NE(combo, nullptr);
         ASSERT_TRUE(combo->property("popup").value<QObject*>()->property("visible").toBool());
         EXPECT_TRUE(combo->property("popupTransformSupported").toBool());
@@ -1156,19 +1161,20 @@ TEST_P(ComboBoxGeometry, ScaledPopupMatchesControlSceneGeometry) {
 
         if (opensAbove) {
           EXPECT_TRUE(combo->property("popup").value<QObject*>()->property("opensAbove").toBool());
-          EXPECT_NEAR(popup_bottom_right.y(), control_top_left.y() - 2 * scale, 0.5) << "scale " << scale;
+          EXPECT_NEAR(popup_bottom_right.y(), control_top_left.y() - (2 * scale), 0.5) << "scale " << scale;
         } else {
           EXPECT_FALSE(combo->property("popup").value<QObject*>()->property("opensAbove").toBool());
-          EXPECT_NEAR(popup_top_left.y(), control_bottom_right.y() + 2 * scale, 0.5) << "scale " << scale;
+          EXPECT_NEAR(popup_top_left.y(), control_bottom_right.y() + (2 * scale), 0.5) << "scale " << scale;
         }
         ASSERT_TRUE(QMetaObject::invokeMethod(window.get(), "moveAndReopen"));
         QCoreApplication::processEvents();
         EXPECT_NEAR(mappedPoint("popupTopLeft").x(), mappedPoint("controlTopLeft").x(), 0.5);
         EXPECT_NEAR(mappedPoint("popupBottomRight").x(), mappedPoint("controlBottomRight").x(), 0.5);
-        if (opensAbove)
-          EXPECT_NEAR(mappedPoint("popupBottomRight").y(), mappedPoint("controlTopLeft").y() - 2 * scale, 0.5);
-        else
-          EXPECT_NEAR(mappedPoint("popupTopLeft").y(), mappedPoint("controlBottomRight").y() + 2 * scale, 0.5);
+        if (opensAbove) {
+          EXPECT_NEAR(mappedPoint("popupBottomRight").y(), mappedPoint("controlTopLeft").y() - (2 * scale), 0.5);
+        } else {
+          EXPECT_NEAR(mappedPoint("popupTopLeft").y(), mappedPoint("controlBottomRight").y() + (2 * scale), 0.5);
+        }
       }
     }
   }
@@ -1269,9 +1275,9 @@ TEST_P(ComboBoxGeometry, RefreshesPopupGeometryAfterAncestorLayout) {
     EXPECT_TRUE(QMetaObject::invokeMethod(window.get(), method, Qt::DirectConnection, Q_RETURN_ARG(QVariant, result)));
     return result.toPointF();
   };
-  QObject* combo = window->property("combo").value<QObject*>();
+  auto* combo = window->property("combo").value<QObject*>();
   ASSERT_NE(combo, nullptr);
-  QObject* popup = combo->property("popup").value<QObject*>();
+  auto* popup = combo->property("popup").value<QObject*>();
   ASSERT_NE(popup, nullptr);
   EXPECT_TRUE(popup->property("opensAbove").toBool());
   EXPECT_NEAR(combo->property("effectiveScale").toReal(), 1.25, 0.001);
@@ -1342,11 +1348,11 @@ TEST_F(QmlSmoke, ComboBox_DelegateCornersFollowPopupInnerRadius) {
                                           Q_ARG(QVariant, QString::fromLatin1(property_name))));
     return result.toReal();
   };
-  QObject* combo = object->property("combo").value<QObject*>();
+  auto* combo = object->property("combo").value<QObject*>();
   ASSERT_NE(combo, nullptr);
-  QObject* popup = combo->property("popup").value<QObject*>();
+  auto* popup = combo->property("popup").value<QObject*>();
   ASSERT_NE(popup, nullptr);
-  QObject* background = popup->property("background").value<QObject*>();
+  auto* background = popup->property("background").value<QObject*>();
   ASSERT_NE(background, nullptr);
   const qreal inner_radius =
       (std::max)(0.0, background->property("semanticRadius").toReal() - popup->property("padding").toReal());
@@ -1393,17 +1399,17 @@ TEST_P(ComboBoxGeometry, BoundsPopupByModelAndMaximumVisibleItems) {
   ASSERT_NE(window, nullptr);
 
   auto verifyPopup = [&](const char* comboProperty, qreal expectedRows) {
-    QObject* combo = window->property(comboProperty).value<QObject*>();
+    auto* combo = window->property(comboProperty).value<QObject*>();
     ASSERT_NE(combo, nullptr);
     ASSERT_TRUE(QMetaObject::invokeMethod(window.get(), "openCombo", Qt::DirectConnection,
                                           Q_ARG(QVariant, QVariant::fromValue(combo))));
     QCoreApplication::processEvents(QEventLoop::AllEvents, 50);
-    QObject* popup = combo->property("popup").value<QObject*>();
+    auto* popup = combo->property("popup").value<QObject*>();
     ASSERT_NE(popup, nullptr);
-    QObject* list = popup->property("contentItem").value<QObject*>();
+    auto* list = popup->property("contentItem").value<QObject*>();
     ASSERT_NE(list, nullptr);
     EXPECT_NEAR(list->property("height").toReal(), expectedRows * combo->property("delegateHeight").toReal(), 0.5);
-    EXPECT_NEAR(popup->property("height").toReal(), expectedRows * combo->property("delegateHeight").toReal() + 8.0,
+    EXPECT_NEAR(popup->property("height").toReal(), (expectedRows * combo->property("delegateHeight").toReal()) + 8.0,
                 0.5);
     popup->setProperty("visible", false);
   };
@@ -1460,11 +1466,11 @@ TEST_P(ComboBoxGeometry, ConstrainsPopupToWindowAndKeepsOverflowInteractive) {
   ASSERT_NE(window, nullptr);
   QCoreApplication::processEvents(QEventLoop::AllEvents, 50);
 
-  QObject* combo = window->property("combo").value<QObject*>();
+  auto* combo = window->property("combo").value<QObject*>();
   ASSERT_NE(combo, nullptr);
-  QObject* popup = combo->property("popup").value<QObject*>();
+  auto* popup = combo->property("popup").value<QObject*>();
   ASSERT_NE(popup, nullptr);
-  QObject* list = popup->property("contentItem").value<QObject*>();
+  auto* list = popup->property("contentItem").value<QObject*>();
   ASSERT_NE(list, nullptr);
 
   EXPECT_LE(popup->property("height").toReal(), popup->property("availableVerticalSpace").toReal() + 0.5);
@@ -1510,13 +1516,13 @@ TEST_F(QmlSmoke, Controls_IconComboBoxPopupUsesSemanticDelegateHeight) {
   ASSERT_NE(window, nullptr);
 
   auto popupListHeight = [&](const char* comboProperty) {
-    QObject* combo = window->property(comboProperty).value<QObject*>();
+    auto* combo = window->property(comboProperty).value<QObject*>();
     EXPECT_NE(combo, nullptr);
-    QObject* popup = combo->property("popup").value<QObject*>();
+    auto* popup = combo->property("popup").value<QObject*>();
     EXPECT_NE(popup, nullptr);
     QMetaObject::invokeMethod(popup, "open", Qt::DirectConnection);
     QCoreApplication::processEvents(QEventLoop::AllEvents, 50);
-    QObject* list = popup->property("contentItem").value<QObject*>();
+    auto* list = popup->property("contentItem").value<QObject*>();
     EXPECT_NE(list, nullptr);
     const qreal height = list->property("height").toReal();
     QMetaObject::invokeMethod(popup, "close", Qt::DirectConnection);
@@ -1533,6 +1539,8 @@ TEST_F(QmlSmoke, Switch_LoadsWithoutError) {
   checkComponent(engine_, R"(import Holonight; Switch { text: "toggle" })");
 }
 
+// Keep the exhaustive geometry matrix in a single test scenario.
+// NOLINTNEXTLINE(readability-function-cognitive-complexity)
 TEST_F(QmlSmoke, Indicators_ReserveLayoutSpaceAndMirror) {
   for (const auto* type : {"CheckBox", "RadioButton", "Switch"}) {
     for (bool mirrored : {false, true}) {
@@ -1637,25 +1645,25 @@ TEST_F(QmlSmoke, Switch_SizeRoles) {
   std::unique_ptr<QObject> root{comp.create()};
   ASSERT_NE(root, nullptr);
 
-  QObject* compact = root->property("compact").value<QObject*>();
-  QObject* xs = root->property("xs").value<QObject*>();
-  QObject* normal = root->property("normal").value<QObject*>();
-  QObject* large = root->property("large").value<QObject*>();
-  QObject* hero = root->property("hero").value<QObject*>();
-  QObject* invalid = root->property("invalid").value<QObject*>();
+  auto* compact = root->property("compact").value<QObject*>();
+  auto* extra_small = root->property("xs").value<QObject*>();
+  auto* normal = root->property("normal").value<QObject*>();
+  auto* large = root->property("large").value<QObject*>();
+  auto* hero = root->property("hero").value<QObject*>();
+  auto* invalid = root->property("invalid").value<QObject*>();
 
   ASSERT_NE(compact, nullptr);
-  ASSERT_NE(xs, nullptr);
+  ASSERT_NE(extra_small, nullptr);
   ASSERT_NE(normal, nullptr);
   ASSERT_NE(large, nullptr);
   ASSERT_NE(hero, nullptr);
   ASSERT_NE(invalid, nullptr);
 
   EXPECT_EQ(compact->property("resolvedSizeRole").toInt(), 0);
-  EXPECT_EQ(xs->property("resolvedSizeRole").toInt(), 4);
-  EXPECT_EQ(xs->property("indicatorTrackWidth").toDouble(), 24.0);
-  EXPECT_EQ(xs->property("indicatorTrackHeight").toDouble(), 12.0);
-  EXPECT_EQ(xs->property("indicatorThumbSize").toDouble(), 8.0);
+  EXPECT_EQ(extra_small->property("resolvedSizeRole").toInt(), 4);
+  EXPECT_EQ(extra_small->property("indicatorTrackWidth").toDouble(), 24.0);
+  EXPECT_EQ(extra_small->property("indicatorTrackHeight").toDouble(), 12.0);
+  EXPECT_EQ(extra_small->property("indicatorThumbSize").toDouble(), 8.0);
   EXPECT_EQ(normal->property("resolvedSizeRole").toInt(), 1);
   EXPECT_EQ(large->property("resolvedSizeRole").toInt(), 2);
   EXPECT_EQ(hero->property("resolvedSizeRole").toInt(), 3);
@@ -1695,10 +1703,10 @@ TEST_F(QmlSmoke, ProgressBar_IndeterminateIndicatorEntersTravelsAndExitsTrack) {
   std::unique_ptr<QObject> progress{comp.create()};
   ASSERT_NE(progress, nullptr);
 
-  QObject* indicator = progress->findChild<QObject*>(QStringLiteral("hnProgressBarIndicator"));
-  QObject* enter = progress->findChild<QObject*>(QStringLiteral("hnProgressBarIndeterminateEnter"));
-  QObject* travel = progress->findChild<QObject*>(QStringLiteral("hnProgressBarIndeterminateTravel"));
-  QObject* exit = progress->findChild<QObject*>(QStringLiteral("hnProgressBarIndeterminateExit"));
+  auto* indicator = progress->findChild<QObject*>(QStringLiteral("hnProgressBarIndicator"));
+  auto* enter = progress->findChild<QObject*>(QStringLiteral("hnProgressBarIndeterminateEnter"));
+  auto* travel = progress->findChild<QObject*>(QStringLiteral("hnProgressBarIndeterminateTravel"));
+  auto* exit = progress->findChild<QObject*>(QStringLiteral("hnProgressBarIndeterminateExit"));
   ASSERT_NE(indicator, nullptr);
   ASSERT_NE(enter, nullptr);
   ASSERT_NE(travel, nullptr);
@@ -1793,11 +1801,11 @@ TEST_F(QmlSmoke, MenuItemTracksHoverAndOpensSubmenuOnHover) {
   QVariant delegate_value;
   ASSERT_TRUE(QMetaObject::invokeMethod(object.get(), "submenuDelegateObject", Qt::DirectConnection,
                                         Q_RETURN_ARG(QVariant, delegate_value)));
-  QObject* delegate = delegate_value.value<QObject*>();
+  auto* delegate = delegate_value.value<QObject*>();
   ASSERT_NE(delegate, nullptr);
   EXPECT_TRUE(delegate->property("hoverEnabled").toBool());
   QTRY_VERIFY_WITH_TIMEOUT(delegate->property("hovered").toBool(), 500);
-  QObject* submenu = object->property("subMenu").value<QObject*>();
+  auto* submenu = object->property("subMenu").value<QObject*>();
   ASSERT_NE(submenu, nullptr);
   QTRY_VERIFY_WITH_TIMEOUT(submenu->property("visible").toBool(), 1000);
 }
@@ -1842,16 +1850,16 @@ TEST_F(QmlSmoke, MenuItem_RendersStandardIconAndIndependentCheckmark) {
   std::unique_ptr<QObject> root{comp.create()};
   ASSERT_NE(root, nullptr);
 
-  QObject* plain = root->property("plain").value<QObject*>();
-  QObject* checked_icon = root->property("checkedIcon").value<QObject*>();
-  QObject* highlighted = root->property("highlighted").value<QObject*>();
-  QObject* pressed_highlighted = root->property("pressedHighlighted").value<QObject*>();
+  auto* plain = root->property("plain").value<QObject*>();
+  auto* checked_icon = root->property("checkedIcon").value<QObject*>();
+  auto* highlighted = root->property("highlighted").value<QObject*>();
+  auto* pressed_highlighted = root->property("pressedHighlighted").value<QObject*>();
   ASSERT_NE(plain, nullptr);
   ASSERT_NE(checked_icon, nullptr);
   ASSERT_NE(highlighted, nullptr);
   ASSERT_NE(pressed_highlighted, nullptr);
 
-  QObject* icon = checked_icon->findChild<QObject*>(QStringLiteral("hnMenuItemIcon"));
+  auto* icon = checked_icon->findChild<QObject*>(QStringLiteral("hnMenuItemIcon"));
   ASSERT_NE(icon, nullptr);
   EXPECT_TRUE(icon->property("visible").toBool());
   EXPECT_DOUBLE_EQ(icon->property("size").toReal(), 16.0);
@@ -1925,11 +1933,11 @@ TEST_F(QmlSmoke, Controls_IconButtonUsesSemanticMetricsAndStandardIconApi) {
   std::unique_ptr<QObject> root{comp.create()};
   ASSERT_NE(root, nullptr);
 
-  QObject* compact = root->property("compact").value<QObject*>();
-  QObject* normal = root->property("normal").value<QObject*>();
-  QObject* large = root->property("large").value<QObject*>();
-  QObject* invalid = root->property("invalid").value<QObject*>();
-  QObject* disabled = root->property("disabled").value<QObject*>();
+  auto* compact = root->property("compact").value<QObject*>();
+  auto* normal = root->property("normal").value<QObject*>();
+  auto* large = root->property("large").value<QObject*>();
+  auto* invalid = root->property("invalid").value<QObject*>();
+  auto* disabled = root->property("disabled").value<QObject*>();
   ASSERT_NE(compact, nullptr);
   ASSERT_NE(normal, nullptr);
   ASSERT_NE(large, nullptr);
@@ -1938,10 +1946,10 @@ TEST_F(QmlSmoke, Controls_IconButtonUsesSemanticMetricsAndStandardIconApi) {
 
   EXPECT_DOUBLE_EQ(compact->property("implicitWidth").toReal(), 28.0);
   EXPECT_DOUBLE_EQ(compact->property("implicitHeight").toReal(), 28.0);
-  QObject* compact_icon = compact->findChild<QObject*>(QStringLiteral("hnIconButtonIcon"));
-  QObject* normal_icon = normal->findChild<QObject*>(QStringLiteral("hnIconButtonIcon"));
-  QObject* large_icon = large->findChild<QObject*>(QStringLiteral("hnIconButtonIcon"));
-  QObject* disabled_icon = disabled->findChild<QObject*>(QStringLiteral("hnIconButtonIcon"));
+  auto* compact_icon = compact->findChild<QObject*>(QStringLiteral("hnIconButtonIcon"));
+  auto* normal_icon = normal->findChild<QObject*>(QStringLiteral("hnIconButtonIcon"));
+  auto* large_icon = large->findChild<QObject*>(QStringLiteral("hnIconButtonIcon"));
+  auto* disabled_icon = disabled->findChild<QObject*>(QStringLiteral("hnIconButtonIcon"));
   ASSERT_NE(compact_icon, nullptr);
   ASSERT_NE(normal_icon, nullptr);
   ASSERT_NE(large_icon, nullptr);
@@ -1983,7 +1991,7 @@ TEST_F(QmlSmoke, Controls_IconButtonAppliesHoverColorWithoutTransition) {
   ASSERT_NE(object, nullptr);
   auto* window = qobject_cast<QQuickWindow*>(object.get());
   ASSERT_NE(window, nullptr);
-  QObject* button = object->property("button").value<QObject*>();
+  auto* button = object->property("button").value<QObject*>();
   ASSERT_NE(button, nullptr);
 
   QCoreApplication::processEvents(QEventLoop::AllEvents, 50);
@@ -2023,12 +2031,12 @@ TEST_F(QmlSmoke, Controls_NavigationTitleReportsActualTruncationForTooltipPolicy
   ASSERT_NE(root, nullptr);
   QCoreApplication::processEvents();
 
-  QObject* short_delegate = root->property("shortDelegate").value<QObject*>();
-  QObject* long_delegate = root->property("longDelegate").value<QObject*>();
+  auto* short_delegate = root->property("shortDelegate").value<QObject*>();
+  auto* long_delegate = root->property("longDelegate").value<QObject*>();
   ASSERT_NE(short_delegate, nullptr);
   ASSERT_NE(long_delegate, nullptr);
-  QObject* short_label = short_delegate->findChild<QObject*>(QStringLiteral("hnNavigationDelegateTitle"));
-  QObject* long_label = long_delegate->findChild<QObject*>(QStringLiteral("hnNavigationDelegateTitle"));
+  auto* short_label = short_delegate->findChild<QObject*>(QStringLiteral("hnNavigationDelegateTitle"));
+  auto* long_label = long_delegate->findChild<QObject*>(QStringLiteral("hnNavigationDelegateTitle"));
   ASSERT_NE(short_label, nullptr);
   ASSERT_NE(long_label, nullptr);
   EXPECT_FALSE(short_label->property("truncated").toBool());
@@ -2217,7 +2225,7 @@ TEST_F(QmlSmoke, HnApplicationWindow_UsesCompositorChromeByDefault) {
   EXPECT_TRUE(object->property("contentIsVisuallyParented").toBool());
   EXPECT_TRUE(object->property("leadingIsVisuallySlotted").toBool());
   EXPECT_TRUE(object->property("trailingIsVisuallySlotted").toBool());
-  QObject* title_label = object->findChild<QObject*>(QStringLiteral("hnApplicationWindowHeaderTitle"));
+  auto* title_label = object->findChild<QObject*>(QStringLiteral("hnApplicationWindowHeaderTitle"));
   ASSERT_NE(title_label, nullptr);
   EXPECT_TRUE(title_label->property("visible").toBool());
   EXPECT_EQ(title_label->property("text").toString(), QStringLiteral("Workspace"));
@@ -2536,7 +2544,7 @@ TEST_F(QmlSmoke, HnSurfaceFrame_ParentsConsumerContent) {
   ASSERT_EQ(comp.status(), QQmlComponent::Ready) << comp.errorString().toStdString();
   std::unique_ptr<QObject> object{comp.create()};
   ASSERT_NE(object, nullptr);
-  QObject* content = object->findChild<QObject*>(QStringLiteral("consumerContent"));
+  auto* content = object->findChild<QObject*>(QStringLiteral("consumerContent"));
   ASSERT_NE(content, nullptr);
   QQuickItem* content_item = qobject_cast<QQuickItem*>(content);
   QQuickItem* frame_item = qobject_cast<QQuickItem*>(object.get());
@@ -2925,11 +2933,11 @@ TEST_F(QmlSmoke, HolonightTheme_ReloadUpdatesSharedControlsTypography) {
   std::unique_ptr<QObject> object{comp.create()};
   ASSERT_NE(object, nullptr);
 
-  QObject* btn = object->findChild<QObject*>(QStringLiteral("btn"));
-  QObject* nav = object->findChild<QObject*>(QStringLiteral("nav"));
-  QObject* row = object->findChild<QObject*>(QStringLiteral("row"));
-  QObject* status = object->findChild<QObject*>(QStringLiteral("status"));
-  QObject* check = object->findChild<QObject*>(QStringLiteral("check"));
+  auto* btn = object->findChild<QObject*>(QStringLiteral("btn"));
+  auto* nav = object->findChild<QObject*>(QStringLiteral("nav"));
+  auto* row = object->findChild<QObject*>(QStringLiteral("row"));
+  auto* status = object->findChild<QObject*>(QStringLiteral("status"));
+  auto* check = object->findChild<QObject*>(QStringLiteral("check"));
 
   ASSERT_NE(btn, nullptr);
   ASSERT_NE(nav, nullptr);
@@ -2937,10 +2945,10 @@ TEST_F(QmlSmoke, HolonightTheme_ReloadUpdatesSharedControlsTypography) {
   ASSERT_NE(status, nullptr);
   ASSERT_NE(check, nullptr);
 
-  QObject* nav_title = nav->findChild<QObject*>(QStringLiteral("hnNavigationDelegateTitle"));
-  QObject* row_title = row->findChild<QObject*>(QStringLiteral("hnSettingsRowTitle"));
-  QObject* row_desc = row->findChild<QObject*>(QStringLiteral("hnSettingsRowDescription"));
-  QObject* status_text = status->findChild<QObject*>(QStringLiteral("hnStatusIndicatorText"));
+  auto* nav_title = nav->findChild<QObject*>(QStringLiteral("hnNavigationDelegateTitle"));
+  auto* row_title = row->findChild<QObject*>(QStringLiteral("hnSettingsRowTitle"));
+  auto* row_desc = row->findChild<QObject*>(QStringLiteral("hnSettingsRowDescription"));
+  auto* status_text = status->findChild<QObject*>(QStringLiteral("hnStatusIndicatorText"));
 
   ASSERT_NE(nav_title, nullptr);
   ASSERT_NE(row_title, nullptr);
@@ -3005,9 +3013,9 @@ TEST_F(QmlSmoke, HolonightTheme_ExplicitFontOverridesPreservedOnReload) {
   std::unique_ptr<QObject> object{comp.create()};
   ASSERT_NE(object, nullptr);
 
-  QObject* custom_btn = object->findChild<QObject*>(QStringLiteral("customBtn"));
-  QObject* custom_nav = object->findChild<QObject*>(QStringLiteral("customNav"));
-  QObject* custom_card = object->findChild<QObject*>(QStringLiteral("customCard"));
+  auto* custom_btn = object->findChild<QObject*>(QStringLiteral("customBtn"));
+  auto* custom_nav = object->findChild<QObject*>(QStringLiteral("customNav"));
+  auto* custom_card = object->findChild<QObject*>(QStringLiteral("customCard"));
 
   ASSERT_NE(custom_btn, nullptr);
   ASSERT_NE(custom_nav, nullptr);
@@ -3058,9 +3066,9 @@ TEST_F(QmlSmoke, Controls_AppTitleUsesSemanticPresentationAndAccessibility) {
   ASSERT_NE(title, nullptr);
   QCoreApplication::processEvents();
 
-  QObject* brand = title->findChild<QObject*>(QStringLiteral("brandLabel"));
-  QObject* application = title->findChild<QObject*>(QStringLiteral("applicationLabel"));
-  QObject* icon = title->findChild<QObject*>(QStringLiteral("appTitleIcon"));
+  auto* brand = title->findChild<QObject*>(QStringLiteral("brandLabel"));
+  auto* application = title->findChild<QObject*>(QStringLiteral("applicationLabel"));
+  auto* icon = title->findChild<QObject*>(QStringLiteral("appTitleIcon"));
   ASSERT_NE(brand, nullptr);
   ASSERT_NE(application, nullptr);
   ASSERT_NE(icon, nullptr);
@@ -3108,16 +3116,16 @@ TEST_F(QmlSmoke, Controls_AppTitleIconFailureAndConstraintsUseNoReservedSpace) {
   ASSERT_NE(root, nullptr);
   QTest::qWait(50);
 
-  QObject* empty = root->property("emptyTitle").value<QObject*>();
-  QObject* failed = root->property("failedTitle").value<QObject*>();
-  QObject* constrained = root->property("constrainedTitle").value<QObject*>();
+  auto* empty = root->property("emptyTitle").value<QObject*>();
+  auto* failed = root->property("failedTitle").value<QObject*>();
+  auto* constrained = root->property("constrainedTitle").value<QObject*>();
   ASSERT_NE(empty, nullptr);
   ASSERT_NE(failed, nullptr);
   ASSERT_NE(constrained, nullptr);
   EXPECT_DOUBLE_EQ(failed->property("implicitWidth").toDouble(), empty->property("implicitWidth").toDouble());
   EXPECT_GT(empty->property("implicitWidth").toDouble(), 0.0);
   EXPECT_GT(empty->property("implicitHeight").toDouble(), 0.0);
-  QObject* application = constrained->findChild<QObject*>(QStringLiteral("applicationLabel"));
+  auto* application = constrained->findChild<QObject*>(QStringLiteral("applicationLabel"));
   ASSERT_NE(application, nullptr);
   EXPECT_EQ(application->property("elide").toInt(), Qt::ElideRight);
   EXPECT_LE(application->property("width").toDouble(), constrained->property("width").toDouble());
@@ -3153,16 +3161,16 @@ TEST_F(QmlSmoke, Controls_AppTitleSkipBrandingOmitsBrandAndSpace) {
   ASSERT_NE(root, nullptr);
   QTest::qWait(50);
 
-  QObject* defaultTitle = root->property("defaultTitle").value<QObject*>();
-  QObject* skippedTitle = root->property("skippedTitle").value<QObject*>();
+  auto* defaultTitle = root->property("defaultTitle").value<QObject*>();
+  auto* skippedTitle = root->property("skippedTitle").value<QObject*>();
   ASSERT_NE(defaultTitle, nullptr);
   ASSERT_NE(skippedTitle, nullptr);
 
   EXPECT_FALSE(defaultTitle->property("skipBranding").toBool());
   EXPECT_TRUE(skippedTitle->property("skipBranding").toBool());
 
-  QObject* defaultBrand = defaultTitle->findChild<QObject*>(QStringLiteral("brandLabel"));
-  QObject* skippedBrand = skippedTitle->findChild<QObject*>(QStringLiteral("brandLabel"));
+  auto* defaultBrand = defaultTitle->findChild<QObject*>(QStringLiteral("brandLabel"));
+  auto* skippedBrand = skippedTitle->findChild<QObject*>(QStringLiteral("brandLabel"));
   ASSERT_NE(defaultBrand, nullptr);
   ASSERT_NE(skippedBrand, nullptr);
 
@@ -3217,8 +3225,8 @@ TEST_F(QmlSmoke, Controls_SettingsRowContractsAndComposition) {
   ASSERT_EQ(comp.status(), QQmlComponent::Ready) << comp.errorString().toStdString();
   std::unique_ptr<QObject> row{comp.create()};
   ASSERT_NE(row, nullptr);
-  QObject* leading = row->property("leadingItem").value<QObject*>();
-  QObject* control = row->property("controlItem").value<QObject*>();
+  auto* leading = row->property("leadingItem").value<QObject*>();
+  auto* control = row->property("controlItem").value<QObject*>();
   ASSERT_NE(leading, nullptr);
   ASSERT_NE(control, nullptr);
   EXPECT_EQ(leading->objectName(), QStringLiteral("leading"));
@@ -3300,9 +3308,9 @@ TEST_F(QmlSmoke, Controls_SettingsRowPadsContentWithoutNarrowingDivider) {
               0.01);
   EXPECT_NEAR(padded_control->mapToItem(padded_row, QPointF{}).x() + padded_control->width(), padded_row->width() - 24,
               0.01);
-  EXPECT_NEAR(default_control->mapToItem(default_row, QPointF{}).y() + default_control->height() / 2,
+  EXPECT_NEAR(default_control->mapToItem(default_row, QPointF{}).y() + (default_control->height() / 2),
               default_row->height() / 2, 0.51);
-  EXPECT_NEAR(padded_control->mapToItem(padded_row, QPointF{}).y() + padded_control->height() / 2,
+  EXPECT_NEAR(padded_control->mapToItem(padded_row, QPointF{}).y() + (padded_control->height() / 2),
               padded_row->height() / 2, 0.51);
   EXPECT_NEAR(default_divider->width(), default_row->width(), 0.01);
   EXPECT_NEAR(padded_divider->width(), padded_row->width(), 0.01);
@@ -3499,8 +3507,8 @@ TEST_F(QmlSmoke, Controls_SettingsRowForwardsSingleFocusAndSkipsCompoundRoot) {
   ASSERT_NE(window, nullptr);
 
   auto* before = qobject_cast<QQuickItem*>(object->property("before").value<QObject*>());
-  QObject* single_row = object->property("singleRow").value<QObject*>();
-  QObject* compound_row = object->property("compoundRow").value<QObject*>();
+  auto* single_row = object->property("singleRow").value<QObject*>();
+  auto* compound_row = object->property("compoundRow").value<QObject*>();
   ASSERT_NE(before, nullptr);
   ASSERT_NE(single_row, nullptr);
   ASSERT_NE(compound_row, nullptr);
@@ -3625,10 +3633,10 @@ TEST_F(QmlSmoke, Controls_SectionHeaderCollapsesAndOwnsSlots) {
   ASSERT_EQ(comp.status(), QQmlComponent::Ready) << comp.errorString().toStdString();
   std::unique_ptr<QObject> root{comp.create()};
   ASSERT_NE(root, nullptr);
-  QObject* empty = root->property("empty").value<QObject*>();
-  QObject* composed = root->property("composed").value<QObject*>();
-  QObject* compactHeader = root->property("compactHeader").value<QObject*>();
-  QObject* categoryHeader = root->property("categoryHeader").value<QObject*>();
+  auto* empty = root->property("empty").value<QObject*>();
+  auto* composed = root->property("composed").value<QObject*>();
+  auto* compactHeader = root->property("compactHeader").value<QObject*>();
+  auto* categoryHeader = root->property("categoryHeader").value<QObject*>();
   ASSERT_NE(empty, nullptr);
   ASSERT_NE(composed, nullptr);
   ASSERT_NE(compactHeader, nullptr);
@@ -3638,7 +3646,7 @@ TEST_F(QmlSmoke, Controls_SectionHeaderCollapsesAndOwnsSlots) {
   ASSERT_NE(composed->property("trailingItem").value<QObject*>(), nullptr);
   EXPECT_FALSE(composed->property("activeFocusOnTab").toBool());
   EXPECT_EQ(compactHeader->property("resolvedSizeRole").toInt(), 0);
-  QObject* categoryTitle = categoryHeader->findChild<QObject*>(QStringLiteral("sectionTitleLabel"));
+  auto* categoryTitle = categoryHeader->findChild<QObject*>(QStringLiteral("sectionTitleLabel"));
   ASSERT_NE(categoryTitle, nullptr);
   EXPECT_EQ(categoryTitle->property("rawText").toString(), QStringLiteral("// Theme"));
   EXPECT_EQ(categoryTitle->property("color").value<QColor>(), root->property("expectedCategoryColor").value<QColor>());
@@ -3690,7 +3698,7 @@ TEST_F(QmlSmoke, Controls_LoadingStateNormalizesProgressAndGatesIndicator) {
   ASSERT_EQ(comp.status(), QQmlComponent::Ready) << comp.errorString().toStdString();
   std::unique_ptr<QObject> state{comp.create()};
   ASSERT_NE(state, nullptr);
-  QObject* progress = state->findChild<QObject*>(QStringLiteral("hnLoadingProgress"));
+  auto* progress = state->findChild<QObject*>(QStringLiteral("hnLoadingProgress"));
   ASSERT_NE(progress, nullptr);
   EXPECT_EQ(state->property("normalizedProgress").toReal(), -1.0);
   EXPECT_TRUE(progress->property("indeterminate").toBool());
@@ -3734,8 +3742,8 @@ TEST_F(QmlSmoke, Controls_SharedSelectionTypesConstructAndOwnSlots) {
   ASSERT_EQ(comp.status(), QQmlComponent::Ready) << comp.errorString().toStdString();
   std::unique_ptr<QObject> root{comp.create()};
   ASSERT_NE(root, nullptr);
-  QObject* navigation = root->property("navigation").value<QObject*>();
-  QObject* list = root->property("list").value<QObject*>();
+  auto* navigation = root->property("navigation").value<QObject*>();
+  auto* list = root->property("list").value<QObject*>();
   ASSERT_NE(navigation, nullptr);
   ASSERT_NE(list, nullptr);
   EXPECT_TRUE(navigation->property("selected").toBool());
@@ -3793,13 +3801,13 @@ TEST_F(QmlSmoke, Controls_ListDelegateLeadingContentAlignmentPolicy) {
   ASSERT_NE(root, nullptr);
   auto* window = qobject_cast<QQuickWindow*>(root.get());
   ASSERT_NE(window, nullptr);
-  QObject* list = root->property("list").value<QObject*>();
-  QObject* centered_list = root->property("centeredList").value<QObject*>();
+  auto* list = root->property("list").value<QObject*>();
+  auto* centered_list = root->property("centeredList").value<QObject*>();
   ASSERT_NE(list, nullptr);
   ASSERT_NE(centered_list, nullptr);
-  QObject* leading = list->property("leadingItem").value<QObject*>();
-  QObject* leading_loader = list->findChild<QObject*>(QStringLiteral("hnListDelegateLeadingLoader"));
-  QObject* centered_loader = centered_list->findChild<QObject*>(QStringLiteral("hnListDelegateLeadingLoader"));
+  auto* leading = list->property("leadingItem").value<QObject*>();
+  auto* leading_loader = list->findChild<QObject*>(QStringLiteral("hnListDelegateLeadingLoader"));
+  auto* centered_loader = centered_list->findChild<QObject*>(QStringLiteral("hnListDelegateLeadingLoader"));
   ASSERT_NE(leading, nullptr);
   ASSERT_NE(leading_loader, nullptr);
   ASSERT_NE(centered_loader, nullptr);
@@ -3853,16 +3861,16 @@ TEST_F(QmlSmoke, Controls_SelectionGradientClipsNavigationAccent) {
   auto* window = qobject_cast<QQuickWindow*>(root.get());
   ASSERT_NE(window, nullptr);
 
-  QObject* navigation = root->property("navigation").value<QObject*>();
-  QObject* list = root->property("list").value<QObject*>();
+  auto* navigation = root->property("navigation").value<QObject*>();
+  auto* list = root->property("list").value<QObject*>();
   ASSERT_NE(navigation, nullptr);
   ASSERT_NE(list, nullptr);
-  QObject* overlay = navigation->findChild<QObject*>(QStringLiteral("hnSelectableDelegateSelectedOverlay"));
-  QObject* gradient = navigation->findChild<QObject*>(QStringLiteral("hnSelectableDelegateSelectionGradient"));
-  QObject* accent_start = navigation->findChild<QObject*>(QStringLiteral("hnSelectableDelegateAccentStartStop"));
-  QObject* accent_end = navigation->findChild<QObject*>(QStringLiteral("hnSelectableDelegateAccentEndStop"));
-  QObject* surface_start = navigation->findChild<QObject*>(QStringLiteral("hnSelectableDelegateSurfaceStartStop"));
-  QObject* surface_end = navigation->findChild<QObject*>(QStringLiteral("hnSelectableDelegateSurfaceEndStop"));
+  auto* overlay = navigation->findChild<QObject*>(QStringLiteral("hnSelectableDelegateSelectedOverlay"));
+  auto* gradient = navigation->findChild<QObject*>(QStringLiteral("hnSelectableDelegateSelectionGradient"));
+  auto* accent_start = navigation->findChild<QObject*>(QStringLiteral("hnSelectableDelegateAccentStartStop"));
+  auto* accent_end = navigation->findChild<QObject*>(QStringLiteral("hnSelectableDelegateAccentEndStop"));
+  auto* surface_start = navigation->findChild<QObject*>(QStringLiteral("hnSelectableDelegateSurfaceStartStop"));
+  auto* surface_end = navigation->findChild<QObject*>(QStringLiteral("hnSelectableDelegateSurfaceEndStop"));
   ASSERT_NE(overlay, nullptr);
   ASSERT_NE(gradient, nullptr);
   ASSERT_NE(accent_start, nullptr);
@@ -3876,7 +3884,7 @@ TEST_F(QmlSmoke, Controls_SelectionGradientClipsNavigationAccent) {
   EXPECT_EQ(accent_end->property("color").value<QColor>(), tok.selectionIndicator);
   const qreal expected_stop = (std::max)(2.0, static_cast<qreal>(Holonight::metricTokens().border_width * 2)) / 160.0;
   EXPECT_DOUBLE_EQ(accent_end->property("position").toReal(), expected_stop);
-  EXPECT_DOUBLE_EQ(surface_start->property("position").toReal(), expected_stop + 0.25 / 160.0);
+  EXPECT_DOUBLE_EQ(surface_start->property("position").toReal(), expected_stop + (0.25 / 160.0));
   EXPECT_EQ(surface_start->property("color").value<QColor>(), tok.surfaceSelected);
   EXPECT_EQ(surface_end->property("color").value<QColor>(), tok.surfaceSelected);
 
@@ -3893,7 +3901,7 @@ TEST_F(QmlSmoke, Controls_SelectionGradientClipsNavigationAccent) {
   EXPECT_EQ(surface_start->property("color").value<QColor>(), tok.surfaceSelectedHover);
   EXPECT_EQ(surface_end->property("color").value<QColor>(), tok.surfaceSelectedHover);
 
-  QObject* list_overlay = list->findChild<QObject*>(QStringLiteral("hnSelectableDelegateSelectedOverlay"));
+  auto* list_overlay = list->findChild<QObject*>(QStringLiteral("hnSelectableDelegateSelectedOverlay"));
   ASSERT_NE(list_overlay, nullptr);
   EXPECT_EQ(list_overlay->property("gradient").value<QObject*>(), nullptr);
   EXPECT_EQ(list_overlay->property("color").value<QColor>(), tok.surfaceSelected);
@@ -3937,12 +3945,12 @@ TEST_F(QmlSmoke, Controls_ListDelegateSubtitlePresentationPolicies) {
   ASSERT_EQ(comp.status(), QQmlComponent::Ready) << comp.errorString().toStdString();
   std::unique_ptr<QObject> root{comp.create()};
   ASSERT_NE(root, nullptr);
-  QObject* wrapped = root->property("wrapped").value<QObject*>();
-  QObject* single_line = root->property("singleLine").value<QObject*>();
+  auto* wrapped = root->property("wrapped").value<QObject*>();
+  auto* single_line = root->property("singleLine").value<QObject*>();
   ASSERT_NE(wrapped, nullptr);
   ASSERT_NE(single_line, nullptr);
-  QObject* wrapped_label = wrapped->findChild<QObject*>(QStringLiteral("hnListDelegateSubtitle"));
-  QObject* single_line_label = single_line->findChild<QObject*>(QStringLiteral("hnListDelegateSubtitle"));
+  auto* wrapped_label = wrapped->findChild<QObject*>(QStringLiteral("hnListDelegateSubtitle"));
+  auto* single_line_label = single_line->findChild<QObject*>(QStringLiteral("hnListDelegateSubtitle"));
   ASSERT_NE(wrapped_label, nullptr);
   ASSERT_NE(single_line_label, nullptr);
 
@@ -3999,8 +4007,8 @@ TEST_F(QmlSmoke, Controls_PressedStatesMatchSegmentedControlSurface) {
   const auto verify_state = [&tok](QObject* control, const QString& base_name, const QString& selection_name,
                                    const QColor& idle_base_color) {
     ASSERT_NE(control, nullptr);
-    QObject* base = control->findChild<QObject*>(base_name);
-    QObject* selection = control->findChild<QObject*>(selection_name);
+    auto* base = control->findChild<QObject*>(base_name);
+    auto* selection = control->findChild<QObject*>(selection_name);
     ASSERT_NE(base, nullptr);
     ASSERT_NE(selection, nullptr);
 
@@ -4067,7 +4075,7 @@ TEST_F(QmlSmoke, Controls_ChoiceCardPressedRenderingDoesNotDependOnAncestorColor
   ASSERT_NE(object, nullptr);
   auto* window = qobject_cast<QQuickWindow*>(object.get());
   ASSERT_NE(window, nullptr);
-  QObject* choice = object->property("choice").value<QObject*>();
+  auto* choice = object->property("choice").value<QObject*>();
   ASSERT_NE(choice, nullptr);
   QCoreApplication::processEvents(QEventLoop::AllEvents, 50);
 
@@ -4179,8 +4187,8 @@ TEST_F(QmlSmoke, Controls_ChoiceCardsUseStandardButtonGroupExclusivity) {
   ASSERT_EQ(comp.status(), QQmlComponent::Ready) << comp.errorString().toStdString();
   std::unique_ptr<QObject> root{comp.create()};
   ASSERT_NE(root, nullptr);
-  QObject* first = root->property("first").value<QObject*>();
-  QObject* second = root->property("second").value<QObject*>();
+  auto* first = root->property("first").value<QObject*>();
+  auto* second = root->property("second").value<QObject*>();
   second->setProperty("checked", true);
   EXPECT_FALSE(first->property("checked").toBool());
   EXPECT_TRUE(second->property("checked").toBool());
@@ -4584,6 +4592,8 @@ TEST_F(QmlSmoke, HnSeparator_ReentrantUpdatesCoalesceAndSurviveReparenting) {
   EXPECT_EQ(counter.delivered, delivered_before_destruction);
 }
 
+// Keep the exhaustive geometry matrix in a single test scenario.
+// NOLINTNEXTLINE(readability-function-cognitive-complexity)
 TEST_F(QmlSmoke, HnSeparator_CompleteRectangleAlignmentAndInvalidGeometry) {
   using Holonight::SeparatorCrossAlignment;
   for (qreal dpr : {1.0, 1.25, 1.5, 1.75, 2.0}) {
@@ -4603,17 +4613,22 @@ TEST_F(QmlSmoke, HnSeparator_CompleteRectangleAlignmentAndInvalidGeometry) {
               const qreal minor = vertical ? rectangle.width() : rectangle.height();
               EXPECT_NEAR(minor * dpr * std::abs(scale), stroke, 1e-9);
               for (qreal boundary : {rectangle.left(), rectangle.right(), rectangle.top(), rectangle.bottom()}) {
-                const qreal physical = origin + boundary * scale * dpr;
+                const qreal physical = origin + (boundary * scale * dpr);
                 EXPECT_NEAR(physical, std::floor(physical + 0.5), 1e-9);
               }
-              const qreal leading = origin + (vertical ? rectangle.left() : rectangle.top()) * scale * dpr;
+              const qreal leading = origin + ((vertical ? rectangle.left() : rectangle.top()) * scale * dpr);
               const qreal trailing = leading + std::copysign(stroke, scale);
-              if (align == SeparatorCrossAlignment::Leading) EXPECT_NEAR(leading, std::floor(origin + 0.5), 1e-9);
-              if (align == SeparatorCrossAlignment::Trailing)
-                EXPECT_NEAR(trailing, std::floor(origin + 30.3 * scale * dpr + 0.5), 1e-9);
-              if (align == SeparatorCrossAlignment::Center)
-                EXPECT_NEAR(leading, std::floor(origin + (30.3 * scale * dpr - std::copysign(stroke, scale)) / 2 + 0.5),
+              if (align == SeparatorCrossAlignment::Leading) {
+                EXPECT_NEAR(leading, std::floor(origin + 0.5), 1e-9);
+              }
+              if (align == SeparatorCrossAlignment::Trailing) {
+                EXPECT_NEAR(trailing, std::floor(origin + (30.3 * scale * dpr) + 0.5), 1e-9);
+              }
+              if (align == SeparatorCrossAlignment::Center) {
+                EXPECT_NEAR(leading,
+                            std::floor(origin + (((30.3 * scale * dpr) - std::copysign(stroke, scale)) / 2) + 0.5),
                             1e-9);
+              }
             }
           }
         }

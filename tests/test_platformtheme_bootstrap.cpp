@@ -11,21 +11,23 @@
 #include <QTemporaryDir>
 
 #include <cstdio>
+#include <print>
 
 int main(int argc, char* argv[]) {
   QGuiApplication application{argc, argv};
 
-  const QPalette palette = application.palette();
-  if (!palette.color(QPalette::Window).isValid() || application.font().family().isEmpty() ||
-      application.styleHints()->colorScheme() == Qt::ColorScheme::Unknown) {
+  const QPalette palette = QGuiApplication::palette();
+  if (!palette.color(QPalette::Window).isValid() || QGuiApplication::font().family().isEmpty() ||
+      QGuiApplication::styleHints()->colorScheme() == Qt::ColorScheme::Unknown) {
     return 1;
   }
 
   QTemporaryDir fixture;
   const QString primary = QIcon::themeName();
   if (!fixture.isValid() || primary.isEmpty() || !QDir{fixture.path()}.mkpath(primary + QStringLiteral("/places/24")) ||
-      !QDir{fixture.path()}.mkpath(QStringLiteral("hn-bootstrap-parent/16x16/places")))
+      !QDir{fixture.path()}.mkpath(QStringLiteral("hn-bootstrap-parent/16x16/places"))) {
     return 2;
+  }
   const auto write_file = [](const QString& path, const QByteArray& bytes) {
     QFile file{path};
     return file.open(QIODevice::WriteOnly) && file.write(bytes) == bytes.size();
@@ -50,18 +52,20 @@ int main(int argc, char* argv[]) {
   QIcon::setThemeSearchPaths({fixture.path()});
   const QImage folder = QIcon::fromTheme(QStringLiteral("folder")).pixmap(QSize{16, 16}).toImage();
   if (folder.isNull() || folder.pixelColor(8, 8) != QColor{Qt::red}) {
-    std::fprintf(stderr, "primary theme: %s, folder color: %s\n", qPrintable(primary),
+    std::println(stderr, "primary theme: {}, folder color: {}", qPrintable(primary),
                  folder.isNull() ? "none" : qPrintable(folder.pixelColor(8, 8).name()));
     return 5;
   }
   const QImage inherited = QIcon::fromTheme(QStringLiteral("hn-bootstrap-symbolic")).pixmap(QSize{16, 16}).toImage();
-  if (inherited.isNull()) return 6;
-  QPalette test_palette = application.palette();
+  if (inherited.isNull()) {
+    return 6;
+  }
+  QPalette test_palette = QGuiApplication::palette();
   test_palette.setColor(QPalette::Active, QPalette::Text, Qt::red);
-  application.setPalette(test_palette);
+  QGuiApplication::setPalette(test_palette);
   const QImage icon = QIcon::fromTheme(QStringLiteral("hn-bootstrap-symbolic")).pixmap(QSize{16, 16}).toImage();
   if (icon.isNull() || icon.pixelColor(8, 8) != QColor{Qt::red}) {
-    std::fprintf(stderr, "theme icon: null=%d color=%s\n", icon.isNull(),
+    std::println(stderr, "theme icon: null={:d} color={}", static_cast<int>(icon.isNull()),
                  icon.isNull() ? "none" : qPrintable(icon.pixelColor(8, 8).name()));
     return 4;
   }

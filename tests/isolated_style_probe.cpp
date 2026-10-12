@@ -17,9 +17,32 @@
 
 #include <memory>
 
+static QJsonObject objectOrigins(QObject* root) {
+  QJsonObject origins;
+  if (root == nullptr) {
+    return origins;
+  }
+  for (const auto& name : {"button", "field", "basic", "fusion"}) {
+    auto* object = root->findChild<QObject*>(name);
+    if (object == nullptr) {
+      continue;
+    }
+    QJsonArray urls;
+    auto* data = QQmlData::get(object);
+    for (auto* context = data != nullptr ? data->context : nullptr; context != nullptr;
+         context = context->parent().data()) {
+      urls.append(context->url().toString());
+    }
+    origins[name] = urls;
+  }
+  return origins;
+}
+
 int main(int argc, char** argv) {
   QGuiApplication app(argc, argv);
-  if (qEnvironmentVariable("UQC_MODE") == "imperative") QQuickStyle::setStyle("Fusion");
+  if (qEnvironmentVariable("UQC_MODE") == "imperative") {
+    QQuickStyle::setStyle("Fusion");
+  }
   // Qt embeds its IndirectBasic forwarding module in the Controls plugin. Copy
   // that Qt-owned qmldir into the filtered tree instead of adding a resource root.
   const auto qtRoot = qEnvironmentVariable("UQC_QT_MODULES");
@@ -31,28 +54,23 @@ int main(int argc, char** argv) {
   QFile indirect(":/qt-project.org/imports/QtQuick/Controls/IndirectBasic/qmldir");
   if (indirect.exists()) {
     const auto destination = qtRoot + "/QtQuick/Controls/IndirectBasic";
-    if (!QDir().mkpath(destination)) return 2;
-    if (!QFile::exists(destination + "/qmldir") && !indirect.copy(destination + "/qmldir")) return 2;
+    if (!QDir().mkpath(destination)) {
+      return 2;
+    }
+    if (!QFile::exists(destination + "/qmldir") && !indirect.copy(destination + "/qmldir")) {
+      return 2;
+    }
   }
   QQmlEngine engine;
   engine.setImportPathList({qEnvironmentVariable("UQC_FIXTURE"), qEnvironmentVariable("UQC_QT_MODULES")});
   QQmlComponent component(&engine, QUrl::fromLocalFile(qEnvironmentVariable("UQC_SOURCE")),
                           QQmlComponent::PreferSynchronous);
   std::unique_ptr<QObject> root(component.isReady() ? component.create() : nullptr);
-  QJsonObject origins;
-  if (root) {
-    for (const auto& name : {"button", "field", "basic", "fusion"}) {
-      auto* object = root->findChild<QObject*>(name);
-      if (!object) continue;
-      QJsonArray urls;
-      auto* data = QQmlData::get(object);
-      for (auto context = data ? data->context : nullptr; context; context = context->parent().data())
-        urls.append(context->url().toString());
-      origins[name] = urls;
-    }
-  }
+  const QJsonObject origins = objectOrigins(root.get());
   QFile maps("/proc/self/maps");
-  if (!maps.open(QIODevice::ReadOnly)) return 2;
+  if (!maps.open(QIODevice::ReadOnly)) {
+    return 2;
+  }
   QJsonArray libraries;
   QStringList seen;
   for (const auto& line : maps.readAll().split('\n')) {

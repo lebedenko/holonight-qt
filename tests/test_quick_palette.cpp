@@ -21,15 +21,18 @@
 namespace {
 Holonight::ColorTokens appearanceTokens();
 
-QColor logicalPixel(const QImage& image, const QQuickWindow* window, int x, int y) {
+QColor logicalPixel(const QImage& image, const QQuickWindow* window, int pixel_x, int pixel_y) {
   // grabWindow() returns physical pixels, but the software backend leaves the
   // image's DPR metadata at 1. Use the window's actual rendering ratio.
-  return image.pixelColor(qRound(x * window->devicePixelRatio()), qRound(y * window->devicePixelRatio()));
+  return image.pixelColor(qRound(pixel_x * window->devicePixelRatio()), qRound(pixel_y * window->devicePixelRatio()));
 }
 
 class QuickPalette : public testing::Test {
  protected:
+  // GTest-derived tests intentionally share protected fixture state.
+  // NOLINTNEXTLINE(cppcoreguidelines-non-private-member-variables-in-classes)
   QPalette saved = QGuiApplication::palette();
+  // NOLINTNEXTLINE(cppcoreguidelines-non-private-member-variables-in-classes)
   QQmlEngine engine;
   void SetUp() override {
     QCoreApplication::processEvents();
@@ -94,7 +97,9 @@ TEST_F(QuickPalette, FallbackPickerFooterUsesAppearanceAndPreservesLightOverride
     QTest::qWait(100);
     QObject* implementation = nullptr;
     for (auto* child : object->findChildren<QObject*>()) {
-      if (child->inherits((QByteArray("QQuick") + type + "Impl").constData())) implementation = child;
+      if (child->inherits((QByteArray("QQuick") + type + "Impl").constData())) {
+        implementation = child;
+      }
     }
     ASSERT_TRUE(implementation) << "Expected the actual Qt Quick fallback dialog implementation";
     auto* footer = implementation->property("footer").value<QQuickItem*>();
@@ -394,13 +399,14 @@ Window {
   EXPECT_EQ(standard->property("background").value<QQuickItem*>()->property("color").value<QColor>(),
             QColor("#010203"));
   EXPECT_EQ(window->findChild<QObject*>("newLabel")->property("color").value<QColor>(), expected.textPrimary);
-  for (const char* name : {"newBar", "newPopup"})
+  for (const char* name : {"newBar", "newPopup"}) {
     EXPECT_EQ(window->findChild<QObject*>(name)
                   ->property("background")
                   .value<QQuickItem*>()
                   ->property("color")
                   .value<QColor>(),
               expected.surfaceRaised);
+  }
   EXPECT_EQ(QGuiApplication::palette().resolveMask(), mask);
   EXPECT_EQ(QGuiApplication::palette().color(QPalette::Base), QColor("#010203"));
   ASSERT_TRUE(HoloNight::Config::writeAtomically(original, path));
@@ -831,8 +837,8 @@ TEST_F(QuickPalette, SemanticIconsFollowApplicationControlSelectionAndAlphaUpdat
   ASSERT_TRUE(QTest::qWaitForWindowExposed(window));
   auto* icon = object->findChild<QObject*>("icon");
   ASSERT_TRUE(icon);
-  auto pixel = [&](int x) {
-    return logicalPixel(window->grabWindow(), window, x * icon->property("size").toInt() / 32, 8);
+  auto pixel = [&](int pixel_x) {
+    return logicalPixel(window->grabWindow(), window, pixel_x * icon->property("size").toInt() / 32, 8);
   };
   for (const auto background : {QColor(Qt::black), QColor(Qt::white)}) {
     QPalette palette;

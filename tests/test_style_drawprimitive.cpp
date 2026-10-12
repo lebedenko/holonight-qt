@@ -20,8 +20,12 @@
 
 class DrawPrimitiveTest : public ::testing::Test {
  protected:
+  // GTest-derived tests intentionally share protected fixture state.
+  // NOLINTNEXTLINE(cppcoreguidelines-non-private-member-variables-in-classes)
   HoloniightStyle style_;
+  // NOLINTNEXTLINE(cppcoreguidelines-non-private-member-variables-in-classes)
   QPixmap pixmap_ = QPixmap{100, 100};
+  // NOLINTNEXTLINE(cppcoreguidelines-non-private-member-variables-in-classes)
   QPainter painter_ = QPainter{&pixmap_};
 
   QStyleOption makeOpt(QStyle::State state = QStyle::State_Enabled) {

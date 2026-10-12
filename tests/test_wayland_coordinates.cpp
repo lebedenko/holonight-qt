@@ -79,7 +79,9 @@ TEST(WaylandCoordinates, LogicalGeometryAcrossProtocolBoundary) {
   QCoreApplication::sendEvent(view, &scale_change);
   QTest::qWait(100);
   EXPECT_EQ(view->height(), 80);
-  for (int iteration = 0; iteration < 10; ++iteration) QCoreApplication::sendEvent(view, &scale_change);
+  for (int iteration = 0; iteration < 10; ++iteration) {
+    QCoreApplication::sendEvent(view, &scale_change);
+  }
   QTest::qWait(50);
   QHighDpiScaling::setGlobalFactor(scale);
   QCoreApplication::sendEvent(view, &scale_change);

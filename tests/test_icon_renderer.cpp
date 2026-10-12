@@ -18,6 +18,7 @@
 #include <QUrl>
 #include <QUrlQuery>
 
+#include <array>
 #include <gtest/gtest.h>
 
 namespace {
@@ -179,7 +180,7 @@ TEST(HnIconImageProvider, RejectsOversizedSvgSource) {
   QTemporaryDir dir;
   ASSERT_TRUE(dir.isValid());
   const QString path = dir.filePath(QStringLiteral("icon.svg"));
-  writeFile(path, QByteArray(1024 * 1024 + 1, ' '));
+  writeFile(path, QByteArray((1024 * 1024) + 1, ' '));
 
   Holonight::HnIconImageProvider provider;
   const QImage image = provider.requestImage(providerId(path, 24, QColor{QStringLiteral("#ff0000")}), nullptr, {});
@@ -209,6 +210,8 @@ TEST(HnIconImageProvider, InheritedThemeAndSourceChangesInvalidateImages) {
   ASSERT_TRUE(dir.isValid());
   const auto old_paths = QIcon::themeSearchPaths();
   const auto old_theme = QIcon::themeName();
+  // This local aggregate restores Qt global state and is never copied.
+  // NOLINTNEXTLINE(cppcoreguidelines-special-member-functions)
   struct Restore {
     QStringList paths;
     QString theme;
@@ -216,7 +219,7 @@ TEST(HnIconImageProvider, InheritedThemeAndSourceChangesInvalidateImages) {
       QIcon::setThemeSearchPaths(paths);
       QIcon::setThemeName(theme);
     }
-  } restore{old_paths, old_theme};
+  } restore{.paths = old_paths, .theme = old_theme};
   for (const auto* theme : {"child", "parent", "other"}) {
     ASSERT_TRUE(QDir(dir.path()).mkpath(QString(theme) + "/16x16/actions"));
     writeFile(dir.filePath(QString(theme) + "/index.theme"),
@@ -230,15 +233,15 @@ TEST(HnIconImageProvider, InheritedThemeAndSourceChangesInvalidateImages) {
   QIcon::setThemeName("child");
   ASSERT_TRUE(QIcon::hasThemeIcon("uqc-inherited"));
   Holonight::HnIconImageProvider provider;
-  const auto id = providerId("uqc-inherited", 50, QColor("#ff0000"));
-  const auto first = provider.requestImage(id, nullptr, {});
+  const auto request_id = providerId("uqc-inherited", 50, QColor("#ff0000"));
+  const auto first = provider.requestImage(request_id, nullptr, {});
   EXPECT_FALSE(first.isNull());
   writeFile(path, QByteArray(kSemanticSvg).replace("width=\"10\"", "width=\"1\""));
-  const auto changed = provider.requestImage(id, nullptr, {});
+  const auto changed = provider.requestImage(request_id, nullptr, {});
   EXPECT_NE(first, changed);
   writeFile(dir.filePath("other/16x16/actions/uqc-inherited.svg"), QByteArray{kHardcodedMonochromeSvg});
   QIcon::setThemeName("other");
-  EXPECT_NE(changed, provider.requestImage(id, nullptr, {}));
+  EXPECT_NE(changed, provider.requestImage(request_id, nullptr, {}));
   EXPECT_TRUE(provider.requestImage(providerId("uqc-missing", 24, Qt::white), nullptr, {}).isNull());
   writeFile(dir.filePath("other/16x16/actions/uqc-missing.svg"), QByteArray{kSemanticSvg});
   EXPECT_FALSE(provider.requestImage(providerId("uqc-missing", 24, Qt::white), nullptr, {}).isNull());
@@ -249,6 +252,8 @@ TEST(HnIconImageProvider, SeparatesSymbolicMaskFromOrdinaryArtworkWithIdenticalB
   ASSERT_TRUE(dir.isValid());
   const auto old_paths = QIcon::themeSearchPaths();
   const auto old_theme = QIcon::themeName();
+  // This local aggregate restores Qt global state and is never copied.
+  // NOLINTNEXTLINE(cppcoreguidelines-special-member-functions)
   struct Restore {
     QStringList paths;
     QString theme;
@@ -256,7 +261,7 @@ TEST(HnIconImageProvider, SeparatesSymbolicMaskFromOrdinaryArtworkWithIdenticalB
       QIcon::setThemeSearchPaths(paths);
       QIcon::setThemeName(theme);
     }
-  } restore{old_paths, old_theme};
+  } restore{.paths = old_paths, .theme = old_theme};
   ASSERT_TRUE(QDir{dir.path()}.mkpath(QStringLiteral("fixture/24x24/actions")));
   writeFile(dir.filePath(QStringLiteral("fixture/index.theme")),
             "[Icon Theme]\nName=Fixture\nDirectories=24x24/actions\n[24x24/actions]\nSize=24\nType=Fixed\n");
@@ -285,6 +290,8 @@ TEST(HnIconEngine, SelectsSizeModeAndPaletteFromInheritedTheme) {
   const auto old_paths = QIcon::themeSearchPaths();
   const auto old_theme = QIcon::themeName();
   const auto old_palette = QGuiApplication::palette();
+  // This local aggregate restores Qt global state and is never copied.
+  // NOLINTNEXTLINE(cppcoreguidelines-special-member-functions)
   struct Restore {
     QStringList paths;
     QString theme;
@@ -294,7 +301,7 @@ TEST(HnIconEngine, SelectsSizeModeAndPaletteFromInheritedTheme) {
       QIcon::setThemeName(theme);
       QGuiApplication::setPalette(palette);
     }
-  } restore{old_paths, old_theme, old_palette};
+  } restore{.paths = old_paths, .theme = old_theme, .palette = old_palette};
   ASSERT_TRUE(QDir{dir.path()}.mkpath(QStringLiteral("child")));
   writeFile(dir.filePath(QStringLiteral("child/index.theme")),
             "[Icon Theme]\nName=Child\nInherits=parent\nDirectories=\n");
@@ -412,9 +419,9 @@ TEST(HnIconImageProvider, AccentOnlyAndAlphaUpdatesPreserveLegacyAndOriginal) {
   const auto legacy = providerId(path, 24, Qt::red);
   EXPECT_EQ(provider.requestImage(legacy, nullptr, {}).pixelColor(5, 5), QColor("#123456"));
   for (const auto color : {QColor(Qt::cyan), QColor(Qt::yellow), QColor(0, 255, 255, 128), QColor(Qt::cyan)}) {
-    const auto id =
+    const auto request_id =
         legacy + "&accent=" + QString::fromLatin1(QUrl::toPercentEncoding(color.name(QColor::HexArgb))) + "&dpr=2";
-    const auto image = provider.requestImage(id, nullptr, {48, 48});
+    const auto image = provider.requestImage(request_id, nullptr, {48, 48});
     EXPECT_EQ(image.size(), QSize(48, 48));
     EXPECT_NEAR(image.pixelColor(10, 10).alpha(), color.alpha(), 1);
     EXPECT_NEAR(image.pixelColor(10, 10).green(), color.green(), 1);
@@ -424,9 +431,13 @@ TEST(HnIconImageProvider, AccentOnlyAndAlphaUpdatesPreserveLegacyAndOriginal) {
             QColor("#123456"));
 }
 
+// Keep the complete state/provenance matrix together for this scenario.
+// NOLINTNEXTLINE(readability-function-cognitive-complexity)
 TEST(HnIconEngine, AllRolesAcrossPaletteStateSizeAndDpr) {
 #if QT_VERSION >= QT_VERSION_CHECK(6, 6, 0)
   const auto saved = QGuiApplication::palette();
+  // This local aggregate restores Qt global state and is never copied.
+  // NOLINTNEXTLINE(cppcoreguidelines-special-member-functions)
   struct Restore {
     QPalette palette;
     ~Restore() { QGuiApplication::setPalette(palette); }
@@ -435,11 +446,14 @@ TEST(HnIconEngine, AllRolesAcrossPaletteStateSizeAndDpr) {
   const QStringList roles{"Text",         "Highlight", "PositiveText", "NeutralText",
                           "NegativeText", "Accent",    "Background",   "HighlightedText"};
   QByteArray svg = "<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 80 10'><style id='current-color-scheme'>";
-  for (const auto& role : roles) svg += ".ColorScheme-" + role.toUtf8() + "{color:#123456}";
+  for (const auto& role : roles) {
+    svg += ".ColorScheme-" + role.toUtf8() + "{color:#123456}";
+  }
   svg += "</style>";
-  for (int i = 0; i < roles.size(); ++i)
+  for (int i = 0; i < roles.size(); ++i) {
     svg += "<rect class='ColorScheme-" + roles[i].toUtf8() + "' fill='currentColor' x='" + QByteArray::number(i * 10) +
            "' width='10' height='10'/>";
+  }
   svg += "</svg>";
   const auto path = dir.filePath("all-roles.svg");
   writeFile(path, svg);
@@ -454,14 +468,14 @@ TEST(HnIconEngine, AllRolesAcrossPaletteStateSizeAndDpr) {
     palette.setColor(QPalette::Active, QPalette::Accent, QColor("#12bb77"));
     palette.setColor(QPalette::Active, QPalette::Highlight, QColor("#2255bb"));
     QGuiApplication::setPalette(palette);
-    const Holonight::IconSemanticColors base{palette.color(QPalette::Active, QPalette::Text),
-                                             palette.color(QPalette::Active, QPalette::Highlight),
-                                             statuses.success,
-                                             statuses.warning,
-                                             statuses.error,
-                                             palette.color(QPalette::Active, QPalette::Accent),
-                                             tokens.background,
-                                             tokens.onPrimary};
+    const Holonight::IconSemanticColors base{.text = palette.color(QPalette::Active, QPalette::Text),
+                                             .highlight = palette.color(QPalette::Active, QPalette::Highlight),
+                                             .positive = statuses.success,
+                                             .neutral = statuses.warning,
+                                             .negative = statuses.error,
+                                             .accent = palette.color(QPalette::Active, QPalette::Accent),
+                                             .background = tokens.background,
+                                             .highlightedText = tokens.onPrimary};
     auto disabled = base;
     disabled.text = tokens.textDisabled;
     disabled.highlight = palette.color(QPalette::Disabled, QPalette::Highlight);
@@ -471,38 +485,51 @@ TEST(HnIconEngine, AllRolesAcrossPaletteStateSizeAndDpr) {
     disabled.neutral = Holonight::blendIconColor(statuses.warning, tokens.background, 0.5);
     disabled.negative = Holonight::blendIconColor(statuses.error, tokens.background, 0.5);
     for (const auto mode : {QIcon::Normal, QIcon::Selected, QIcon::Disabled}) {
-      const auto state = mode == QIcon::Selected   ? Holonight::IconState::Selected
-                         : mode == QIcon::Disabled ? Holonight::IconState::Disabled
-                                                   : Holonight::IconState::Normal;
+      auto state = Holonight::IconState::Normal;
+      if (mode == QIcon::Selected) {
+        state = Holonight::IconState::Selected;
+      } else if (mode == QIcon::Disabled) {
+        state = Holonight::IconState::Disabled;
+      }
       const auto colors = Holonight::resolveIconColors(base, disabled, state);
-      const QColor expected[]{colors.text,     colors.highlight, colors.positive,   colors.neutral,
-                              colors.negative, colors.accent,    colors.background, colors.highlightedText};
-      for (int extent : {24, 32})
+      const std::array expected{colors.text,     colors.highlight, colors.positive,   colors.neutral,
+                                colors.negative, colors.accent,    colors.background, colors.highlightedText};
+      for (int extent : {24, 32}) {
         for (int dpr : {1, 2}) {
           SCOPED_TRACE(
               QString("light=%1 mode=%2 size=%3 dpr=%4").arg(light).arg(mode).arg(extent).arg(dpr).toStdString());
           const QSize pixels{extent * dpr * 8, extent * dpr};
           const auto image = engine.scaledPixmap({extent * 8, extent}, mode, QIcon::On, dpr).toImage();
           ASSERT_EQ(image.size(), pixels);
-          for (int i = 0; i < 8; ++i)
-            EXPECT_EQ(image.pixelColor((i * extent + extent / 2) * dpr, extent * dpr / 2),
-                      QColor::fromRgba(expected[i].rgba()));
+          for (int i = 0; i < 8; ++i) {
+            EXPECT_EQ(image.pixelColor(((i * extent) + (extent / 2)) * dpr, extent * dpr / 2),
+                      QColor::fromRgba(expected.at(i).rgba()));
+          }
           QUrlQuery query;
           const QStringList keys{"color",    "highlight", "positive",   "neutral",
                                  "negative", "accent",    "background", "highlightedText"};
-          for (int i = 0; i < 8; ++i) query.addQueryItem(keys[i], expected[i].name(QColor::HexArgb));
+          for (int i = 0; i < 8; ++i) {
+            query.addQueryItem(keys[i], expected.at(i).name(QColor::HexArgb));
+          }
           query.addQueryItem("dpr", QString::number(dpr));
           query.addQueryItem("size", QString::number(extent));
-          const auto id = QString::fromLatin1(QUrl::toPercentEncoding(path)) + "?" + query.toString(QUrl::FullyEncoded);
-          const auto quick = provider.requestImage(id, nullptr, pixels);
-          for (int y = 0; y < pixels.height(); ++y)
-            for (int x = 0; x < pixels.width(); ++x) EXPECT_EQ(quick.pixel(x, y), image.pixel(x, y));
+          const auto request_id =
+              QString::fromLatin1(QUrl::toPercentEncoding(path)) + "?" + query.toString(QUrl::FullyEncoded);
+          const auto quick = provider.requestImage(request_id, nullptr, pixels);
+          for (int pixel_y = 0; pixel_y < pixels.height(); ++pixel_y) {
+            for (int pixel_x = 0; pixel_x < pixels.width(); ++pixel_x) {
+              EXPECT_EQ(quick.pixel(pixel_x, pixel_y), image.pixel(pixel_x, pixel_y));
+            }
+          }
         }
+      }
     }
   }
 #endif
 }
 
+// Keep the complete state/provenance matrix together for this scenario.
+// NOLINTNEXTLINE(readability-function-cognitive-complexity)
 TEST(IconRenderer, PaperGlyphPrototypePreservesShadingGeometryAndSeparation) {
   QFile file(QStringLiteral(HOLONIGHT_ICON_FIXTURE_DIR "/application-xml.svg"));
   ASSERT_TRUE(file.open(QIODevice::ReadOnly));
@@ -519,30 +546,37 @@ TEST(IconRenderer, PaperGlyphPrototypePreservesShadingGeometryAndSeparation) {
     for (const auto state :
          {Holonight::IconState::Normal, Holonight::IconState::Selected, Holonight::IconState::Disabled}) {
       const auto resolved = Holonight::resolveIconColors(colors, disabled, state);
-      for (int size : {24, 32})
+      for (int size : {24, 32}) {
         for (int dpr : {1, 2}) {
           const QSize pixels{size * dpr, size * dpr};
           const auto image = Holonight::IconRenderer::renderSvg(svg, pixels, resolved, true);
           const auto authored = Holonight::IconRenderer::renderSvg(svg, pixels, {});
           ASSERT_FALSE(image.isNull());
-          int paper = 0, glyph = 0;
+          int paper = 0;
+          int glyph = 0;
           const auto expected_paper = QColor::fromRgba(resolved.text.rgba());
           const auto expected_glyph = QColor::fromRgba(resolved.accent.rgba());
-          for (int y = 0; y < pixels.height(); ++y)
-            for (int x = 0; x < pixels.width(); ++x) {
-              const auto pixel = image.pixelColor(x, y);
-              EXPECT_EQ(pixel.alpha(), authored.pixelColor(x, y).alpha());
-              if (pixel == expected_paper) ++paper;
+          for (int pixel_y = 0; pixel_y < pixels.height(); ++pixel_y) {
+            for (int pixel_x = 0; pixel_x < pixels.width(); ++pixel_x) {
+              const auto pixel = image.pixelColor(pixel_x, pixel_y);
+              EXPECT_EQ(pixel.alpha(), authored.pixelColor(pixel_x, pixel_y).alpha());
+              if (pixel == expected_paper) {
+                ++paper;
+              }
               // At 24 px glyph interiors may include antialiasing against paper.
               const auto distance = [&](const QColor& other) {
                 return std::abs(pixel.red() - other.red()) + std::abs(pixel.green() - other.green()) +
                        std::abs(pixel.blue() - other.blue());
               };
-              if (pixel.alpha() > 240 && distance(expected_glyph) < distance(expected_paper)) ++glyph;
+              if (pixel.alpha() > 240 && distance(expected_glyph) < distance(expected_paper)) {
+                ++glyph;
+              }
             }
+          }
           EXPECT_GT(paper, 0);
           EXPECT_GT(glyph, 0);
         }
+      }
     }
   }
   EXPECT_EQ(Holonight::IconRenderer::applySemanticColors(svg, semanticColors()).count("opacity:0.2;fill:#000000"), 2);
@@ -590,5 +624,7 @@ TEST(IconRenderer, RetainsGradientsAndCombinesSemanticAlphaWithAuthoredOpacity) 
   const auto authored = Holonight::IconRenderer::renderSvg(svg, {30, 10}, {});
   EXPECT_NEAR(image.pixelColor(5, 5).alpha(), 64, 1);
   EXPECT_NEAR(image.pixelColor(5, 5).green(), 255, 1);
-  for (int x = 10; x < 30; ++x) EXPECT_EQ(image.pixelColor(x, 5), authored.pixelColor(x, 5));
+  for (int pixel_x = 10; pixel_x < 30; ++pixel_x) {
+    EXPECT_EQ(image.pixelColor(pixel_x, 5), authored.pixelColor(pixel_x, 5));
+  }
 }

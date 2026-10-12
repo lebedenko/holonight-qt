@@ -4,6 +4,7 @@
 #include "holonight/palette.h"
 
 #include <algorithm>
+#include <array>
 #include <cmath>
 #include <gtest/gtest.h>
 
@@ -25,7 +26,7 @@ class ContrastTest : public ::testing::Test {
 };
 
 TEST(BrandForegroundContrast, EveryBuiltInSchemeMeetsTextContrastOnCanonicalSurfaces) {
-  const Holonight::ThemeSchemeKind schemes[] = {
+  const std::array schemes{
       Holonight::ThemeSchemeKind::HoloNightDark,    Holonight::ThemeSchemeKind::HoloNightLight,
       Holonight::ThemeSchemeKind::HoloNightMocha,   Holonight::ThemeSchemeKind::HoloNightLatte,
       Holonight::ThemeSchemeKind::HoloNightStorm,   Holonight::ThemeSchemeKind::HoloNightDay,
@@ -45,7 +46,7 @@ TEST(BrandForegroundContrast, EveryBuiltInSchemeMeetsTextContrastOnCanonicalSurf
 }
 
 TEST(NordAndEverforestContrast, TextStatusAndInteractionRolesMeetWcagTargets) {
-  const Holonight::ThemeSchemeKind schemes[] = {
+  const std::array schemes{
       Holonight::ThemeSchemeKind::HoloNightFrost,
       Holonight::ThemeSchemeKind::HoloNightSnow,
       Holonight::ThemeSchemeKind::HoloNightCanopy,
@@ -53,7 +54,7 @@ TEST(NordAndEverforestContrast, TextStatusAndInteractionRolesMeetWcagTargets) {
   };
   for (const auto scheme : schemes) {
     const Holonight::ColorTokens tok = Holonight::tokensForScheme(scheme);
-    const QColor surfaces[] = {tok.background, tok.surface, tok.surfaceElevated, tok.surfaceRaised};
+    const std::array surfaces{tok.background, tok.surface, tok.surfaceElevated, tok.surfaceRaised};
     for (const QColor& surface : surfaces) {
       EXPECT_GE(contrastRatio(tok.textPrimary, surface), 4.5);
       EXPECT_GE(contrastRatio(tok.textSecondary, surface), 4.5);
@@ -71,7 +72,7 @@ TEST(NordAndEverforestContrast, TextStatusAndInteractionRolesMeetWcagTargets) {
 // ── Text contrast: WCAG 1.4.3 requires ≥4.5:1 for normal text ──────────────
 
 TEST(NordAndEverforestContrast, LightSurfaceElevationDarkensInOrder) {
-  const Holonight::ThemeSchemeKind schemes[] = {
+  const std::array schemes{
       Holonight::ThemeSchemeKind::HoloNightSnow,
       Holonight::ThemeSchemeKind::HoloNightGlade,
   };

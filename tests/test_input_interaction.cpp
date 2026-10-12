@@ -55,8 +55,10 @@ class MouseMoveRecorder : public QObject {
   [[nodiscard]] std::optional<QPointF> globalPosition() const { return global_position_; }
 
  protected:
-  bool eventFilter(QObject*, QEvent* event) override {
+  bool eventFilter(QObject* /*watched*/, QEvent* event) override {
     if (event->type() == QEvent::MouseMove) {
+      // The event type above guarantees the Qt event subtype.
+      // NOLINTNEXTLINE(cppcoreguidelines-pro-type-static-cast-downcast)
       global_position_ = static_cast<QMouseEvent*>(event)->globalPosition();
     }
     return false;
