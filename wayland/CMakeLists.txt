@@ -37,8 +37,9 @@ target_include_directories(holonight_wayland
         $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
     PRIVATE
         ${CMAKE_CURRENT_BINARY_DIR}
-        $<TARGET_PROPERTY:Qt6::GuiPrivate,INTERFACE_INCLUDE_DIRECTORIES>
 )
+target_include_directories(holonight_wayland SYSTEM PRIVATE
+    $<TARGET_PROPERTY:Qt6::GuiPrivate,INTERFACE_INCLUDE_DIRECTORIES>)
 target_compile_options(holonight_wayland PRIVATE "-isystem${CMAKE_CURRENT_BINARY_DIR}")
 target_link_libraries(holonight_wayland
     PUBLIC

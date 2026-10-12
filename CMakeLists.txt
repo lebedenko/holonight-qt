@@ -14,8 +14,8 @@ install(FILES LICENSE THIRD_PARTY_NOTICES.md LICENSES/GPL-3.0-or-later.txt LICEN
 include(CMakePackageConfigHelpers)
 
 include("${CMAKE_CURRENT_SOURCE_DIR}/tooling/dependencies.cmake")
-find_package(Qt6 6.11 REQUIRED COMPONENTS Core Gui Widgets Quick QuickControls2 QuickShapes Svg)
-find_package(Qt6 REQUIRED COMPONENTS GuiPrivate)
+find_package(Qt6 6.11 REQUIRED COMPONENTS Core Gui Widgets Quick QuickControls2 QuickShapes Svg Qml)
+find_package(Qt6 ${Qt6_VERSION} EXACT REQUIRED COMPONENTS GuiPrivate)
 find_package(HoloNightConfig CONFIG REQUIRED)
 
 get_target_property(HOLONIGHT_CONFIG_RUNTIME_LIBRARY HoloNight::Config IMPORTED_LOCATION_DEBUG)
@@ -33,6 +33,7 @@ option(BUILD_TESTS "Build GTest suite" OFF)
 option(BUILD_DEMO "Build visual demo app" OFF)
 option(BUILD_CONTROLS_GALLERY "Build the shared controls gallery" OFF)
 option(BUILD_QT5_PROBES "Build non-installed Qt 5 compatibility discovery targets" OFF)
+option(BUILD_SYNTAX_THEMES "Generate and install syntax highlighting themes" ON)
 option(BUILD_WAYLAND "Build the optional Wayland layer-surface component" ON)
 
 if(BUILD_WAYLAND)
@@ -45,7 +46,11 @@ endif()
 
 if(BUILD_TESTS)
   find_package(Qt6 6.11 REQUIRED COMPONENTS Test)
-  find_package(GTest REQUIRED)
+  find_package(Qt6 ${Qt6_VERSION} EXACT REQUIRED COMPONENTS QmlPrivate)
+  find_package(GTest 1.14 CONFIG REQUIRED)
+  if(NOT TARGET GTest::gtest)
+    message(FATAL_ERROR "Installed GTest must provide GTest::gtest")
+  endif()
   enable_testing()
 endif()
 

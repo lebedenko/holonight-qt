@@ -1,0 +1,126 @@
+{
+  "work_package": "EDM-006",
+  "date": "2026-10-12",
+  "audit_baseline": "680d709de4d1d8e8697d6a69a99f15ef891ef7b2",
+  "implementation_baseline": "2a6fcb0ef29d20e3413f425914ec1cf171b82306",
+  "config_revision": "0ccd25f323662f50a47bb048be636160f2b7c135",
+  "bundle": "2.0.0",
+  "images": {
+    "build": "ghcr.io/lebedenko/holonight-deps@sha256:37ca051c39d1688d6413c47d94b8c0f221152dac6981ec67d155f2c43ea17b40",
+    "licensing": "docker.io/fsfe/reuse@sha256:85462a75c0f8efda09ddd190b92816b70e7662577c8427429e11e1b9f25a992e"
+  },
+  "provider": {
+    "source_content_sha256": "0329c0f5df87b1fecde6253a521ad2984a40c2ca89c91c5d72e8926887ec8a05",
+    "build_type": "Debug",
+    "options": [
+      "-DBUILD_TESTING=OFF"
+    ],
+    "toolchain": {
+      "cc": {
+        "command": [
+          "cc"
+        ],
+        "version": "cc (GCC) 16.2.1 20260810\nCopyright (C) 2026 Free Software Foundation, Inc.\nThis is free software; see the source for copying conditions.  There is NO\nwarranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE."
+      },
+      "cmake": {
+        "command": [
+          "cmake"
+        ],
+        "version": "cmake version 4.4.3\n\nCMake suite maintained and supported by Kitware (kitware.com/cmake)."
+      },
+      "cxx": {
+        "command": [
+          "c++"
+        ],
+        "version": "c++ (GCC) 16.2.1 20260810\nCopyright (C) 2026 Free Software Foundation, Inc.\nThis is free software; see the source for copying conditions.  There is NO\nwarranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE."
+      },
+      "ninja": {
+        "command": [
+          "ninja"
+        ],
+        "version": "1.13.2"
+      }
+    },
+    "resolved_external_versions": [
+      "CMAKE_CXX_COMPILER_VERSION=16.2.1",
+      "CMAKE_C_COMPILER_VERSION=16.2.1",
+      "External_2_holonight_qt_VERSION=1.26.0",
+      "External_3_holonight_qt_VERSION=1.26.0",
+      "KF6SyntaxHighlighting_VERSION=6.30.0",
+      "Qt6Core_VERSION=6.11.2",
+      "Qt6GuiPrivate_VERSION=6.11.2",
+      "Qt6Gui_VERSION=6.11.2",
+      "Qt6QuickControls2Private_VERSION=6.11.2",
+      "Qt6QuickControls2_VERSION=6.11.2",
+      "Qt6QuickPrivate_VERSION=6.11.2",
+      "Qt6QuickShapes_VERSION=6.11.2",
+      "Qt6QuickTemplates2Private_VERSION=6.11.2",
+      "Qt6Quick_VERSION=6.11.2",
+      "Qt6Svg_VERSION=6.11.2",
+      "Qt6WaylandScannerTools_VERSION=6.11.2",
+      "Qt6Widgets_VERSION=6.11.2",
+      "Qt6_VERSION=6.11.2"
+    ]
+  },
+  "checks": {
+    "launcher_regressions": 5,
+    "dependency_regressions": 12,
+    "umbrella_tooling_regressions": 32,
+    "owned_tidy_translation_units": 76
+  },
+  "lanes": {
+    "static": {
+      "result": "PASS",
+      "log": "build/ci/20261012T200458Z-kx8vjcg5/static.log",
+      "sha256": "319943cb92e93dbbffbdb1abd3f324669c68f2c6e77a93798688a1c537325548"
+    },
+    "licensing": {
+      "result": "PASS",
+      "log": "build/ci/20261012T200458Z-kx8vjcg5/licensing.log",
+      "sha256": "71cb2128f37c1595ca2052bb35879cecc6f6cd2d56c9eb138295ca031b180e21"
+    },
+    "full": {
+      "result": "PASS",
+      "ctest_entries": 97,
+      "log": "build/ci/20261012T202258Z-m0owdjsc/full.log",
+      "sha256": "ded443dd8df9175fd77c665a1bac2da9466dbbe44fb0b3bd9e9f7271ab3485b8"
+    },
+    "minimal": {
+      "result": "PASS",
+      "ctest_entries": 86,
+      "log": "build/ci/20261012T202258Z-m0owdjsc/minimal.log",
+      "sha256": "cd3d06902f179ce78f7d686ea84d8a4949c7b966d807f6401e44f9e97f5326d5"
+    },
+    "release": {
+      "result": "PASS",
+      "log": "build/ci/20261012T202258Z-m0owdjsc/release.log",
+      "sha256": "bd66e5026a1d1cb83091801f9518e9b6cd3c57939f3ea266c174f1b2fa04bf63"
+    }
+  },
+  "deferred": [
+    "EDM-022 interactive visual and manual ecosystem acceptance",
+    "Debian qualification",
+    "publication and umbrella pinning pending approval"
+  ],
+  "limitations": [
+    "Existing individual GTest skips: software-only shader masking, optional Kirigami Addons FormCard absent, style-specific assertions under Fusion",
+    "Private Qt exact-version notices and intentional gallery QTP0004 OLD deprecation"
+  ],
+  "focused_final_review": {
+    "tidy": {
+      "result": "PASS",
+      "log": "build/tidy-audit/source/build/final-naming-tidy.log",
+      "sha256": "de7317f4443004d17276ad70309e6f85fffa8d0dc5acb3ea6d71c85554bc9573"
+    },
+    "build": {
+      "result": "PASS",
+      "log": "build/tidy-audit/source/build/final-naming-build.log",
+      "sha256": "8e6ba53fd47d046d73d2cc2f68b26aa3925c2901406165182ae3820f879e40cd"
+    },
+    "test": {
+      "result": "PASS",
+      "log": "build/tidy-audit/source/build/final-naming-test.log",
+      "sha256": "257de2fb3026f6475da199dce57ae62ff58a609163fe7a081c6d72ac5bdfafd1"
+    }
+  }
+}

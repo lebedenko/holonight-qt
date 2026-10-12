@@ -1,8 +1,6 @@
-find_package(KF6SyntaxHighlighting QUIET)
-if(KF6SyntaxHighlighting_FOUND)
+if(BUILD_SYNTAX_THEMES)
+    find_package(KF6SyntaxHighlighting REQUIRED)
     add_subdirectory(theme-generator)
-else()
-    message(STATUS "KF6SyntaxHighlighting not found - skipping theme-generator tool")
 endif()
 
 add_executable(generate_holonight_colors generate_holonight_colors.cpp)

@@ -45,6 +45,8 @@ if(@HOLONIGHT_BUILD_SYNTAX_THEMES@)
       message(FATAL_ERROR "Install omitted replacement theme ${replacement_theme}")
     endif()
   endforeach()
+elseif(EXISTS "${install_prefix}/@CMAKE_INSTALL_DATADIR@/holonight/themes")
+  message(FATAL_ERROR "Syntax-disabled install unexpectedly contains themes")
 endif()
 
 set(combined_install_output "${install_output}\n${install_error}")
@@ -210,6 +212,17 @@ execute_process(
 if(NOT wayland_build_result EQUAL 0)
   message(FATAL_ERROR "Wayland consumer build failed:\n${wayland_build_output}\n${wayland_build_error}")
 endif()
+else()
+  set(unavailable_source "${test_root}/unavailable-wayland")
+  file(MAKE_DIRECTORY "${unavailable_source}")
+  file(WRITE "${unavailable_source}/CMakeLists.txt" "cmake_minimum_required(VERSION 3.25)\nproject(unavailable LANGUAGES CXX)\nfind_package(HolonightQt REQUIRED COMPONENTS Wayland)\n")
+  execute_process(COMMAND "@CMAKE_COMMAND@" -S "${unavailable_source}" -B "${unavailable_source}/build"
+      "-DCMAKE_PREFIX_PATH=${install_prefix};@CMAKE_PREFIX_PATH@"
+      -DCMAKE_DISABLE_FIND_PACKAGE_Qt6WaylandClient=TRUE -DCMAKE_DISABLE_FIND_PACKAGE_Wayland=TRUE
+      RESULT_VARIABLE unavailable_result OUTPUT_VARIABLE unavailable_output ERROR_VARIABLE unavailable_error)
+  if(unavailable_result EQUAL 0 OR NOT "${unavailable_output}${unavailable_error}" MATCHES "HolonightQt")
+    message(FATAL_ERROR "Unavailable Wayland request did not fail: ${unavailable_output}${unavailable_error}")
+  endif()
 endif()
 
 foreach(relative_path
@@ -307,7 +320,7 @@ file(WRITE "${test_root}/import-check.qml" [=[
 import QtQuick
 import QtQuick.Controls
 Item {
-  Button { id: button; text: "Installed" }
+  Button { id: button; text: "Installed"; font.pixelSize: 12 }
   CheckBox { id: checkBox }
   ComboBox { id: comboBox; model: ["One"] }
   ItemDelegate { id: itemDelegate; text: "Installed" }
@@ -321,7 +334,7 @@ Item {
   Switch { id: switchControl }
   TabBar { id: tabBar; TabButton { text: "Installed" } }
   TextArea { id: textArea; text: "Installed" }
-  TextField { id: textField; text: "Installed" }
+  TextField { id: textField; text: "Installed"; font.pixelSize: 12 }
   ToolTip { id: toolTip; text: "Installed" }
   Component.onCompleted: {
     if (button.implicitHeight !== 32 || textField.implicitHeight !== 32
@@ -345,6 +358,7 @@ execute_process(
           "@HOLONIGHT_QML_EXECUTABLE@"
           -I "${qml_root}"
           "${test_root}/import-check.qml"
+  TIMEOUT 30
   RESULT_VARIABLE qml_result
   OUTPUT_VARIABLE qml_output
   ERROR_VARIABLE qml_error
@@ -366,6 +380,7 @@ execute_process(
           "QT_PLUGIN_PATH=${install_prefix}/@QT6_INSTALL_PLUGINS@"
           "QML_IMPORT_PATH=${qml_root}"
           "${consumer_build}/package_consumer"
+  TIMEOUT 30
   RESULT_VARIABLE hybrid_result
   OUTPUT_VARIABLE hybrid_output
   ERROR_VARIABLE hybrid_error

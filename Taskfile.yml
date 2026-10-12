@@ -2,8 +2,6 @@ version: '3'
 vars:
   BUILD_DIR: build/debug
   RELEASE_BUILD_DIR: build/release
-  HOLONIGHT_CONFIG_BUILD_DIR: build/deps/holonight-config
-  HOLONIGHT_CONFIG_PREFIX: '{{default (printf "%s/build/deps/prefix" .TASKFILE_DIR) .HOLONIGHT_DEPENDENCY_PREFIX}}'
   NPROC:
     sh: nproc
   PRESET: '{{default "debug" .PRESET}}'
@@ -12,6 +10,10 @@ tasks:
     desc: Rehearse all push validation in isolated containers
     cmds:
     - python3 scripts/ci/run.py
+  ci:prepare:
+    desc: Explicitly acquire images and prepare the pinned Config artifact
+    cmds:
+    - python3 scripts/ci/run.py --prepare
   license-check:
     desc: Validate REUSE licensing metadata
     cmds:
@@ -24,16 +26,11 @@ tasks:
     desc: configure using standalone tooling
     cmds:
     - python3 tooling/workflow.py configure --preset release
-  build:config-dependency:
-    desc: deps using standalone tooling
-    cmds:
-    - python3 tooling/workflow.py deps
   configure:demo:
     desc: Configure (Debug + demo app)
-    deps:
-    - build:config-dependency
     cmds:
-    - cmake -B {{.BUILD_DIR}} -G Ninja -DCMAKE_BUILD_TYPE=Debug -DBUILD_DEMO=ON -DCMAKE_PREFIX_PATH={{.HOLONIGHT_CONFIG_PREFIX}}
+    - python3 tooling/workflow.py configure --preset debug
+    - cmake -B "{{.BUILD_DIR}}" -DBUILD_DEMO=ON
   build:
     desc: build using standalone tooling
     cmds:
@@ -99,22 +96,22 @@ tasks:
   demo:
     desc: Build and run the visual demo app (from build tree, no platform theme)
     cmds:
-    - task: build:config-dependency
-    - cmake -B {{.BUILD_DIR}} -G Ninja -DCMAKE_BUILD_TYPE=Debug -DBUILD_DEMO=ON -DCMAKE_PREFIX_PATH={{.HOLONIGHT_CONFIG_PREFIX}}
+    - python3 tooling/workflow.py configure --preset debug
+    - cmake -B "{{.BUILD_DIR}}" -DBUILD_DEMO=ON
     - cmake --build {{.BUILD_DIR}} -j{{.NPROC}} --target holonight_demo
     - QT_QPA_PLATFORMTHEME=holonight ./{{.BUILD_DIR}}/demo/holonight_demo {{.CLI_ARGS}}
   gallery:
     desc: Build and run the shared controls gallery
     cmds:
-    - task: build:config-dependency
-    - cmake -B {{.BUILD_DIR}} -G Ninja -DCMAKE_BUILD_TYPE=Debug -DBUILD_CONTROLS_GALLERY=ON -DCMAKE_PREFIX_PATH={{.HOLONIGHT_CONFIG_PREFIX}}
+    - python3 tooling/workflow.py configure --preset debug
+    - cmake -B "{{.BUILD_DIR}}" -DBUILD_CONTROLS_GALLERY=ON
     - cmake --build {{.BUILD_DIR}} -j{{.NPROC}} --target holonight_controls_gallery
     - QT_QPA_PLATFORMTHEME= ./{{.BUILD_DIR}}/examples/controls-gallery/holonight_controls_gallery {{.CLI_ARGS}}
   demo:install:
     desc: Build, install demo + theme to ~/.local, then run with full platform theme
     cmds:
-    - task: build:config-dependency
-    - cmake -B {{.BUILD_DIR}} -G Ninja -DCMAKE_BUILD_TYPE=Debug -DBUILD_DEMO=ON -DCMAKE_PREFIX_PATH={{.HOLONIGHT_CONFIG_PREFIX}}
+    - python3 tooling/workflow.py configure --preset debug
+    - cmake -B "{{.BUILD_DIR}}" -DBUILD_DEMO=ON
     - cmake --build {{.BUILD_DIR}} -j{{.NPROC}}
     - cmake --install {{.BUILD_DIR}} --prefix ~/.local
     - QT_QPA_PLATFORMTHEME=holonight ~/.local/bin/holonight_demo {{.CLI_ARGS}}

@@ -1,13 +1,13 @@
 @PACKAGE_INIT@
 
 include(CMakeFindDependencyMacro)
-find_dependency(Qt6 REQUIRED COMPONENTS Core Gui Qml Quick QuickControls2 Svg)
+find_dependency(Qt6 6.11 REQUIRED COMPONENTS Core Gui Qml Quick QuickControls2 Svg)
 find_dependency(HoloNightConfig CONFIG REQUIRED)
 
 include("${CMAKE_CURRENT_LIST_DIR}/HolonightQtTargets.cmake")
 
-if("Wayland" IN_LIST HolonightQt_FIND_COMPONENTS)
-  find_dependency(Qt6 REQUIRED COMPONENTS WaylandClient)
+if("Wayland" IN_LIST HolonightQt_FIND_COMPONENTS AND @BUILD_WAYLAND@)
+  find_dependency(Qt6 6.11 REQUIRED COMPONENTS WaylandClient)
   find_dependency(Wayland REQUIRED COMPONENTS Client)
   include("${CMAKE_CURRENT_LIST_DIR}/HolonightQtWaylandTargets.cmake" OPTIONAL RESULT_VARIABLE wayland_targets)
   if(wayland_targets)

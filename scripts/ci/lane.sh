@@ -1,60 +1,69 @@
 #!/bin/sh
+# SPDX-License-Identifier: GPL-3.0-or-later
 set -eu
 lane=$1
-mkdir /work/source
-cp -a /input/. /work/source/
-cd /work/source
+mkdir /work/holonight-qt
+cp -a /input/. /work/holonight-qt/
+cd /work/holonight-qt
 export HOME=/work/build/home LC_ALL=C.UTF-8 TZ=UTC
+export XDG_RUNTIME_DIR=/work/runtime QT_FORCE_STDERR_LOGGING=1
+export QT_QPA_PLATFORM=offscreen QT_QUICK_BACKEND=software QSG_RHI_BACKEND=software
+export QT_QPA_PLATFORMTHEME= QT_STYLE_OVERRIDE=
+export JOBS=${JOBS:-2}
 mkdir -p "$HOME"
-case "$lane" in
-  licensing)
+mkdir -m 700 "$XDG_RUNTIME_DIR"
+if [ "$lane" = licensing ]; then
     reuse --version
     reuse lint
+    exit
+fi
+if [ "$lane" = static ]; then
+    # Canonical formatting and tidy enumerate tracked files in this disposable copy.
+    git init -q
+    git add .
+fi
+python3 --version
+cmake --version
+ninja --version
+c++ --version
+pkg-config --modversion Qt6Core
+if [ "$lane" = prepare ]; then
+    cp -a /work/holonight-qt /prepared/consumer
+    cd /prepared/consumer
+    export HOLONIGHT_CONFIG_SOURCE=/prepared/config
+    task deps PRESET=test
+    cp build/deps/provider-state.json /prepared/provider-state.json
+    exit
+fi
+export HOLONIGHT_DEPENDENCY_PREFIX=/prepared/consumer/build/deps/prefix
+export LD_LIBRARY_PATH="$HOLONIGHT_DEPENDENCY_PREFIX/lib"
+test -f /prepared/provider-state.json
+python3 scripts/ci/test_launcher.py
+python3 scripts/ci/test_dependencies.py
+case "$lane" in
+  full|static)
+    export HOLONIGHT_BUILD_FEATURES='BUILD_WAYLAND=ON BUILD_SYNTAX_THEMES=ON BUILD_QT5_PROBES=ON'
+    task build PRESET=test
+    if [ "$lane" = full ]; then
+        ctest --test-dir build/test --output-on-failure --no-tests=error
+        cat build/test/Testing/Temporary/LastTest.log
+    else
+        task format-check
+        task tidy
+        cmake --build build/test --target all_qmllint
+        python3 tooling/qml_policy.py
+        python3 tooling/workflow.py qmltypes-check --preset test
+    fi
     ;;
-  build-test)
-    export XDG_RUNTIME_DIR=/work/runtime QT_FORCE_STDERR_LOGGING=1
-    mkdir -m 700 "$XDG_RUNTIME_DIR"
-    python3 --version
-    git --version
-    cmake --version
-    ninja --version
-    c++ --version
-    clang-format --version
-    clang-tidy --version
-    pkg-config --modversion Qt6Core tomlplusplus
-    python3 scripts/ci/test_launcher.py
-    python3 scripts/ci/prepare-tools.py
-    export PATH=/work/tools/usr/bin:$PATH
-    export LD_LIBRARY_PATH=/work/tools/usr/lib
-    rg --version
-    patchelf --version
-    /work/tools/usr/bin/qmake -query QT_VERSION
-    test ! -e /usr/include/holonight/config/config.h
-    test ! -e /usr/local/include/holonight/config/config.h
-    config_revision=d6a392b41991f70a004d58f7694c7b6115cb7280
-    config_source=/work/providers/config
-    git init "$config_source"
-    git -C "$config_source" remote add origin https://github.com/lebedenko/holonight-config.git
-    git -C "$config_source" fetch --depth=1 origin "$config_revision"
-    git -C "$config_source" checkout --detach FETCH_HEAD
-    test "$(git -C "$config_source" rev-parse HEAD)" = "$config_revision"
-    cmake -S "$config_source" -B /work/providers/config-build -G Ninja -DCMAKE_BUILD_TYPE=Release -DBUILD_TESTING=OFF
-    cmake --build /work/providers/config-build --parallel
-    cmake --install /work/providers/config-build --prefix /work/providers/prefix
-    export LD_LIBRARY_PATH=/work/providers/prefix/lib:/work/tools/usr/lib
-    cmake -S . -B build/verification -G Ninja -DCMAKE_BUILD_TYPE=Release \
-      '-DCMAKE_PREFIX_PATH=/work/providers/prefix;/work/tools/usr' \
-      -DBUILD_TESTS=ON -DBUILD_DEMO=ON -DBUILD_CONTROLS_GALLERY=ON -DBUILD_QT5_PROBES=ON
-    cmake --build build/verification --parallel
-    cat > build/verification/qt5/qt.conf <<'QTPATHS'
-[Paths]
-Prefix=/work/tools/usr
-Plugins=lib/qt/plugins
-Libraries=lib
-QTPATHS
-    ctest --test-dir build/verification --output-on-failure --no-tests=error
-    cmake --build build/verification --target format-check
-    cmake --build build/verification --target tidy-src
+  minimal)
+    export HOLONIGHT_BUILD_FEATURES='BUILD_WAYLAND=OFF BUILD_SYNTAX_THEMES=OFF BUILD_QT5_PROBES=OFF'
+    task build PRESET=minimal
+    ctest --test-dir build/minimal --output-on-failure --no-tests=error
+    cat build/minimal/Testing/Temporary/LastTest.log
+    ;;
+  release)
+    task build PRESET=release
+    cmake --install build/release --prefix /work/install
     ;;
   *) echo "Unknown lane: $lane" >&2; exit 2 ;;
 esac

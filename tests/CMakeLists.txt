@@ -221,7 +221,7 @@ add_dependencies(holonight_qml_smoke_tests
     holonight_controls_qml
 )
 
-find_package(Qt6 REQUIRED COMPONENTS OpenGL)
+find_package(Qt6 6.11 REQUIRED COMPONENTS OpenGL)
 add_executable(holonight_separator_rendering_tests main.cpp test_separator_rendering.cpp)
 target_compile_definitions(holonight_separator_rendering_tests PRIVATE
     HOLONIGHT_QML_IMPORT_PATH="${CMAKE_BINARY_DIR}/qml")
@@ -254,7 +254,8 @@ if(BUILD_WAYLAND)
   add_executable(holonight_wayland_coordinate_tests test_wayland_coordinates.cpp)
   target_link_libraries(holonight_wayland_coordinate_tests PRIVATE
       HolonightQt::Wayland Qt6::Test GTest::gtest)
-  target_include_directories(holonight_wayland_coordinate_tests PRIVATE ${CMAKE_SOURCE_DIR}/wayland
+  target_include_directories(holonight_wayland_coordinate_tests PRIVATE ${CMAKE_SOURCE_DIR}/wayland)
+  target_include_directories(holonight_wayland_coordinate_tests SYSTEM PRIVATE
       $<TARGET_PROPERTY:Qt6::GuiPrivate,INTERFACE_INCLUDE_DIRECTORIES>)
   # Explicit opt-in real-compositor runner; never connects to the user's session.
   # python3 tests/run_wayland_coordinates.py build/tests/holonight_wayland_coordinate_tests LOG_DIR

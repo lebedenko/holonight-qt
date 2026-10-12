@@ -4,6 +4,7 @@ find_package(Qt6 ${Qt6_VERSION} EXACT REQUIRED COMPONENTS QuickPrivate QuickCont
 qt_add_qml_module(holonight_impl_qml
     URI "Holonight.impl"
     VERSION 1.0
+    IMPORT_PATH ${CMAKE_BINARY_DIR}/qml ${QML_IMPORT_PATH}
     PLUGIN_TARGET holonight_impl_qml
     OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/Holonight/impl
     QML_FILES ComboBoxPopupGeometry.qml
@@ -21,6 +22,7 @@ install(FILES
 qt_add_qml_module(holonight_qml
     URI "Holonight"
     VERSION 1.0
+    IMPORT_PATH ${CMAKE_BINARY_DIR}/qml ${QML_IMPORT_PATH}
     PLUGIN_TARGET holonight_qml
     NO_PLUGIN_OPTIONAL
     NO_GENERATE_PLUGIN_SOURCE
@@ -76,6 +78,7 @@ set_source_files_properties(core/HnButtonSurface.qml PROPERTIES QT_RESOURCE_ALIA
 qt_add_qml_module(holonight_core_qml
     URI "Holonight.Core"
     VERSION 1.0
+    IMPORT_PATH ${CMAKE_BINARY_DIR}/qml ${QML_IMPORT_PATH}
     PLUGIN_TARGET holonight_core_qml
     OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/Holonight/Core
     SOURCES
@@ -186,6 +189,7 @@ set_source_files_properties(controls/assets/send.svg PROPERTIES QT_RESOURCE_ALIA
 qt_add_qml_module(holonight_controls_qml
     URI "Holonight.Controls"
     VERSION 1.0
+    IMPORT_PATH ${CMAKE_BINARY_DIR}/qml ${QML_IMPORT_PATH}
     PLUGIN_TARGET holonight_controls_qml
     OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/Holonight/Controls
     SOURCES

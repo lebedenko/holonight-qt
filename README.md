@@ -67,10 +67,10 @@ WCAG AA contrast (4.5:1) is enforced by the test suite for text and selection pa
 
 ## Requirements
 
-- Qt 6.11+
+- Qt 6.11+ with private development components matching the public Qt version exactly
 - CMake 3.25+
 - Ninja
-- GTest (for tests)
+- Installed GTest >=1.14 with its CMake CONFIG package (for tests; GMock is not required)
 
 ## Build from source
 
@@ -252,18 +252,26 @@ See [tooling/README.md](tooling/README.md) for presets, local dependency overrid
 
 ## Local push CI rehearsal
 
-Run `task ci` with Git, Python 3, Task and an accessible Docker daemon (Podman is
-used when Docker is absent). The fixed linux/amd64 environment requires an amd64
-host or configured emulation. Registry, GitHub and Arch archive access are required.
-The immutable compiler/Qt6 image, checksum-pinned Qt5/probe tools and canonical
-Config revision are identical locally and remotely. The Release build covers tests,
-demo/gallery, Qt5 compatibility probes, formatting and source tidy; licensing uses
-REUSE 6.2.0. All required failures return nonzero and print complete failure logs.
+Run `task ci:prepare` explicitly to acquire the qualified EDM-024 Arch image and the exact
+Config revision `0ccd25f323662f50a47bb048be636160f2b7c135`, then build its installed artifact
+through `task deps`. An existing checkout can supply that revision with
+`python3 scripts/ci/run.py --prepare --config-source ../holonight-config`.
+Preparation requires network access; acceptance uses `--pull=never --network=none` and
+fails if preparation is absent or has a different image/provider identity.
 
-Tracked edits and non-ignored new files enter read-only snapshots; new inputs are
-reported to add before pushing. Each lane uses a disposable writable copy and fresh
-build/provider trees. Existing development builds stay untouched. Container layers
-may be cached; application artifacts are not reused. Logs and revision/dirty status,
-image identity, tool versions and lane results are saved under ignored `build/ci/`.
-Run launcher regressions with `python3 scripts/ci/test_launcher.py`. Registry
-publication, releases and artifact uploads remain remote operations.
+Run `task ci` for five clean lanes: full Debug tests/examples/Wayland/syntax/Qt5,
+minimal tests without those optional features, production Release build/install,
+full formatting/tidy/QML checks, and REUSE in its separate image. Docker or Podman
+and linux/amd64 support are required. Read-only snapshots include tracked edits and
+non-ignored new files. Logs and identities are written under ignored `build/ci/`;
+provider compatibility evidence is in `build/ci-prepared/provider-state.json`.
+Existing development builds are preserved. Interactive assessment remains deferred
+to ecosystem integration.
+
+Run `python3 scripts/ci/test_launcher.py` and `python3 scripts/ci/test_dependencies.py`
+for launcher, installed discovery and cache regressions. Normal configure/build/test
+and demo/gallery commands validate existing prerequisites; only explicit `task deps`
+prepares local providers. Set `HOLONIGHT_DEPENDENCY_PREFIX` for an installed Config
+provider and `HOLONIGHT_EXTERNAL_PREFIX` for external packages, including paths with spaces.
+`BUILD_SYNTAX_THEMES` defaults ON and requires KF6SyntaxHighlighting. Set it OFF to
+skip syntax discovery, generation and installation entirely.
