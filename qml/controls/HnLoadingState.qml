@@ -38,7 +38,7 @@ Item {
         spacing: root.semanticSpacing
 
         C.ProgressBar {
-            palette: compositePalette.appearancePalette
+            palette: root.compositePalette.appearancePalette
             objectName: "hnLoadingProgress"
             value: root.normalizedProgress < 0 ? 0 : root.normalizedProgress
             indeterminate: root.running && root.visible && root.normalizedProgress < 0

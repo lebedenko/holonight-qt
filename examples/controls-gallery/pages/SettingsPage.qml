@@ -41,6 +41,7 @@ Controls.ScrollView {
             ]
 
             HnSettingsRow {
+                id: sizeSettingsRow
                 required property var modelData
 
                 sizeRole: modelData.role
@@ -56,7 +57,7 @@ Controls.ScrollView {
                         Binding {
                             target: "sizeRole" in inlineSwitch ? inlineSwitch : null
                             property: "sizeRole"
-                            value: modelData.role
+                            value: sizeSettingsRow.modelData.role
                         }
                         text: qsTr("Enabled")
                         checked: true

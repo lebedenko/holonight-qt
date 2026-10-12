@@ -93,7 +93,7 @@ FocusScope {
 
     C.ScrollView {
         id: editorScroll
-        palette: compositePalette.appearancePalette
+        palette: root.compositePalette.appearancePalette
 
         anchors.left: parent.left
         anchors.right: parent.right
@@ -111,7 +111,7 @@ FocusScope {
 
         C.TextArea {
             id: editor
-            palette: compositePalette.appearancePalette
+            palette: root.compositePalette.appearancePalette
 
             font.family: HolonightTheme.uiFont
             font.pointSize: HolonightTheme.bodySize

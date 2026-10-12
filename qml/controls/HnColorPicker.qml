@@ -65,7 +65,7 @@ T.Control {
 
     contentItem: C.ScrollView {
         id: scroll
-        palette: compositePalette.appearancePalette
+        palette: root.compositePalette.appearancePalette
 
         contentWidth: row.implicitWidth
         implicitHeight: row.implicitHeight

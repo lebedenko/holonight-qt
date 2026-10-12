@@ -202,9 +202,12 @@ T.ComboBox {
             hoverEnabled: delegateRoot.HnInputInteraction.hoverAllowed
             required property int index
 
+            // The owned background supplies semanticRadius beyond QQuickItem's static metadata.
+            // qmllint disable missing-property
             readonly property real popupInnerRadius: Math.max(0,
                                                               root.popup.background.semanticRadius
                                                               - root.popup.padding)
+            // qmllint enable missing-property
 
             width: root.popup.availableWidth
             height: root.delegateHeight
