@@ -13,17 +13,17 @@ Use Task when available:
 ```bash
 task build      # Configure Debug with tests and build
 task test       # Run headless CTest with QT_QPA_PLATFORM=offscreen
-task lint       # Run run-clang-tidy against build/test/
-task verify     # Build, lint, and test
+task tidy       # Run clang-tidy against build/dev/
+task check     # Build, lint, and test
 task demo       # Build and run the demo app from the build tree
 ```
 
 Manual equivalents:
 
 ```bash
-cmake -B build -G Ninja -DCMAKE_BUILD_TYPE=Debug -DBUILD_TESTS=ON
-cmake --build build -j$(nproc)
-QT_QPA_PLATFORM=offscreen ctest --test-dir build --output-on-failure
+cmake --preset dev
+cmake --build --preset dev
+ctest --preset dev
 ```
 
 Use `task install:local` for `~/.local` installs and `task install:system` only when a system install is required.
@@ -61,5 +61,22 @@ style-specific properties so explicit Fusion loads without invalid-property erro
 When changing examples, enable `BUILD_DEMO` and `BUILD_CONTROLS_GALLERY` and run their `startup_` tests plus
 `holonight_package_install_test`. Run the QML policy checks for the provider and both example directories.
 
-Developer tooling uses `build/debug`, `build/test`, `build/release` and module-owned `build/deps`.
-See tooling/README.md; run task tooling:refresh explicitly after configuring/building for editor metadata.
+
+
+## Development and documentation
+
+Use `task build` and `task test` for incremental native CMake/CTest work. Native builds
+consume installed packages; use `CMAKE_PREFIX_PATH` for an explicit development prefix.
+Use `task format` for the pinned formatter and `task check` for container acceptance.
+Run `task check:integration` for installation/runtime changes. Container builds use
+fresh build/prefix directories, separate from `build/dev` and `build/release`.
+clangd reads `build/dev/compile_commands.json` directly.
+
+Routine changes need tests and a commit explanation; update user documentation when
+behavior changes. Substantial designs need one local SDD describing intent, decisions,
+interfaces and acceptance. Cross-project changes need one umbrella note linking local
+designs and stating contracts, dependency order and integration checks. Historical SDDs
+remain historical. No separate planning, readiness, handoff or closure commits are required.
+Keep routine logs and generated evidence in ignored build directories or CI artifacts.
+Provider and consumer implementation may proceed together; publish providers before
+consumer commits that reference them. Update umbrella pins per coherent milestone.

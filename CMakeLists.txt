@@ -1,6 +1,23 @@
 cmake_minimum_required(VERSION 3.25)
 project(holonight LANGUAGES C CXX)
 
+# Installed QML providers follow the standard CMake prefix search path.
+set(_qml_prefixes ${CMAKE_PREFIX_PATH})
+if(DEFINED ENV{CMAKE_PREFIX_PATH})
+  string(REPLACE ":" ";" _prefix_environment "$ENV{CMAKE_PREFIX_PATH}")
+  list(APPEND _qml_prefixes ${_prefix_environment})
+endif()
+foreach(_prefix IN LISTS _qml_prefixes)
+  if(IS_DIRECTORY "${_prefix}/lib/qt6/qml")
+    list(APPEND QML_IMPORT_PATH "${_prefix}/lib/qt6/qml")
+  endif()
+endforeach()
+if(DEFINED ENV{QML_IMPORT_PATH})
+  string(REPLACE ":" ";" _qml_environment "$ENV{QML_IMPORT_PATH}")
+  list(APPEND QML_IMPORT_PATH ${_qml_environment})
+endif()
+list(REMOVE_DUPLICATES QML_IMPORT_PATH)
+
 set(CMAKE_CXX_STANDARD 23)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
@@ -13,7 +30,6 @@ install(FILES LICENSE THIRD_PARTY_NOTICES.md LICENSES/GPL-3.0-or-later.txt LICEN
   DESTINATION "${CMAKE_INSTALL_DATADIR}/licenses/${PROJECT_NAME}")
 include(CMakePackageConfigHelpers)
 
-include("${CMAKE_CURRENT_SOURCE_DIR}/tooling/dependencies.cmake")
 find_package(Qt6 6.11 REQUIRED COMPONENTS Core Gui Widgets Quick QuickControls2 QuickShapes Svg Qml)
 find_package(Qt6 ${Qt6_VERSION} EXACT REQUIRED COMPONENTS GuiPrivate)
 find_package(HoloNightConfig CONFIG REQUIRED)
@@ -121,8 +137,6 @@ install(FILES
 
 # --- Format / tidy targets ---
 find_program(CLANG_FORMAT clang-format)
-find_program(CLANG_TIDY clang-tidy)
-find_program(RUN_CLANG_TIDY run-clang-tidy)
 
 file(GLOB_RECURSE ALL_SOURCE_FILES
     LIST_DIRECTORIES false
@@ -131,20 +145,6 @@ file(GLOB_RECURSE ALL_SOURCE_FILES
     qml/*.cpp qml/*.h tools/*.cpp tools/*.h tests/*.cpp tests/*.h demo/*.cpp demo/*.h qt5/*.cpp qt5/*.h
     wayland/*.cpp wayland/*.h
 )
-
-file(GLOB_RECURSE ALL_CXX_SRC_IMPL_FILES
-    LIST_DIRECTORIES false
-    CONFIGURE_DEPENDS
-    src/*.cpp palette/*.cpp config/*.cpp qml/*.cpp tools/*.cpp demo/*.cpp qt5/*.cpp wayland/*.cpp
-)
-
-file(GLOB_RECURSE ALL_CXX_TEST_IMPL_FILES
-    LIST_DIRECTORIES false
-    CONFIGURE_DEPENDS
-    tests/*.cpp
-)
-list(REMOVE_ITEM ALL_CXX_TEST_IMPL_FILES "${CMAKE_CURRENT_SOURCE_DIR}/tests/main.cpp")
-set(ALL_CXX_IMPL_FILES ${ALL_CXX_SRC_IMPL_FILES} ${ALL_CXX_TEST_IMPL_FILES})
 
 if(CLANG_FORMAT)
   add_custom_target(format
@@ -159,62 +159,9 @@ if(CLANG_FORMAT)
   )
 endif()
 
-if(CLANG_TIDY)
-  include(ProcessorCount)
-  ProcessorCount(TIDY_JOBS)
-  if(TIDY_JOBS EQUAL 0)
-    set(TIDY_JOBS 1)
-  endif()
-
-  set(TIDY_HIDE_PROGRESS_FLAG "")
-  if(RUN_CLANG_TIDY)
-    execute_process(
-        COMMAND ${RUN_CLANG_TIDY} --help
-        OUTPUT_VARIABLE RUN_CLANG_TIDY_HELP
-        ERROR_VARIABLE RUN_CLANG_TIDY_HELP
-        OUTPUT_STRIP_TRAILING_WHITESPACE
-    )
-    if(RUN_CLANG_TIDY_HELP MATCHES "-hide-progress")
-      set(TIDY_HIDE_PROGRESS_FLAG "-hide-progress")
-    endif()
-  endif()
-
-  set(TIDY_DB_DIR ${CMAKE_BINARY_DIR}/tidy)
-  set(STRIP_TIDY_FLAGS_SCRIPT ${CMAKE_BINARY_DIR}/strip_tidy_flags.cmake)
-  file(MAKE_DIRECTORY ${TIDY_DB_DIR})
-  file(WRITE ${STRIP_TIDY_FLAGS_SCRIPT}
-        "file(READ \"${CMAKE_BINARY_DIR}/compile_commands.json\" db)\n"
-        "string(REPLACE \"-mno-direct-extern-access\" \"\" db \"\${db}\")\n"
-        "file(WRITE \"${TIDY_DB_DIR}/compile_commands.json\" \"\${db}\")\n"
-    )
-
-  function(add_holonight_tidy_target target_name target_sources)
-    if(RUN_CLANG_TIDY)
-      add_custom_target(${target_name}
-          COMMAND ${CMAKE_COMMAND} -P ${STRIP_TIDY_FLAGS_SCRIPT}
-          COMMAND ${RUN_CLANG_TIDY}
-              -quiet
-              ${TIDY_HIDE_PROGRESS_FLAG}
-              -j ${TIDY_JOBS}
-              -p ${TIDY_DB_DIR}
-              -header-filter "^${CMAKE_CURRENT_SOURCE_DIR}/(apps|libs|include|src|qml|wayland|tests)/.*\\.(h|hpp)$"
-              ${${target_sources}}
-          COMMENT "Running ${target_name}"
-          VERBATIM
-      )
-    else()
-      add_custom_target(${target_name}
-          COMMAND ${CMAKE_COMMAND} -P ${STRIP_TIDY_FLAGS_SCRIPT}
-          COMMAND ${CLANG_TIDY} --quiet -p ${TIDY_DB_DIR}
-              -header-filter "^${CMAKE_CURRENT_SOURCE_DIR}/(apps|libs|include|src|qml|wayland|tests)/.*\\.(h|hpp)$"
-              ${${target_sources}}
-          COMMENT "Running ${target_name}"
-          VERBATIM
-      )
-    endif()
-  endfunction()
-
-  add_holonight_tidy_target(tidy-src ALL_CXX_SRC_IMPL_FILES)
-  add_holonight_tidy_target(tidy-tests ALL_CXX_TEST_IMPL_FILES)
-  add_holonight_tidy_target(tidy ALL_CXX_IMPL_FILES)
-endif()
+# Use the same direct compilation-database check as task tidy.
+add_custom_target(tidy
+  COMMAND python3 "${CMAKE_CURRENT_SOURCE_DIR}/scripts/quality.py" tidy --build "${CMAKE_BINARY_DIR}"
+  WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}"
+  VERBATIM
+)

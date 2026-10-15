@@ -2,33 +2,20 @@
   "version": 5,
   "configurePresets": [
     {
-      "name": "debug",
+      "name": "dev",
       "generator": "Ninja",
-      "binaryDir": "${sourceDir}/build/debug",
+      "binaryDir": "${sourceDir}/build/dev",
       "cacheVariables": {
         "CMAKE_BUILD_TYPE": "Debug",
         "CMAKE_EXPORT_COMPILE_COMMANDS": "ON",
         "CMAKE_INSTALL_PREFIX": "/usr",
         "CMAKE_INSTALL_LIBDIR": "lib",
-        "CMAKE_PREFIX_PATH": "${sourceDir}/build/deps/prefix",
-        "QML_IMPORT_PATH": "${sourceDir}/build/deps/prefix/lib/qt6/qml",
-        "BUILD_TESTS": "OFF"
-      }
-    },
-    {
-      "name": "test",
-      "generator": "Ninja",
-      "binaryDir": "${sourceDir}/build/test",
-      "cacheVariables": {
-        "CMAKE_BUILD_TYPE": "Debug",
-        "CMAKE_EXPORT_COMPILE_COMMANDS": "ON",
-        "CMAKE_INSTALL_PREFIX": "/usr",
-        "CMAKE_INSTALL_LIBDIR": "lib",
-        "CMAKE_PREFIX_PATH": "${sourceDir}/build/deps/prefix",
-        "QML_IMPORT_PATH": "${sourceDir}/build/deps/prefix/lib/qt6/qml",
         "BUILD_TESTS": "ON",
         "BUILD_DEMO": "ON",
-        "BUILD_CONTROLS_GALLERY": "ON"
+        "BUILD_CONTROLS_GALLERY": "ON",
+        "BUILD_WAYLAND": "ON",
+        "BUILD_SYNTAX_THEMES": "ON",
+        "BUILD_QT5_PROBES": "ON"
       }
     },
     {
@@ -40,46 +27,24 @@
         "CMAKE_EXPORT_COMPILE_COMMANDS": "ON",
         "CMAKE_INSTALL_PREFIX": "/usr",
         "CMAKE_INSTALL_LIBDIR": "lib",
-        "CMAKE_PREFIX_PATH": "${sourceDir}/build/deps/prefix",
-        "QML_IMPORT_PATH": "${sourceDir}/build/deps/prefix/lib/qt6/qml",
         "BUILD_TESTS": "OFF"
-      }
-    },
-    {
-      "name": "minimal",
-      "inherits": "test",
-      "binaryDir": "${sourceDir}/build/minimal",
-      "cacheVariables": {
-        "BUILD_DEMO": "OFF",
-        "BUILD_CONTROLS_GALLERY": "OFF",
-        "BUILD_WAYLAND": "OFF",
-        "BUILD_SYNTAX_THEMES": "OFF",
-        "BUILD_QT5_PROBES": "OFF"
       }
     }
   ],
   "buildPresets": [
     {
-      "name": "debug",
-      "configurePreset": "debug"
-    },
-    {
-      "name": "test",
-      "configurePreset": "test"
+      "name": "dev",
+      "configurePreset": "dev"
     },
     {
       "name": "release",
       "configurePreset": "release"
-    },
-    {
-      "name": "minimal",
-      "configurePreset": "minimal"
     }
   ],
   "testPresets": [
     {
-      "name": "test",
-      "configurePreset": "test",
+      "name": "dev",
+      "configurePreset": "dev",
       "output": {
         "outputOnFailure": true
       },

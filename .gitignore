@@ -44,3 +44,6 @@ CLAUDE.md
 /tooling/__pycache__/
 
 **/__pycache__/
+
+# Generated Python bytecode.
+__pycache__/

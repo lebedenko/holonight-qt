@@ -1,5 +1,7 @@
 # HoloNight
 
+For current build, test, container acceptance and provider workflows, see [DEVELOPMENT.md](DEVELOPMENT.md).
+
 HoloNight Qt Theme is the Qt/Qt Quick Controls theme component of the broader HoloNight desktop visual system.
 
 This repository contains only the Qt theme implementation. The shell, icon theme, and GTK theme are planned as separate repositories.
@@ -75,8 +77,8 @@ WCAG AA contrast (4.5:1) is enforced by the test suite for text and selection pa
 ## Build from source
 
 ```bash
-cmake -B build/debug -G Ninja -DCMAKE_BUILD_TYPE=Release
-cmake --build build/debug -j$(nproc)
+cmake -B build/dev -G Ninja -DCMAKE_BUILD_TYPE=Release
+cmake --build build/dev -j$(nproc)
 sudo cmake --install build --prefix /usr
 ```
 
@@ -195,7 +197,7 @@ task build
 task test
 
 # Full pre-commit checklist (build + clang-tidy + tests)
-task verify
+task check
 
 # Visual demo app
 task demo
@@ -205,9 +207,9 @@ task demo -- --theme=holonight-day
 Manual equivalents:
 
 ```bash
-cmake -B build/debug -G Ninja -DCMAKE_BUILD_TYPE=Debug -DBUILD_TESTS=ON
-cmake --build build/debug -j$(nproc)
-QT_QPA_PLATFORM=offscreen ctest --test-dir build/test --output-on-failure
+cmake -B build/dev -G Ninja -DCMAKE_BUILD_TYPE=Debug -DBUILD_TESTS=ON
+cmake --build build/dev -j$(nproc)
+QT_QPA_PLATFORM=offscreen ctest --test-dir build/dev --output-on-failure
 ```
 
 Application content headings are controlled by each application; native window titles remain available in all modes.
@@ -245,33 +247,6 @@ The demo and controls gallery use namespaced runtime Controls with an embedded H
 overrides remain supported. Follow the [selection and deployment guide](docs/automatic-quick-controls-style-selection.md)
 when adopting the shared library in another application.
 
-## Standalone developer tooling
-
-See [tooling/README.md](tooling/README.md) for presets, local dependency overrides, editor refresh,
-`task tooling:doctor`, and the independent Serena project.
-
 ## Local push CI rehearsal
 
-Run `task ci:prepare` explicitly to acquire the qualified EDM-024 Arch image and the exact
-Config revision `0ccd25f323662f50a47bb048be636160f2b7c135`, then build its installed artifact
-through `task deps`. An existing checkout can supply that revision with
-`python3 scripts/ci/run.py --prepare --config-source ../holonight-config`.
-Preparation requires network access; acceptance uses `--pull=never --network=none` and
-fails if preparation is absent or has a different image/provider identity.
-
-Run `task ci` for five clean lanes: full Debug tests/examples/Wayland/syntax/Qt5,
-minimal tests without those optional features, production Release build/install,
-full formatting/tidy/QML checks, and REUSE in its separate image. Docker or Podman
-and linux/amd64 support are required. Read-only snapshots include tracked edits and
-non-ignored new files. Logs and identities are written under ignored `build/ci/`;
-provider compatibility evidence is in `build/ci-prepared/provider-state.json`.
-Existing development builds are preserved. Interactive assessment remains deferred
-to ecosystem integration.
-
-Run `python3 scripts/ci/test_launcher.py` and `python3 scripts/ci/test_dependencies.py`
-for launcher, installed discovery and cache regressions. Normal configure/build/test
-and demo/gallery commands validate existing prerequisites; only explicit `task deps`
-prepares local providers. Set `HOLONIGHT_DEPENDENCY_PREFIX` for an installed Config
-provider and `HOLONIGHT_EXTERNAL_PREFIX` for external packages, including paths with spaces.
-`BUILD_SYNTAX_THEMES` defaults ON and requires KF6SyntaxHighlighting. Set it OFF to
-skip syntax discovery, generation and installation entirely.
+See [DEVELOPMENT.md](DEVELOPMENT.md) for current native and container commands.
