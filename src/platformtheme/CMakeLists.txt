@@ -1,9 +1,13 @@
+find_package(Qt6 ${Qt6_VERSION} EXACT REQUIRED COMPONENTS DBus)
+
 qt_add_plugin(qholonight
     CLASS_NAME HoloniightThemePlugin
     PLUGIN_TYPE platformthemes
 )
 
 target_sources(qholonight PRIVATE
+    portalfiledialog.h
+    portalfiledialog.cpp
     holonighttheme.h
     holonighttheme.cpp
     holonightthemeplugin.h
@@ -21,6 +25,7 @@ target_link_libraries(qholonight PRIVATE
     holonight_palette
     holonight_icons
     Qt6::Gui
+    Qt6::DBus
     Qt6::GuiPrivate
 )
 

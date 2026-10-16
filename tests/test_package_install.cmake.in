@@ -504,3 +504,15 @@ foreach(example IN ITEMS holonight_demo holonight_controls_gallery)
     endforeach()
   endif()
 endforeach()
+
+# Qt-only clients must load the staged platform plugin without linking HoloNight.
+foreach(mode IN ITEMS widgets file folder)
+  execute_process(COMMAND "@Python3_EXECUTABLE@" "@CMAKE_CURRENT_SOURCE_DIR@/run_portal_tests.py"
+      "@CMAKE_CURRENT_BINARY_DIR@/holonight_portal_consumer_probe"
+      "@CMAKE_CURRENT_BINARY_DIR@/holonight_fake_file_portal"
+      "${install_prefix}/@QT6_INSTALL_PLUGINS@" "${mode}"
+      RESULT_VARIABLE portal_result OUTPUT_VARIABLE portal_output ERROR_VARIABLE portal_error)
+  if(NOT portal_result EQUAL 0)
+    message(FATAL_ERROR "Staged portal consumer ${mode} failed: ${portal_output}\n${portal_error}")
+  endif()
+endforeach()

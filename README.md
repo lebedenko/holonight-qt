@@ -116,6 +116,30 @@ it as a command-local override:
 QT_STYLE_OVERRIDE=holonight widgets-only-app
 ```
 
+### Portal file dialogs (Qt 6)
+
+With `QT_QPA_PLATFORMTHEME=holonight`, standard Qt file and folder dialogs use
+the desktop portal broker's configured FileChooser backend. Applications need
+only their existing Qt dependencies. HoloNight retains its appearance settings;
+portal routing remains desktop configuration.
+
+If portal discovery fails (three-second timeout), directory selection is
+unsupported, or Qt cannot export the supplied parent window, Qt uses its built-in
+dialog. Errors after submission reject the request without opening another
+chooser. There is no timeout while the user chooses files. Per-dialog
+`DontUseNativeDialog` and application-wide `AA_DontUseNativeDialogs` remain
+effective. Backend presentation may ignore custom views or sidebar settings.
+
+Diagnostics use the `holonight.portal.filedialog` logging category and identify
+discovery, parent export, subscription, submission, request-path, service loss,
+or malformed-response failures. Set `QT_FORCE_STDERR_LOGGING=1` to see them in a
+terminal. The feature also builds with `BUILD_WAYLAND=OFF`.
+
+Run `ctest --test-dir build/dev -R 'holonight_portal_|holonight_platformtheme_bootstrap'`
+for private-bus and Qt consumer checks; `holonight_package_install_test` repeats
+consumer probes against a staged installation. See the
+[local design and native acceptance procedure](docs/sdd/portal-file-dialogs/README.md).
+
 ### Compatibility
 
 | Consumer | Expected result | Boundary |

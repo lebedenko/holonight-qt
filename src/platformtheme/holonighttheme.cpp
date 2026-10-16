@@ -5,8 +5,10 @@
 
 #include "hniconengine.h"
 #include "holonight/palette.h"
+#include "portalfiledialog.h"
 #include "themeresolver.h"
 
+#include <QCoreApplication>
 #include <QIcon>
 #include <QStandardPaths>
 #include <QVariant>
@@ -75,4 +77,12 @@ const QFont* HoloniightTheme::font(Font type) const {
 
 QIconEngine* HoloniightTheme::createIconEngine(const QString& icon_name) const {
   return new Holonight::HnIconEngine{icon_name};
+}
+
+bool HoloniightTheme::usePlatformNativeDialog(DialogType type) const {
+  return type == FileDialog && !QCoreApplication::testAttribute(Qt::AA_DontUseNativeDialogs);
+}
+
+QPlatformDialogHelper* HoloniightTheme::createPlatformDialogHelper(DialogType type) const {
+  return usePlatformNativeDialog(type) ? new PortalFileDialog : nullptr;
 }

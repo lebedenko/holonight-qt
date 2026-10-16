@@ -25,6 +25,7 @@ add_executable(holonight_tests
     test_style_smoke.cpp
     # Platform theme smoke test: compile holonighttheme.cpp directly
     ${CMAKE_SOURCE_DIR}/src/platformtheme/holonighttheme.cpp
+    ${CMAKE_SOURCE_DIR}/src/platformtheme/portalfiledialog.cpp
     test_platformtheme_smoke.cpp
     test_platformtheme_fonts.cpp
     test_platformtheme_icons.cpp
@@ -46,6 +47,7 @@ target_link_libraries(holonight_tests PRIVATE
     holonight_metrics
     Qt6::Gui
     Qt6::GuiPrivate
+    Qt6::DBus
     Qt6::Test
     Qt6::Widgets
     GTest::gtest
@@ -393,4 +395,26 @@ foreach(ratio IN ITEMS 1.0 1.25)
       "--gtest_filter=QuickPalette.OffscreenRendering*:QuickPalette.NewButtonStatesRender*")
   set_property(TEST holonight_quick_rendering_dpr_${ratio} PROPERTY ENVIRONMENT
       "${HOLONIGHT_TEST_ENV};QT_QUICK_BACKEND=software;QT_QUICK_CONTROLS_STYLE=Holonight;QT_SCALE_FACTOR=${ratio}")
+endforeach()
+
+add_executable(holonight_fake_file_portal fake_file_portal.cpp)
+target_link_libraries(holonight_fake_file_portal PRIVATE Qt6::Core Qt6::DBus)
+add_executable(holonight_portal_tests main.cpp test_portal_file_dialog.cpp
+    ${CMAKE_SOURCE_DIR}/src/platformtheme/portalfiledialog.cpp)
+target_include_directories(holonight_portal_tests PRIVATE ${CMAKE_SOURCE_DIR}/src/platformtheme)
+target_link_libraries(holonight_portal_tests PRIVATE Qt6::GuiPrivate Qt6::DBus Qt6::Widgets Qt6::Test GTest::gtest)
+target_compile_definitions(holonight_portal_tests PRIVATE PORTAL_FAKE="$<TARGET_FILE:holonight_fake_file_portal>")
+add_dependencies(holonight_portal_tests holonight_fake_file_portal)
+add_test(NAME holonight_portal_tests COMMAND ${Python3_EXECUTABLE}
+    ${CMAKE_CURRENT_SOURCE_DIR}/run_portal_tests.py $<TARGET_FILE:holonight_portal_tests>)
+set_tests_properties(holonight_portal_tests PROPERTIES TIMEOUT 70)
+
+add_executable(holonight_portal_consumer_probe portal_consumer_probe.cpp)
+target_link_libraries(holonight_portal_consumer_probe PRIVATE
+    Qt6::Widgets Qt6::Qml Qt6::Quick Qt6::DBus Qt6::Test)
+add_dependencies(holonight_portal_consumer_probe qholonight holonight_fake_file_portal)
+foreach(mode IN ITEMS widgets file folder)
+  add_test(NAME holonight_portal_consumer_${mode} COMMAND ${Python3_EXECUTABLE}
+      ${CMAKE_CURRENT_SOURCE_DIR}/run_portal_tests.py $<TARGET_FILE:holonight_portal_consumer_probe>
+      $<TARGET_FILE:holonight_fake_file_portal> ${CMAKE_BINARY_DIR}/lib/qt6/plugins ${mode})
 endforeach()

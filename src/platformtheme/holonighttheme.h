@@ -20,6 +20,9 @@ class HoloniightTheme : public QPlatformTheme {
   [[nodiscard]] const QFont* font(Font type = SystemFont) const override;
   [[nodiscard]] QIconEngine* createIconEngine(const QString& icon_name) const override;
 
+  [[nodiscard]] bool usePlatformNativeDialog(DialogType type) const override;
+  [[nodiscard]] QPlatformDialogHelper* createPlatformDialogHelper(DialogType type) const override;
+
  private:
   Holonight::AppearanceReader appearance_reader_;
   Holonight::ResolvedAppearance config_;
