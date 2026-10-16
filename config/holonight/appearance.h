@@ -17,10 +17,14 @@ struct Diagnostic;
 
 namespace Holonight {
 
-enum class ResolvedShapeStyle { Inherit, Hybrid, Rounded, Chamfered };
+// These installed public enums retain their existing representation for C++ consumers.
+// NOLINTNEXTLINE(performance-enum-size)
+enum class ResolvedShapeStyle : int { Inherit, Hybrid, Rounded, Chamfered };
 
-enum class AppearanceDiagnosticCode { Configuration, UnsupportedScheme, UnsupportedAccent };
-enum class AppearanceDiagnosticSeverity { Info, Error, Warning };
+// NOLINTNEXTLINE(performance-enum-size)
+enum class AppearanceDiagnosticCode : int { Configuration, UnsupportedScheme, UnsupportedAccent };
+// NOLINTNEXTLINE(performance-enum-size)
+enum class AppearanceDiagnosticSeverity : int { Info, Error, Warning };
 
 struct AppearanceDiagnostic {
   AppearanceDiagnosticCode code = AppearanceDiagnosticCode::Configuration;

@@ -13,7 +13,9 @@ enum class ColorMode : uint8_t {
   Light,
 };
 
-enum class ThemeSchemeKind {
+// Keep the installed C++ API's enum representation stable.
+// NOLINTNEXTLINE(performance-enum-size)
+enum class ThemeSchemeKind : int {
   HoloNightDark,
   HoloNightLight,
   HoloNightMocha,
@@ -32,6 +34,8 @@ enum class ThemeSchemeKind {
   HoloNightGlade,
 };
 
+// These published token names follow the QML API; renaming them would break C++ consumers.
+// NOLINTBEGIN(readability-identifier-naming)
 struct ColorTokens {
   // Canonical surface roles
   QColor background;            // #10131f  Main window/background plane
@@ -116,6 +120,7 @@ struct ColorTokens {
 
   [[nodiscard]] bool operator==(const ColorTokens&) const noexcept = default;
 };
+// NOLINTEND(readability-identifier-naming)
 
 [[nodiscard]] ColorTokens tokensForScheme(ThemeSchemeKind scheme);
 [[nodiscard]] QPalette buildPalette(const ColorTokens& tokens);
