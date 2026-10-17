@@ -67,6 +67,13 @@ truly unavailable.
 For filled primary controls, use the complete foreground/background pair. Do not place `textPrimary` on
 `primary`; use `onPrimary`.
 
+Text selection in TextField, TextArea, SpinBox, HnSearchField, and HnTextArea uses the opaque
+`primary` background with `onPrimary` selected text, matching HnIconComboBox. The input style does not
+reduce selection opacity. Application or control `QPalette::Highlight` and `QPalette::HighlightedText`
+overrides are preserved with their exact alpha, including transparent highlights and disabled-group colors.
+Composites seed their own appearance palette; override the underlying editor palette when needed.
+Quiet selected-item surfaces continue to use `surfaceSelected` and `surfaceSelectedHover`.
+
 ### Borders and focus
 
 | Token | Default | Use for |

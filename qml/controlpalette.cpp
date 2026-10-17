@@ -131,9 +131,7 @@ QVariantMap ControlPalette::colors() const {
   direct("borderActive", QPalette::Highlight, tokens_.borderActive);
   direct("tooltipBase", QPalette::ToolTipBase, tokens_.surfaceRaised);
   direct("tooltipText", QPalette::ToolTipText, tokens_.textPrimary);
-  QColor selection = tokens_.primary;
-  selection.setAlphaF(0.3);
-  direct("selection", QPalette::Highlight, selection);
+  direct("selection", QPalette::Highlight, tokens_.primary);
   derived("buttonHover", QPalette::Button, QPalette::ButtonText, 0.1, tokens_.surfaceHover);
   derived("surfaceHover", fill, text, 0.1, tokens_.surfaceHover);
   derived("primaryHover", QPalette::Highlight, QPalette::HighlightedText, 0.1, tokens_.primaryHover);

@@ -66,15 +66,15 @@ TEST_F(QuickPalette, ApplicationBlackWhiteBlackUpdatesEditableColors) {
     palette.setColor(QPalette::Base, base);
     palette.setColor(QPalette::Text, text);
     palette.setColor(QPalette::PlaceholderText, QColor("#9374ab"));
-    palette.setColor(QPalette::Highlight, QColor("#557799"));
-    palette.setColor(QPalette::HighlightedText, QColor("#ffeedd"));
+    palette.setColor(QPalette::Highlight, base == Qt::white ? QColor("#00557799") : QColor("#80557799"));
+    palette.setColor(QPalette::HighlightedText, QColor("#c0ffeedd"));
     QGuiApplication::setPalette(palette);
     QCoreApplication::processEvents();
     EXPECT_EQ(background->property("color").value<QColor>(), base);
     EXPECT_EQ(field->property("color").value<QColor>(), text);
     EXPECT_EQ(field->property("placeholderTextColor").value<QColor>(), QColor("#9374ab"));
-    EXPECT_EQ(field->property("selectionColor").value<QColor>(), QColor("#557799"));
-    EXPECT_EQ(field->property("selectedTextColor").value<QColor>(), QColor("#ffeedd"));
+    EXPECT_EQ(field->property("selectionColor").value<QColor>(), palette.color(QPalette::Highlight));
+    EXPECT_EQ(field->property("selectedTextColor").value<QColor>(), palette.color(QPalette::HighlightedText));
   }
 }
 
@@ -245,6 +245,118 @@ Holonight::ColorTokens appearanceTokens() {
   return Holonight::ThemeResolver::resolve(*Holonight::resolveAppearance(loaded.value->appearance).value);
 }
 
+TEST_F(QuickPalette, TextSelectionUsesPrimaryPairAndPreservesPaletteOverrides) {
+  const auto tokens = appearanceTokens();
+  for (const auto* type : {"C.TextField", "C.TextArea", "C.SpinBox", "HnSearchField", "HnTextArea"}) {
+    SCOPED_TRACE(type);
+    for (const bool in_window : {false, true}) {
+      SCOPED_TRACE(in_window ? "inactive window" : "active standalone");
+      const QByteArray imports = "import QtQuick; import QtQuick.Controls as C; import Holonight.Controls; ";
+      auto object = create(imports + (in_window ? "Window { " : "") + type + " { objectName: 'control' }" +
+                           (in_window ? " }" : ""));
+      ASSERT_TRUE(object);
+      auto* control = in_window ? object->findChild<QObject*>("control") : object.get();
+      ASSERT_TRUE(control);
+      QObject* editor = control;
+      if (!editor->property("selectionColor").isValid()) {
+        editor = nullptr;
+        for (auto* child : control->findChildren<QObject*>()) {
+          if (child->property("selectionColor").isValid()) {
+            editor = child;
+            break;
+          }
+        }
+      }
+      ASSERT_TRUE(editor);
+      auto expectPair = [&](const QColor& background, const QColor& foreground) {
+        EXPECT_EQ(editor->property("selectionColor").value<QColor>(), background);
+        EXPECT_EQ(editor->property("selectedTextColor").value<QColor>(), foreground);
+      };
+      for (const bool read_only : {false, true}) {
+        if (control->property("editable").isValid()) {
+          ASSERT_TRUE(control->setProperty("editable", !read_only));
+        } else {
+          ASSERT_TRUE(control->setProperty("readOnly", read_only));
+        }
+        expectPair(tokens.primary, tokens.onPrimary);
+      }
+      // SpinBox owns its editor's colors; its public palette is on the control.
+      auto* palette_owner = QByteArray(type) == "C.SpinBox" ? control : editor;
+      auto* palette = palette_owner->property("palette").value<QObject*>();
+      ASSERT_TRUE(palette);
+      for (const auto* group : {"active", "inactive"}) {
+        auto* group_palette = palette->property(group).value<QObject*>();
+        ASSERT_TRUE(group_palette);
+        ASSERT_TRUE(
+            group_palette->setProperty("highlight", QColor(group == QByteArray("active") ? "#60112233" : "#90445566")));
+        ASSERT_TRUE(group_palette->setProperty("highlightedText", QColor("#c0eeddcc")));
+      }
+      expectPair(QColor(in_window ? "#90445566" : "#60112233"), QColor("#c0eeddcc"));
+      for (const auto background : {QColor("#40556677"), QColor("#00556677")}) {
+        ASSERT_TRUE(palette->setProperty("highlight", background));
+        ASSERT_TRUE(palette->setProperty("highlightedText", QColor("#80776655")));
+        expectPair(background, QColor("#80776655"));
+      }
+      auto* disabled = palette->property("disabled").value<QObject*>();
+      ASSERT_TRUE(disabled);
+      ASSERT_TRUE(disabled->setProperty("highlight", QColor("#20556677")));
+      ASSERT_TRUE(disabled->setProperty("highlightedText", QColor("#40776655")));
+      ASSERT_TRUE(control->setProperty("enabled", false));
+      expectPair(QColor("#20556677"), QColor("#40776655"));
+    }
+  }
+  auto combo = create("import Holonight.Controls; HnIconComboBox { editable: true }");
+  ASSERT_TRUE(combo);
+  auto* editor = combo->property("contentItem").value<QQuickItem*>();
+  ASSERT_TRUE(editor);
+  EXPECT_EQ(editor->property("selectionColor").value<QColor>(), tokens.primary);
+  EXPECT_EQ(editor->property("selectedTextColor").value<QColor>(), tokens.onPrimary);
+}
+
+TEST_F(QuickPalette, OffscreenRenderingTextSelectionUsesOpaquePrimary) {
+  const auto tokens = appearanceTokens();
+  for (const auto* type : {"TextField", "TextArea"}) {
+    SCOPED_TRACE(type);
+    auto object = create(QByteArray("import QtQuick; import Holonight; Window { ") +
+                         "width: 300; height: 80; visible: true; " + type + R"( {
+        objectName: "editor"; width: 280; height: 60
+        text: "M          M"; font.pixelSize: 24
+        persistentSelection: true
+    } })");
+    ASSERT_TRUE(object);
+    auto* window = qobject_cast<QQuickWindow*>(object.get());
+    ASSERT_TRUE(window);
+    auto* editor = window->findChild<QQuickItem*>("editor");
+    ASSERT_TRUE(editor);
+    for (const bool read_only : {false, true}) {
+      ASSERT_TRUE(editor->setProperty("readOnly", read_only));
+      ASSERT_TRUE(QMetaObject::invokeMethod(editor, "selectAll"));
+      EXPECT_EQ(editor->property("selectedText").toString(), "M          M");
+      // Sample a block inside the selected spaces, away from glyphs and borders.
+      // Its position follows text layout rather than assuming a particular font.
+      QRectF space;
+      ASSERT_TRUE(QMetaObject::invokeMethod(editor, "positionToRectangle", Q_RETURN_ARG(QRectF, space), Q_ARG(int, 5)));
+      const auto point = editor->mapToScene(space.center()).toPoint();
+      EXPECT_TRUE(QTest::qWaitFor(
+          [&] {
+            const auto rendered = window->grabWindow();
+            if (rendered.isNull()) {
+              return false;
+            }
+            for (int y = -1; y <= 1; ++y) {
+              for (int x = -1; x <= 1; ++x) {
+                if (logicalPixel(rendered, window, point.x() + x, point.y() + y) != tokens.primary) {
+                  return false;
+                }
+              }
+            }
+            return true;
+          },
+          2000));
+    }
+  }
+}
+
 TEST_F(QuickPalette, DefaultSemanticColorsRemainExact) {
   const auto tokens = appearanceTokens();
   auto window = create(R"(
@@ -267,9 +379,8 @@ Window {
   EXPECT_EQ(background(field), tokens.surface);
   EXPECT_EQ(field->property("color").value<QColor>(), tokens.textPrimary);
   EXPECT_EQ(field->property("placeholderTextColor").value<QColor>(), tokens.textMuted);
-  auto selection = tokens.primary;
-  selection.setAlphaF(0.3);
-  EXPECT_EQ(field->property("selectionColor").value<QColor>(), selection);
+  EXPECT_EQ(field->property("selectionColor").value<QColor>(), tokens.primary);
+  EXPECT_EQ(field->property("selectedTextColor").value<QColor>(), tokens.onPrimary);
   EXPECT_EQ(background(button), tokens.surfaceRaised);
   EXPECT_EQ(background(tooltip), tokens.surfaceRaised);
   EXPECT_EQ(tooltip->property("contentItem").value<QQuickItem*>()->property("color").value<QColor>(),
