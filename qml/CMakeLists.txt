@@ -145,6 +145,11 @@ set(HOLONIGHT_CONTROLS_PUBLIC_QML_FILES
     controls/HnActionDelegate.qml
     controls/HnStatusIndicator.qml
     controls/HnKeySequenceLabel.qml
+    controls/HnThumbnailDelegate.qml
+    controls/HnPreviewFrame.qml
+    controls/HnLabeledKeyHint.qml
+    controls/HnMetadataList.qml
+    controls/HnBreadcrumbBar.qml
     controls/HnKeyHint.qml
     controls/HnPanelHeader.qml
     controls/HnSegmentedControl.qml

@@ -271,6 +271,9 @@ The demo and controls gallery use namespaced runtime Controls with an embedded H
 overrides remain supported. Follow the [selection and deployment guide](docs/automatic-quick-controls-style-selection.md)
 when adopting the shared library in another application.
 
+File-oriented composites are documented in the [shared file controls guide](docs/shared-file-ui-controls.md)
+and demonstrated on the gallery’s Lists & Selection page.
+
 ## Local push CI rehearsal
 
 See [DEVELOPMENT.md](DEVELOPMENT.md) for current native and container commands.

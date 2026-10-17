@@ -18,26 +18,23 @@ T.ItemDelegate {
     property int sizeRole: HnControlSize.Normal
     property int selectionStyle: HnSelectableDelegate.Fill
     readonly property int resolvedSizeRole: HnMetrics.normalizedSizeRole(root.sizeRole)
-    readonly property bool selected: root.highlighted || root.checked
-                                     || (root.ListView ? root.ListView.isCurrentItem : false)
+    property bool currentItemSelects: true
+    readonly property bool selected: root.highlighted || root.checked || (root.currentItemSelects && root.ListView ? root.ListView.isCurrentItem : false)
     readonly property real semanticSpacing: HnMetrics.internalSpacing(root.resolvedSizeRole)
 
     implicitWidth: Math.max(160, implicitContentWidth + leftPadding + rightPadding)
-    implicitHeight: Math.max(HnMetrics.controlHeight(root.resolvedSizeRole),
-                             implicitContentHeight + topPadding + bottomPadding)
+    implicitHeight: Math.max(HnMetrics.controlHeight(root.resolvedSizeRole), implicitContentHeight + topPadding + bottomPadding)
     padding: HnMetrics.horizontalPadding(root.resolvedSizeRole)
     spacing: root.semanticSpacing
     hoverEnabled: true
 
     background: Item {
-        readonly property real semanticRadius: HnAppearance.roundedRadius(HnSurfaceRole.Control, width, height,
-                                                                          HnAppearance.revision)
+        readonly property real semanticRadius: HnAppearance.roundedRadius(HnSurfaceRole.Control, width, height, HnAppearance.revision)
 
         Rectangle {
             objectName: "hnSelectableDelegateBase"
             anchors.fill: parent
-            color: root.down ? HoloniightPalette.surfaceElevated
-                             : (!root.selected && (root.HnInputInteraction.hoverAllowed && root.hovered) ? HoloniightPalette.surfaceHover : "transparent")
+            color: root.down ? HoloniightPalette.surfaceElevated : (!root.selected && (root.HnInputInteraction.hoverAllowed && root.hovered) ? HoloniightPalette.surfaceHover : "transparent")
             radius: parent.semanticRadius
             Accessible.ignored: true
         }
@@ -46,8 +43,7 @@ T.ItemDelegate {
 
             objectName: "hnSelectableDelegateSelectedOverlay"
             anchors.fill: parent
-            color: (root.HnInputInteraction.hoverAllowed && root.hovered) ? HoloniightPalette.surfaceSelectedHover
-                                : HoloniightPalette.surfaceSelected
+            color: (root.HnInputInteraction.hoverAllowed && root.hovered) ? HoloniightPalette.surfaceSelectedHover : HoloniightPalette.surfaceSelected
             gradient: root.selectionStyle === HnSelectableDelegate.AccentEdge ? selectionGradient : null
             radius: parent.semanticRadius
             visible: root.selected && !root.down
@@ -85,14 +81,13 @@ T.ItemDelegate {
             }
         }
         Rectangle {
+            objectName: "hnSelectableDelegateOutline"
+            visible: border.width > 0
             anchors.fill: parent
             color: "transparent"
             radius: parent.semanticRadius
-            border.width: root.visualFocus
-                          || (root.selected && root.selectionStyle === HnSelectableDelegate.Outline)
-                          ? HnMetrics.focusBorderWidth : 0
-            border.color: root.visualFocus ? HoloniightPalette.borderFocus
-                                           : HoloniightPalette.selectionIndicator
+            border.width: root.visualFocus || (root.selected && root.selectionStyle === HnSelectableDelegate.Outline) ? HnMetrics.focusBorderWidth : 0
+            border.color: root.visualFocus ? HoloniightPalette.borderFocus : HoloniightPalette.selectionIndicator
             Accessible.ignored: true
         }
     }

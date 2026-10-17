@@ -5265,3 +5265,117 @@ TEST_F(QmlSmoke, Controls_KeyHintLowercasesOnlyLettersWhenOptedIn) {
   ASSERT_TRUE(QMetaObject::invokeMethod(hint.get(), "literal"));
   EXPECT_EQ(hint->property("spokenName").toString(), "Literal GG");
 }
+
+TEST_F(QmlSmoke, Controls_FilePresentationStableGeometryAndSemanticHint) {
+  QQmlComponent comp{&engine_};
+  comp.setData(R"(
+    import QtQuick
+    import Holonight.Controls
+    Item {
+      property alias frame: frame
+      property alias hint: hint
+      HnPreviewFrame {
+        id: frame
+        previewContent: Rectangle { implicitWidth: 900; implicitHeight: 700 }
+        loadingContent: Rectangle { implicitWidth: 10; implicitHeight: 10 }
+      }
+      HnLabeledKeyHint {
+        id: hint
+        keyGroups: [[Qt.Key_Control, Qt.Key_L]]
+        description: "Edit location"
+      }
+    }
+  )",
+               QUrl{});
+  ASSERT_EQ(comp.status(), QQmlComponent::Ready) << comp.errorString().toStdString();
+  std::unique_ptr<QObject> root{comp.create()};
+  ASSERT_NE(root, nullptr);
+  auto* frame = root->property("frame").value<QObject*>();
+  const auto width = frame->property("implicitWidth");
+  const auto height = frame->property("implicitHeight");
+  for (int state = 0; state < 4; ++state) {
+    ASSERT_TRUE(frame->setProperty("previewState", state));
+    EXPECT_EQ(frame->property("implicitWidth"), width);
+    EXPECT_EQ(frame->property("implicitHeight"), height);
+  }
+  auto* hint = root->property("hint").value<QObject*>();
+  EXPECT_EQ(hint->property("accessibleText").toString(), QStringLiteral("Ctrl plus L Edit location"));
+  EXPECT_GT(hint->property("implicitWidth").toDouble(), 0);
+}
+
+TEST_F(QmlSmoke, Controls_ThumbnailDoesNotSelectCurrentListItem) {
+  QQmlComponent comp{&engine_};
+  comp.setData(R"(
+    import QtQuick
+    import Holonight.Controls
+    ListView {
+      width: 200; height: 200
+      model: 1
+      delegate: HnThumbnailDelegate { caption: "Image"; width: 100; height: 100 }
+    }
+  )",
+               QUrl{});
+  ASSERT_EQ(comp.status(), QQmlComponent::Ready) << comp.errorString().toStdString();
+  std::unique_ptr<QObject> root{comp.create()};
+  ASSERT_NE(root, nullptr);
+  QCoreApplication::processEvents();
+  auto* item = root->property("currentItem").value<QObject*>();
+  ASSERT_NE(item, nullptr);
+  EXPECT_FALSE(item->property("selected").toBool());
+  ASSERT_TRUE(item->setProperty("checked", true));
+  EXPECT_TRUE(item->property("selected").toBool());
+}
+
+TEST_F(QmlSmoke, Controls_BreadcrumbCollapsesAndMetadataLoads) {
+  checkComponent(engine_, R"(
+    import QtQuick
+    import Holonight.Controls
+    HnMetadataList {
+      width: 200
+      rows: [{heading: "Image"}, {label: "Name", value: "A long name that wraps"}]
+    }
+  )");
+  QQmlComponent comp{&engine_};
+  comp.setData(R"(
+    import QtQuick
+    import Holonight.Controls
+    HnBreadcrumbBar { width: 200; segments: ["/", "same", "same", "current"] }
+  )",
+               QUrl{});
+  ASSERT_EQ(comp.status(), QQmlComponent::Ready) << comp.errorString().toStdString();
+  std::unique_ptr<QObject> root{comp.create()};
+  ASSERT_NE(root, nullptr);
+  EXPECT_TRUE(root->property("collapsed").toBool());
+  root->setProperty("width", 1000);
+  EXPECT_FALSE(root->property("collapsed").toBool());
+}
+
+TEST_F(QmlSmoke, Controls_ThumbnailAndBreadcrumbActivationRetainCallerIndices) {
+  QQmlComponent comp{&engine_};
+  comp.setData(R"(
+    import QtQuick
+    import Holonight.Controls
+    Item {
+      property alias thumbnail: thumbnail
+      property alias breadcrumbs: breadcrumbs
+      property int activations: 0
+      property int ancestor: -1
+      function activateAncestor() { breadcrumbs.overflowMenu.itemAt(1).triggered() }
+      HnThumbnailDelegate { id: thumbnail; caption: "Image"; onActivated: parent.activations++ }
+      HnBreadcrumbBar {
+        id: breadcrumbs; width: 200; segments: ["/", "same", "same", "current"]
+        onSegmentActivated: index => parent.ancestor = index
+      }
+    }
+  )",
+               QUrl{});
+  ASSERT_EQ(comp.status(), QQmlComponent::Ready) << comp.errorString().toStdString();
+  std::unique_ptr<QObject> root{comp.create()};
+  ASSERT_NE(root, nullptr);
+  auto* thumbnail = root->property("thumbnail").value<QObject*>();
+  ASSERT_TRUE(QMetaObject::invokeMethod(thumbnail, "clicked"));
+  EXPECT_EQ(root->property("activations").toInt(), 1);
+  QCoreApplication::processEvents();
+  ASSERT_TRUE(QMetaObject::invokeMethod(root.get(), "activateAncestor"));
+  EXPECT_EQ(root->property("ancestor").toInt(), 2);
+}

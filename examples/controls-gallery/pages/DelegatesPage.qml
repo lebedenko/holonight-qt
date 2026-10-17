@@ -41,7 +41,9 @@ Controls.ScrollView {
                 imageInset: 4
                 fallbackSource: "qrc:/qt/qml/Holonight/Controls/assets/folder.svg"
             }
-            HnAvatar { size: 56 }
+            HnAvatar {
+                size: 56
+            }
         }
 
         HnLabel {
@@ -65,8 +67,16 @@ Controls.ScrollView {
                     checked: true
                     Layout.fillWidth: true
                 }
-                HnNavigationDelegate { title: qsTr("Keyboard-focused navigation"); focus: true; Layout.fillWidth: true }
-                HnNavigationDelegate { title: qsTr("Disabled navigation"); enabled: false; Layout.fillWidth: true }
+                HnNavigationDelegate {
+                    title: qsTr("Keyboard-focused navigation")
+                    focus: true
+                    Layout.fillWidth: true
+                }
+                HnNavigationDelegate {
+                    title: qsTr("Disabled navigation")
+                    enabled: false
+                    Layout.fillWidth: true
+                }
                 HnListDelegate {
                     title: qsTr("Descriptive list row")
                     subtitle: qsTr("Long secondary text wraps while metadata and trailing content remain optional.")
@@ -110,6 +120,59 @@ Controls.ScrollView {
             }
         }
 
+        HnBreadcrumbBar {
+            segments: [qsTr("Home"), qsTr("Pictures"), qsTr("A long current location")]
+            Layout.fillWidth: true
+            Layout.leftMargin: 32
+            Layout.rightMargin: 32
+        }
+        RowLayout {
+            Layout.fillWidth: true
+            Layout.leftMargin: 32
+            Layout.rightMargin: 32
+            HnThumbnailDelegate {
+                caption: qsTr("Selected thumbnail")
+                checked: true
+                showSelectionMarker: true
+                Layout.preferredWidth: 180
+                Layout.preferredHeight: 160
+                thumbnailContent: HnIcon {
+                    source: "qrc:/qt/qml/Holonight/Controls/assets/folder.svg"
+                    size: 64
+                }
+            }
+            HnPreviewFrame {
+                Layout.fillWidth: true
+                previewState: HnPreviewFrame.Empty
+                emptyContent: HnEmptyState {
+                    titleText: qsTr("Select an image")
+                }
+            }
+        }
+        HnMetadataList {
+            Layout.fillWidth: true
+            Layout.leftMargin: 32
+            Layout.rightMargin: 32
+            rows: [
+                {
+                    heading: qsTr("Image information")
+                },
+                {
+                    label: qsTr("Dimensions"),
+                    value: "1920 × 1080"
+                },
+                {
+                    label: qsTr("Description"),
+                    value: qsTr("Caller-formatted metadata wraps in narrow layouts.")
+                }
+            ]
+        }
+        HnLabeledKeyHint {
+            Layout.leftMargin: 32
+            keyGroups: [[Qt.Key_Control, Qt.Key_L]]
+            description: qsTr("Edit location")
+        }
+
         HnSeparator {
             Layout.fillWidth: true
             Layout.leftMargin: 32
@@ -125,7 +188,16 @@ Controls.ScrollView {
         }
 
         HnSegmentedControl {
-            model: [{ text: qsTr("List"), value: "list" }, { text: qsTr("Grid"), value: "grid" }]
+            model: [
+                {
+                    text: qsTr("List"),
+                    value: "list"
+                },
+                {
+                    text: qsTr("Grid"),
+                    value: "grid"
+                }
+            ]
             Layout.leftMargin: 32
         }
 
@@ -134,7 +206,9 @@ Controls.ScrollView {
             Layout.leftMargin: 32
             Layout.rightMargin: 32
 
-            Controls.ButtonGroup { id: galleryChoices }
+            Controls.ButtonGroup {
+                id: galleryChoices
+            }
 
             HnChoiceCard {
                 title: qsTr("Dark")
