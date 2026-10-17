@@ -13,11 +13,20 @@ C.Control {
     property var segments: []
     property real segmentWidth: 150
     property bool editable: true
-    readonly property bool collapsed: segments.length > 2 && width < segments.length * segmentWidth
+    readonly property real expandedWidth: {
+        let total = root.editable ? editButton.implicitWidth + trail.spacing : 0;
+        for (let index = 0; index < segmentRepeater.count; ++index) {
+            const item = segmentRepeater.itemAt(index);
+            if (item)
+                total += Math.min(root.segmentWidth, item.implicitWidth) + (index > 0 ? trail.spacing : 0);
+        }
+        return total;
+    }
+    readonly property bool collapsed: segments.length > 2 && width < expandedWidth
     readonly property alias overflowMenu: overflow
     signal segmentActivated(int index)
     signal locationEditRequested
-    implicitWidth: trail.implicitWidth
+    implicitWidth: expandedWidth
     implicitHeight: trail.implicitHeight
     Keys.onPressed: event => {
         if (event.key === Qt.Key_L && (event.modifiers & Qt.ControlModifier)) {
@@ -54,6 +63,7 @@ C.Control {
             }
         }
         Repeater {
+            id: segmentRepeater
             model: root.segments
             delegate: C.ToolButton {
                 id: segment
@@ -74,6 +84,7 @@ C.Control {
             }
         }
         C.ToolButton {
+            id: editButton
             visible: root.editable
             text: qsTr("Edit")
             Accessible.name: qsTr("Edit location")

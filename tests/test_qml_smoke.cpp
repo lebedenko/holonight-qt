@@ -5339,7 +5339,11 @@ TEST_F(QmlSmoke, Controls_BreadcrumbCollapsesAndMetadataLoads) {
   comp.setData(R"(
     import QtQuick
     import Holonight.Controls
-    HnBreadcrumbBar { width: 200; segments: ["/", "same", "same", "current"] }
+    HnBreadcrumbBar {
+      width: 200; segments: ["/", "same", "same", "current"]
+      function longer() { segments = ["root", "a very long ancestor", "a very long ancestor", "a very long current"] }
+      function shorter() { segments = ["/", "a", "b", "c"] }
+    }
   )",
                QUrl{});
   ASSERT_EQ(comp.status(), QQmlComponent::Ready) << comp.errorString().toStdString();
@@ -5347,6 +5351,19 @@ TEST_F(QmlSmoke, Controls_BreadcrumbCollapsesAndMetadataLoads) {
   ASSERT_NE(root, nullptr);
   EXPECT_TRUE(root->property("collapsed").toBool());
   root->setProperty("width", 1000);
+  EXPECT_FALSE(root->property("collapsed").toBool());
+  // Fit the measured short labels, even below the sum of maximum segment widths.
+  const auto natural_width = root->property("expandedWidth").toDouble();
+  ASSERT_GT(natural_width, 0);
+  EXPECT_LT(natural_width, 600);
+  root->setProperty("width", natural_width + 1);
+  EXPECT_FALSE(root->property("collapsed").toBool());
+  root->setProperty("width", 350);
+  ASSERT_TRUE(QMetaObject::invokeMethod(root.get(), "longer"));
+  QCoreApplication::processEvents();
+  EXPECT_TRUE(root->property("collapsed").toBool());
+  ASSERT_TRUE(QMetaObject::invokeMethod(root.get(), "shorter"));
+  QCoreApplication::processEvents();
   EXPECT_FALSE(root->property("collapsed").toBool());
 }
 
