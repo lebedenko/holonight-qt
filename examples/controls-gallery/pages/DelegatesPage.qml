@@ -11,6 +11,7 @@ import Holonight.Controls
 
 Controls.ScrollView {
     id: root
+    objectName: "DelegatesPage"
 
     contentWidth: availableWidth
 
@@ -27,7 +28,7 @@ Controls.ScrollView {
 
         HnLabel {
             role: HnTypographyRole.Title
-            rawText: qsTr("Avatars")
+            rawText: "HnAvatar"
             Layout.leftMargin: 32
         }
         RowLayout {
@@ -48,12 +49,12 @@ Controls.ScrollView {
 
         HnLabel {
             role: HnTypographyRole.Title
-            rawText: qsTr("Navigation & List Delegates")
+            rawText: "HnNavigationDelegate"
             Layout.leftMargin: 32
             Layout.topMargin: 8
         }
 
-        RowLayout {
+        ColumnLayout {
             Layout.fillWidth: true
             Layout.leftMargin: 32
             Layout.rightMargin: 32
@@ -77,6 +78,8 @@ Controls.ScrollView {
                     enabled: false
                     Layout.fillWidth: true
                 }
+                HnLabel { role: HnTypographyRole.Title; rawText: "HnListDelegate" }
+
                 HnListDelegate {
                     title: qsTr("Descriptive list row")
                     subtitle: qsTr("Long secondary text wraps while metadata and trailing content remain optional.")
@@ -111,14 +114,40 @@ Controls.ScrollView {
                 }
             }
 
+            HnLabel { role: HnTypographyRole.Title; rawText: "HnCardDelegate" }
+
             HnCardDelegate {
-                title: qsTr("Selected card")
+                title: qsTr("Click to toggle selection")
                 subtitle: qsTr("Outlined selection on an elevated surface.")
                 statusText: qsTr("Ready")
                 checked: true
+                checkable: true
+                objectName: "selectableCard"
                 Layout.fillWidth: true
             }
         }
+
+        HnLabel { role: HnTypographyRole.Title; rawText: "HnActionDelegate"; Layout.leftMargin: 32 }
+
+        HnActionDelegate {
+            title: qsTr("Open folder")
+            description: qsTr("An action with an icon and navigation chevron.")
+            iconSource: "qrc:/qt/qml/Holonight/Controls/assets/folder.svg"
+            Layout.fillWidth: true
+            Layout.leftMargin: 32
+            Layout.rightMargin: 32
+        }
+        HnActionDelegate {
+            title: qsTr("Disabled action without chevron")
+            description: qsTr("Optional trailing navigation indicator.")
+            showChevron: false
+            enabled: false
+            Layout.fillWidth: true
+            Layout.leftMargin: 32
+            Layout.rightMargin: 32
+        }
+
+        HnLabel { role: HnTypographyRole.Title; rawText: "HnBreadcrumbBar"; Layout.leftMargin: 32 }
 
         HnBreadcrumbBar {
             segments: [qsTr("Home"), qsTr("Pictures"), qsTr("A long current location")]
@@ -126,29 +155,49 @@ Controls.ScrollView {
             Layout.leftMargin: 32
             Layout.rightMargin: 32
         }
-        RowLayout {
+        HnLabel { role: HnTypographyRole.Title; rawText: "HnThumbnailDelegate"; Layout.leftMargin: 32 }
+
+        HnThumbnailDelegate {
+            objectName: "selectableThumbnail"
+            checkable: true
+            caption: qsTr("Click to toggle selection")
+            checked: true
+            showSelectionMarker: true
+            Layout.leftMargin: 32
+            Layout.preferredWidth: 180
+            Layout.preferredHeight: 160
+            thumbnailContent: HnIcon {
+                source: "qrc:/qt/qml/Holonight/Controls/assets/folder.svg"
+                size: 64
+            }
+        }
+
+        HnLabel { role: HnTypographyRole.Title; rawText: "HnPreviewFrame"; Layout.leftMargin: 32 }
+
+        Controls.ComboBox {
+            id: previewSelector
+            objectName: "previewSelector"
+            Layout.leftMargin: 32
+            model: [qsTr("Content"), qsTr("Loading"), qsTr("Empty"), qsTr("Error")]
+            currentIndex: 2
+        }
+        HnPreviewFrame {
+            objectName: "previewFrame"
             Layout.fillWidth: true
             Layout.leftMargin: 32
             Layout.rightMargin: 32
-            HnThumbnailDelegate {
-                caption: qsTr("Selected thumbnail")
-                checked: true
-                showSelectionMarker: true
-                Layout.preferredWidth: 180
-                Layout.preferredHeight: 160
-                thumbnailContent: HnIcon {
-                    source: "qrc:/qt/qml/Holonight/Controls/assets/folder.svg"
-                    size: 64
-                }
+            previewState: previewSelector.currentIndex
+            previewContent: HnIcon { source: "qrc:/qt/qml/Holonight/Controls/assets/folder.svg"; size: 64 }
+            loadingContent: HnLoadingState { titleText: qsTr("Loading preview") }
+            errorContent: HnEmptyState {
+                titleText: qsTr("Preview unavailable")
+                descriptionText: qsTr("Try another image.")
             }
-            HnPreviewFrame {
-                Layout.fillWidth: true
-                previewState: HnPreviewFrame.Empty
-                emptyContent: HnEmptyState {
-                    titleText: qsTr("Select an image")
-                }
-            }
+            emptyContent: HnEmptyState { titleText: qsTr("Select an image") }
         }
+
+        HnLabel { role: HnTypographyRole.Title; rawText: "HnMetadataList"; Layout.leftMargin: 32 }
+
         HnMetadataList {
             Layout.fillWidth: true
             Layout.leftMargin: 32
@@ -167,6 +216,8 @@ Controls.ScrollView {
                 }
             ]
         }
+        HnLabel { role: HnTypographyRole.Title; rawText: "HnLabeledKeyHint"; Layout.leftMargin: 32 }
+
         HnLabeledKeyHint {
             Layout.leftMargin: 32
             keyGroups: [[Qt.Key_Control, Qt.Key_L]]
@@ -183,7 +234,7 @@ Controls.ScrollView {
 
         HnLabel {
             role: HnTypographyRole.Title
-            rawText: qsTr("Segmented Controls & Choice Cards")
+            rawText: "HnSegmentedControl"
             Layout.leftMargin: 32
         }
 
@@ -200,6 +251,8 @@ Controls.ScrollView {
             ]
             Layout.leftMargin: 32
         }
+
+        HnLabel { role: HnTypographyRole.Title; rawText: "HnChoiceCard"; Layout.leftMargin: 32 }
 
         RowLayout {
             Layout.fillWidth: true

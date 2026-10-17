@@ -11,6 +11,7 @@ import Holonight.Controls
 
 Controls.ScrollView {
     id: root
+    objectName: "InputsPage"
 
     contentWidth: availableWidth
 
@@ -27,13 +28,14 @@ Controls.ScrollView {
 
         HnLabel {
             role: HnTypographyRole.Title
-            rawText: qsTr("Search fields")
+            rawText: "HnSearchField"
             Layout.leftMargin: 32
             Layout.topMargin: 8
         }
 
         Repeater {
             model: [
+                { label: qsTr("Xs"), role: HnControlSize.Xs },
                 { label: qsTr("Compact"), role: HnControlSize.Compact },
                 { label: qsTr("Normal"), role: HnControlSize.Normal },
                 { label: qsTr("Large"), role: HnControlSize.Large },
@@ -124,12 +126,13 @@ Controls.ScrollView {
 
         HnLabel {
             role: HnTypographyRole.Title
-            rawText: qsTr("Icon combo boxes")
+            rawText: "HnIconComboBox"
             Layout.leftMargin: 32
         }
 
         Repeater {
             model: [
+                { label: qsTr("Xs"), role: HnControlSize.Xs },
                 { label: qsTr("Compact"), role: HnControlSize.Compact },
                 { label: qsTr("Normal"), role: HnControlSize.Normal },
                 { label: qsTr("Large"), role: HnControlSize.Large },
@@ -209,7 +212,7 @@ Controls.ScrollView {
 
         HnLabel {
             role: HnTypographyRole.Title
-            rawText: qsTr("Text areas and form structure")
+            rawText: "HnTextArea"
             Layout.leftMargin: 32
         }
 
@@ -256,6 +259,8 @@ Controls.ScrollView {
                 Layout.fillWidth: true
             }
         }
+
+        HnLabel { role: HnTypographyRole.Title; rawText: "HnFormField"; Layout.leftMargin: 32 }
 
         HnFormField {
             labelText: qsTr("Project name")

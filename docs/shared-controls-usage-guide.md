@@ -339,3 +339,22 @@ own content, translated dialog identities and any additional closing shortcuts.
 control and icon dimensions, a close glyph and `HnButtonSurface`. Supply a
 translated `Accessible.name` and connect `onClicked` to the popup's `close()`.
 These additive APIs do not alter HnIconButton or HnSurfaceFrame.
+
+## Example coverage
+
+The controls gallery showcases all 34 public `Holonight.Controls` composites and
+three visual Core primitives: `HnLabel`, `HnIcon`, and `HnButtonSurface`. Headings
+use exact, untranslated QML type names above each example group; descriptive
+captions remain translatable. The gallery shell identifies `HnApplicationWindow`.
+Popup examples identify both `HnPopupCard` and `HnPopupCloseButton`.
+
+Use the preview selector to cycle through content, loading, empty, and error
+states. Click the card and thumbnail to compare selection appearances. Size
+matrices include Xs, Compact, Normal, Large, and Hero; typography presets wrap
+with the available width.
+
+Together, the gallery and demo exercise all 27 standard HoloNight style
+implementations. The demo's secondary application window is created on demand
+and demonstrates a standard menu bar and an independent popup; close and reopen
+it to repeat the example. Both apps preserve explicit runtime style overrides,
+including Fusion, while defaulting to Holonight through their embedded config.

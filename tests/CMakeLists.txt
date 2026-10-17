@@ -189,11 +189,15 @@ add_executable(holonight_qml_smoke_tests
     main.cpp
     test_qml_smoke.cpp
     test_qml_avatar.cpp
+    test_example_coverage.cpp
 )
 
 set_target_properties(holonight_qml_smoke_tests PROPERTIES AUTOMOC ON)
 
+string(JOIN "," example_composite_types ${HOLONIGHT_CONTROLS_PUBLIC_TYPES})
 target_compile_definitions(holonight_qml_smoke_tests PRIVATE
+    HOLONIGHT_SOURCE_DIR="${CMAKE_SOURCE_DIR}"
+    HOLONIGHT_COMPOSITE_TYPES="${example_composite_types}"
     HOLONIGHT_QML_IMPORT_PATH="${CMAKE_BINARY_DIR}/qml"
 )
 
@@ -417,4 +421,13 @@ foreach(mode IN ITEMS widgets file folder)
   add_test(NAME holonight_portal_consumer_${mode} COMMAND ${Python3_EXECUTABLE}
       ${CMAKE_CURRENT_SOURCE_DIR}/run_portal_tests.py $<TARGET_FILE:holonight_portal_consumer_probe>
       $<TARGET_FILE:holonight_fake_file_portal> ${CMAKE_BINARY_DIR}/lib/qt6/plugins ${mode})
+endforeach()
+
+foreach(style IN ITEMS Holonight Fusion)
+  foreach(scale IN ITEMS 1 1.25)
+    add_test(NAME holonight_example_coverage_${style}_${scale}
+        COMMAND holonight_qml_smoke_tests "--gtest_filter=ExampleCoverage.*")
+    set_property(TEST holonight_example_coverage_${style}_${scale} PROPERTY ENVIRONMENT
+        "${HOLONIGHT_TEST_ENV};QT_QUICK_BACKEND=software;QT_QUICK_CONTROLS_STYLE=${style};QT_SCALE_FACTOR=${scale}")
+  endforeach()
 endforeach()

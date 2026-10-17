@@ -12,6 +12,7 @@ import ".."
 
 Controls.ScrollView {
     id: root
+    objectName: "SurfacesPage"
 
     contentWidth: availableWidth
 
@@ -35,6 +36,12 @@ Controls.ScrollView {
             Layout.rightMargin: 32
         }
 
+        HnLabel { role: HnTypographyRole.Title; rawText: "HnIcon"; Layout.leftMargin: 32 }
+
+        HnIcon { source: "qrc:/qt/qml/Holonight/Controls/assets/folder.svg"; size: 32; Layout.leftMargin: 32 }
+
+        HnLabel { role: HnTypographyRole.Title; rawText: "HnSurfaceFrame"; Layout.leftMargin: 32 }
+
         SurfaceHierarchyExample {
             Layout.fillWidth: true
             Layout.leftMargin: 32
@@ -51,7 +58,7 @@ Controls.ScrollView {
 
         HnLabel {
             role: HnTypographyRole.Title
-            rawText: qsTr("Header & Title Controls")
+            rawText: "HnAppTitle"
             Layout.leftMargin: 32
         }
 
@@ -73,6 +80,8 @@ Controls.ScrollView {
             }
         }
 
+        HnLabel { role: HnTypographyRole.Title; rawText: "HnHeaderBar"; Layout.leftMargin: 32 }
+
         HnHeaderBar {
             dividerInset: 12
             content: HnAppTitle {
@@ -85,6 +94,8 @@ Controls.ScrollView {
             Layout.rightMargin: 32
         }
 
+        HnLabel { role: HnTypographyRole.Title; rawText: "HnPanelHeader"; Layout.leftMargin: 32 }
+
         HnPanelHeader {
             title: qsTr("Selection and composition")
             description: qsTr("Reusable navigation, list, card, status, choice, and action patterns.")
@@ -96,7 +107,7 @@ Controls.ScrollView {
 
         HnLabel {
             role: HnTypographyRole.Title
-            rawText: qsTr("Keyboard hints")
+            rawText: "HnKeyHint"
             Layout.leftMargin: 32
         }
 
@@ -136,14 +147,6 @@ Controls.ScrollView {
             }
         }
 
-        HnKeySequenceLabel {
-            Layout.leftMargin: 32
-            keyGroups: [[Qt.Key_Control, Qt.Key_Shift, Qt.Key_Return], [Qt.Key_Tab]]
-            font.pointSize: hintSize.value
-            font.family: hintFamily.currentText
-            color: HoloniightPalette.textMuted
-        }
-
         HnKeyHint {
             Layout.leftMargin: 32
             keyGroups: [[Qt.Key_Control, Qt.Key_0]]
@@ -175,6 +178,18 @@ Controls.ScrollView {
             font.pointSize: hintSize.value
             font.family: hintFamily.currentText
         }
+
+        HnLabel { role: HnTypographyRole.Title; rawText: "HnKeySequenceLabel"; Layout.leftMargin: 32 }
+
+        HnKeySequenceLabel {
+            Layout.leftMargin: 32
+            keyGroups: [[Qt.Key_Control, Qt.Key_Shift, Qt.Key_Return], [Qt.Key_Tab]]
+            font.pointSize: hintSize.value
+            font.family: hintFamily.currentText
+            color: HoloniightPalette.textMuted
+        }
+
+        HnLabel { role: HnTypographyRole.Title; rawText: "HnSectionHeader"; Layout.leftMargin: 32 }
 
         HnSectionHeader {
             titleText: qsTr("CATEGORY HEADER")

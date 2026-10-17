@@ -11,6 +11,7 @@ import Holonight.Controls
 
 Controls.ScrollView {
     id: root
+    objectName: "ButtonsPage"
 
     HnPopupCard {
         id: card
@@ -31,25 +32,6 @@ Controls.ScrollView {
         width: parent.width
         spacing: 16
 
-        RowLayout {
-            Layout.leftMargin: 32
-            Layout.topMargin: 24
-            Controls.Button { text: qsTr("Open shared card"); onClicked: card.open() }
-            Repeater {
-                model: ["idle", "hover", "pressed", "focus", "floating"]
-                delegate: HnButtonSurface {
-                    required property string modelData
-                    Layout.preferredWidth: 64
-                    Layout.preferredHeight: 40
-                    hovered: modelData === "hover"
-                    pressed: modelData === "pressed"
-                    focusVisible: modelData === "focus"
-                    floating: modelData === "floating"
-                    HnLabel { anchors.centerIn: parent; rawText: parent.modelData }
-                }
-            }
-        }
-
         HnLabel {
             role: HnTypographyRole.Heading
             rawText: qsTr("Buttons & Actions")
@@ -57,9 +39,38 @@ Controls.ScrollView {
             Layout.topMargin: 24
         }
 
+        HnLabel { role: HnTypographyRole.Title; rawText: "HnPopupCard / HnPopupCloseButton"; Layout.leftMargin: 32 }
+        Controls.Button { text: qsTr("Open shared card"); Layout.leftMargin: 32; onClicked: card.open() }
+
+        HnLabel { role: HnTypographyRole.Title; rawText: "HnButtonSurface"; Layout.leftMargin: 32 }
+
+        RowLayout {
+            Layout.leftMargin: 32
+            Layout.topMargin: 24
+            Repeater {
+                model: [
+                    { label: qsTr("Idle"), state: "idle" },
+                    { label: qsTr("Hover"), state: "hover" },
+                    { label: qsTr("Pressed"), state: "pressed" },
+                    { label: qsTr("Focus"), state: "focus" },
+                    { label: qsTr("Floating"), state: "floating" }
+                ]
+                delegate: HnButtonSurface {
+                    required property var modelData
+                    Layout.preferredWidth: 64
+                    Layout.preferredHeight: 40
+                    hovered: modelData.state === "hover"
+                    pressed: modelData.state === "pressed"
+                    focusVisible: modelData.state === "focus"
+                    floating: modelData.state === "floating"
+                    HnLabel { anchors.centerIn: parent; rawText: parent.modelData.label }
+                }
+            }
+        }
+
         HnLabel {
             role: HnTypographyRole.Title
-            rawText: qsTr("Icon actions and menus")
+            rawText: "HnIconButton"
             Layout.leftMargin: 32
             Layout.topMargin: 8
         }
@@ -70,6 +81,11 @@ Controls.ScrollView {
             Layout.leftMargin: 32
             Layout.rightMargin: 32
 
+            HnIconButton {
+                sizeRole: HnControlSize.Xs
+                icon.source: "qrc:/qt/qml/Holonight/Controls/assets/edit.svg"
+                Accessible.name: qsTr("Extra small edit")
+            }
             HnIconButton {
                 sizeRole: HnControlSize.Compact
                 icon.source: "qrc:/qt/qml/Holonight/Controls/assets/more-vertical.svg"
@@ -195,7 +211,7 @@ Controls.ScrollView {
 
         HnLabel {
             role: HnTypographyRole.Title
-            rawText: qsTr("Action bar")
+            rawText: "HnActionBar"
             Layout.leftMargin: 32
         }
 

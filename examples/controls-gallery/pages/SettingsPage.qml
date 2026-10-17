@@ -11,6 +11,7 @@ import Holonight.Controls
 
 Controls.ScrollView {
     id: root
+    objectName: "SettingsPage"
 
     contentWidth: availableWidth
 
@@ -27,13 +28,14 @@ Controls.ScrollView {
 
         HnLabel {
             role: HnTypographyRole.Title
-            rawText: qsTr("Settings & State Controls")
+            rawText: "HnSettingsRow"
             Layout.leftMargin: 32
             Layout.topMargin: 8
         }
 
         Repeater {
             model: [
+                { label: qsTr("Xs"), role: HnControlSize.Xs },
                 { label: qsTr("Compact"), role: HnControlSize.Compact },
                 { label: qsTr("Normal"), role: HnControlSize.Normal },
                 { label: qsTr("Large"), role: HnControlSize.Large },
@@ -137,7 +139,7 @@ Controls.ScrollView {
 
         HnLabel {
             role: HnTypographyRole.Title
-            rawText: qsTr("Color pickers")
+            rawText: "HnColorPicker"
             Layout.leftMargin: 32
         }
 
@@ -218,7 +220,7 @@ Controls.ScrollView {
 
         HnLabel {
             role: HnTypographyRole.Title
-            rawText: qsTr("Status indicators & Separators")
+            rawText: "HnStatusIndicator"
             Layout.leftMargin: 32
         }
 
@@ -232,6 +234,8 @@ Controls.ScrollView {
             HnStatusIndicator { status: HnStatusIndicator.Warning; text: qsTr("Warning") }
             HnStatusIndicator { status: HnStatusIndicator.Error; text: qsTr("Error") }
         }
+
+        HnLabel { role: HnTypographyRole.Title; rawText: "HnSeparator"; Layout.leftMargin: 32 }
 
         Repeater {
             model: [
@@ -299,7 +303,7 @@ Controls.ScrollView {
 
         HnLabel {
             role: HnTypographyRole.Title
-            rawText: qsTr("Empty & Loading States")
+            rawText: "HnEmptyState"
             Layout.leftMargin: 32
         }
 
@@ -344,6 +348,8 @@ Controls.ScrollView {
             Layout.leftMargin: 32
             Layout.rightMargin: 32
         }
+
+        HnLabel { role: HnTypographyRole.Title; rawText: "HnLoadingState"; Layout.leftMargin: 32 }
 
         RowLayout {
             Layout.fillWidth: true

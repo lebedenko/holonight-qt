@@ -36,6 +36,8 @@ HnApplicationWindow {
                 spacing: 8
                 anchors.fill: parent
 
+                HnLabel { rawText: "HnApplicationWindow"; Layout.leftMargin: 12 }
+
                 HnAppTitle {
                     applicationName: qsTr("Controls Gallery")
                     iconSource: "qrc:/qt/qml/Holonight/Controls/assets/folder.svg"
@@ -71,13 +73,18 @@ HnApplicationWindow {
                     }
 
                     delegate: HnNavigationDelegate {
+                        id: navigationDelegate
                         required property int index
                         required property string titleToken
                         required property string iconToken
 
                         width: ListView.view.width
                         title: qsTr(titleToken)
-                        icon.source: iconToken
+                        leadingContent: HnIcon {
+                            objectName: "sidebarIcon"
+                            source: navigationDelegate.iconToken
+                            size: 20
+                        }
                         checked: navListView.currentIndex === index
                         onClicked: {
                             navListView.currentIndex = index

@@ -11,6 +11,7 @@ import Holonight.Controls
 
 Controls.ScrollView {
     id: root
+    objectName: "TypographyPage"
 
     property int baseFontSizeOverride: HolonightTheme.bodySize
     readonly property real scaleFactor: baseFontSizeOverride / Math.max(1, HolonightTheme.bodySize)
@@ -88,8 +89,13 @@ Controls.ScrollView {
                         rawText: qsTr("%1 pt (%2%)").arg(root.baseFontSizeOverride).arg(Math.round(root.scaleFactor * 100))
                         color: HoloniightPalette.textMuted
                     }
+                }
 
-                    Item { Layout.fillWidth: true }
+                Flow {
+                    objectName: "typographyPresets"
+                    Layout.fillWidth: true
+                    Layout.preferredHeight: implicitHeight
+                    spacing: 8
 
                     Controls.Button {
                         text: qsTr("Small (8 pt)")
@@ -116,7 +122,7 @@ Controls.ScrollView {
 
         HnLabel {
             role: HnTypographyRole.Title
-            rawText: qsTr("Typography Roles Preview")
+            rawText: "HnLabel"
             Layout.leftMargin: 32
             Layout.topMargin: 8
         }

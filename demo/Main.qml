@@ -16,6 +16,40 @@ Hn.HnApplicationWindow {
     height: 700
     title: "holonight demo"
 
+    Loader {
+        id: secondaryWindowLoader
+        objectName: "secondaryWindowLoader"
+        active: false
+        sourceComponent: Component {
+            Controls.ApplicationWindow {
+                objectName: "secondaryWindow"
+                visible: true
+                width: 480
+                height: 320
+                title: qsTr("Standard application window")
+                onClosing: secondaryWindowLoader.active = false
+                menuBar: Controls.MenuBar {
+                    delegate: Controls.MenuBarItem {}
+                    Controls.Menu {
+                        title: qsTr("File")
+                        Controls.MenuItem { text: qsTr("Open popup"); onTriggered: standardPopup.open() }
+                    }
+                }
+                Controls.Button {
+                    anchors.centerIn: parent
+                    text: qsTr("Open standard popup")
+                    onClicked: standardPopup.open()
+                }
+                Controls.Popup {
+                    id: standardPopup
+                    objectName: "standardPopup"
+                    anchors.centerIn: parent
+                    contentItem: Controls.Label { text: qsTr("Independent standard popup") }
+                }
+            }
+        }
+    }
+
     ColumnLayout {
         anchors.fill: parent
         spacing: 0
@@ -32,6 +66,13 @@ Hn.HnApplicationWindow {
             rawText: "Qt6 theme variants for tiling window managers"
             Layout.leftMargin: 40
             Layout.bottomMargin: 16
+        }
+
+        Controls.Button {
+            objectName: "openSecondaryWindow"
+            text: qsTr("Open standard application window")
+            Layout.leftMargin: 40
+            onClicked: secondaryWindowLoader.active = true
         }
 
         // ── Tab bar ───────────────────────────────────────────────────
@@ -154,8 +195,8 @@ Hn.HnApplicationWindow {
                         spacing: 24
                         Layout.leftMargin: 40
                         Layout.bottomMargin: 32
-                        Dial { value: 0.4 }
-                        Dial { value: 0.4; enabled: false }
+                        Controls.Dial { value: 0.4 }
+                        Controls.Dial { value: 0.4; enabled: false }
                     }
 
                     Item { implicitHeight: 24 }
@@ -292,6 +333,7 @@ Hn.HnApplicationWindow {
                                 id: contextMenu
                                 Controls.MenuItem { text: "Action One" }
                                 Controls.MenuItem { text: "Action Two" }
+                                Controls.MenuSeparator {}
                                 Controls.MenuItem { text: "Disabled Action"; enabled: false }
                             }
                         }
@@ -305,6 +347,7 @@ Hn.HnApplicationWindow {
                             anchors.fill: parent
                             spacing: 4
                             Controls.ToolButton { text: "File" }
+                            Controls.ToolSeparator {}
                             Controls.ToolButton { text: "Edit" }
                             Controls.ToolButton { text: "View" }
                             Controls.ToolButton { text: "Disabled"; enabled: false }
@@ -500,7 +543,7 @@ Hn.HnApplicationWindow {
                         Layout.leftMargin: 40
                         Layout.rightMargin: 40
                         Layout.bottomMargin: 32
-                        GroupBox {
+                        Controls.GroupBox {
                             title: "Group"
                             implicitWidth: 180
                             ColumnLayout {
@@ -509,7 +552,7 @@ Hn.HnApplicationWindow {
                                 Controls.Label { text: "Item two" }
                             }
                         }
-                        GroupBox {
+                        Controls.GroupBox {
                             title: "Disabled"
                             implicitWidth: 180
                             enabled: false
