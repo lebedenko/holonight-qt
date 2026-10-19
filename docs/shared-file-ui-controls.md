@@ -19,3 +19,12 @@ HnLabeledKeyHint {
 Resolve breadcrumb indices through the caller's original identities; never reconstruct
 paths from display labels. Supply formatted metadata, rendering components and preview
 state from the caller. Set explicit preview dimensions through anchors or Layout sizing.
+
+The bordered breadcrumb field uses compact segments separated by chevrons. The pencil
+icon ("Edit location") and Ctrl+L request caller-owned location editing. Set
+`editable: false` to hide the icon and disable the shortcut. Narrow fields collapse
+ancestors into a menu while retaining the root and current location.
+
+The gallery demonstrates caller-owned editing: click the pencil or press Ctrl+L
+while the breadcrumb has focus, edit the path, then press Enter to apply it or
+Escape to cancel. Losing focus also cancels editing. This changes the example labels without navigating the filesystem.

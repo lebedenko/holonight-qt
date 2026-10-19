@@ -15,6 +15,47 @@ Controls.ScrollView {
 
     contentWidth: availableWidth
 
+    component BreadcrumbExample: Item {
+        id: example
+        property bool editing: false
+        implicitHeight: breadcrumbs.implicitHeight
+
+        HnBreadcrumbBar {
+            id: breadcrumbs
+            objectName: "galleryBreadcrumbBar"
+            anchors.fill: parent
+            visible: !example.editing
+            segments: ["/", "home", "andrii", qsTr("Pictures")]
+            onLocationEditRequested: {
+                locationEditor.text = segments[0] === "/" ? "/" + segments.slice(1).join("/") : segments.join("/")
+                example.editing = true
+                locationEditor.forceActiveFocus()
+                locationEditor.selectAll()
+            }
+        }
+        Controls.TextField {
+            id: locationEditor
+            objectName: "galleryLocationEditor"
+            anchors.fill: parent
+            visible: example.editing
+            Accessible.name: qsTr("Edit location")
+            onActiveFocusChanged: {
+                if (!activeFocus)
+                    example.editing = false
+            }
+            onAccepted: {
+                const labels = text.split("/").filter(label => label.length > 0)
+                breadcrumbs.segments = text.startsWith("/") ? ["/"].concat(labels) : labels
+                example.editing = false
+                breadcrumbs.forceActiveFocus()
+            }
+            Keys.onEscapePressed: {
+                example.editing = false
+                breadcrumbs.forceActiveFocus()
+            }
+        }
+    }
+
     ColumnLayout {
         width: parent.width
         spacing: 16
@@ -149,11 +190,15 @@ Controls.ScrollView {
 
         HnLabel { role: HnTypographyRole.Title; rawText: "HnBreadcrumbBar"; Layout.leftMargin: 32 }
 
-        HnBreadcrumbBar {
-            segments: [qsTr("Home"), qsTr("Pictures"), qsTr("A long current location")]
+        BreadcrumbExample {
             Layout.fillWidth: true
             Layout.leftMargin: 32
             Layout.rightMargin: 32
+        }
+        BreadcrumbExample {
+            Layout.preferredWidth: 200
+            Layout.maximumWidth: 200
+            Layout.leftMargin: 32
         }
         HnLabel { role: HnTypographyRole.Title; rawText: "HnThumbnailDelegate"; Layout.leftMargin: 32 }
 

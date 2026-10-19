@@ -58,6 +58,46 @@ TEST_F(ExampleCoverage, GalleryInteractionsAndTypographyBounds) {
   ASSERT_NE(window, nullptr);
   gallery->setProperty("currentPageIndex", 4);
   QTest::qWait(30);
+  const auto breadcrumbs = namedItems(window->contentItem(), "galleryBreadcrumbBar");
+  ASSERT_EQ(breadcrumbs.size(), 2);
+  for (auto* bar : breadcrumbs) {
+    auto* editor = bar->parentItem()->findChild<QQuickItem*>("galleryLocationEditor");
+    ASSERT_NE(editor, nullptr);
+    ASSERT_TRUE(QMetaObject::invokeMethod(bar, "locationEditRequested"));
+    EXPECT_TRUE(editor->isVisible());
+    EXPECT_TRUE(editor->hasActiveFocus());
+    EXPECT_EQ(editor->property("text").toString(), "/home/andrii/Pictures");
+    editor->setProperty("text", "/tmp/Images");
+    ASSERT_TRUE(QMetaObject::invokeMethod(editor, "accepted"));
+    EXPECT_FALSE(editor->isVisible());
+    EXPECT_EQ(bar->property("segments").toStringList(), (QStringList{"/", "tmp", "Images"}));
+    QTest::keyClick(window, Qt::Key_L, Qt::ControlModifier);
+    EXPECT_TRUE(editor->isVisible());
+    editor->setProperty("text", "/cancelled");
+    QTest::keyClick(window, Qt::Key_Escape);
+    EXPECT_FALSE(editor->isVisible());
+    EXPECT_EQ(bar->property("segments").toStringList(), (QStringList{"/", "tmp", "Images"}));
+    bar->setProperty("segments", QStringList{"/", "home", "andrii", "Pictures"});
+  }
+  auto* first_editor = breadcrumbs[0]->parentItem()->findChild<QQuickItem*>("galleryLocationEditor");
+  auto* second_editor = breadcrumbs[1]->parentItem()->findChild<QQuickItem*>("galleryLocationEditor");
+  ASSERT_NE(first_editor, nullptr);
+  ASSERT_NE(second_editor, nullptr);
+  ASSERT_TRUE(QMetaObject::invokeMethod(breadcrumbs[0], "locationEditRequested"));
+  first_editor->setProperty("text", "/discarded");
+  ASSERT_TRUE(QMetaObject::invokeMethod(breadcrumbs[1], "locationEditRequested"));
+  EXPECT_FALSE(first_editor->isVisible());
+  EXPECT_TRUE(breadcrumbs[0]->isVisible());
+  EXPECT_TRUE(second_editor->isVisible());
+  EXPECT_TRUE(second_editor->hasActiveFocus());
+  EXPECT_EQ(breadcrumbs[0]->property("segments").toStringList(), (QStringList{"/", "home", "andrii", "Pictures"}));
+  // Losing focus to a different control also cancels, without stealing focus back.
+  breadcrumbs[0]->forceActiveFocus();
+  EXPECT_FALSE(second_editor->isVisible());
+  EXPECT_TRUE(breadcrumbs[0]->hasActiveFocus());
+  ASSERT_TRUE(QMetaObject::invokeMethod(breadcrumbs[0], "locationEditRequested"));
+  EXPECT_EQ(first_editor->property("text").toString(), "/home/andrii/Pictures");
+  QTest::keyClick(window, Qt::Key_Escape);
   const auto icons = namedItems(window->contentItem(), "sidebarIcon");
   ASSERT_EQ(icons.size(), 6);
   for (auto* icon : icons) {

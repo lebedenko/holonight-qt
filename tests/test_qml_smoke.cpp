@@ -5367,6 +5367,97 @@ TEST_F(QmlSmoke, Controls_BreadcrumbCollapsesAndMetadataLoads) {
   EXPECT_FALSE(root->property("collapsed").toBool());
 }
 
+TEST_F(QmlSmoke, Controls_BreadcrumbNaturalLayoutAndEditing) {
+  QQmlComponent comp{&engine_};
+  comp.setData(R"(
+    import QtQuick
+    import Holonight.Controls
+    Window {
+      id: window
+      width: 800; height: 100; visible: true
+      property int edits: 0
+      property int ancestor: -1
+      property alias bar: bar
+      HnBreadcrumbBar {
+        id: bar; width: 800; segments: ["/", "same", "same", "Pictures"]
+        onLocationEditRequested: window.edits++
+        onSegmentActivated: index => window.ancestor = index
+      }
+    }
+  )", QUrl{});
+  ASSERT_EQ(comp.status(), QQmlComponent::Ready) << comp.errorString().toStdString();
+  std::unique_ptr<QObject> root{comp.create()};
+  ASSERT_NE(root, nullptr);
+  auto* window = qobject_cast<QQuickWindow*>(root.get());
+  auto* bar = root->property("bar").value<QQuickItem*>();
+  ASSERT_NE(bar, nullptr);
+  window->show();
+  QTest::qWait(50);
+  const auto findItem = [](auto&& self, QQuickItem* item, const QString& name) -> QQuickItem* {
+    if (item->objectName() == name) return item;
+    for (auto* child : item->childItems()) {
+      if (auto* found = self(self, child, name)) return found;
+    }
+    return nullptr;
+  };
+  auto* first = findItem(findItem, bar, "hnBreadcrumbSegment0");
+  auto* second = findItem(findItem, bar, "hnBreadcrumbSegment1");
+  auto* current = findItem(findItem, bar, "hnBreadcrumbSegment3");
+  auto* edit = findItem(findItem, bar, "hnBreadcrumbEdit");
+  ASSERT_NE(first, nullptr);
+  ASSERT_NE(second, nullptr);
+  ASSERT_NE(current, nullptr);
+  ASSERT_NE(edit, nullptr);
+  for (int index = 1; index < 4; ++index) {
+    auto* previous = findItem(findItem, bar, QString("hnBreadcrumbSegment%1").arg(index - 1));
+    auto* next = findItem(findItem, bar, QString("hnBreadcrumbSegment%1").arg(index));
+    ASSERT_NE(previous, nullptr);
+    ASSERT_NE(next, nullptr);
+    EXPECT_GT(next->mapToItem(bar, QPointF{}).x(),
+              previous->mapToItem(bar, QPointF{}).x() + previous->width());
+  }
+  const auto expectCentered = [bar](QQuickItem* button) {
+    auto* content = button->property("contentItem").value<QQuickItem*>();
+    ASSERT_NE(content, nullptr);
+    EXPECT_NEAR(content->mapToItem(bar, QPointF(0, content->height() / 2)).y(), bar->height() / 2, 0.5);
+  };
+  expectCentered(first);
+  expectCentered(current);
+  expectCentered(edit);
+  bar->setWidth(200);
+  QTest::qWait(20);
+  EXPECT_TRUE(bar->property("collapsed").toBool());
+  expectCentered(current);
+  expectCentered(edit);
+  bar->setWidth(800);
+  QTest::qWait(20);
+  EXPECT_LT(current->width(), 150);
+  EXPECT_GT(second->mapToItem(bar, QPointF{}).x(), first->mapToItem(bar, QPointF{}).x() + first->width());
+  EXPECT_GT(edit->mapToItem(bar, QPointF{}).x(), current->mapToItem(bar, QPointF{}).x() + current->width() + 100);
+  EXPECT_FALSE(current->property("font").value<QFont>().bold());
+  ASSERT_TRUE(QMetaObject::invokeMethod(second, "clicked"));
+  EXPECT_EQ(root->property("ancestor").toInt(), 1);
+  ASSERT_TRUE(QMetaObject::invokeMethod(edit, "clicked"));
+  EXPECT_EQ(root->property("edits").toInt(), 1);
+  current->forceActiveFocus();
+  QTest::keyClick(window, Qt::Key_L, Qt::ControlModifier);
+  EXPECT_EQ(root->property("edits").toInt(), 2);
+  bar->setProperty("editable", false);
+  EXPECT_FALSE(edit->isVisible());
+  QTest::keyClick(window, Qt::Key_L, Qt::ControlModifier);
+  EXPECT_EQ(root->property("edits").toInt(), 2);
+  bar->setProperty("segments", QStringList{});
+  QCoreApplication::processEvents();
+  EXPECT_FALSE(bar->property("collapsed").toBool());
+  bar->setProperty("segments", QStringList{QString(300, 'a')});
+  bar->setWidth(180);
+  QTest::qWait(20);
+  EXPECT_FALSE(bar->property("collapsed").toBool());
+  auto* single = findItem(findItem, bar, "hnBreadcrumbSegment0");
+  ASSERT_NE(single, nullptr);
+  EXPECT_LE(single->width(), 150);
+}
+
 TEST_F(QmlSmoke, Controls_ThumbnailAndBreadcrumbActivationRetainCallerIndices) {
   QQmlComponent comp{&engine_};
   comp.setData(R"(
