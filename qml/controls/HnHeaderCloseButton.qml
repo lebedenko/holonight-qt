@@ -13,8 +13,8 @@ C.Button {
     padding: 2
     horizontalPadding: 2
     icon.name: "window-close"
-    icon.width: 24
-    icon.height: 24
+    icon.width: HnMetrics.iconSize(HnControlSize.Compact)
+    icon.height: HnMetrics.iconSize(HnControlSize.Compact)
     icon.color: !enabled ? HoloniightPalette.textDisabled : hovered || down ? HoloniightPalette.onError : HoloniightPalette.textPrimary
     implicitWidth: HnMetrics.controlHeight(HnControlSize.Compact)
     implicitHeight: HnMetrics.controlHeight(HnControlSize.Compact)

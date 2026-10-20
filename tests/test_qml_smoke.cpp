@@ -5597,6 +5597,7 @@ TEST_F(QmlSmoke, Controls_HeaderCloseButtonPreservesCompactActionAndKeyboardCont
       property int activations: 0
       property string accessibleName: Accessible.name
       property bool allowed: true
+      property bool compactIcon: icon.width === 16 && icon.height === 16
       property bool compact: width === HnMetrics.controlHeight(HnControlSize.Compact)
           && height === HnMetrics.controlHeight(HnControlSize.Compact)
       property color expectedForeground: enabled ? HoloniightPalette.textPrimary : HoloniightPalette.textDisabled
@@ -5615,6 +5616,7 @@ TEST_F(QmlSmoke, Controls_HeaderCloseButtonPreservesCompactActionAndKeyboardCont
   window.show();
   item->forceActiveFocus(Qt::TabFocusReason);
   EXPECT_TRUE(root->property("compact").toBool());
+  EXPECT_TRUE(root->property("compactIcon").toBool());
   EXPECT_EQ(root->property("accessibleName").toString(), "Close");
   EXPECT_EQ(root->property("foreground").value<QColor>(), root->property("expectedForeground").value<QColor>());
   for (auto key : {Qt::Key_Return, Qt::Key_Enter, Qt::Key_Space}) {
