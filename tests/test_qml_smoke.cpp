@@ -5367,6 +5367,80 @@ TEST_F(QmlSmoke, Controls_BreadcrumbCollapsesAndMetadataLoads) {
   EXPECT_FALSE(root->property("collapsed").toBool());
 }
 
+namespace {
+
+int expectBreadcrumbGeometry(QQuickItem* bar, QQuickItem* item, qreal buttonHeight) {
+  if (!item->isVisible()) {
+    return 0;
+  }
+  const auto name = item->objectName();
+  const bool isButton = name.startsWith("hnBreadcrumbSegment") || name == "hnBreadcrumbRoot" ||
+                        name == "hnBreadcrumbOverflow" || name == "hnBreadcrumbEdit";
+  if (isButton) {
+    EXPECT_EQ(item->height(), buttonHeight);
+    EXPECT_GE(item->mapToItem(bar, QPointF()).y(), -0.5);
+    EXPECT_LE(item->mapToItem(bar, QPointF(0, item->height())).y(), bar->height() + 0.5);
+    auto* content = item->property("contentItem").value<QQuickItem*>();
+    EXPECT_NE(content, nullptr);
+    if (content != nullptr) {
+      EXPECT_NEAR(content->mapToItem(bar, QPointF(0, content->height() / 2)).y(), bar->height() / 2, 0.5);
+    }
+  }
+  if (item->property("rawText").toString() == QString::fromUtf8("›")) {
+    EXPECT_NEAR(item->mapToItem(bar, QPointF(0, item->height() / 2)).y(), bar->height() / 2, 0.5);
+  }
+  int buttons = isButton ? 1 : 0;
+  for (auto* child : item->childItems()) {
+    buttons += expectBreadcrumbGeometry(bar, child, buttonHeight);
+  }
+  return buttons;
+}
+
+}  // namespace
+
+TEST_F(QmlSmoke, Controls_BreadcrumbButtonsStayInsideField) {
+  QQmlComponent comp{&engine_};
+  comp.setData(R"(
+    import QtQuick
+    import Holonight.Controls
+    Window {
+      width: 800; height: 80; visible: true
+      property alias bar: bar
+      HnBreadcrumbBar {
+        id: bar; width: 800
+        segments: ["/", "home", "andrii", "Pictures"]
+      }
+    }
+  )",
+               QUrl{});
+  ASSERT_EQ(comp.status(), QQmlComponent::Ready) << comp.errorString().toStdString();
+  std::unique_ptr<QObject> root{comp.create()};
+  ASSERT_NE(root, nullptr);
+  auto* bar = root->property("bar").value<QQuickItem*>();
+  ASSERT_NE(bar, nullptr);
+  EXPECT_EQ(bar->property("sizeRole").toInt(), 1);
+  EXPECT_EQ(bar->implicitHeight(), 32);
+  for (int sizing = 0; sizing < 3; ++sizing) {
+    SCOPED_TRACE(sizing);
+    bar->setProperty("sizeRole", sizing == 1 ? 4 : 1);
+    if (sizing == 2) {
+      bar->setHeight(24);
+    }
+    for (bool editable : {true, false}) {
+      bar->setProperty("editable", editable);
+      for (int width : {800, 200}) {
+        SCOPED_TRACE(width);
+        SCOPED_TRACE(editable);
+        bar->setWidth(width);
+        QTest::qWait(20);
+        EXPECT_EQ(bar->height(), sizing == 0 ? 32 : 24);
+        EXPECT_EQ(bar->property("collapsed").toBool(), width == 200);
+        EXPECT_GE(expectBreadcrumbGeometry(bar, bar, sizing == 0 ? 28 : 24), 2);
+      }
+    }
+  }
+}
+
 TEST_F(QmlSmoke, Controls_BreadcrumbNaturalLayoutAndEditing) {
   QQmlComponent comp{&engine_};
   comp.setData(R"(
@@ -5384,7 +5458,8 @@ TEST_F(QmlSmoke, Controls_BreadcrumbNaturalLayoutAndEditing) {
         onSegmentActivated: index => window.ancestor = index
       }
     }
-  )", QUrl{});
+  )",
+               QUrl{});
   ASSERT_EQ(comp.status(), QQmlComponent::Ready) << comp.errorString().toStdString();
   std::unique_ptr<QObject> root{comp.create()};
   ASSERT_NE(root, nullptr);
@@ -5413,8 +5488,7 @@ TEST_F(QmlSmoke, Controls_BreadcrumbNaturalLayoutAndEditing) {
     auto* next = findItem(findItem, bar, QString("hnBreadcrumbSegment%1").arg(index));
     ASSERT_NE(previous, nullptr);
     ASSERT_NE(next, nullptr);
-    EXPECT_GT(next->mapToItem(bar, QPointF{}).x(),
-              previous->mapToItem(bar, QPointF{}).x() + previous->width());
+    EXPECT_GT(next->mapToItem(bar, QPointF{}).x(), previous->mapToItem(bar, QPointF{}).x() + previous->width());
   }
   const auto expectCentered = [bar](QQuickItem* button) {
     auto* content = button->property("contentItem").value<QQuickItem*>();

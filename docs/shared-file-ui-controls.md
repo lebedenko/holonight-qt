@@ -28,3 +28,8 @@ ancestors into a menu while retaining the root and current location.
 The gallery demonstrates caller-owned editing: click the pencil or press Ctrl+L
 while the breadcrumb has focus, edit the path, then press Enter to apply it or
 Escape to cancel. Losing focus also cancels editing. This changes the example labels without navigating the filesystem.
+
+HnBreadcrumbBar exposes `sizeRole` (default `HnControlSize.Normal`, normalized by
+HnMetrics). Normal retains a 32 px field with 28 px buttons; Xs uses a 24 px
+field and buttons. Explicit shorter heights also constrain buttons to available
+height. See [breadcrumb geometry design](sdd/breadcrumb-geometry.md).

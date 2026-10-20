@@ -14,6 +14,10 @@ C.Control {
     property var segments: []
     property real segmentWidth: 150
     property bool editable: true
+    property int sizeRole: HnControlSize.Normal
+    readonly property int resolvedSizeRole: HnMetrics.normalizedSizeRole(root.sizeRole)
+    readonly property real buttonHeight: Math.min(HnMetrics.controlHeight(HnControlSize.Compact),
+                                                   Math.max(0, root.availableHeight))
     palette: compositePalette.appearancePalette
     readonly property Impl.ControlPalette compositePalette: Impl.ControlPalette {}
     readonly property Impl.ControlPalette frameColors: Impl.ControlPalette {
@@ -40,7 +44,7 @@ C.Control {
     signal segmentActivated(int index)
     signal locationEditRequested
     implicitWidth: expandedWidth
-    implicitHeight: HnMetrics.controlHeight(HnControlSize.Normal)
+    implicitHeight: HnMetrics.controlHeight(root.resolvedSizeRole)
     background: Rectangle {
         color: root.frameColors.colors.surface
         border.width: HnMetrics.borderWidth
@@ -53,7 +57,9 @@ C.Control {
         property bool current: false
         palette: root.palette
         implicitWidth: contentItem.implicitWidth + leftPadding + rightPadding
-        implicitHeight: HnMetrics.controlHeight(HnControlSize.Compact)
+        implicitHeight: root.buttonHeight
+        Layout.alignment: Qt.AlignVCenter
+        Layout.maximumHeight: root.buttonHeight
         padding: HnMetrics.internalSpacing(HnControlSize.Compact)
         Layout.minimumWidth: 0
         Layout.maximumWidth: root.segmentWidth
@@ -74,6 +80,7 @@ C.Control {
         }
     }
     component Separator: HnLabel {
+        Layout.alignment: Qt.AlignVCenter
         rawText: "›"
         color: root.palette.placeholderText
         Accessible.ignored: true
@@ -89,6 +96,7 @@ C.Control {
         spacing: HnMetrics.internalSpacing(HnControlSize.Compact)
         SegmentButton {
             visible: root.collapsed
+            objectName: "hnBreadcrumbRoot"
             text: root.segments.length ? String(root.segments[0]) : ""
             Layout.minimumWidth: 0
             Layout.maximumWidth: root.segmentWidth
@@ -97,6 +105,7 @@ C.Control {
         Separator { visible: root.collapsed }
         SegmentButton {
             visible: root.collapsed
+            objectName: "hnBreadcrumbOverflow"
             text: "…"
             Accessible.name: qsTr("Ancestor locations")
             onClicked: overflow.open()
@@ -125,6 +134,8 @@ C.Control {
                 implicitWidth: naturalWidth
                 visible: !root.collapsed || index === root.segments.length - 1
                 implicitHeight: segmentButton.implicitHeight
+                Layout.alignment: Qt.AlignVCenter
+                Layout.maximumHeight: root.buttonHeight
                 Layout.minimumWidth: 0
                 Layout.preferredWidth: Math.min(root.segmentWidth, naturalWidth)
                                        + (separator.visible ? root.separatorWidth : 0)
@@ -154,7 +165,9 @@ C.Control {
             objectName: "hnBreadcrumbEdit"
             palette: root.palette
             implicitWidth: HnMetrics.controlHeight(HnControlSize.Compact)
-            implicitHeight: implicitWidth
+            implicitHeight: root.buttonHeight
+            Layout.alignment: Qt.AlignVCenter
+            Layout.maximumHeight: root.buttonHeight
             padding: HnMetrics.internalSpacing(HnControlSize.Compact)
             icon.source: Qt.resolvedUrl("assets/edit.svg")
             icon.width: HnMetrics.iconSize(HnControlSize.Compact)
