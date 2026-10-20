@@ -158,6 +158,7 @@ set(HOLONIGHT_CONTROLS_PUBLIC_QML_FILES
     controls/HnActionBar.qml
     controls/HnPopupCard.qml
     controls/HnPopupCloseButton.qml
+    controls/HnHeaderCloseButton.qml
     controls/HnIconButton.qml
     controls/HnSeparator.qml
     HnApplicationWindow.qml

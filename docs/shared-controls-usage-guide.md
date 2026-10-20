@@ -70,8 +70,11 @@ delegate controls. Do not calculate selection colors in application code.
 
 ### Selection and actions
 
-- `HnIconButton`: square icon-only action using the standard `icon.source` and
-  optional `icon.color`, with semantic `sizeRole` sizing.
+- `HnIconButton`: square icon-only action using `icon.name` or `icon.source`
+  (an explicit source takes precedence), optional `icon.color`, and semantic `sizeRole` sizing.
+- `HnHeaderCloseButton`: compact runtime Button using the `window-close` theme icon,
+  semantic error hover/pressed colors, keyboard focus, and Enter/Space activation.
+  Supply `action` or `onClicked`; applications own visibility and focus order.
 - `HnNavigationDelegate`: `title`, `badgeText`, leading and trailing slots.
   Elided titles show the full value on hover by default; set
   `showTitleToolTipWhenElided: false` when another disclosure mechanism exists.

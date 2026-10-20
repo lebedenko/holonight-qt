@@ -26,6 +26,7 @@ T.AbstractButton {
             objectName: "hnIconButtonIcon"
             anchors.centerIn: parent
             source: root.icon.source
+            name: root.icon.source.toString().length > 0 ? "" : root.icon.name
             rendering: root.iconRendering
             size: HnMetrics.iconSize(root.resolvedSizeRole)
             iconState: root.iconState

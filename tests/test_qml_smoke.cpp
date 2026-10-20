@@ -5561,3 +5561,71 @@ TEST_F(QmlSmoke, Controls_ThumbnailAndBreadcrumbActivationRetainCallerIndices) {
   ASSERT_TRUE(QMetaObject::invokeMethod(root.get(), "activateAncestor"));
   EXPECT_EQ(root->property("ancestor").toInt(), 2);
 }
+
+TEST_F(QmlSmoke, Controls_IconButtonThemeNameYieldsToExplicitSource) {
+  QQmlComponent comp{&engine_};
+  comp.setData(R"(
+    import QtQuick
+    import Holonight.Controls
+    HnIconButton {
+      icon.name: "window-close"
+      property bool explicitSource: false
+      icon.source: explicitSource ? "qrc:/qt/qml/Holonight/Controls/assets/edit.svg" : ""
+    }
+  )",
+               QUrl{});
+  ASSERT_EQ(comp.status(), QQmlComponent::Ready) << comp.errorString().toStdString();
+  std::unique_ptr<QObject> root{comp.create()};
+  ASSERT_NE(root, nullptr);
+  auto* icon = root->findChild<QObject*>("hnIconButtonIcon");
+  ASSERT_NE(icon, nullptr);
+  EXPECT_EQ(icon->property("name").toString(), "window-close");
+  root->setProperty("explicitSource", true);
+  EXPECT_TRUE(icon->property("name").toString().isEmpty());
+  EXPECT_FALSE(icon->property("source").toUrl().isEmpty());
+  EXPECT_FALSE(icon->property("hasError").toBool());
+}
+
+TEST_F(QmlSmoke, Controls_HeaderCloseButtonPreservesCompactActionAndKeyboardContract) {
+  QQmlComponent comp{&engine_};
+  comp.setData(R"(
+    import QtQuick
+    import QtQuick.Controls as C
+    import Holonight.Core
+    import Holonight.Controls
+    HnHeaderCloseButton {
+      property int activations: 0
+      property string accessibleName: Accessible.name
+      property bool allowed: true
+      property bool compact: width === HnMetrics.controlHeight(HnControlSize.Compact)
+          && height === HnMetrics.controlHeight(HnControlSize.Compact)
+      property color expectedForeground: enabled ? HoloniightPalette.textPrimary : HoloniightPalette.textDisabled
+      property color foreground: icon.color
+      action: C.Action { enabled: allowed; onTriggered: activations++ }
+    }
+  )",
+               QUrl{});
+  ASSERT_EQ(comp.status(), QQmlComponent::Ready) << comp.errorString().toStdString();
+  std::unique_ptr<QObject> root{comp.create()};
+  ASSERT_NE(root, nullptr);
+  auto* item = qobject_cast<QQuickItem*>(root.get());
+  ASSERT_NE(item, nullptr);
+  QQuickWindow window;
+  item->setParentItem(window.contentItem());
+  window.show();
+  item->forceActiveFocus(Qt::TabFocusReason);
+  EXPECT_TRUE(root->property("compact").toBool());
+  EXPECT_EQ(root->property("accessibleName").toString(), "Close");
+  EXPECT_EQ(root->property("foreground").value<QColor>(), root->property("expectedForeground").value<QColor>());
+  for (auto key : {Qt::Key_Return, Qt::Key_Enter, Qt::Key_Space}) {
+    QTest::keyClick(&window, key);
+  }
+  EXPECT_EQ(root->property("activations").toInt(), 3);
+  root->setProperty("allowed", false);
+  QTest::keyClick(&window, Qt::Key_Return);
+  QTest::keyClick(&window, Qt::Key_Space);
+  EXPECT_EQ(root->property("activations").toInt(), 3);
+  EXPECT_FALSE(item->isEnabled());
+  EXPECT_EQ(root->property("foreground").value<QColor>(), root->property("expectedForeground").value<QColor>());
+  item->setParentItem(nullptr);
+}
