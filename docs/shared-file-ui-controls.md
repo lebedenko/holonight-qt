@@ -23,7 +23,12 @@ state from the caller. Set explicit preview dimensions through anchors or Layout
 The bordered breadcrumb field uses compact segments separated by chevrons. The pencil
 icon ("Edit location") and Ctrl+L request caller-owned location editing. Set
 `editable: false` to hide the icon and disable the shortcut. Narrow fields collapse
-ancestors into a menu while retaining the root and current location.
+the farthest ancestors into one menu while retaining the root, current location,
+and as many consecutive parents nearest the current location as fit. Widening restores
+parents progressively. Labels use their natural width capped by `segmentWidth`;
+spare space is left when the next complete parent cannot fit. At very narrow widths,
+the current label elides first, then the root. `collapsed` indicates that at least
+one ancestor is hidden; menu entries retain their original order and activation indices.
 
 The gallery demonstrates caller-owned editing: click the pencil or press Ctrl+L
 while the breadcrumb has focus, edit the path, then press Enter to apply it or

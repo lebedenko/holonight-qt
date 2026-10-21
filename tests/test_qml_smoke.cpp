@@ -5378,6 +5378,8 @@ int expectBreadcrumbGeometry(QQuickItem* bar, QQuickItem* item, qreal buttonHeig
                         name == "hnBreadcrumbOverflow" || name == "hnBreadcrumbEdit";
   if (isButton) {
     EXPECT_EQ(item->height(), buttonHeight);
+    EXPECT_GE(item->mapToItem(bar, QPointF()).x(), -0.5);
+    EXPECT_LE(item->mapToItem(bar, QPointF(item->width(), 0)).x(), bar->width() + 0.5);
     EXPECT_GE(item->mapToItem(bar, QPointF()).y(), -0.5);
     EXPECT_LE(item->mapToItem(bar, QPointF(0, item->height())).y(), bar->height() + 0.5);
     auto* content = item->property("contentItem").value<QQuickItem*>();
@@ -5438,6 +5440,96 @@ TEST_F(QmlSmoke, Controls_BreadcrumbButtonsStayInsideField) {
         EXPECT_GE(expectBreadcrumbGeometry(bar, bar, sizing == 0 ? 28 : 24), 2);
       }
     }
+  }
+}
+
+TEST_F(QmlSmoke, Controls_BreadcrumbProgressivelyRestoresAncestors) {
+  QQmlComponent comp{&engine_};
+  comp.setData(R"(
+    import QtQuick
+    import Holonight.Controls
+    Window {
+      width: 1000; height: 80; visible: true
+      property alias bar: bar
+      property int activated: -1
+      HnBreadcrumbBar {
+        id: bar; width: 1000
+        segments: ["/", "same", "same", "Projects", "holonight", "references"]
+        onSegmentActivated: index => activated = index
+      }
+      function triggerAncestor(index) { bar.overflowMenu.itemAt(index).triggered() }
+      function ancestorLabel(index) { return bar.overflowMenu.itemAt(index).text }
+    }
+  )",
+               QUrl{});
+  ASSERT_EQ(comp.status(), QQmlComponent::Ready) << comp.errorString().toStdString();
+  std::unique_ptr<QObject> root{comp.create()};
+  ASSERT_NE(root, nullptr);
+  auto* bar = root->property("bar").value<QQuickItem*>();
+  ASSERT_NE(bar, nullptr);
+  auto* menu = bar->property("overflowMenu").value<QObject*>();
+  ASSERT_NE(menu, nullptr);
+  // Walk every pixel in both directions, observing menu membership and containment.
+  for (bool editable : {false, true}) {
+    bar->setProperty("editable", editable);
+    int previousHidden = 4;
+    bool sawPartial = false;
+    for (int width = 40; width <= 800; ++width) {
+      bar->setWidth(width);
+      QCoreApplication::processEvents();
+      const int hidden = menu->property("count").toInt();
+      EXPECT_LE(hidden, previousHidden);
+      if (hidden > 0 && hidden < 4) sawPartial = true;
+      EXPECT_EQ(bar->property("collapsed").toBool(), hidden > 0);
+      if (hidden != previousHidden && hidden > 0) {
+        for (int index = 0; index < hidden; ++index) {
+          ASSERT_TRUE(QMetaObject::invokeMethod(root.get(), "triggerAncestor", Q_ARG(QVariant, index)));
+          EXPECT_EQ(root->property("activated").toInt(), index + 1);
+          QVariant label;
+          ASSERT_TRUE(QMetaObject::invokeMethod(root.get(), "ancestorLabel", Q_RETURN_ARG(QVariant, label),
+                                                Q_ARG(QVariant, index)));
+          EXPECT_EQ(label.toString(), QStringList({"same", "same", "Projects", "holonight"}).at(index));
+        }
+      }
+      previousHidden = hidden;
+    }
+    EXPECT_TRUE(sawPartial);
+    EXPECT_EQ(previousHidden, 0);
+    for (int width = 800; width >= 0; width -= 10) {
+      bar->setWidth(width);
+      QCoreApplication::processEvents();
+      const int hidden = menu->property("count").toInt();
+      EXPECT_GE(hidden, previousHidden);
+      previousHidden = hidden;
+      QTest::qWait(20);
+      expectBreadcrumbGeometry(bar, bar, 28);
+    }
+    // The complete path must fit at its measured boundary, and collapse just below it.
+    bar->setWidth(bar->property("expandedWidth").toReal());
+    QCoreApplication::processEvents();
+    EXPECT_FALSE(bar->property("collapsed").toBool());
+    bar->setWidth(bar->width() - 0.01);
+    QCoreApplication::processEvents();
+    EXPECT_TRUE(bar->property("collapsed").toBool());
+  }
+  bar->setWidth(800);
+  QCoreApplication::processEvents();
+  const qreal originalWidth = bar->property("expandedWidth").toReal();
+  auto font = bar->property("font").value<QFont>();
+  font.setPointSizeF(font.pointSizeF() * 1.5);
+  bar->setProperty("font", font);
+  QCoreApplication::processEvents();
+  EXPECT_GT(bar->property("expandedWidth").toReal(), originalWidth);
+  bar->setProperty("segmentWidth", 40);
+  QCoreApplication::processEvents();
+  EXPECT_LT(bar->property("expandedWidth").toReal(), originalWidth);
+  for (const auto& labels :
+       {QStringList{}, QStringList{QString(300, 'a')}, QStringList{QString(300, 'a'), QString(300, 'b')}}) {
+    bar->setProperty("segments", labels);
+    bar->setWidth(80);
+    QTest::qWait(20);
+    EXPECT_FALSE(bar->property("collapsed").toBool());
+    expectBreadcrumbGeometry(bar, bar, 28);
   }
 }
 
