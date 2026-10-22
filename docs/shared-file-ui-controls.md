@@ -38,3 +38,16 @@ HnBreadcrumbBar exposes `sizeRole` (default `HnControlSize.Normal`, normalized b
 HnMetrics). Normal retains a 32 px field with 28 px buttons; Xs uses a 24 px
 field and buttons. Explicit shorter heights also constrain buttons to available
 height. See [breadcrumb geometry design](sdd/breadcrumb-geometry.md).
+
+`HnBreadcrumbBar.focusCurrentSegment(): bool` focuses the final segment button with
+keyboard focus indication, without activating it. It returns false and preserves
+focus when disabled, hidden, empty, or the final button is unavailable (including
+zero geometry). This also works for a single root segment and collapsed trails.
+See [directional panel focus](sdd/directional-panel-focus.md) for the consumer contract.
+
+`vimNavigation` (default false) enables unmodified h/l focus movement through
+visible breadcrumb segment buttons and the overflow button, stopping at either end.
+It skips hidden, disabled and zero-size targets, shows keyboard focus indication,
+and does not activate segments. Tab traversal and Ctrl+L editing are unchanged.
+Files opts in; [panel keyboard navigation](../../holonight-files/docs/sdd/panel-key-navigation.md)
+defines the application contract and deferred traversal design.

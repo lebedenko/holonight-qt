@@ -14,6 +14,7 @@ C.Control {
     property var segments: []
     property real segmentWidth: 150
     property bool editable: true
+    property bool vimNavigation: false
     property int sizeRole: HnControlSize.Normal
     readonly property int resolvedSizeRole: HnMetrics.normalizedSizeRole(root.sizeRole)
     readonly property real buttonHeight: Math.min(HnMetrics.controlHeight(HnControlSize.Compact),
@@ -77,6 +78,28 @@ C.Control {
     readonly property real currentWidth: Math.min(root.segmentWidths[root.segments.length - 1] || 0,
         Math.max(0, root.labelBudget - (root.segments.length > 1 ? root.rootWidth : 0) - root.parentWidth))
     readonly property alias overflowMenu: overflow
+    // Focus only: callers retain ownership of navigation and segment identities.
+    function focusCurrentSegment(): bool {
+        if (!root.enabled || !root.visible || root.segments.length === 0)
+            return false;
+        const row = segmentRepeater.itemAt(root.segments.length - 1) as SegmentRow;
+        return row ? row.focusSegment() : false;
+    }
+
+    function focusAdjacentSegment(source: Item, direction: int): void {
+        const buttons = [rootButton, overflowButton];
+        for (let index = 0; index < segmentRepeater.count; ++index) {
+            const row = segmentRepeater.itemAt(index) as SegmentRow;
+            if (row)
+                buttons.push(row.focusButton);
+        }
+        const available = buttons.filter(button => button.visible && button.enabled && button.width > 0 && button.height > 0);
+        const index = available.indexOf(source);
+        const target = index + direction;
+        if (index >= 0 && target >= 0 && target < available.length)
+            available[target].forceActiveFocus(Qt.TabFocusReason);
+    }
+
     signal segmentActivated(int index)
     signal locationEditRequested
     implicitWidth: expandedWidth
@@ -91,6 +114,12 @@ C.Control {
     component SegmentButton: C.ToolButton {
         id: button
         property bool current: false
+        Keys.onPressed: event => {
+            if (root.vimNavigation && event.modifiers === Qt.NoModifier && (event.text === "h" || event.text === "l")) {
+                root.focusAdjacentSegment(button, event.text === "h" ? -1 : 1);
+                event.accepted = true;
+            }
+        }
         palette: root.palette
         implicitWidth: contentItem.implicitWidth + leftPadding + rightPadding
         implicitHeight: root.buttonHeight
@@ -129,11 +158,59 @@ C.Control {
             event.accepted = true;
         }
     }
+    component SegmentRow: Item {
+        id: segmentRow
+        required property int index
+        required property var modelData
+        property alias focusButton: segmentButton
+        function focusSegment(): bool {
+            if (!segmentButton.enabled || !segmentButton.visible || segmentButton.width <= 0 || segmentButton.height <= 0)
+                return false;
+            segmentButton.forceActiveFocus(Qt.TabFocusReason);
+            return segmentButton.activeFocus;
+        }
+        TextMetrics {
+            id: labelMetrics
+            text: String(segmentRow.modelData)
+            font: root.font
+        }
+        readonly property real naturalWidth: labelMetrics.advanceWidth + segmentButton.padding * 2
+        implicitWidth: naturalWidth
+        visible: !root.collapsed || index >= root.firstVisibleAncestor
+        implicitHeight: segmentButton.implicitHeight
+        Layout.alignment: Qt.AlignVCenter
+        Layout.maximumHeight: root.buttonHeight
+        Layout.minimumWidth: 0
+        Layout.preferredWidth: (index === root.segments.length - 1 ? root.currentWidth
+            : index === 0 ? root.rootWidth : root.segmentWidths[index] || 0)
+            + (separator.visible ? root.actualSeparatorWidth : 0)
+        Layout.maximumWidth: Layout.preferredWidth
+        Separator {
+            id: separator
+            visible: segmentRow.index > (root.collapsed ? root.firstVisibleAncestor : 0)
+            width: root.actualSeparatorWidth
+            horizontalAlignment: Text.AlignHCenter
+            anchors.left: parent.left
+            anchors.verticalCenter: parent.verticalCenter
+        }
+        SegmentButton {
+            id: segmentButton
+            anchors.right: parent.right
+            anchors.verticalCenter: parent.verticalCenter
+            width: Math.max(0, segmentRow.width - (separator.visible ? root.actualSeparatorWidth : 0))
+            objectName: "hnBreadcrumbSegment" + segmentRow.index
+            text: String(segmentRow.modelData)
+            current: segmentRow.index === root.segments.length - 1
+            onClicked: root.segmentActivated(segmentRow.index)
+        }
+    }
+
     contentItem: RowLayout {
         id: trail
         spacing: 0
         SegmentButton {
             visible: root.collapsed
+            id: rootButton
             objectName: "hnBreadcrumbRoot"
             text: root.segments.length ? String(root.segments[0]) : ""
             Layout.minimumWidth: 0
@@ -178,45 +255,7 @@ C.Control {
         Repeater {
             id: segmentRepeater
             model: root.segments
-            delegate: Item {
-                id: segmentRow
-                required property int index
-                required property var modelData
-                TextMetrics {
-                    id: labelMetrics
-                    text: String(segmentRow.modelData)
-                    font: root.font
-                }
-                readonly property real naturalWidth: labelMetrics.advanceWidth + segmentButton.padding * 2
-                implicitWidth: naturalWidth
-                visible: !root.collapsed || index >= root.firstVisibleAncestor
-                implicitHeight: segmentButton.implicitHeight
-                Layout.alignment: Qt.AlignVCenter
-                Layout.maximumHeight: root.buttonHeight
-                Layout.minimumWidth: 0
-                Layout.preferredWidth: (index === root.segments.length - 1 ? root.currentWidth
-                    : index === 0 ? root.rootWidth : root.segmentWidths[index] || 0)
-                    + (separator.visible ? root.actualSeparatorWidth : 0)
-                Layout.maximumWidth: Layout.preferredWidth
-                Separator {
-                    id: separator
-                    visible: segmentRow.index > (root.collapsed ? root.firstVisibleAncestor : 0)
-                    width: root.actualSeparatorWidth
-                    horizontalAlignment: Text.AlignHCenter
-                    anchors.left: parent.left
-                    anchors.verticalCenter: parent.verticalCenter
-                }
-                SegmentButton {
-                    id: segmentButton
-                    anchors.right: parent.right
-                    anchors.verticalCenter: parent.verticalCenter
-                    width: Math.max(0, segmentRow.width - (separator.visible ? root.actualSeparatorWidth : 0))
-                    objectName: "hnBreadcrumbSegment" + segmentRow.index
-                    text: String(segmentRow.modelData)
-                    current: segmentRow.index === root.segments.length - 1
-                    onClicked: root.segmentActivated(segmentRow.index)
-                }
-            }
+            delegate: SegmentRow {}
         }
         Item { Layout.fillWidth: true }
         C.ToolButton {

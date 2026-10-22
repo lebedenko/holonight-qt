@@ -5733,3 +5733,110 @@ TEST_F(QmlSmoke, Controls_HeaderCloseButtonPreservesCompactActionAndKeyboardCont
   EXPECT_EQ(root->property("foreground").value<QColor>(), root->property("expectedForeground").value<QColor>());
   item->setParentItem(nullptr);
 }
+
+TEST_F(QmlSmoke, Controls_BreadcrumbFocusCurrentSegment) {
+  QQmlComponent comp{&engine_};
+  comp.setData(R"(
+    import QtQuick
+    import Holonight.Controls
+    Window {
+      id: window
+      width: 800; height: 100; visible: true
+      property alias bar: bar
+      property alias other: other
+      property int activations: 0
+      Item { id: other }
+      HnBreadcrumbBar {
+        id: bar; width: 800; editable: false
+        segments: ["/", "same", "same", "Pictures"]
+        onSegmentActivated: window.activations++
+      }
+    }
+  )",
+               QUrl{});
+  ASSERT_EQ(comp.status(), QQmlComponent::Ready) << comp.errorString().toStdString();
+  std::unique_ptr<QObject> root{comp.create()};
+  ASSERT_NE(root, nullptr);
+  auto* window = qobject_cast<QQuickWindow*>(root.get());
+  auto* bar = root->property("bar").value<QQuickItem*>();
+  auto* other = root->property("other").value<QQuickItem*>();
+  ASSERT_NE(window, nullptr);
+  ASSERT_NE(bar, nullptr);
+  ASSERT_NE(other, nullptr);
+  window->requestActivate();
+  ASSERT_TRUE(QTest::qWaitForWindowActive(window));
+  const auto focusCurrent = [&] {
+    bool result = false;
+    EXPECT_TRUE(QMetaObject::invokeMethod(bar, "focusCurrentSegment", Q_RETURN_ARG(bool, result)));
+    return result;
+  };
+  ASSERT_TRUE(focusCurrent());
+  auto* initial = window->activeFocusItem();
+  QTest::keyClick(window, Qt::Key_H);
+  EXPECT_EQ(window->activeFocusItem(), initial);  // opt-in only
+  bar->setProperty("vimNavigation", true);
+  for (const int width : {800, 160}) {
+    bar->setWidth(width);
+    QTest::qWait(20);
+    other->forceActiveFocus();
+    ASSERT_TRUE(focusCurrent());
+    EXPECT_EQ(window->activeFocusItem()->objectName(), "hnBreadcrumbSegment3");
+    EXPECT_TRUE(window->activeFocusItem()->property("visualFocus").toBool());
+    EXPECT_EQ(root->property("activations").toInt(), 0);
+    const auto first = bar->property("collapsed").toBool() ? bar->property("firstVisibleAncestor").toInt() : 0;
+    QStringList reverseRoute;
+    for (int index = 3; index >= first; --index) {
+      reverseRoute.append(QString("hnBreadcrumbSegment%1").arg(index));
+    }
+    if (bar->property("collapsed").toBool()) {
+      reverseRoute.append("hnBreadcrumbOverflow");
+      reverseRoute.append("hnBreadcrumbRoot");
+    }
+    for (const auto& name : reverseRoute.mid(1)) {
+      QTest::keyClick(window, Qt::Key_H);
+      EXPECT_EQ(window->activeFocusItem()->objectName(), name);
+      EXPECT_TRUE(window->activeFocusItem()->property("visualFocus").toBool());
+    }
+    auto* leftmost = window->activeFocusItem();
+    QTest::keyClick(window, Qt::Key_H);
+    EXPECT_EQ(window->activeFocusItem(), leftmost);
+    for (auto index = reverseRoute.size() - 2; index >= 0; --index) {
+      QTest::keyClick(window, Qt::Key_L);
+      EXPECT_EQ(window->activeFocusItem()->objectName(), reverseRoute[index]);
+    }
+    auto* rightmost = window->activeFocusItem();
+    QTest::keyClick(window, Qt::Key_L);
+    EXPECT_EQ(window->activeFocusItem(), rightmost);
+    QTest::keyClick(window, Qt::Key_H, Qt::ControlModifier);
+    QTest::keyClick(window, Qt::Key_H, Qt::ShiftModifier);
+    EXPECT_EQ(window->activeFocusItem(), rightmost);
+    EXPECT_EQ(root->property("activations").toInt(), 0);
+  }
+  EXPECT_TRUE(bar->property("collapsed").toBool());
+  bar->setProperty("segments", QStringList{"/"});
+  QTest::qWait(20);
+  ASSERT_TRUE(focusCurrent());
+  EXPECT_EQ(window->activeFocusItem()->objectName(), "hnBreadcrumbSegment0");
+  EXPECT_TRUE(window->activeFocusItem()->property("visualFocus").toBool());
+  auto* onlySegment = window->activeFocusItem();
+  QTest::keyClick(window, Qt::Key_H);
+  QTest::keyClick(window, Qt::Key_L);
+  EXPECT_EQ(window->activeFocusItem(), onlySegment);
+  for (const auto* property : {"enabled", "visible"}) {
+    other->forceActiveFocus();
+    bar->setProperty(property, false);
+    EXPECT_FALSE(focusCurrent());
+    EXPECT_TRUE(other->hasActiveFocus());
+    bar->setProperty(property, true);
+  }
+  other->forceActiveFocus();
+  bar->setWidth(0);
+  QTest::qWait(20);
+  EXPECT_FALSE(focusCurrent());
+  EXPECT_TRUE(other->hasActiveFocus());
+  bar->setWidth(800);
+  bar->setProperty("segments", QStringList{});
+  EXPECT_FALSE(focusCurrent());
+  EXPECT_TRUE(other->hasActiveFocus());
+  EXPECT_EQ(root->property("activations").toInt(), 0);
+}
