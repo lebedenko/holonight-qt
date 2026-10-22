@@ -232,13 +232,45 @@ Controls.ScrollView {
             Layout.leftMargin: 32
             Layout.rightMargin: 32
             previewState: previewSelector.currentIndex
-            previewContent: HnIcon { source: "qrc:/qt/qml/Holonight/Controls/assets/folder.svg"; size: 64 }
-            loadingContent: HnLoadingState { titleText: qsTr("Loading preview") }
-            errorContent: HnEmptyState {
-                titleText: qsTr("Preview unavailable")
-                descriptionText: qsTr("Try another image.")
+            previewContent: Item {
+                HnIcon {
+                    objectName: "previewContentIcon"
+                    anchors.centerIn: parent
+                    source: "qrc:/qt/qml/Holonight/Controls/assets/folder.svg"
+                    size: 64
+                }
             }
-            emptyContent: HnEmptyState { titleText: qsTr("Select an image") }
+            loadingContent: Item {
+                Controls.BusyIndicator {
+                    objectName: "previewBusy"
+                    anchors.centerIn: parent
+                    running: true
+                    Accessible.name: qsTr("Loading preview")
+                }
+            }
+            errorContent: Item {
+                Accessible.name: qsTr("No preview available")
+                Accessible.description: qsTr("The selected file could not be decoded.")
+                HoverHandler {
+                    id: previewFailureHover
+                }
+                Controls.ToolTip.visible: previewFailureHover.hovered
+                Controls.ToolTip.text: qsTr("The selected file could not be decoded.")
+                ColumnLayout {
+                    anchors.centerIn: parent
+                    HnIcon {
+                        Layout.alignment: Qt.AlignHCenter
+                        source: "qrc:/qt/qml/Holonight/Controls/assets/generic-file.svg"
+                        size: 64
+                    }
+                    HnLabel {
+                        role: HnTypographyRole.Caption
+                        color: HoloniightPalette.textMuted
+                        objectName: "previewFailureCaption"
+                        rawText: qsTr("No preview available")
+                    }
+                }
+            }
         }
 
         HnLabel { role: HnTypographyRole.Title; rawText: "HnMetadataList"; Layout.leftMargin: 32 }

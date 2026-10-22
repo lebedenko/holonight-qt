@@ -5276,8 +5276,9 @@ TEST_F(QmlSmoke, Controls_FilePresentationStableGeometryAndSemanticHint) {
       property alias hint: hint
       HnPreviewFrame {
         id: frame
-        previewContent: Rectangle { implicitWidth: 900; implicitHeight: 700 }
-        loadingContent: Rectangle { implicitWidth: 10; implicitHeight: 10 }
+        previewContent: Rectangle { objectName: "content"; implicitWidth: 900; implicitHeight: 700 }
+        loadingContent: Rectangle { objectName: "loading"; implicitWidth: 10; implicitHeight: 10 }
+        errorContent: Item { objectName: "error" }
       }
       HnLabeledKeyHint {
         id: hint
@@ -5291,12 +5292,21 @@ TEST_F(QmlSmoke, Controls_FilePresentationStableGeometryAndSemanticHint) {
   std::unique_ptr<QObject> root{comp.create()};
   ASSERT_NE(root, nullptr);
   auto* frame = root->property("frame").value<QObject*>();
+  EXPECT_EQ(frame->property("padding").toDouble(), 0);
+  EXPECT_EQ(frame->property("background").value<QObject*>(), nullptr);
   const auto width = frame->property("implicitWidth");
   const auto height = frame->property("implicitHeight");
   for (int state = 0; state < 4; ++state) {
     ASSERT_TRUE(frame->setProperty("previewState", state));
     EXPECT_EQ(frame->property("implicitWidth"), width);
     EXPECT_EQ(frame->property("implicitHeight"), height);
+    auto* presentation = frame->property("previewItem").value<QObject*>();
+    if (state == 2) {
+      EXPECT_EQ(presentation, nullptr);
+    } else {
+      ASSERT_NE(presentation, nullptr);
+      EXPECT_EQ(presentation->objectName(), state == 0 ? "content" : state == 1 ? "loading" : "error");
+    }
   }
   auto* hint = root->property("hint").value<QObject*>();
   EXPECT_EQ(hint->property("accessibleText").toString(), QStringLiteral("Ctrl plus L Edit location"));

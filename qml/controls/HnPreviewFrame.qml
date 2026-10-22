@@ -24,15 +24,10 @@ C.Control {
     // Deliberately independent of loaded content, including state transitions.
     implicitWidth: 240
     implicitHeight: 180
-    padding: HnMetrics.horizontalPadding(HnControlSize.Normal)
+    padding: 0
     contentItem: Loader {
         id: presentation
         sourceComponent: root.previewState === HnPreviewFrame.Loading ? root.loadingContent : root.previewState === HnPreviewFrame.Error ? root.errorContent : root.previewState === HnPreviewFrame.Empty ? root.emptyContent : root.previewContent
     }
-    background: Rectangle {
-        color: HoloniightPalette.surfaceElevated
-        border.color: HoloniightPalette.borderPassive
-        border.width: HnMetrics.borderWidth
-        radius: HnAppearance.roundedRadius(HnSurfaceRole.Card, width, height, HnAppearance.revision)
-    }
+    background: null
 }

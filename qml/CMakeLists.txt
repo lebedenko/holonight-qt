@@ -188,6 +188,7 @@ set_source_files_properties(controls/assets/more-vertical.svg PROPERTIES QT_RESO
 set_source_files_properties(controls/assets/edit.svg PROPERTIES QT_RESOURCE_ALIAS assets/edit.svg)
 set_source_files_properties(controls/assets/delete.svg PROPERTIES QT_RESOURCE_ALIAS assets/delete.svg)
 set_source_files_properties(controls/assets/folder.svg PROPERTIES QT_RESOURCE_ALIAS assets/folder.svg)
+set_source_files_properties(controls/assets/generic-file.svg PROPERTIES QT_RESOURCE_ALIAS assets/generic-file.svg)
 set_source_files_properties(controls/assets/paperclip.svg PROPERTIES QT_RESOURCE_ALIAS assets/paperclip.svg)
 set_source_files_properties(controls/assets/wrench.svg PROPERTIES QT_RESOURCE_ALIAS assets/wrench.svg)
 set_source_files_properties(controls/assets/send.svg PROPERTIES QT_RESOURCE_ALIAS assets/send.svg)
@@ -217,6 +218,7 @@ qt_add_qml_module(holonight_controls_qml
         controls/assets/edit.svg
         controls/assets/delete.svg
         controls/assets/folder.svg
+        controls/assets/generic-file.svg
         controls/assets/paperclip.svg
         controls/assets/wrench.svg
         controls/assets/send.svg
@@ -324,6 +326,7 @@ install(FILES
     controls/assets/edit.svg
     controls/assets/delete.svg
     controls/assets/folder.svg
+    controls/assets/generic-file.svg
     controls/assets/paperclip.svg
     controls/assets/wrench.svg
     controls/assets/send.svg

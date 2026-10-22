@@ -10,6 +10,13 @@ ownership of file identities, decoding, navigation or application selection.
 - `HnPreviewFrame`: `previewState` (Content/Loading/Empty/Error) selects
   `previewContent`, `loadingContent`, `emptyContent` or `errorContent`.
   Default implicit size is 240 × 180; caller dimensions remain stable across states.
+  The host is transparent with zero padding. Surrounding panes own surfaces and spacing;
+  renderers own image corners. Empty selections stay blank. Consumers keep usable previews
+  visible during progressive work, otherwise center a standard accessible BusyIndicator.
+  Failed previews without usable content show the selected file icon and a muted
+  “No preview available” caption, with the reason in a tooltip and accessible description.
+  Icon failures use the bundled `assets/generic-file.svg` fallback. Metadata and actions
+  remain independent of preview success. Component slots and `previewItem` are unchanged.
 - `HnMetadataList`: ordered `rows` of `{label, value}` or `{heading}`; caller formats
   values. `labelWidth` controls aligned labels; optional row `visible` hides a row without
   discarding its position. Values wrap and each row has a

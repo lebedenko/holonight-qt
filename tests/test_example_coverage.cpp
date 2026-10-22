@@ -119,13 +119,24 @@ TEST_F(ExampleCoverage, GalleryInteractionsAndTypographyBounds) {
     QCoreApplication::processEvents();
     EXPECT_EQ(preview->property("previewState").toInt(), state);
     auto* content = preview->property("previewItem").value<QObject*>();
+    if (state == 2) {
+      EXPECT_EQ(content, nullptr);
+      continue;
+    }
     ASSERT_NE(content, nullptr);
     if (state == 0) {
-      EXPECT_FALSE(content->property("source").toUrl().isEmpty());
-      EXPECT_FALSE(content->property("hasError").toBool());
+      auto* icon = content->findChild<QObject*>("previewContentIcon");
+      ASSERT_NE(icon, nullptr);
+      EXPECT_FALSE(icon->property("source").toUrl().isEmpty());
+      EXPECT_FALSE(icon->property("hasError").toBool());
+    } else if (state == 1) {
+      auto* busy = content->findChild<QObject*>("previewBusy");
+      ASSERT_NE(busy, nullptr);
+      EXPECT_TRUE(busy->property("running").toBool());
     } else {
-      const QStringList titles = {"", "Loading preview", "Select an image", "Preview unavailable"};
-      EXPECT_EQ(content->property("titleText").toString(), titles.at(state));
+      auto* caption = content->findChild<QObject*>("previewFailureCaption");
+      ASSERT_NE(caption, nullptr);
+      EXPECT_EQ(caption->property("rawText").toString(), QStringLiteral("No preview available"));
     }
   }
   for (const auto* name : {"selectableCard", "selectableThumbnail"}) {
