@@ -431,3 +431,15 @@ foreach(style IN ITEMS Holonight Fusion)
         "${HOLONIGHT_TEST_ENV};QT_QUICK_BACKEND=software;QT_QUICK_CONTROLS_STYLE=${style};QT_SCALE_FACTOR=${scale}")
   endforeach()
 endforeach()
+
+# Qt-only consumer: all provider state must come from the actual loaded plugins.
+add_executable(holonight_platform_palette_consumer platform_palette_consumer.cpp)
+target_link_libraries(holonight_platform_palette_consumer PRIVATE
+    Qt6::Widgets Qt6::Qml Qt6::Quick Qt6::QuickControls2 Qt6::Test)
+add_dependencies(holonight_platform_palette_consumer qholonight holonight holonight_qml)
+foreach(mode IN ITEMS gui fusion holonight quick override)
+  add_test(NAME holonight_platform_palette_${mode}
+      COMMAND holonight_platform_palette_consumer ${CMAKE_BINARY_DIR}/lib/qt6/plugins ${mode})
+  set_tests_properties(holonight_platform_palette_${mode} PROPERTIES TIMEOUT 60 ENVIRONMENT
+      "QT_QPA_PLATFORM=offscreen;QT_QUICK_BACKEND=software;QML_IMPORT_PATH=${CMAKE_BINARY_DIR}/qml")
+endforeach()
