@@ -108,6 +108,13 @@ delegate controls. Do not calculate selection colors in application code.
   Corner rounding follows appearance settings up to 2 logical pixels. Explicitly
   constrained multiline badges retain their wrapping contract.
   Use the resolved `font` to change typography; do not replace `contentItem` or resize individual symbols.
+  Badges have transparent fill. `borderColor` defaults to `borderPassive`;
+  `foregroundColor` defaults to enabled `textSecondary` / disabled `textDisabled`.
+  For a hint inside a colored button, bind both properties to the button's actual
+  border color. In an outlined `HnListDelegate`, bind both to its read-only
+  `outlineColor`, which follows keyboard focus and selection. Explicit colors
+  remain authoritative when disabled. Neutral footer hints need no overrides.
+  For `HnLabeledKeyHint`, use `hintItem.borderColor` and `hintItem.foregroundColor`.
 - `HnEmptyState`: empty-result graphic, title, description, and action.
 - `HnLoadingState`: indeterminate or normalized progress presentation.
 - `HnSeparator`: horizontal or vertical pixel-aligned divider with solid,

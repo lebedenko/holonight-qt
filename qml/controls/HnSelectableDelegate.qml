@@ -21,6 +21,7 @@ T.ItemDelegate {
     property bool currentItemSelects: true
     readonly property bool selected: root.highlighted || root.checked || (root.currentItemSelects && root.ListView ? root.ListView.isCurrentItem : false)
     readonly property real semanticSpacing: HnMetrics.internalSpacing(root.resolvedSizeRole)
+    readonly property color outlineColor: root.visualFocus ? HoloniightPalette.borderFocus : HoloniightPalette.selectionIndicator
 
     implicitWidth: Math.max(160, implicitContentWidth + leftPadding + rightPadding)
     implicitHeight: Math.max(HnMetrics.controlHeight(root.resolvedSizeRole), implicitContentHeight + topPadding + bottomPadding)
@@ -87,7 +88,7 @@ T.ItemDelegate {
             color: "transparent"
             radius: parent.semanticRadius
             border.width: root.visualFocus || (root.selected && root.selectionStyle === HnSelectableDelegate.Outline) ? HnMetrics.focusBorderWidth : 0
-            border.color: root.visualFocus ? HoloniightPalette.borderFocus : HoloniightPalette.selectionIndicator
+            border.color: root.outlineColor
             Accessible.ignored: true
         }
     }

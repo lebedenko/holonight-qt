@@ -15,6 +15,7 @@
 #include <QMetaObject>
 #include <QQmlComponent>
 #include <QQmlEngine>
+#include <QQmlProperty>
 #include <QQuickItem>
 #include <QQuickWindow>
 #include <QSignalSpy>
@@ -5167,7 +5168,66 @@ TEST_F(QmlSmoke, Controls_KeyHintDisabledAppearance) {
   for (QObject* label : labels) {
     EXPECT_EQ(label->property("color").value<QColor>(), colors.textDisabled);
   }
-  EXPECT_EQ(hint->property("background").value<QObject*>()->property("color").value<QColor>(), colors.surfaceRaised);
+  EXPECT_EQ(hint->property("background").value<QObject*>()->property("color").value<QColor>().alpha(), 0);
+  EXPECT_EQ(hint->property("borderColor").value<QColor>(), colors.borderPassive);
+}
+
+// GTest assertions dominate the score of this small state matrix.
+// NOLINTNEXTLINE(readability-function-cognitive-complexity)
+TEST_F(QmlSmoke, Controls_KeyHintColorsFollowSurfaceAcrossContentAndEnabledChanges) {
+  QQmlComponent comp{&engine_};
+  comp.setData(R"(
+    import QtQuick
+    import Holonight.Controls
+    Rectangle {
+      id: surface
+      border.color: "#4c90e0"
+      property bool literal: false
+      property alias hint: hint
+      HnKeyHint {
+        id: hint
+        keyGroups: surface.literal ? [] : [[Qt.Key_Control, Qt.Key_Return], [Qt.Key_Escape]]
+        text: "Esc"
+        foregroundColor: surface.border.color
+        borderColor: surface.border.color
+      }
+    }
+  )",
+               QUrl{});
+  ASSERT_EQ(comp.status(), QQmlComponent::Ready) << comp.errorString().toStdString();
+  std::unique_ptr<QObject> surface{comp.create()};
+  ASSERT_NE(surface, nullptr);
+  auto* hint = surface->property("hint").value<QObject*>();
+  ASSERT_NE(hint, nullptr);
+  auto* content = hint->property("contentItem").value<QObject*>();
+  auto* background = hint->property("background").value<QObject*>();
+  ASSERT_NE(content, nullptr);
+  ASSERT_NE(background, nullptr);
+  for (const auto& color : {QColor("#4c90e0"), QColor("#50d5ed")}) {
+    ASSERT_TRUE(QQmlProperty::write(surface.get(), "border.color", color));
+    for (bool enabled : {true, false}) {
+      hint->setProperty("enabled", enabled);
+      for (bool literal : {false, true}) {
+        surface->setProperty("literal", literal);
+        QCoreApplication::processEvents();
+        EXPECT_EQ(hint->property("foregroundColor").value<QColor>(), color);
+        EXPECT_EQ(QQmlProperty::read(background, "border.color").value<QColor>(), color);
+        EXPECT_EQ(background->property("color").value<QColor>().alpha(), 0);
+        int colored_items = 0;
+        for (auto* child : content->findChildren<QObject*>()) {
+          if (child->property("text").isValid() && child->property("color").isValid()) {
+            EXPECT_EQ(child->property("color").value<QColor>(), color);
+            ++colored_items;
+          }
+          if (child->property("strokeColor").isValid()) {
+            EXPECT_EQ(child->property("strokeColor").value<QColor>(), color);
+            ++colored_items;
+          }
+        }
+        EXPECT_GT(colored_items, 0);
+      }
+    }
+  }
 }
 
 TEST_F(QmlSmoke, Controls_KeySequenceLabelMatchesBadgeWithoutFrameOrPadding) {

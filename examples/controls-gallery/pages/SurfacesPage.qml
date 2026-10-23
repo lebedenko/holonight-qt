@@ -121,6 +121,50 @@ Controls.ScrollView {
             Accessible.name: qsTr("Hint font size")
         }
 
+        HnLabeledKeyHint {
+            Layout.leftMargin: 32
+            keyGroups: [[Qt.Key_Escape]]
+            description: qsTr("Close")
+        }
+
+        HnListDelegate {
+            id: selectedHintRow
+            Layout.fillWidth: true
+            Layout.leftMargin: 32
+            Layout.rightMargin: 32
+            title: qsTr("Selected result")
+            subtitle: qsTr("The key hint follows the selection or focus outline.")
+            highlighted: true
+            selectionStyle: HnListDelegate.Outline
+            trailingContent: HnKeyHint {
+                keyGroups: [[Qt.Key_Return]]
+                borderColor: selectedHintRow.outlineColor
+                foregroundColor: selectedHintRow.outlineColor
+            }
+        }
+
+        Controls.Button {
+            id: hintedButton
+            Layout.leftMargin: 32
+            text: qsTr("Continue")
+            padding: 12
+            contentItem: RowLayout {
+                spacing: 12
+                HnLabel { rawText: hintedButton.text }
+                HnKeyHint {
+                    keyGroups: [[Qt.Key_Return]]
+                    borderColor: hintedButtonFrame.borderColor
+                    foregroundColor: hintedButtonFrame.borderColor
+                }
+            }
+            background: HnSurfaceFrame {
+                id: hintedButtonFrame
+                surfaceRole: HnSurfaceRole.Control
+                fillColor: Qt.alpha(HoloniightPalette.accentCyan, hintedButton.down ? 0.25 : 0.13)
+                borderColor: hintedButton.visualFocus ? HoloniightPalette.borderFocus : HoloniightPalette.accentCyan
+            }
+        }
+
         Controls.ComboBox {
             id: hintFamily
             Layout.leftMargin: 32

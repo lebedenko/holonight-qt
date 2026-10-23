@@ -11,6 +11,8 @@ C.Control {
     property var keyGroups: []
     property bool wrap: false
     property bool lowercaseLetters: false
+    property color foregroundColor: enabled ? HoloniightPalette.textSecondary : HoloniightPalette.textDisabled
+    property color borderColor: HoloniightPalette.borderPassive
     readonly property string accessibleText: sequence.accessibleText
 
     font.family: HolonightTheme.monospaceFont
@@ -44,6 +46,7 @@ C.Control {
             keyGroups: root.keyGroups
             text: root.text
             font: root.font
+            color: root.foregroundColor
             wrap: root.wrap
             lowercaseLetters: root.lowercaseLetters
             Accessible.ignored: true
@@ -51,9 +54,9 @@ C.Control {
     }
 
     background: Rectangle {
-        color: HoloniightPalette.surfaceRaised
+        color: "transparent"
         radius: Math.min(2, HnAppearance.roundedRadius(HnSurfaceRole.Control, width, height, HnAppearance.revision))
         border.width: HnMetrics.borderWidth
-        border.color: HoloniightPalette.borderPassive
+        border.color: root.borderColor
     }
 }

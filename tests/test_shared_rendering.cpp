@@ -737,6 +737,69 @@ TEST_F(SharedRendering, ScrollBarApplicationEngineTeardown) {
 }
 }  // namespace
 
+// Keep the host-surface rendering matrix together for this scenario.
+// NOLINTNEXTLINE(readability-function-cognitive-complexity)
+TEST_F(SharedRendering, KeyHintShowsHostSurfaceAndMatchingGlyphColor) {
+  QQmlComponent component(&engine);
+  component.setData(R"(
+    import QtQuick
+    import Holonight.Core
+    import Holonight.Controls
+    Window {
+      width: 360; height: 240; visible: true
+      Column {
+        Repeater {
+          model: [HoloniightPalette.background, HoloniightPalette.surfaceSelected,
+                  HoloniightPalette.surfaceRaised]
+          delegate: Rectangle {
+            id: surface
+            required property color modelData
+            required property int index
+            width: 360; height: 80
+            color: modelData
+            HnKeyHint {
+              objectName: "surfaceHint" + surface.index
+              x: 16; y: 12; width: 320; height: 56
+              keyGroups: [[Qt.Key_Return], [Qt.Key_Escape]]
+              borderColor: HoloniightPalette.accentCyan
+              foregroundColor: borderColor
+            }
+          }
+        }
+      }
+    }
+  )",
+                    QUrl{});
+  root.reset(component.create());
+  ASSERT_TRUE(root) << component.errorString().toStdString();
+  window = qobject_cast<QQuickWindow*>(root.get());
+  ASSERT_NE(window, nullptr);
+  ASSERT_TRUE(QTest::qWaitForWindowExposed(window));
+  const QImage rendered = window->grabWindow();
+  ASSERT_FALSE(rendered.isNull());
+  const qreal dpr = window->devicePixelRatio();
+  for (int index = 0; index < 3; ++index) {
+    const QByteArray name = QStringLiteral("surfaceHint%1").arg(index).toUtf8();
+    auto* hint = item(name.constData());
+    ASSERT_NE(hint, nullptr);
+    const QPointF origin = hint->mapToScene(QPointF());
+    const QColor surface = rendered.pixelColor(qRound(2 * dpr), qRound((origin.y() + 12) * dpr));
+    EXPECT_EQ(rendered.pixelColor(qRound((origin.x() + 12) * dpr), qRound((origin.y() + 12) * dpr)), surface);
+    const QColor foreground = hint->property("foregroundColor").value<QColor>();
+    // Inspect content away from the border: both the Return vector and Esc text must use the host accent.
+    const QRect content(qRound((origin.x() + 100) * dpr), qRound((origin.y() + 8) * dpr), qRound(120 * dpr),
+                        qRound(40 * dpr));
+    const QImage glyphs = rendered.copy(content);
+    int accent_pixels = 0;
+    for (int y = 0; y < glyphs.height(); ++y) {
+      for (int x = 0; x < glyphs.width(); ++x) {
+        accent_pixels += glyphs.pixelColor(x, y) == foreground ? 1 : 0;
+      }
+    }
+    EXPECT_GT(accent_pixels, 0);
+  }
+}
+
 // Keep the complete state/provenance matrix together for this scenario.
 // NOLINTNEXTLINE(readability-function-cognitive-complexity)
 TEST_F(SharedRendering, KeyHintSymbolsRenderDistinctlyAcrossFontsAndSizes) {
