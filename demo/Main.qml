@@ -14,7 +14,9 @@ Hn.HnApplicationWindow {
     visible: true
     width: 840
     height: 700
-    title: "holonight demo"
+    title: "HoloNight — Qt Quick"
+    signal openWidgetsDemoRequested()
+    property string widgetsLaunchError: ""
 
     Loader {
         id: secondaryWindowLoader
@@ -63,7 +65,7 @@ Hn.HnApplicationWindow {
         }
         Core.HnLabel {
             role: Core.HnTypographyRole.Subheading
-            rawText: "Qt6 theme variants for tiling window managers"
+            rawText: "Qt Quick · Qt6 theme variants for tiling window managers"
             Layout.leftMargin: 40
             Layout.bottomMargin: 16
         }
@@ -73,6 +75,22 @@ Hn.HnApplicationWindow {
             text: qsTr("Open standard application window")
             Layout.leftMargin: 40
             onClicked: secondaryWindowLoader.active = true
+        }
+
+        Controls.Button {
+            objectName: "openWidgetsDemo"
+            text: qsTr("Open Qt Widgets demo")
+            Layout.leftMargin: 40
+            onClicked: root.openWidgetsDemoRequested()
+        }
+        Controls.Label {
+            objectName: "widgetsLaunchError"
+            text: root.widgetsLaunchError
+            visible: text.length > 0
+            wrapMode: Text.Wrap
+            Layout.fillWidth: true
+            Layout.leftMargin: 40
+            Layout.rightMargin: 40
         }
 
         // ── Tab bar ───────────────────────────────────────────────────

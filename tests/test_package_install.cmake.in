@@ -528,3 +528,17 @@ foreach(mode IN ITEMS gui fusion holonight quick override)
     message(FATAL_ERROR "Staged palette consumer ${mode} failed: ${palette_output}\n${palette_error}")
   endif()
 endforeach()
+
+if(@BUILD_DEMO@)
+  foreach(mode IN ITEMS default environment command-line platform-environment)
+    execute_process(COMMAND "@CMAKE_COMMAND@" -E env
+        "LD_LIBRARY_PATH=@HOLONIGHT_CONFIG_RUNTIME_DIR@:$ENV{LD_LIBRARY_PATH}"
+        "@Python3_EXECUTABLE@" "@CMAKE_CURRENT_SOURCE_DIR@/check_widgets_startup.py"
+        "${install_prefix}/bin/holonight_widgets_demo" "${install_prefix}/@QT6_INSTALL_PLUGINS@" "${mode}"
+        RESULT_VARIABLE result OUTPUT_VARIABLE output ERROR_VARIABLE error TIMEOUT 15)
+    if(NOT result EQUAL 0)
+      message(FATAL_ERROR "Installed Widgets demo ${mode} failed:\n${output}\n${error}")
+    endif()
+    message(STATUS "${output}")
+  endforeach()
+endif()

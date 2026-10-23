@@ -5,6 +5,7 @@
 #include <QQmlEngine>
 #include <QQuickItem>
 #include <QQuickWindow>
+#include <QSignalSpy>
 #include <QTest>
 
 #include <algorithm>
@@ -187,6 +188,21 @@ TEST_F(ExampleCoverage, GalleryInteractionsAndTypographyBounds) {
       }
     }
   }
+}
+
+TEST_F(ExampleCoverage, WidgetsDemoButtonEmitsLaunchRequestAndDisplaysError) {
+  auto demo = load("/demo/Main.qml");
+  ASSERT_NE(demo, nullptr);
+  auto* button = demo->findChild<QObject*>("openWidgetsDemo");
+  ASSERT_NE(button, nullptr);
+  QSignalSpy request(demo.get(), SIGNAL(openWidgetsDemoRequested()));
+  ASSERT_TRUE(QMetaObject::invokeMethod(button, "clicked"));
+  EXPECT_EQ(request.count(), 1);
+  demo->setProperty("widgetsLaunchError", QStringLiteral("Launch failed"));
+  auto* error = demo->findChild<QObject*>("widgetsLaunchError");
+  ASSERT_NE(error, nullptr);
+  EXPECT_EQ(error->property("text").toString(), QStringLiteral("Launch failed"));
+  EXPECT_TRUE(error->property("visible").toBool());
 }
 
 TEST_F(ExampleCoverage, SecondaryWindowAndPopupReopen) {

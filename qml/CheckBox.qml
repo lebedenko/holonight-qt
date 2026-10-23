@@ -86,15 +86,11 @@ T.CheckBox {
 
         // Focus ring
         Rectangle {
-            readonly property real semanticRadius: HnAppearance.roundedRadius(HnSurfaceRole.Control,
-                                                                              width, height,
-                                                                              HnAppearance.revision)
-
             visible: root.visualFocus
             anchors.centerIn: parent
             width: parent.width + 4
             height: parent.height + 4
-            radius: semanticRadius
+            radius: parent.radius + 2
             color: Qt.rgba(0, 0, 0, 0)
             border.color: root.controlColors.colors.borderFocus
             border.width: HnMetrics.focusBorderWidth

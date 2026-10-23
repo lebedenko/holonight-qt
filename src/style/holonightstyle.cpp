@@ -31,8 +31,9 @@
 #include <cstdint>
 
 namespace {
-constexpr qreal kRadiusTight = 2.0;   // tight radius for item-view selection/focus rings
-constexpr qreal kRadiusGroove = 3.0;  // progress-bar groove (not a control shape)
+constexpr qreal kCheckboxRadius = 3.0;  // at the standard 16px indicator size
+constexpr qreal kRadiusTight = 2.0;     // tight radius for item-view selection/focus rings
+constexpr qreal kRadiusGroove = 3.0;    // progress-bar groove (not a control shape)
 
 enum class SurfaceRole : uint8_t {
   Window,
@@ -675,37 +676,57 @@ void HoloniightStyle::drawPushButtonBevelImpl(const QStyleOption* option, QPaint
   drawPanelButtonImpl(option, painter);
 }
 
-void HoloniightStyle::drawCheckBoxImpl(const QStyleOption* option, QPainter* painter, const QWidget* widget) const {
-  const auto* opt = qstyleoption_cast<const QStyleOptionButton*>(option);
-  if (opt == nullptr) {
-    return;
-  }
-  const auto& pal = option->palette;
-  const bool checked = (opt->state & State_On) != 0U;
-  const int side = pixelMetric(PM_IndicatorWidth, option, widget);
-  const int top = option->rect.top() + ((option->rect.height() - side) / 2);
-  const QRect indicator{option->rect.left(), top, side, side};
-  const QRectF borderRect = QRectF(indicator).adjusted(0.5, 0.5, -0.5, -0.5);
-
+namespace {
+void paintCheckboxIndicator(const QStyleOption& option, QPainter* painter) {
+  const auto group = !(option.state & QStyle::State_Enabled) ? QPalette::Disabled
+                     : (option.state & QStyle::State_Active) ? QPalette::Active
+                                                             : QPalette::Inactive;
+  const auto& palette = option.palette;
+  const bool marked = option.state & (QStyle::State_On | QStyle::State_NoChange);
+  const QRectF rect = QRectF(option.rect).adjusted(0.5, 0.5, -0.5, -0.5);
+  const qreal scale = std::min(option.rect.width(), option.rect.height()) / 16.0;
+  const qreal radius = kCheckboxRadius * scale;
   painter->save();
   painter->setRenderHint(QPainter::Antialiasing);
-  if (checked) {
-    painter->setPen(Qt::NoPen);
-    painter->setBrush(pal.color(QPalette::Highlight));
-    painter->drawRoundedRect(borderRect, controlRadius(borderRect), controlRadius(borderRect));
-    painter->setPen(QPen{pal.color(QPalette::HighlightedText), 2.0});
-    painter->drawLine(indicator.left() + 4, indicator.top() + 8, indicator.left() + 7, indicator.top() + 11);
-    painter->drawLine(indicator.left() + 7, indicator.top() + 11, indicator.left() + 12, indicator.top() + 5);
-  } else {
-    painter->setPen(QPen{pal.color(QPalette::Mid), 1.0});
-    painter->setBrush(pal.color(QPalette::Base));
-    painter->drawRoundedRect(borderRect, controlRadius(borderRect), controlRadius(borderRect));
+  painter->setPen(QPen{palette.color(group, marked ? QPalette::Highlight : QPalette::Mid), 1.0});
+  painter->setBrush(palette.color(group, marked ? QPalette::Highlight : QPalette::Base));
+  painter->drawRoundedRect(rect, radius, radius);
+  if (marked) {
+    painter->setPen(
+        QPen{palette.color(group, QPalette::HighlightedText), 2.0 * scale, Qt::SolidLine, Qt::RoundCap, Qt::RoundJoin});
+    const auto point = [&](qreal x, qreal y) {
+      return QPointF{option.rect.left() + x * option.rect.width() / 16.0,
+                     option.rect.top() + y * option.rect.height() / 16.0};
+    };
+    if (option.state & QStyle::State_NoChange) {
+      painter->drawLine(point(4, 8), point(12, 8));
+    } else {
+      QPainterPath check;
+      check.moveTo(point(4, 8));
+      check.lineTo(point(7, 11));
+      check.lineTo(point(12, 5));
+      painter->setBrush(Qt::NoBrush);
+      painter->drawPath(check);
+    }
+  }
+  if ((option.state & QStyle::State_HasFocus) && (option.state & QStyle::State_KeyboardFocusChange)) {
+    painter->setPen(QPen{palette.color(group, QPalette::Highlight), 1.0});
+    painter->setBrush(Qt::NoBrush);
+    painter->drawRoundedRect(rect.adjusted(-2, -2, 2, 2), radius + 2, radius + 2);
   }
   painter->restore();
+}
+}  // namespace
 
-  QStyleOptionButton labelOpt = *opt;
-  labelOpt.rect.setLeft(indicator.right() + 6);
-  drawControl(CE_CheckBoxLabel, &labelOpt, painter, widget);
+void HoloniightStyle::drawCheckBoxImpl(const QStyleOption* option, QPainter* painter, const QWidget* widget) const {
+  const auto* opt = qstyleoption_cast<const QStyleOptionButton*>(option);
+  if (opt == nullptr) return;
+  QStyleOption indicator = *option;
+  indicator.rect = subElementRect(SE_CheckBoxIndicator, option, widget);
+  paintCheckboxIndicator(indicator, painter);
+  QStyleOptionButton label = *opt;
+  label.rect = subElementRect(SE_CheckBoxContents, option, widget);
+  drawControl(CE_CheckBoxLabel, &label, painter, widget);
 }
 
 void HoloniightStyle::drawRadioButtonImpl(const QStyleOption* option, QPainter* painter, const QWidget* widget) const {
@@ -959,30 +980,20 @@ void HoloniightStyle::drawItemViewItemImpl(const QStyleOption* option, QPainter*
     painter->drawRect(opt->rect);
   }
 
-  QRect iconRect;
-  QRect textRect;
-  constexpr int kGap = 6;
-  const bool hasIcon = !opt->icon.isNull() && ((opt->features & QStyleOptionViewItem::HasDecoration) != 0U);
-  const bool decorationOnTop = opt->decorationPosition == QStyleOptionViewItem::Top;
-  const QSize iconSize = opt->decorationSize.isValid() ? opt->decorationSize : QSize{16, 16};
-
-  if (hasIcon) {
-    if (decorationOnTop) {
-      iconRect = QRect{0, 0, iconSize.width(), iconSize.height()};
-      iconRect.moveTop(opt->rect.top() + 4);
-      iconRect.moveLeft(opt->rect.left() + ((opt->rect.width() - iconRect.width()) / 2));
-      textRect = opt->rect.adjusted(4, iconSize.height() + kGap + 4, -4, -2);
-    } else {
-      iconRect = QRect{0, 0, iconSize.width(), iconSize.height()};
-      iconRect.moveLeft(opt->rect.left() + 6);
-      iconRect.moveTop(opt->rect.top() + ((opt->rect.height() - iconRect.height()) / 2));
-      textRect = opt->rect.adjusted(iconSize.width() + kGap + 10, 0, -4, 0);
-    }
-    const QIcon::Mode mode = enabled ? QIcon::Normal : QIcon::Disabled;
-    const QIcon::State state = selected ? QIcon::On : QIcon::Off;
-    opt->icon.paint(painter, iconRect, opt->decorationAlignment, mode, state);
-  } else {
-    textRect = opt->rect.adjusted(6, 0, -4, 0);
+  if (opt->features & QStyleOptionViewItem::HasCheckIndicator) {
+    QStyleOption check = *opt;
+    check.rect = subElementRect(SE_ItemViewItemCheckIndicator, opt, widget);
+    check.state &= ~(State_On | State_Off | State_NoChange | State_HasFocus);
+    check.state |= opt->checkState == Qt::Checked            ? State_On
+                   : opt->checkState == Qt::PartiallyChecked ? State_NoChange
+                                                             : State_Off;
+    paintCheckboxIndicator(check, painter);
+  }
+  const QRect textRect = subElementRect(SE_ItemViewItemText, opt, widget);
+  if (!opt->icon.isNull() && (opt->features & QStyleOptionViewItem::HasDecoration)) {
+    const QRect iconRect = subElementRect(SE_ItemViewItemDecoration, opt, widget);
+    opt->icon.paint(painter, iconRect, opt->decorationAlignment, enabled ? QIcon::Normal : QIcon::Disabled,
+                    selected ? QIcon::On : QIcon::Off);
   }
 
   QColor textColor = enabled ? tok.textPrimary : tok.textDisabled;
@@ -1000,8 +1011,9 @@ void HoloniightStyle::drawItemViewItemImpl(const QStyleOption* option, QPainter*
     painter->setFont(opt->font);
   }
   const QFontMetrics font_metrics{painter->font()};
-  const Qt::Alignment alignment =
-      decorationOnTop ? Qt::AlignHCenter | Qt::AlignTop : (opt->displayAlignment | Qt::AlignVCenter);
+  const Qt::Alignment alignment = (opt->decorationPosition == QStyleOptionViewItem::Top)
+                                      ? Qt::AlignHCenter | Qt::AlignTop
+                                      : (opt->displayAlignment | Qt::AlignVCenter);
   if ((opt->features & QStyleOptionViewItem::WrapText) != 0U) {
     painter->drawText(textRect, static_cast<int>(alignment | Qt::TextWordWrap), opt->text);
   } else {
@@ -1026,6 +1038,11 @@ void HoloniightStyle::drawPrimitive(PrimitiveElement element, const QStyleOption
   const auto& tok = tokens();
 
   switch (element) {
+    case PE_IndicatorCheckBox:
+    case PE_IndicatorItemViewItemCheck:
+      paintCheckboxIndicator(*option, painter);
+      return;
+
     case PE_PanelButtonCommand:
       drawPanelButtonImpl(option, painter);
       return;
@@ -1569,7 +1586,8 @@ void HoloniightStyle::drawGroupBoxImpl(const QStyleOption* option, QPainter* pai
 
   if ((opt->subControls & SC_GroupBoxCheckBox) != 0U) {
     QStyleOptionButton checkOpt;
-    checkOpt.initFrom(widget);
+    checkOpt.palette = opt->palette;
+    checkOpt.direction = opt->direction;
     checkOpt.rect = subControlRect(CC_GroupBox, opt, SC_GroupBoxCheckBox, widget);
     checkOpt.state = opt->state;
     drawPrimitive(PE_IndicatorCheckBox, &checkOpt, painter, widget);
@@ -1608,15 +1626,6 @@ QRect HoloniightStyle::subElementRect(SubElement element, const QStyleOption* op
   switch (element) {
     case SE_LineEditContents:
       return option->rect.adjusted(4, 0, -4, 0);
-
-    case SE_CheckBoxIndicator: {
-      const int side = pixelMetric(PM_IndicatorWidth, option, widget);
-      const int top = option->rect.top() + ((option->rect.height() - side) / 2);
-      if (option->direction == Qt::RightToLeft) {
-        return {option->rect.right() - side - 2, top, side, side};
-      }
-      return {option->rect.left() + 2, top, side, side};
-    }
 
     case SE_RadioButtonIndicator: {
       const int side = pixelMetric(PM_ExclusiveIndicatorWidth, option, widget);

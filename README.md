@@ -228,10 +228,28 @@ task test
 # Full pre-commit checklist (build + clang-tidy + tests)
 task check
 
-# Visual demo app
+# Qt Quick visual demo
 task demo
 task demo -- --theme=holonight-day
+
+# Qt Widgets gallery (also opens from the Qt Quick demo)
+task demo:widgets
+task demo:widgets -- --theme=holonight-light
 ```
+
+The `BUILD_DEMO` option builds and installs both `holonight_demo` (Qt Quick)
+and `holonight_widgets_demo` (Qt Widgets) into `bin`. Run either executable with
+`--theme <scheme>` or `-t <scheme>` for an isolated temporary theme configuration.
+The Quick demo retains its standard application window example and can launch
+the sibling Widgets executable independently, forwarding the selected theme.
+
+The Widgets gallery covers Input, Text, Navigation, Feedback, and Containers
+with standard Qt controls, menus, a toolbar, a status bar, and a dock panel.
+Its status bar displays the active style so fallback styling is visible.
+It discovers plugins from the build tree or its installed prefix and defaults
+`QT_QPA_PLATFORMTHEME` to `holonight` only when unset. Explicit platform-theme,
+`QT_STYLE_OVERRIDE`, and Qt `-style` choices are honored; for example:
+`task demo:widgets -- -style Fusion`.
 
 Manual equivalents:
 

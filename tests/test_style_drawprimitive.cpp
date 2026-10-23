@@ -521,3 +521,167 @@ TEST_F(DrawPrimitiveTest, SmallMenuGeometryIsClampedAndPainted) {
   EXPECT_EQ(image.pixelColor(image.rect().center()), tok.surfaceRaised);
   EXPECT_GT(image.pixelColor(image.width() / 2, 0).alpha(), 0);
 }
+
+// A near-corner pixel distinguishes the checkbox radius from the general control radius.
+TEST_F(DrawPrimitiveTest, CheckboxCornerCoverage) {
+  for (const auto state : {QStyle::State_Off, QStyle::State_On, QStyle::State_NoChange}) {
+    for (const bool enabled : {true, false}) {
+      QStyleOptionButton opt;
+      opt.rect = QRect{4, 4, 16, 16};
+      opt.state = state | QStyle::State_Active;
+      if (enabled) opt.state |= QStyle::State_Enabled;
+      opt.palette = style_.standardPalette();
+      for (const bool standalone : {true, false}) {
+        QImage image{32, 32, QImage::Format_ARGB32_Premultiplied};
+        image.fill(Qt::transparent);
+        QPainter painter{&image};
+        QRect indicator = opt.rect;
+        if (standalone) {
+          indicator = style_.subElementRect(QStyle::SE_CheckBoxIndicator, &opt);
+          style_.drawControl(QStyle::CE_CheckBox, &opt, &painter);
+        } else {
+          style_.drawPrimitive(QStyle::PE_IndicatorCheckBox, &opt, &painter);
+        }
+        painter.end();
+        EXPECT_GT(image.pixelColor(indicator.left() + 2, indicator.top() + 1).alpha(), 150)
+            << state << " enabled=" << enabled << " standalone=" << standalone;
+        EXPECT_LT(image.pixelColor(indicator.topLeft()).alpha(), 100);
+      }
+    }
+  }
+}
+
+TEST_F(DrawPrimitiveTest, CheckboxPathsShareStatesPaletteAndScaledGeometry) {
+  for (const int side : {16, 24, 32}) {
+    for (const auto state : {QStyle::State_Off, QStyle::State_On, QStyle::State_NoChange}) {
+      for (const auto group : {QPalette::Active, QPalette::Inactive, QPalette::Disabled}) {
+        QStyleOptionButton opt;
+        opt.rect = QRect{4, 4, side, side};
+        opt.state = state;
+        if (group != QPalette::Disabled) opt.state |= QStyle::State_Enabled;
+        if (group == QPalette::Active) opt.state |= QStyle::State_Active;
+        opt.palette.setColor(group, QPalette::Base, QColor{20, 30, 40});
+        opt.palette.setColor(group, QPalette::Mid, QColor{60, 70, 80});
+        opt.palette.setColor(group, QPalette::Highlight, QColor{100, 110, 120});
+        opt.palette.setColor(group, QPalette::HighlightedText, QColor{230, 240, 250});
+        QImage reference;
+        for (const auto primitive : {QStyle::PE_IndicatorCheckBox, QStyle::PE_IndicatorItemViewItemCheck}) {
+          QImage image{side + 8, side + 8, QImage::Format_ARGB32_Premultiplied};
+          image.fill(Qt::transparent);
+          QPainter painter{&image};
+          style_.drawPrimitive(primitive, &opt, &painter);
+          painter.end();
+          EXPECT_EQ(image.pixelColor(4 + side / 2, 4 + side / 4),
+                    opt.palette.color(group, state == QStyle::State_Off ? QPalette::Base : QPalette::Highlight));
+          if (state == QStyle::State_NoChange) {
+            EXPECT_EQ(image.pixelColor(opt.rect.center()), opt.palette.color(group, QPalette::HighlightedText));
+          }
+          if (reference.isNull())
+            reference = image;
+          else
+            EXPECT_EQ(image, reference);
+        }
+      }
+    }
+  }
+}
+
+TEST_F(DrawPrimitiveTest, StandaloneCheckboxUsesQtIndicatorGeometryInBothDirections) {
+  for (const auto direction : {Qt::LeftToRight, Qt::RightToLeft}) {
+    QStyleOptionButton opt;
+    opt.rect = QRect{4, 4, 100, 32};
+    opt.direction = direction;
+    opt.state = QStyle::State_Enabled | QStyle::State_On;
+    opt.palette = style_.standardPalette();
+    const QRect indicator = style_.subElementRect(QStyle::SE_CheckBoxIndicator, &opt);
+    const QRect label = style_.subElementRect(QStyle::SE_CheckBoxContents, &opt);
+    EXPECT_FALSE(indicator.intersects(label));
+    EXPECT_EQ(indicator.center().x() > opt.rect.center().x(), direction == Qt::RightToLeft);
+    QImage image{112, 44, QImage::Format_ARGB32_Premultiplied};
+    image.fill(Qt::transparent);
+    QPainter painter{&image};
+    style_.drawControl(QStyle::CE_CheckBox, &opt, &painter);
+    painter.end();
+    EXPECT_GT(image.pixelColor(indicator.center()).alpha(), 240);
+    EXPECT_EQ(image.pixelColor(direction == Qt::LeftToRight ? 100 : 8, 20).alpha(), 0);
+  }
+}
+
+TEST_F(DrawPrimitiveTest, CheckableGroupBoxPreservesPaletteWithoutWidget) {
+  QStyleOptionGroupBox opt;
+  opt.rect = QRect{4, 4, 180, 80};
+  opt.text = QStringLiteral("Group");
+  opt.subControls = QStyle::SC_GroupBoxFrame | QStyle::SC_GroupBoxLabel | QStyle::SC_GroupBoxCheckBox;
+  opt.state = QStyle::State_Enabled | QStyle::State_Active | QStyle::State_On;
+  opt.palette.setColor(QPalette::Active, QPalette::Highlight, QColor{210, 20, 60});
+  QImage image{200, 100, QImage::Format_ARGB32_Premultiplied};
+  image.fill(Qt::transparent);
+  QPainter painter{&image};
+  style_.drawComplexControl(QStyle::CC_GroupBox, &opt, &painter);
+  painter.end();
+  const QRect indicator = style_.subControlRect(QStyle::CC_GroupBox, &opt, QStyle::SC_GroupBoxCheckBox);
+  EXPECT_EQ(image.pixelColor(indicator.left() + indicator.width() / 2, indicator.top() + 3), QColor(210, 20, 60));
+}
+
+TEST_F(DrawPrimitiveTest, ItemViewCheckboxReservesSpaceForIconAndTextInBothDirections) {
+  for (const auto direction : {Qt::LeftToRight, Qt::RightToLeft}) {
+    QStyleOptionViewItem opt;
+    opt.rect = QRect{4, 4, 180, 32};
+    opt.direction = direction;
+    opt.state = QStyle::State_Enabled | QStyle::State_Active;
+    opt.features = QStyleOptionViewItem::HasCheckIndicator | QStyleOptionViewItem::HasDecoration |
+                   QStyleOptionViewItem::HasDisplay;
+    opt.checkState = Qt::PartiallyChecked;
+    opt.text = QStringLiteral("Checkable item");
+    QPixmap icon{16, 16};
+    icon.fill(Qt::red);
+    opt.icon = QIcon{icon};
+    opt.decorationSize = QSize{16, 16};
+    opt.palette = style_.standardPalette();
+    const QRect check = style_.subElementRect(QStyle::SE_ItemViewItemCheckIndicator, &opt);
+    const QRect decoration = style_.subElementRect(QStyle::SE_ItemViewItemDecoration, &opt);
+    const QRect text = style_.subElementRect(QStyle::SE_ItemViewItemText, &opt);
+    EXPECT_FALSE(check.intersects(decoration));
+    EXPECT_FALSE(check.intersects(text));
+    EXPECT_FALSE(decoration.intersects(text));
+    EXPECT_EQ(check.center().x() > opt.rect.center().x(), direction == Qt::RightToLeft);
+    QImage image{200, 44, QImage::Format_ARGB32_Premultiplied};
+    image.fill(Qt::transparent);
+    QPainter painter{&image};
+    style_.drawControl(QStyle::CE_ItemViewItem, &opt, &painter);
+    painter.end();
+    EXPECT_EQ(image.pixelColor(check.center()), opt.palette.color(QPalette::Active, QPalette::HighlightedText));
+    EXPECT_EQ(image.pixelColor(decoration.center()), QColor(Qt::red));
+  }
+}
+
+TEST_F(DrawPrimitiveTest, RadioButtonRemainsCircular) {
+  QStyleOptionButton opt;
+  opt.rect = QRect{4, 4, 16, 16};
+  opt.state = QStyle::State_Enabled | QStyle::State_On;
+  opt.palette = style_.standardPalette();
+  QImage image{32, 32, QImage::Format_ARGB32_Premultiplied};
+  image.fill(Qt::transparent);
+  QPainter painter{&image};
+  style_.drawControl(QStyle::CE_RadioButton, &opt, &painter);
+  painter.end();
+  EXPECT_LT(image.pixelColor(6, 5).alpha(), 40);
+  EXPECT_GT(image.pixelColor(12, 5).alpha(), 150);
+}
+
+TEST_F(DrawPrimitiveTest, KeyboardFocusFollowsCheckboxIndicator) {
+  QStyleOptionButton opt;
+  opt.rect = QRect{8, 8, 100, 28};
+  opt.state = QStyle::State_Enabled | QStyle::State_Active | QStyle::State_Off | QStyle::State_HasFocus |
+              QStyle::State_KeyboardFocusChange;
+  opt.palette = style_.standardPalette();
+  const QRect indicator = style_.subElementRect(QStyle::SE_CheckBoxIndicator, &opt);
+  QImage image{120, 48, QImage::Format_ARGB32_Premultiplied};
+  image.fill(Qt::transparent);
+  QPainter painter{&image};
+  style_.drawControl(QStyle::CE_CheckBox, &opt, &painter);
+  painter.end();
+  EXPECT_GT(image.pixelColor(indicator.center().x(), indicator.top() - 2).alpha(), 80);
+  EXPECT_EQ(image.pixelColor(indicator.left() - 2, indicator.top() - 2).alpha(), 0);
+  EXPECT_EQ(image.pixelColor(100, indicator.top() - 2).alpha(), 0);
+}

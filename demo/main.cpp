@@ -2,107 +2,21 @@
 // SPDX-FileCopyrightText: 2026 Andrii L <lebeden@gmail.com>
 
 #include "config.h"
+#include "startup.h"
 
-#include <QCommandLineOption>
-#include <QCommandLineParser>
-#include <QCoreApplication>
-#include <QDebug>
 #include <QDir>
-#include <QFileInfo>
 #include <QGuiApplication>
 #include <QQmlApplicationEngine>
-#include <QTemporaryDir>
-
-#include <holonight/config/config.h>
-#include <holonight/theme_catalog.h>
-#include <span>
-
-namespace {
-
-QString normalizedThemeValue(const QString& value) { return value.trimmed().toLower(); }
-
-bool isThemeValue(const QString& value) { return !Holonight::normalizeSchemeId(value).isEmpty(); }
-
-QString findThemeArgument(std::span<char*> arguments) {
-  for (std::size_t i = 1; i < arguments.size(); ++i) {
-    const QString arg = QString::fromLocal8Bit(arguments[i]);
-    if ((arg == QStringLiteral("--theme") || arg == QStringLiteral("-t")) && i + 1 < arguments.size()) {
-      const QString value = normalizedThemeValue(QString::fromLocal8Bit(arguments[i + 1]));
-      if (isThemeValue(value)) {
-        return value;
-      }
-    } else if (arg.startsWith(QStringLiteral("--theme="))) {
-      const QString value = normalizedThemeValue(arg.mid(8));
-      if (isThemeValue(value)) {
-        return value;
-      }
-    }
-  }
-  return {};
-}
-
-bool writeAppearance(const QTemporaryDir& dir, const QString& theme) {
-  if (!dir.isValid()) {
-    qWarning() << "Error: Could not create temporary theme config directory";
-    return false;
-  }
-
-  const QString path = dir.filePath(QStringLiteral("appearance.toml"));
-  HoloNight::Config::Appearance appearance = HoloNight::Config::defaults();
-  appearance.theme.scheme = theme.toStdString();
-  appearance.theme.accent = "default";
-  if (!HoloNight::Config::writeAtomically(appearance, std::filesystem::path{path.toStdString()})) {
-    qWarning() << "Error: Could not write temporary appearance" << path;
-    return false;
-  }
-
-  qputenv("HOLONIGHT_APPEARANCE_FILE", path.toLocal8Bit());
-  return true;
-}
-
-}  // namespace
 
 int main(int argc, char* argv[]) {
-  // Prepend paths relative to the binary so the installed demo finds
-  // ~/.local/lib/qt6/plugins/{styles,platformthemes} without overriding
-  // system Qt plugin paths (which supply the xcb/wayland platform plugins).
-  const QString installRoot =
-      QDir::cleanPath(QFileInfo(QStringLiteral("/proc/self/exe")).canonicalPath() + QStringLiteral("/.."));
-  QCoreApplication::addLibraryPath(installRoot + QStringLiteral("/lib/qt6/plugins"));
-
-  // Check for the --theme argument before creating QGuiApplication, as the
-  // platform theme plugin is initialized in its constructor.
   QTemporaryDir themeConfigDir;
-  const QString theme = findThemeArgument({argv, static_cast<std::size_t>(argc)});
-  if (!theme.isEmpty() && !writeAppearance(themeConfigDir, theme)) {
-    return 1;
-  }
+  const QString theme = Demo::findThemeArgument({argv, static_cast<std::size_t>(argc)});
+  Demo::addPluginPaths();
+  if (!theme.isEmpty() && !Demo::writeAppearance(themeConfigDir, theme)) return 1;
 
   QGuiApplication app(argc, argv);
 
-  QCommandLineParser parser;
-  parser.setApplicationDescription(QStringLiteral("HoloNight Theme Demo App"));
-  parser.addHelpOption();
-  parser.addVersionOption();
-
-  QCommandLineOption themeOption(QStringList() << QStringLiteral("t") << QStringLiteral("theme"),
-                                 QStringLiteral("Theme scheme to use."), QStringLiteral("theme"));
-  parser.addOption(themeOption);
-
-  parser.process(app);
-
-  if (parser.isSet(themeOption)) {
-    const QString selectedTheme = normalizedThemeValue(parser.value(themeOption));
-    if (!isThemeValue(selectedTheme)) {
-      QStringList validThemes;
-      for (const Holonight::ThemeVariantCatalogEntry& variant : Holonight::themeVariants()) {
-        validThemes.append(variant.id);
-      }
-      qWarning() << "Error: Invalid theme" << selectedTheme << "(must be one of"
-                 << validThemes.join(QStringLiteral(", ")) << ")";
-      return 1;
-    }
-  }
+  if (!Demo::parseArguments(app)) return 1;
 
   QQmlApplicationEngine engine;
   const QString executableDir = QCoreApplication::applicationDirPath();
@@ -115,5 +29,10 @@ int main(int argc, char* argv[]) {
   if (engine.rootObjects().isEmpty()) {
     return 1;
   }
+  QObject* root = engine.rootObjects().constFirst();
+  // A QML signal keeps the gallery independently loadable by coverage tests.
+  QObject::connect(&engine, &QQmlApplicationEngine::quit, &app, &QCoreApplication::quit);
+  Demo::WidgetsLauncher launcher(root, executableDir, theme);
+  QObject::connect(root, SIGNAL(openWidgetsDemoRequested()), &launcher, SLOT(open()));
   return QGuiApplication::exec();
 }

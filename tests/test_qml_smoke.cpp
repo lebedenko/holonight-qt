@@ -1026,6 +1026,37 @@ TEST_F(QmlSmoke, SpinBox_LoadsWithoutError) {
   checkComponent(engine_, R"(import Holonight; SpinBox { value: 42; from: 0; to: 100 })");
 }
 
+TEST_F(QmlSmoke, CheckBoxKeyboardFocusFollowsIndicatorRadius) {
+  QQmlComponent component{&engine_};
+  component.setData(R"(
+    import QtQuick
+    import Holonight as H
+    Window {
+      visible: true
+      width: 200; height: 80
+      H.CheckBox { objectName: "checkbox"; x: 20; y: 20; text: "Focused" }
+    }
+  )",
+                    QUrl{});
+  ASSERT_EQ(component.status(), QQmlComponent::Ready) << component.errorString().toStdString();
+  std::unique_ptr<QObject> root{component.create()};
+  ASSERT_NE(root, nullptr);
+  auto* checkbox = root->findChild<QQuickItem*>("checkbox");
+  ASSERT_NE(checkbox, nullptr);
+  checkbox->forceActiveFocus(Qt::TabFocusReason);
+  QCoreApplication::processEvents();
+  auto* indicator = checkbox->property("indicator").value<QQuickItem*>();
+  ASSERT_NE(indicator, nullptr);
+  EXPECT_DOUBLE_EQ(indicator->property("radius").toDouble(), 3.0);
+  QQuickItem* ring = nullptr;
+  for (auto* child : indicator->childItems()) {
+    if (child->width() == indicator->width() + 4) ring = child;
+  }
+  ASSERT_NE(ring, nullptr);
+  EXPECT_DOUBLE_EQ(ring->property("radius").toDouble(), 5.0);
+  EXPECT_TRUE(ring->isVisible());
+}
+
 TEST_F(QmlSmoke, CheckBox_LoadsWithoutError) {
   checkComponent(engine_, R"(import Holonight; CheckBox { text: "check" })");
 }

@@ -115,6 +115,12 @@ tasks:
     - cmake --preset dev
     - cmake --build --preset dev --target holonight_demo
     - QT_QPA_PLATFORMTHEME=holonight ./build/dev/demo/holonight_demo {{.CLI_ARGS}}
+  demo:widgets:
+    desc: Build and run the Qt Widgets demo
+    cmds:
+    - cmake --preset dev
+    - cmake --build --preset dev --target holonight_widgets_demo
+    - ./build/dev/demo/holonight_widgets_demo {{.CLI_ARGS}}
   gallery:
     desc: Build and run the gallery
     cmds:
