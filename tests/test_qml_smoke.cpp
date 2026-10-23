@@ -1617,6 +1617,78 @@ TEST_F(QmlSmoke, Indicators_ReserveLayoutSpaceAndMirror) {
   }
 }
 
+TEST_F(QmlSmoke, Switch_KnobRemainsVisibleAcrossThemesAndHoverStates) {
+  EnvGuard config_guard{"HOLONIGHT_APPEARANCE_FILE"};
+  QTemporaryDir dir;
+  ASSERT_TRUE(dir.isValid());
+  const QString path = dir.filePath(QStringLiteral("appearance.toml"));
+  qputenv("HOLONIGHT_APPEARANCE_FILE", path.toLocal8Bit());
+
+  for (const auto* scheme :
+       {"holonight-dark", "holonight-light", "holonight-mocha", "holonight-latte", "holonight-storm", "holonight-day",
+        "holonight-ember", "holonight-sol", "holonight-cyber-d", "holonight-cyber-l", "holonight-dracula",
+        "holonight-alucard", "holonight-frost", "holonight-snow", "holonight-canopy", "holonight-glade"}) {
+    SCOPED_TRACE(scheme);
+    writeAppearance(path, scheme);
+    QQmlEngine engine;
+    engine.addImportPath(qEnvironmentVariable("UQC_IMPORT_PATH", QStringLiteral(HOLONIGHT_QML_IMPORT_PATH)));
+    QQmlComponent comp{&engine};
+    comp.setData(R"(
+      import QtQuick
+      import Holonight
+      Window {
+        width: 200
+        height: 100
+        visible: true
+        property alias toggle: toggle
+        property color knobColor: toggle.checked ? toggle.controlColors.colors.onPrimary
+                                                 : toggle.controlColors.colors.textPrimary
+        property color trackColor: toggle.checked
+          ? (toggle.hovered ? toggle.controlColors.colors.primaryHover : toggle.controlColors.colors.primary)
+          : (toggle.hovered ? toggle.controlColors.colors.textMuted : toggle.controlColors.colors.borderPassive)
+        property color disabledKnobColor: toggle.controlColors.colors.disabledThumb
+        property color disabledTrackColor: toggle.controlColors.colors.surface
+        Switch { id: toggle; x: 40; y: 30; hoverEnabled: true }
+      }
+    )",
+                 QUrl{});
+    ASSERT_TRUE(comp.isReady()) << comp.errorString().toStdString();
+    std::unique_ptr<QObject> object{comp.create()};
+    ASSERT_NE(object, nullptr);
+    auto* window = qobject_cast<QQuickWindow*>(object.get());
+    ASSERT_NE(window, nullptr);
+    ASSERT_TRUE(QTest::qWaitForWindowExposed(window));
+    auto* toggle = object->property("toggle").value<QQuickItem*>();
+    ASSERT_NE(toggle, nullptr);
+    auto* indicator = toggle->property("indicator").value<QQuickItem*>();
+    ASSERT_NE(indicator, nullptr);
+    const auto children = indicator->childItems();
+    ASSERT_EQ(children.size(), 3);
+    auto* track = children.front();
+    auto* knob = children.back();
+    const QPoint center = toggle->mapToScene(QPointF{toggle->width() / 2, toggle->height() / 2}).toPoint();
+
+    for (const bool checked : {false, true}) {
+      ASSERT_TRUE(toggle->setProperty("checked", checked));
+      for (const bool hovered : {false, true, false}) {
+        SCOPED_TRACE(checked ? "checked" : "unchecked");
+        SCOPED_TRACE(hovered ? "hovered" : "idle");
+        QTest::mouseMove(window, hovered ? center : QPoint{1, 1});
+        ASSERT_TRUE(QTest::qWaitFor([&] { return toggle->property("hovered").toBool() == hovered; }));
+        ASSERT_TRUE(waitForPropertyColor(track, "color", object->property("trackColor").value<QColor>()));
+        ASSERT_TRUE(waitForPropertyColor(knob, "color", object->property("knobColor").value<QColor>()));
+        EXPECT_NE(knob->property("color").value<QColor>(), track->property("color").value<QColor>());
+      }
+    }
+    ASSERT_TRUE(toggle->setProperty("enabled", false));
+    for (const bool checked : {false, true}) {
+      ASSERT_TRUE(toggle->setProperty("checked", checked));
+      ASSERT_TRUE(waitForPropertyColor(track, "color", object->property("disabledTrackColor").value<QColor>()));
+      ASSERT_TRUE(waitForPropertyColor(knob, "color", object->property("disabledKnobColor").value<QColor>()));
+    }
+  }
+}
+
 TEST_F(QmlSmoke, Switch_SizeRoles) {
   QQmlComponent comp = QQmlComponent{&engine_};
   comp.setData(R"(

@@ -120,7 +120,7 @@ T.Switch {
 
             color: {
                 if (!root.enabled) return root.controlColors.colors.disabledThumb
-                return root.checked ? root.controlColors.colors.onPrimary : root.controlColors.colors.textMuted
+                return root.checked ? root.controlColors.colors.onPrimary : root.controlColors.colors.textPrimary
             }
 
             Behavior on x { NumberAnimation { duration: 150; easing.type: Easing.InOutQuad } }
