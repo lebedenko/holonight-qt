@@ -190,6 +190,11 @@ Supported appearance schemes are `holonight-dark`, `holonight-light`, `holonight
 The selected scheme determines dark/light mode. Supported accents are `default`, `cyan`, `blue`, `violet`, and
 `yellow`. Invalid canonical documents are rejected as a unit; live consumers retain their last known good state.
 
+Scheme and accent changes reload automatically in running applications using the HoloNight platform theme,
+including the application palette and dark/light color-scheme hint. Explicit application palette roles retain
+Qt’s override precedence; roles inherited from the system palette continue to follow appearance changes.
+Fonts and icon-theme settings are read at startup and require restarting the application.
+
 The supported environment override is:
 
 ```bash

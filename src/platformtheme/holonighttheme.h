@@ -24,6 +24,8 @@ class HoloniightTheme : public QPlatformTheme {
   [[nodiscard]] QPlatformDialogHelper* createPlatformDialogHelper(DialogType type) const override;
 
  private:
+  void refreshPalette();
+
   Holonight::AppearanceReader appearance_reader_;
   Holonight::ResolvedAppearance config_;
   Holonight::ColorMode color_mode_;

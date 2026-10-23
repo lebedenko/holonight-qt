@@ -516,3 +516,15 @@ foreach(mode IN ITEMS widgets file folder)
     message(FATAL_ERROR "Staged portal consumer ${mode} failed: ${portal_output}\n${portal_error}")
   endif()
 endforeach()
+
+foreach(mode IN ITEMS gui fusion holonight quick override)
+  execute_process(COMMAND "${CMAKE_COMMAND}" -E env
+      "QT_QPA_PLATFORM=offscreen" "QT_QUICK_BACKEND=software"
+      "QML_IMPORT_PATH=${install_prefix}/@QT6_INSTALL_QML@"
+      "@CMAKE_CURRENT_BINARY_DIR@/holonight_platform_palette_consumer"
+      "${install_prefix}/@QT6_INSTALL_PLUGINS@" "${mode}"
+      RESULT_VARIABLE palette_result OUTPUT_VARIABLE palette_output ERROR_VARIABLE palette_error)
+  if(NOT palette_result EQUAL 0)
+    message(FATAL_ERROR "Staged palette consumer ${mode} failed: ${palette_output}\n${palette_error}")
+  endif()
+endforeach()

@@ -12,6 +12,7 @@
 #include <QIcon>
 #include <QStandardPaths>
 #include <QVariant>
+#include <qpa/qwindowsysteminterface.h>
 
 HoloniightTheme::HoloniightTheme()
     : config_{appearance_reader_.appearance()},
@@ -23,6 +24,22 @@ HoloniightTheme::HoloniightTheme()
       font_small_{config_.ui_font, config_.captionSize()},
       font_mini_{config_.ui_font, (std::max)(6, config_.bodySize() - 2)} {
   QIcon::setFallbackThemeName(config_.fallback_icon_theme);
+  QObject::connect(&appearance_reader_, &Holonight::AppearanceReader::paletteChanged, &appearance_reader_,
+                   [this] { refreshPalette(); });
+}
+
+void HoloniightTheme::refreshPalette() {
+  const auto& appearance = appearance_reader_.appearance();
+  const QPalette palette = Holonight::buildPalette(Holonight::ThemeResolver::resolve(appearance));
+  if (palette == palette_ && appearance.color_mode == color_mode_) {
+    return;
+  }
+  palette_ = palette;
+  color_mode_ = appearance.color_mode;
+  // Qt reads these caches when handling the queued theme change.
+  if (!QCoreApplication::startingUp() && !QCoreApplication::closingDown()) {
+    QWindowSystemInterface::handleThemeChange<QWindowSystemInterface::AsynchronousDelivery>();
+  }
 }
 
 const QPalette* HoloniightTheme::palette(Palette /*type*/) const { return &palette_; }
