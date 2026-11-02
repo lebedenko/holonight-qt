@@ -5,6 +5,10 @@ add_library(holonight_theme_catalog STATIC
 add_library(holonight_appearance STATIC
     holonight/appearance.h
     holonight/appearance_reader.h
+    input.cpp
+    navigation.cpp
+    holonight/input.h
+    holonight/navigation.h
     appearance.cpp
     appearance_reader.cpp
     holonight/document_watcher.h
@@ -52,6 +56,8 @@ install(TARGETS holonight_appearance
     ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
 )
 install(FILES
+    holonight/input.h
+    holonight/navigation.h
     holonight/appearance.h
     holonight/appearance_reader.h
     holonight/theme_catalog.h

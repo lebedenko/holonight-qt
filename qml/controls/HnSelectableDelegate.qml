@@ -18,10 +18,11 @@ T.ItemDelegate {
     property int sizeRole: HnControlSize.Normal
     property int selectionStyle: HnSelectableDelegate.Fill
     readonly property int resolvedSizeRole: HnMetrics.normalizedSizeRole(root.sizeRole)
+    property bool keyboardCursor: false
     property bool currentItemSelects: true
     readonly property bool selected: root.highlighted || root.checked || (root.currentItemSelects && root.ListView ? root.ListView.isCurrentItem : false)
     readonly property real semanticSpacing: HnMetrics.internalSpacing(root.resolvedSizeRole)
-    readonly property color outlineColor: root.visualFocus ? HoloniightPalette.borderFocus : HoloniightPalette.selectionIndicator
+    readonly property color outlineColor: (root.visualFocus || root.keyboardCursor) ? HoloniightPalette.borderFocus : HoloniightPalette.selectionIndicator
 
     implicitWidth: Math.max(160, implicitContentWidth + leftPadding + rightPadding)
     implicitHeight: Math.max(HnMetrics.controlHeight(root.resolvedSizeRole), implicitContentHeight + topPadding + bottomPadding)
@@ -87,7 +88,7 @@ T.ItemDelegate {
             anchors.fill: parent
             color: "transparent"
             radius: parent.semanticRadius
-            border.width: root.visualFocus || (root.selected && root.selectionStyle === HnSelectableDelegate.Outline) ? HnMetrics.focusBorderWidth : 0
+            border.width: root.visualFocus || root.keyboardCursor || (root.selected && root.selectionStyle === HnSelectableDelegate.Outline) ? HnMetrics.focusBorderWidth : 0
             border.color: root.outlineColor
             Accessible.ignored: true
         }

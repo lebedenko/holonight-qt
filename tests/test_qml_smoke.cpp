@@ -6003,3 +6003,23 @@ TEST_F(QmlSmoke, Controls_BreadcrumbFocusCurrentSegment) {
   EXPECT_TRUE(other->hasActiveFocus());
   EXPECT_EQ(root->property("activations").toInt(), 0);
 }
+
+TEST(QmlNavigation, CursorDoesNotSelectTheDelegate) {
+  QQmlEngine engine;
+  QQmlComponent component(&engine);
+  component.setData(R"(import QtQuick
+import Holonight.Controls
+HnListDelegate { title: "Navigation"; keyboardCursor: true; highlighted: false; currentItemSelects: false }
+)",
+                    QUrl{});
+  std::unique_ptr<QObject> delegate(component.create());
+  ASSERT_NE(delegate, nullptr) << component.errorString().toStdString();
+  EXPECT_FALSE(delegate->property("selected").toBool());
+  auto* outline = delegate->findChild<QObject*>("hnSelectableDelegateOutline");
+  ASSERT_NE(outline, nullptr);
+  EXPECT_TRUE(outline->property("visible").toBool());
+  delegate->setProperty("keyboardCursor", false);
+  EXPECT_FALSE(outline->property("visible").toBool());
+  delegate->setProperty("highlighted", true);
+  EXPECT_TRUE(delegate->property("selected").toBool());
+}

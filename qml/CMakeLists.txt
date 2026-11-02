@@ -88,6 +88,7 @@ qt_add_qml_module(holonight_core_qml
         hniconpalette.cpp
         hnwindowpalette.h
         hnwindowpalette.cpp
+        hnnavigation.h
         hninputinteraction.h
         hninputinteraction.cpp
         hnmetrics.h

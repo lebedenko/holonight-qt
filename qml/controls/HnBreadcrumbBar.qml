@@ -17,8 +17,7 @@ C.Control {
     property bool vimNavigation: false
     property int sizeRole: HnControlSize.Normal
     readonly property int resolvedSizeRole: HnMetrics.normalizedSizeRole(root.sizeRole)
-    readonly property real buttonHeight: Math.min(HnMetrics.controlHeight(HnControlSize.Compact),
-                                                   Math.max(0, root.availableHeight))
+    readonly property real buttonHeight: Math.min(HnMetrics.controlHeight(HnControlSize.Compact), Math.max(0, root.availableHeight))
     font.family: HolonightTheme.uiFont
     font.pointSize: HolonightTheme.bodySize
     font.weight: Font.Normal
@@ -34,7 +33,11 @@ C.Control {
     topPadding: 0
     bottomPadding: 0
     readonly property real separatorWidth: separatorMetrics.advanceWidth + root.gap * 2
-    TextMetrics { id: separatorMetrics; text: "›"; font: root.font }
+    TextMetrics {
+        id: separatorMetrics
+        text: "›"
+        font: root.font
+    }
     readonly property real gap: HnMetrics.internalSpacing(HnControlSize.Compact)
     readonly property var segmentWidths: {
         const widths = [];
@@ -45,16 +48,13 @@ C.Control {
         return widths;
     }
     readonly property real editWidth: root.editable ? editButton.implicitWidth + root.gap : 0
-    readonly property real expandedWidth: 2 * root.gap + root.editWidth
-        + root.segmentWidths.reduce((total, value) => total + value, 0)
-        + Math.max(0, root.segments.length - 1) * root.separatorWidth
+    readonly property real expandedWidth: 2 * root.gap + root.editWidth + root.segmentWidths.reduce((total, value) => total + value, 0) + Math.max(0, root.segments.length - 1) * root.separatorWidth
     readonly property int firstVisibleAncestor: {
         const count = root.segmentWidths.length;
         if (count <= 2 || root.width >= root.expandedWidth)
             return 1;
         let first = count - 1;
-        let used = root.segmentWidths[0] + root.segmentWidths[count - 1]
-            + overflowButton.naturalWidth + 2 * root.separatorWidth;
+        let used = root.segmentWidths[0] + root.segmentWidths[count - 1] + overflowButton.naturalWidth + 2 * root.separatorWidth;
         const budget = root.availableWidth - root.editWidth;
         while (first > 2 && used + root.segmentWidths[first - 1] + root.separatorWidth <= budget) {
             --first;
@@ -66,17 +66,12 @@ C.Control {
     // Shrink current before root; complete intermediate ancestors retain their widths.
     readonly property int visibleCount: root.segments.length - (root.collapsed ? root.firstVisibleAncestor - 2 : 0)
     readonly property real navigationWidth: Math.max(0, root.availableWidth - root.editWidth)
-    readonly property real actualSeparatorWidth: Math.min(root.separatorWidth,
-        root.navigationWidth / Math.max(1, root.visibleCount - 1))
-    readonly property real overflowWidth: root.collapsed ? Math.min(overflowButton.naturalWidth,
-        Math.max(0, root.navigationWidth - (root.visibleCount - 1) * root.actualSeparatorWidth)) : 0
-    readonly property real labelBudget: Math.max(0, root.navigationWidth - root.overflowWidth
-        - Math.max(0, root.visibleCount - 1) * root.actualSeparatorWidth)
-    readonly property real parentWidth: root.segmentWidths.slice(root.collapsed ? root.firstVisibleAncestor : 1,
-        Math.max(1, root.segments.length - 1)).reduce((total, value) => total + value, 0)
+    readonly property real actualSeparatorWidth: Math.min(root.separatorWidth, root.navigationWidth / Math.max(1, root.visibleCount - 1))
+    readonly property real overflowWidth: root.collapsed ? Math.min(overflowButton.naturalWidth, Math.max(0, root.navigationWidth - (root.visibleCount - 1) * root.actualSeparatorWidth)) : 0
+    readonly property real labelBudget: Math.max(0, root.navigationWidth - root.overflowWidth - Math.max(0, root.visibleCount - 1) * root.actualSeparatorWidth)
+    readonly property real parentWidth: root.segmentWidths.slice(root.collapsed ? root.firstVisibleAncestor : 1, Math.max(1, root.segments.length - 1)).reduce((total, value) => total + value, 0)
     readonly property real rootWidth: Math.min(root.segmentWidths[0] || 0, root.labelBudget)
-    readonly property real currentWidth: Math.min(root.segmentWidths[root.segments.length - 1] || 0,
-        Math.max(0, root.labelBudget - (root.segments.length > 1 ? root.rootWidth : 0) - root.parentWidth))
+    readonly property real currentWidth: Math.min(root.segmentWidths[root.segments.length - 1] || 0, Math.max(0, root.labelBudget - (root.segments.length > 1 ? root.rootWidth : 0) - root.parentWidth))
     readonly property alias overflowMenu: overflow
     // Focus only: callers retain ownership of navigation and segment identities.
     function focusCurrentSegment(): bool {
@@ -153,7 +148,7 @@ C.Control {
         Accessible.ignored: true
     }
     Keys.onPressed: event => {
-        if (root.editable && event.key === Qt.Key_L && (event.modifiers & Qt.ControlModifier)) {
+        if (root.editable && ((!root.vimNavigation && event.key === Qt.Key_L && event.modifiers === Qt.ControlModifier) || (event.key === Qt.Key_D && event.modifiers === Qt.AltModifier))) {
             root.locationEditRequested();
             event.accepted = true;
         }
@@ -181,9 +176,7 @@ C.Control {
         Layout.alignment: Qt.AlignVCenter
         Layout.maximumHeight: root.buttonHeight
         Layout.minimumWidth: 0
-        Layout.preferredWidth: (index === root.segments.length - 1 ? root.currentWidth
-            : index === 0 ? root.rootWidth : root.segmentWidths[index] || 0)
-            + (separator.visible ? root.actualSeparatorWidth : 0)
+        Layout.preferredWidth: (index === root.segments.length - 1 ? root.currentWidth : index === 0 ? root.rootWidth : root.segmentWidths[index] || 0) + (separator.visible ? root.actualSeparatorWidth : 0)
         Layout.maximumWidth: Layout.preferredWidth
         Separator {
             id: separator
@@ -209,8 +202,8 @@ C.Control {
         id: trail
         spacing: 0
         SegmentButton {
-            visible: root.collapsed
             id: rootButton
+            visible: root.collapsed
             objectName: "hnBreadcrumbRoot"
             text: root.segments.length ? String(root.segments[0]) : ""
             Layout.minimumWidth: 0
@@ -224,10 +217,14 @@ C.Control {
             horizontalAlignment: Text.AlignHCenter
         }
         SegmentButton {
-            visible: root.collapsed
             id: overflowButton
+            visible: root.collapsed
             readonly property real naturalWidth: overflowMetrics.advanceWidth + padding * 2
-            TextMetrics { id: overflowMetrics; text: "…"; font: root.font }
+            TextMetrics {
+                id: overflowMetrics
+                text: "…"
+                font: root.font
+            }
             Layout.preferredWidth: root.overflowWidth
             Layout.maximumWidth: root.overflowWidth
             objectName: "hnBreadcrumbOverflow"
@@ -257,7 +254,9 @@ C.Control {
             model: root.segments
             delegate: SegmentRow {}
         }
-        Item { Layout.fillWidth: true }
+        Item {
+            Layout.fillWidth: true
+        }
         C.ToolButton {
             id: editButton
             visible: root.editable

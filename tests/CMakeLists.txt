@@ -443,3 +443,7 @@ foreach(mode IN ITEMS gui fusion holonight quick override)
   set_tests_properties(holonight_platform_palette_${mode} PROPERTIES TIMEOUT 60 ENVIRONMENT
       "QT_QPA_PLATFORM=offscreen;QT_QUICK_BACKEND=software;QML_IMPORT_PATH=${CMAKE_BINARY_DIR}/qml")
 endforeach()
+
+add_executable(holonight_navigation_tests test_navigation.cpp)
+target_link_libraries(holonight_navigation_tests PRIVATE holonight_appearance Qt6::Test GTest::gtest_main)
+add_test(NAME holonight_navigation_tests COMMAND holonight_navigation_tests)
