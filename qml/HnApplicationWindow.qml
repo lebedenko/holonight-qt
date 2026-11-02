@@ -6,9 +6,12 @@ pragma ComponentBehavior: Bound
 import QtQuick
 import QtQuick.Layouts
 import Holonight.Core
+import Holonight.impl as Impl
 
 Window {
     id: root
+
+    Impl.WindowFormat { window: root }
 
     property bool applicationHeaderVisible: false
     property real applicationHeaderHeight: 40

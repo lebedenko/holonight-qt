@@ -9,6 +9,8 @@ import Holonight.impl as Impl
 T.ApplicationWindow {
     id: root
 
+    Impl.WindowFormat { window: root }
+
     Impl.ControlPalette {
         id: colors
         palette: root.palette

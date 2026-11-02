@@ -8,7 +8,7 @@ qt_add_qml_module(holonight_impl_qml
     PLUGIN_TARGET holonight_impl_qml
     OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/Holonight/impl
     QML_FILES ComboBoxPopupGeometry.qml
-    SOURCES controlpalette.h controlpalette.cpp appearancecontext.h appearancecontext.cpp keyhintnames.h
+    SOURCES windowformat.h controlpalette.h controlpalette.cpp appearancecontext.h appearancecontext.cpp keyhintnames.h
 )
 target_link_libraries(holonight_impl_qml PRIVATE
     holonight_appearance holonight_theme Qt6::Qml Qt6::Quick Qt6::QuickPrivate)

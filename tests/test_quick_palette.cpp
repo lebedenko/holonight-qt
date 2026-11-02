@@ -10,6 +10,7 @@
 #include <QQmlEngine>
 #include <QQuickItem>
 #include <QQuickWindow>
+#include <QSurfaceFormat>
 #include <QTemporaryDir>
 #include <QTest>
 #include <QtQuickTemplates2/private/qquickcontrol_p.h>
@@ -981,4 +982,52 @@ TEST_F(QuickPalette, SemanticIconsFollowApplicationControlSelectionAndAlphaUpdat
   ASSERT_TRUE(QTest::qWaitFor([&] { return pixel(24).red() >= 127 && pixel(24).red() <= 129; }));
   EXPECT_NE(icon->property("_renderSource").toUrl(), old_url);
 #endif
+}
+
+TEST_F(QuickPalette, SharedWindowsRequestRgb8AndPreserveFormat) {
+  const auto savedFormat = QSurfaceFormat::defaultFormat();
+  for (const int bits : {5, 10}) {
+    auto requested = savedFormat;
+    requested.setRedBufferSize(bits);
+    requested.setGreenBufferSize(bits == 5 ? 6 : bits);
+    requested.setBlueBufferSize(bits);
+    requested.setAlphaBufferSize(8);
+    requested.setDepthBufferSize(24);
+    requested.setStencilBufferSize(8);
+    requested.setSamples(4);
+    QSurfaceFormat::setDefaultFormat(requested);
+    const QQuickWindow baseline;
+    for (const auto& source : {QByteArray("import QtQuick; import Holonight.Controls; HnApplicationWindow {}"),
+                               QByteArray("import QtQuick; import QtQuick.Controls as C; C.ApplicationWindow {}")}) {
+      auto object = create(source);
+      auto* window = qobject_cast<QQuickWindow*>(object.get());
+      EXPECT_NE(window, nullptr);
+      if (!window) continue;
+      auto expected = baseline.requestedFormat();
+      expected.setRedBufferSize(qMax(bits, 8));
+      expected.setGreenBufferSize(qMax(bits == 5 ? 6 : bits, 8));
+      expected.setBlueBufferSize(qMax(bits, 8));
+      EXPECT_EQ(window->requestedFormat(), expected);
+    }
+  }
+  QSurfaceFormat::setDefaultFormat(savedFormat);
+}
+
+TEST_F(QuickPalette, SharedWindowsRenderExactCanvas) {
+  for (const auto& source :
+       {QByteArray("import QtQuick; import Holonight.Controls; HnApplicationWindow { width: 400; height: 240 }"),
+        QByteArray("import QtQuick; import QtQuick.Controls as C; C.ApplicationWindow { width: 400; height: 240 }")}) {
+    auto object = create(source);
+    auto* window = qobject_cast<QQuickWindow*>(object.get());
+    ASSERT_NE(window, nullptr);
+    window->show();
+    ASSERT_TRUE(QTest::qWaitForWindowExposed(window));
+    QImage image;
+    for (int attempt = 0; attempt < 30 && image.isNull(); ++attempt) {
+      QTest::qWait(20);
+      image = window->grabWindow();
+    }
+    ASSERT_FALSE(image.isNull());
+    EXPECT_EQ(logicalPixel(image, window, 200, 120), window->color());
+  }
 }

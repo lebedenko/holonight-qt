@@ -368,3 +368,9 @@ implementations. The demo's secondary application window is created on demand
 and demonstrates a standard menu bar and an independent popup; close and reopen
 it to repeat the example. Both apps preserve explicit runtime style overrides,
 including Fusion, while defaulting to Holonight through their embedded config.
+
+Shared `HnApplicationWindow` and Holonight-styled `ApplicationWindow` request at least
+8 bits per RGB channel before native surface creation. This prevents RGB565 rounding
+of the application canvas relative to compositor decorations. Higher channel precision
+and other requested format fields are retained. Renderer selection and semantic palette
+roles are unchanged; the canvas uses `background` (`QPalette::Window`).
