@@ -83,7 +83,7 @@ endif()
 file(WRITE "${consumer_source}/CMakeLists.txt" [=[
 cmake_minimum_required(VERSION 3.25)
 project(holonight_package_consumer LANGUAGES CXX)
-find_package(HolonightQt REQUIRED COMPONENTS Core Controls Theme)
+find_package(HolonightQt REQUIRED COMPONENTS Core Controls Theme Icons)
 find_package(Qt6 REQUIRED COMPONENTS Qml Quick QuickControls2 Widgets)
 if(NOT TARGET HolonightQt::Core)
   message(FATAL_ERROR "HolonightQt::Core is missing")
@@ -100,11 +100,14 @@ file(WRITE "${CMAKE_CURRENT_BINARY_DIR}/main.cpp" [==[
 #include <QQmlEngine>
 #include <QStyle>
 #include <holonight/appearance.h>
+#include <holonight/icons/hniconengine.h>
 #include <holonight/theme/semanticappearance.h>
 #include <memory>
 
 int main(int argc, char** argv) {
   QApplication app(argc, argv);
+  Holonight::HnIconEngine icon{QStringLiteral("missing-package-test-icon")};
+  if (!icon.isNull()) return 5;
   const Holonight::SemanticAppearance semantic =
       Holonight::resolveSemanticAppearance(Holonight::ResolvedAppearance{});
   if (semantic.contract_version != Holonight::kSemanticAppearanceContractVersion || !semantic.accent.isValid()) {
@@ -131,7 +134,7 @@ int main(int argc, char** argv) {
 }
 ]==])
 add_executable(package_consumer "${CMAKE_CURRENT_BINARY_DIR}/main.cpp")
-target_link_libraries(package_consumer PRIVATE HolonightQt::Core HolonightQt::Controls HolonightQt::Theme
+target_link_libraries(package_consumer PRIVATE HolonightQt::Core HolonightQt::Controls HolonightQt::Theme HolonightQt::Icons
   Qt6::Qml Qt6::Quick Qt6::QuickControls2 Qt6::Widgets)
 ]=])
 

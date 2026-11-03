@@ -19,8 +19,13 @@
 namespace Holonight {
 namespace {
 
-[[nodiscard]] IconSemanticColors colorsForMode(QIcon::Mode mode) {
+AppearanceReader& iconAppearanceReader() {
   static AppearanceReader reader;
+  return reader;
+}
+
+[[nodiscard]] IconSemanticColors colorsForMode(QIcon::Mode mode) {
+  const auto& reader = iconAppearanceReader();
   const auto tokens = ThemeResolver::resolve(reader.appearance());
   const QPalette palette = QGuiApplication::palette().resolve(buildPalette(tokens));
   auto colors = [&](QPalette::ColorGroup group) -> IconSemanticColors {
@@ -53,6 +58,8 @@ namespace {
 }
 
 }  // namespace
+
+void HnIconEngine::refreshAppearance() { iconAppearanceReader().reload(); }
 
 HnIconEngine::HnIconEngine(QString name) : name_{std::move(name)} {}
 

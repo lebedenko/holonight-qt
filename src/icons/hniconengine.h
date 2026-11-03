@@ -10,6 +10,8 @@ namespace Holonight {
 class HnIconEngine final : public QIconEngine {
  public:
   explicit HnIconEngine(QString name);
+  // Synchronize independent appearance watchers before rendering a new cache generation.
+  static void refreshAppearance();
   [[nodiscard]] QIconEngine* clone() const override;
   void paint(QPainter* painter, const QRect& rect, QIcon::Mode mode, QIcon::State state) override;
   [[nodiscard]] QPixmap pixmap(const QSize& size, QIcon::Mode mode, QIcon::State state) override;

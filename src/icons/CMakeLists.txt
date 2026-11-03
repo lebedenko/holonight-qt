@@ -12,10 +12,12 @@ add_library(holonight_icons STATIC
 set_target_properties(holonight_icons PROPERTIES
     AUTOMOC ON
     POSITION_INDEPENDENT_CODE ON
+    EXPORT_NAME Icons
 )
 
 target_include_directories(holonight_icons PUBLIC
-    ${CMAKE_CURRENT_SOURCE_DIR}
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
+    $<INSTALL_INTERFACE:include/holonight/icons>
 )
 
 target_link_libraries(holonight_icons PUBLIC
@@ -29,3 +31,6 @@ target_link_libraries(holonight_icons PUBLIC
     Qt6::Quick
     Qt6::Svg
 )
+
+install(TARGETS holonight_icons EXPORT HolonightQtTargets ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR})
+install(FILES hniconengine.h DESTINATION include/holonight/icons)

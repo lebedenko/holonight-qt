@@ -24,16 +24,33 @@ HoloniightTheme::HoloniightTheme()
       font_small_{config_.ui_font, config_.captionSize()},
       font_mini_{config_.ui_font, (std::max)(6, config_.bodySize() - 2)} {
   QIcon::setFallbackThemeName(config_.fallback_icon_theme);
-  QObject::connect(&appearance_reader_, &Holonight::AppearanceReader::paletteChanged, &appearance_reader_,
+  QObject::connect(&appearance_reader_, &Holonight::AppearanceReader::appearanceChanged, &appearance_reader_,
                    [this] { refreshPalette(); });
 }
 
 void HoloniightTheme::refreshPalette() {
   const auto& appearance = appearance_reader_.appearance();
   const QPalette palette = Holonight::buildPalette(Holonight::ThemeResolver::resolve(appearance));
-  if (palette == palette_ && appearance.color_mode == color_mode_) {
+  const bool icons_changed =
+      config_.icon_theme != appearance.icon_theme || config_.fallback_icon_theme != appearance.fallback_icon_theme;
+  const bool fonts_changed = config_.ui_font != appearance.ui_font || config_.bodySize() != appearance.bodySize() ||
+                             config_.title_font != appearance.title_font ||
+                             config_.title_font_size != appearance.title_font_size ||
+                             config_.monospace_font != appearance.monospace_font ||
+                             config_.monospace_font_size != appearance.monospace_font_size;
+  if (palette == palette_ && appearance.color_mode == color_mode_ && !icons_changed && !fonts_changed) {
     return;
   }
+  // Leave QIcon's explicit primary-theme override untouched; Qt reads the system hint.
+  if (QIcon::fallbackThemeName() == config_.fallback_icon_theme) {
+    QIcon::setFallbackThemeName(appearance.fallback_icon_theme);
+  }
+  font_system_ = QFont(appearance.ui_font, appearance.bodySize());
+  font_title_ = QFont(appearance.title_font, appearance.title_font_size);
+  font_fixed_ = QFont(appearance.monospace_font, appearance.monospace_font_size);
+  font_small_ = QFont(appearance.ui_font, appearance.captionSize());
+  font_mini_ = QFont(appearance.ui_font, (std::max)(6, appearance.bodySize() - 2));
+  config_ = appearance;
   palette_ = palette;
   color_mode_ = appearance.color_mode;
   // Qt reads these caches when handling the queued theme change.
