@@ -82,28 +82,65 @@ TEST(Input, InvalidUpdatesRetainLastValidProfile) {
   char* argv[] = {name, nullptr};
   QCoreApplication app(argc, argv);
   QTemporaryDir directory;
-  const QString path = directory.filePath("input.toml");
+  const QString path = directory.filePath("config.toml");
   InputPreferences preferences(path);
   EXPECT_FALSE(preferences.vimNavigation());
+  EXPECT_FALSE(QFile::exists(path));
   auto write = [&](const QByteArray& bytes) {
     QFile file(path);
     ASSERT_TRUE(file.open(QIODevice::WriteOnly));
     file.write(bytes);
   };
-  write("version = 1\nprofile = 'vim-navigation'\n");
+  write("[input]\nnavigation = 'vim-navigation'\n");
   EXPECT_TRUE(preferences.reload());
   EXPECT_TRUE(preferences.vimNavigation());
-  write("version = 7\nprofile = 'standard'\n");
+  write("[input]\nnavigation = 'invalid'\n");
   EXPECT_FALSE(preferences.reload());
+  EXPECT_FALSE(preferences.diagnostics().isEmpty());
   EXPECT_TRUE(preferences.vimNavigation());
+  write("[input]\nnavigation = [\n");
+  EXPECT_FALSE(preferences.reload());
+  EXPECT_FALSE(preferences.diagnostics().isEmpty());
+  EXPECT_TRUE(preferences.vimNavigation());
+  write("# Shell-only preferences\n[bar.workspaces]\ncount = 7\n");
+  EXPECT_TRUE(preferences.reload());
+  EXPECT_FALSE(preferences.vimNavigation());
+  EXPECT_TRUE(preferences.diagnostics().isEmpty());
   QFile::remove(path);
   EXPECT_TRUE(preferences.reload());
+  EXPECT_TRUE(preferences.diagnostics().isEmpty());
   EXPECT_FALSE(preferences.vimNavigation());
   QSaveFile replacement(path);
   ASSERT_TRUE(replacement.open(QIODevice::WriteOnly));
-  replacement.write("version = 1\nprofile = 'vim-navigation'\n");
+  replacement.write("[input]\nnavigation = 'vim-navigation'\n");
   ASSERT_TRUE(replacement.commit());
   EXPECT_TRUE(QTest::qWaitFor([&] { return preferences.vimNavigation(); }));
   QFile::remove(path);
   EXPECT_TRUE(QTest::qWaitFor([&] { return !preferences.vimNavigation(); }));
+}
+
+TEST(Navigation, EveryVimBindingIsProfileGated) {
+  const std::pair<const char*, C> bindings[] = {{"h", C::Parent},
+                                                {"j", C::Next},
+                                                {"k", C::Previous},
+                                                {"l", C::Open},
+                                                {"G", C::Last},
+                                                {"Ctrl+U", C::HalfPageUp},
+                                                {"Ctrl+D", C::HalfPageDown},
+                                                {"Ctrl+J", C::PanelDown},
+                                                {"Ctrl+K", C::PanelUp},
+                                                {".", C::ToggleHidden},
+                                                {"g", C::Pending},
+                                                {"2", C::Pending}};
+  for (const auto& [key, command] : bindings) {
+    SCOPED_TRACE(key);
+    NavigationInterpreter interpreter;
+    EXPECT_FALSE(interpreter.route(key, false, false, true).consumed());
+    EXPECT_EQ(interpreter.route(key, true, false, true).command, command);
+  }
+  NavigationInterpreter interpreter;
+  EXPECT_EQ(interpreter.route("Ctrl+H", false, false, true).command, C::ToggleHidden);
+  EXPECT_EQ(interpreter.route("Ctrl+L", false, false, true).command, C::EditLocation);
+  EXPECT_EQ(interpreter.route("Ctrl+H", true, false, true).command, C::PanelLeft);
+  EXPECT_EQ(interpreter.route("Ctrl+L", true, false, true).command, C::PanelRight);
 }

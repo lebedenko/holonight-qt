@@ -13,11 +13,23 @@ InputPreferences::InputPreferences(QString path, QObject* parent) : QObject(pare
   connect(&watcher_, &DocumentWatcher::documentChanged, this, &InputPreferences::reload);
   reload();
 }
+void InputPreferences::setDiagnostics(const std::vector<HoloNight::Config::Diagnostic>& diagnostics) {
+  QStringList messages;
+  for (const auto& diagnostic : diagnostics) messages << QString::fromStdString(diagnostic.message);
+  const auto text = messages.join(QLatin1Char('\n'));
+  if (diagnostics_ == text) return;
+  diagnostics_ = text;
+  emit diagnosticsChanged();
+}
 bool InputPreferences::reload() {
   const auto document = watcher_.read();
   watcher_.refresh();
-  if (!document) return false;
+  if (!document) {
+    setDiagnostics(document.diagnostics);
+    return false;
+  }
   const auto decoded = HoloNight::Config::decodeInputDocument(*document.value);
+  setDiagnostics(decoded.diagnostics);
   if (!decoded) return false;
   if (profile_ != *decoded.value) {
     profile_ = *decoded.value;

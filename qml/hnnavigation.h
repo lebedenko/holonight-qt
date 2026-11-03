@@ -10,14 +10,19 @@ class HnInputPreferences : public QObject {
   Q_OBJECT
   QML_ELEMENT
   QML_SINGLETON
+  Q_PROPERTY(QString diagnostics READ diagnostics NOTIFY diagnosticsChanged)
   Q_PROPERTY(bool vimNavigation READ vimNavigation NOTIFY profileChanged)
  public:
   explicit HnInputPreferences(QObject* parent = nullptr) : QObject(parent) {
+    connect(&preferences_, &Holonight::InputPreferences::diagnosticsChanged, this,
+            &HnInputPreferences::diagnosticsChanged);
     connect(&preferences_, &Holonight::InputPreferences::profileChanged, this, &HnInputPreferences::profileChanged);
   }
+  QString diagnostics() const { return preferences_.diagnostics(); }
   bool vimNavigation() const { return preferences_.vimNavigation(); }
  signals:
   void profileChanged();
+  void diagnosticsChanged();
 
  private:
   Holonight::InputPreferences preferences_;
