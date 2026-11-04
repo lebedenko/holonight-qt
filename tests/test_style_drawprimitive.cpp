@@ -6,17 +6,31 @@
 #include "themeresolver.h"
 
 #include <QApplication>
+#include <QFile>
+#include <QGraphicsScene>
+#include <QGraphicsView>
+#include <QGraphicsWidget>
 #include <QImage>
 #include <QListView>
 #include <QPainter>
 #include <QPixmap>
+#include <QScopeGuard>
 #include <QStyleOption>
 #include <QStyleOptionButton>
 #include <QStyleOptionToolButton>
 #include <QStyleOptionViewItem>
+#include <QTemporaryDir>
 #include <QTextEdit>
 
 #include <gtest/gtest.h>
+
+class KItemListContainer : public QWidget {
+  Q_OBJECT
+};
+
+class KFileItemListContainer : public KItemListContainer {
+  Q_OBJECT
+};
 
 class DrawPrimitiveTest : public ::testing::Test {
  protected:
@@ -685,3 +699,108 @@ TEST_F(DrawPrimitiveTest, KeyboardFocusFollowsCheckboxIndicator) {
   EXPECT_EQ(image.pixelColor(indicator.left() - 2, indicator.top() - 2).alpha(), 0);
   EXPECT_EQ(image.pixelColor(100, indicator.top() - 2).alpha(), 0);
 }
+
+TEST(DrawSelection, SubtleSelectionIsPaintedOnceAndKeepsLabelsReadable) {
+  const auto previous = qgetenv("HOLONIGHT_APPEARANCE_FILE");
+  const bool had_path = qEnvironmentVariableIsSet("HOLONIGHT_APPEARANCE_FILE");
+  const auto restore = qScopeGuard([&] {
+    if (had_path)
+      qputenv("HOLONIGHT_APPEARANCE_FILE", previous);
+    else
+      qunsetenv("HOLONIGHT_APPEARANCE_FILE");
+  });
+  QTemporaryDir directory;
+  const auto path = directory.filePath("appearance.toml");
+  qputenv("HOLONIGHT_APPEARANCE_FILE", path.toUtf8());
+  for (const auto scheme : {Holonight::ThemeSchemeKind::HoloNightDark, Holonight::ThemeSchemeKind::HoloNightLight}) {
+    const bool light = scheme == Holonight::ThemeSchemeKind::HoloNightLight;
+    QFile file(path);
+    ASSERT_TRUE(file.open(QIODevice::WriteOnly | QIODevice::Truncate));
+    file.write(light ? "version = 2\n[theme]\nscheme = \"holonight-light\"\naccent = \"blue\"\n"
+                     : "version = 2\n[theme]\nscheme = \"holonight-dark\"\naccent = \"blue\"\n");
+    file.close();
+    HoloniightStyle style;
+    Holonight::ResolvedAppearance appearance;
+    appearance.theme_scheme = scheme;
+    appearance.accent = "blue";
+    const auto tok = Holonight::ThemeResolver::resolve(appearance);
+    const QColor background = tok.surface;
+    for (const auto extra : {QStyle::State_None, QStyle::State_MouseOver, QStyle::State_HasFocus}) {
+      for (const bool enabled : {false, true}) {
+        QStyleOptionViewItem opt;
+        opt.rect = QRect(0, 0, 160, 48);
+        opt.state = QStyle::State_Selected | QStyle::State_Active | extra;
+        if (enabled) opt.state |= QStyle::State_Enabled;
+        opt.palette = style.standardPalette();
+        opt.features = QStyleOptionViewItem::HasDisplay;
+        opt.text = "Downloads";
+        QPixmap tab(20, 20);
+        tab.fill(Qt::transparent);
+        {
+          QPainter painter(&tab);
+          painter.fillRect(QRect(2, 2, 10, 5), tok.primary);
+          painter.fillRect(QRect(2, 7, 16, 11), tok.primary.darker(150));
+        }
+        opt.icon = QIcon(tab);
+        opt.icon.addPixmap(tab, QIcon::Disabled);
+        opt.features |= QStyleOptionViewItem::HasDecoration;
+        opt.decorationSize = tab.size();
+        QImage primitive(opt.rect.size(), QImage::Format_ARGB32_Premultiplied);
+        primitive.fill(background);
+        QImage delegate = primitive;
+        QImage expected = primitive;
+        {
+          QPainter painter(&expected);
+          painter.fillRect(expected.rect(),
+                           extra == QStyle::State_MouseOver ? tok.surfaceSelectedHover : tok.surfaceSelected);
+        }
+        {
+          QPainter painter(&primitive);
+          style.drawPrimitive(QStyle::PE_PanelItemViewRow, &opt, &painter);
+          style.drawPrimitive(QStyle::PE_PanelItemViewItem, &opt, &painter);
+        }
+        {
+          QPainter painter(&delegate);
+          style.drawPrimitive(QStyle::PE_PanelItemViewRow, &opt, &painter);
+          style.drawControl(QStyle::CE_ItemViewItem, &opt, &painter);
+        }
+        const auto icon_rect = style.subElementRect(QStyle::SE_ItemViewItemDecoration, &opt);
+        EXPECT_EQ(delegate.pixelColor(icon_rect.topLeft() + QPoint(5, 4)), tok.primary);
+        EXPECT_EQ(primitive.pixelColor(140, 24), expected.pixelColor(140, 24));
+        EXPECT_EQ(delegate.pixelColor(140, 24), expected.pixelColor(140, 24));
+        EXPECT_EQ(primitive.pixelColor(80, 1),
+                  extra == QStyle::State_HasFocus ? tok.borderFocus : tok.selectionIndicator);
+        const QColor foreground = enabled ? tok.textPrimary : tok.textDisabled;
+        bool found = false;
+        for (int y = 4; y < 44; ++y)
+          for (int x = 4; x < 100; ++x) found |= delegate.pixelColor(x, y) == foreground;
+        EXPECT_TRUE(found);
+        // An opaque accent tab must remain distinguishable from its selection.
+        EXPECT_NE(expected.pixelColor(140, 24), tok.primary);
+      }
+    }
+  }
+}
+
+TEST_F(DrawPrimitiveTest, ItemSelectionPaletteReachesDolphinGraphicsViewButNotEditor) {
+  KFileItemListContainer container;
+  QListView view;
+  QGraphicsScene scene;
+  QGraphicsView graphics(&scene, &container);
+  auto* item = new QGraphicsWidget;
+  scene.addItem(item);
+  style_.polish(&container);
+  QTextEdit editor;
+  style_.polish(&view);
+  style_.polish(&graphics);
+  style_.polish(&editor);
+  const auto tok = resolvedDefaultTokens();
+  EXPECT_EQ(graphics.palette().color(QPalette::HighlightedText), tok.textPrimary);
+  EXPECT_EQ(item->palette().color(QPalette::HighlightedText), tok.textPrimary);
+  EXPECT_EQ(graphics.palette().color(QPalette::Highlight), tok.surfaceSelected);
+  EXPECT_EQ(view.palette().color(QPalette::Disabled, QPalette::HighlightedText), tok.textDisabled);
+  EXPECT_EQ(editor.palette().color(QPalette::Highlight), tok.primary);
+  EXPECT_EQ(editor.palette().color(QPalette::HighlightedText), tok.onPrimary);
+}
+
+#include "test_style_drawprimitive.moc"

@@ -26,3 +26,43 @@ an independently installed package in the shared image and is not owned by our i
 
 Routine fixes need tests and a commit explanation. Substantial designs use one SDD;
 cross-project work uses one umbrella contract note. Keep execution logs out of Git.
+
+
+## Dolphin selection and icon refresh
+
+Focused host verification uses `holonight_tests`, `holonight_style_primitive_tests` and
+`holonight_platform_palette_{gui,fusion,holonight,quick,override}`. The rendering regression covers
+light/dark schemes, selected, hovered-selected, focused-selected and disabled items through primitive
+and delegate paths, single compositing when the row primitive is also called, readable text and an
+accent-colored folder tab. The palette regression uses a derived KDE-like container with a graphics
+view, scene and graphics item; editor highlight roles stay solid. The standalone style reload regression
+checks pixmap invalidation without a HoloNight platform theme, explicit palette roles, no-op reloads and
+typography-only changes.
+
+The Qt-only platform consumer retains a theme icon across cyan → blue → cyan updates and compares
+both it and fresh icons against live Highlight and Accent roles. It also compares cold palette snapshots,
+checks cached pixmap eviction, preserves no-op caches and exercises an explicit application Accent override.
+Existing platform icon tests cover explicit primary icon-theme overrides and live icon-theme hints.
+
+Native Dolphin verification on 2026-11-04 used host-built plugins, a private D-Bus session, disposable
+configuration/cache directories and plain, Downloads and SVG-preview folders. `/proc/<pid>/maps` confirmed
+both build-tree HoloNight plugins and KDE's `KIconEnginePlugin.so`. Captures and an isolated KDE startup
+probe are retained under the ignored `build/dev/dolphin-check/` directory. The probe resolved
+`/usr/share/icons/HoloNight/places/32/folder.svg` after explicitly configuring KDE's icon theme to HoloNight.
+It observed startup Accent `#5ea2ff`, followed by theme name `KIconEngine` and application Accent/Highlight
+`#3daee9` after KDE startup callbacks. This is an application palette and icon-engine override, beyond the
+Qt-only platform-consumer path. KDE's [startup implementation](https://invent.kde.org/frameworks/kiconthemes/-/blob/master/src/kicontheme.cpp)
+installs that engine and initializes its color-scheme manager.
+
+Selected Downloads now has readable text and an intact silhouette in the native icon-view capture;
+Places labels also remain readable. Graphics items require the scene palette as well as the view palette.
+Ordinary folders still use KDE's cyan in cold blue startup and after a live cyan → blue change; the SVG
+preview folder follows HoloNight's blue on cold startup and preserves its authored preview colors. Thus
+full Dolphin folder-color acceptance remains **unmet**. The attempted compositor shortcuts did not change
+view modes, so detail-view interaction and forced preview toggling are not claimed as verified.
+
+Preserving explicit application palettes and icon-theme overrides prevents silently taking ownership of
+KDE's injected engine here. Resolving that path needs a separate integration decision. No KDE dependency,
+Dolphin patch, disk-cache deletion, desktop-wide refresh or icon-artwork change is included.
+The separate native KDE Accent-only cache regression in `holonight-icons` retains its reported failure
+status; it does not explain this startup override, and it was not rerun as part of this change.

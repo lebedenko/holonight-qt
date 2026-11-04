@@ -193,7 +193,19 @@ The selected scheme determines dark/light mode. Supported accents are `default`,
 Scheme and accent changes reload automatically in running applications using the HoloNight platform theme,
 including the application palette and dark/light color-scheme hint. Explicit application palette roles retain
 Qt’s override precedence; roles inherited from the system palette continue to follow appearance changes.
-Fonts and icon-theme settings are read at startup and require restarting the application.
+Font and icon-theme hints also refresh live. The platform theme synchronizes its semantic icon renderer
+before notifying Qt and clears process-local pixmaps on palette or icon-theme changes. Typography-only
+and unchanged appearances do not trigger HoloNight's pixmap invalidation. Explicit application icon-theme
+and palette overrides remain in control; applications can retain their own caches.
+
+Widget item selections use the existing 14% accent surface (20% on hover), an accent outline and a focus
+outline for keyboard focus. Labels retain normal readable colors, including disabled labels. Item-view
+palettes also cover Dolphin's container, graphics view and graphics scene; editor and menu selections keep
+their solid highlight. Folder artwork and authored SVG previews are unchanged.
+
+Dolphin can inject KDE's icon engine and application palette after platform-theme startup. In that path,
+ordinary icons can retain KDE's accent while folder previews use HoloNight's accent. The Qt refresh fix
+does not override those application choices. See [native verification and remaining limitation](DEVELOPMENT.md#dolphin-selection-and-icon-refresh).
 
 The supported environment override is:
 

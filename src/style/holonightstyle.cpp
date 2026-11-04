@@ -13,9 +13,12 @@
 #include <QApplication>
 #include <QDockWidget>
 #include <QFrame>
+#include <QGraphicsScene>
+#include <QGraphicsView>
 #include <QMenu>
 #include <QPainter>
 #include <QPainterPath>
+#include <QPixmapCache>
 #include <QPlainTextEdit>
 #include <QSplitter>
 #include <QStatusBar>
@@ -140,7 +143,19 @@ bool shouldSuppressScrollAreaFrame(const QWidget* widget) {
   }
 
   const QString className = QString::fromLatin1(widget->metaObject()->className());
-  return nameContains(className, QLatin1String{"KItemListContainer"});
+  return widget->inherits("KItemListContainer") || nameContains(className, QLatin1String{"KItemListContainer"});
+}
+
+bool usesItemSelection(const QWidget* widget) {
+  if (qobject_cast<const QTextEdit*>(widget) != nullptr || qobject_cast<const QPlainTextEdit*>(widget) != nullptr) {
+    return false;
+  }
+  for (auto* current = widget; current != nullptr; current = current->parentWidget()) {
+    if (shouldSuppressScrollAreaFrame(current)) {
+      return true;
+    }
+  }
+  return false;
 }
 
 bool isTextEditLikeWidget(const QWidget* widget) {
@@ -347,6 +362,11 @@ void HoloniightStyle::polish(QWidget* widget) {
   palette.setColor(QPalette::ButtonText, tok.textPrimary);
   palette.setColor(QPalette::Highlight, tok.primary);
   palette.setColor(QPalette::HighlightedText, tok.onPrimary);
+  if (usesItemSelection(widget)) {
+    palette.setColor(QPalette::Highlight, tok.surfaceSelected);
+    palette.setColor(QPalette::HighlightedText, tok.textPrimary);
+    palette.setColor(QPalette::Disabled, QPalette::HighlightedText, tok.textDisabled);
+  }
   palette.setColor(QPalette::Mid, tok.borderPassive);
   palette.setColor(QPalette::Shadow, tok.borderPassive);
 
@@ -366,6 +386,13 @@ void HoloniightStyle::polish(QWidget* widget) {
     view->viewport()->setPalette(palette);
     view->viewport()->setAutoFillBackground(true);
     view->viewport()->setBackgroundRole(QPalette::Base);
+  } else if (auto* graphics = qobject_cast<QGraphicsView*>(widget); graphics != nullptr && usesItemSelection(widget)) {
+    graphics->setPalette(palette);
+    graphics->viewport()->setPalette(palette);
+    if (graphics->scene() != nullptr) {
+      // Graphics items inherit the scene palette, independently of their view.
+      graphics->scene()->setPalette(palette);
+    }
   } else if (auto* textEdit = qobject_cast<QTextEdit*>(widget); textEdit != nullptr) {
     palette.setColor(QPalette::Base, tok.surface);
     palette.setColor(QPalette::AlternateBase, tok.surface);
@@ -824,10 +851,14 @@ void HoloniightStyle::reloadTheme() {
 #endif
   const Holonight::ColorTokens newTokens = Holonight::ThemeResolver::resolve(newConfig);
   if (newTokens == tokens_ && newConfig.color_mode == config_.color_mode &&
-      newConfig.layout_scale == config_.layout_scale) {
+      newConfig.layout_scale == config_.layout_scale && newConfig.icon_theme == config_.icon_theme &&
+      newConfig.fallback_icon_theme == config_.fallback_icon_theme) {
     return;
   }
 
+  const bool icons_changed = Holonight::buildPalette(newTokens) != palette_ ||
+                             newConfig.icon_theme != config_.icon_theme ||
+                             newConfig.fallback_icon_theme != config_.fallback_icon_theme;
   config_ = newConfig;
   tokens_ = newTokens;
   palette_ = Holonight::buildPalette(tokens_);
@@ -843,7 +874,12 @@ void HoloniightStyle::reloadTheme() {
 #else
   resolved.setResolveMask(current.resolveMask());
 #endif
-  qApp->setPalette(resolved);
+  if (icons_changed) {
+    QPixmapCache::clear();
+  }
+  if (resolved != current) {
+    qApp->setPalette(resolved);
+  }
   const QWidgetList widgets = qApp->allWidgets();
   for (QWidget* widget : widgets) {
     if (widget == nullptr) {
@@ -925,10 +961,7 @@ void HoloniightStyle::drawPanelButtonImpl(const QStyleOption* option, QPainter* 
 }
 
 void HoloniightStyle::drawPanelItemViewImpl(const QStyleOption* option, QPainter* painter) const {
-  const auto* opt = qstyleoption_cast<const QStyleOptionViewItem*>(option);
-  if (opt == nullptr) {
-    return;
-  }
+  const auto* opt = option;
   const auto& tok = tokens();
   painter->save();
   painter->setRenderHint(QPainter::Antialiasing);
@@ -937,16 +970,17 @@ void HoloniightStyle::drawPanelItemViewImpl(const QStyleOption* option, QPainter
   const bool hovered = (opt->state & State_MouseOver) != 0U;
   const bool focused = (opt->state & State_HasFocus) != 0U;
   if (selected) {
-    painter->setBrush(tok.primary);
-    painter->drawRoundedRect(option->rect.adjusted(1, 1, -1, -1), kRadiusTight, kRadiusTight);
+    painter->setBrush(hovered ? tok.surfaceSelectedHover : tok.surfaceSelected);
+    painter->setPen(QPen{focused ? tok.borderFocus : tok.selectionIndicator, 1});
+    painter->drawRoundedRect(strokedRectInside(option->rect.adjusted(1, 1, -1, -1), 1), kRadiusTight, kRadiusTight);
   } else if (hovered) {
     painter->setBrush(tok.surfaceHover);
-    painter->drawRoundedRect(option->rect.adjusted(1, 1, -1, -1), kRadiusTight, kRadiusTight);
+    painter->drawRoundedRect(strokedRectInside(option->rect.adjusted(1, 1, -1, -1), 1), kRadiusTight, kRadiusTight);
   }
   if (focused && !selected) {
     painter->setBrush(Qt::NoBrush);
     painter->setPen(QPen{tok.borderFocus, 1});
-    painter->drawRoundedRect(option->rect.adjusted(1, 1, -1, -1), kRadiusTight, kRadiusTight);
+    painter->drawRoundedRect(strokedRectInside(option->rect.adjusted(1, 1, -1, -1), 1), kRadiusTight, kRadiusTight);
   }
   painter->restore();
 }
@@ -959,26 +993,13 @@ void HoloniightStyle::drawItemViewItemImpl(const QStyleOption* option, QPainter*
 
   const auto& tok = tokens();
   const bool selected = (opt->state & State_Selected) != 0U;
-  const bool hovered = (opt->state & State_MouseOver) != 0U;
-  const bool focused = (opt->state & State_HasFocus) != 0U;
   const bool enabled = (opt->state & State_Enabled) != 0U;
 
   painter->save();
-  painter->setRenderHint(QPainter::Antialiasing);
-  painter->setPen(Qt::NoPen);
-
-  if (selected) {
-    painter->setBrush(tok.primary);
-    const QRectF item_rect = opt->rect.adjusted(1, 1, -1, -1);
-    painter->drawRoundedRect(item_rect, controlRadius(item_rect), controlRadius(item_rect));
-  } else if (hovered) {
-    painter->setBrush(tok.surfaceHover);
-    const QRectF item_rect = opt->rect.adjusted(1, 1, -1, -1);
-    painter->drawRoundedRect(item_rect, controlRadius(item_rect), controlRadius(item_rect));
-  } else if ((opt->features & QStyleOptionViewItem::Alternate) != 0U) {
-    painter->setBrush(tok.surfaceElevated);
-    painter->drawRect(opt->rect);
+  if (!selected && (opt->features & QStyleOptionViewItem::Alternate) != 0U) {
+    painter->fillRect(opt->rect, tok.surfaceElevated);
   }
+  drawPanelItemViewImpl(option, painter);
 
   if (opt->features & QStyleOptionViewItem::HasCheckIndicator) {
     QStyleOption check = *opt;
@@ -997,9 +1018,7 @@ void HoloniightStyle::drawItemViewItemImpl(const QStyleOption* option, QPainter*
   }
 
   QColor textColor = enabled ? tok.textPrimary : tok.textDisabled;
-  if (selected) {
-    textColor = tok.onPrimary;
-  } else if (!enabled) {
+  if (!enabled) {
     textColor = tok.textDisabled;
   } else if ((opt->state & State_Active) == 0U) {
     textColor = tok.textMuted;
@@ -1021,12 +1040,6 @@ void HoloniightStyle::drawItemViewItemImpl(const QStyleOption* option, QPainter*
                       font_metrics.elidedText(opt->text, opt->textElideMode, textRect.width()));
   }
   painter->setFont(oldFont);
-
-  if (focused && !selected) {
-    painter->setBrush(Qt::NoBrush);
-    painter->setPen(QPen{tok.borderFocus, 1});
-    painter->drawRoundedRect(opt->rect.adjusted(1, 1, -1, -1), kRadiusTight, kRadiusTight);
-  }
 
   painter->restore();
 }
@@ -1214,24 +1227,10 @@ void HoloniightStyle::drawPrimitive(PrimitiveElement element, const QStyleOption
       drawPanelItemViewImpl(option, painter);
       return;
 
-    case PE_PanelItemViewRow: {
-      const bool selected = (option->state & State_Selected) != 0U;
-      const bool hovered = (option->state & State_MouseOver) != 0U;
-      if (!selected && !hovered) {
-        return;
-      }
-
-      painter->save();
-      painter->setPen(Qt::NoPen);
-      if (selected) {
-        painter->setBrush(tok.primary);
-      } else {
-        painter->setBrush(tok.surfaceHover);
-      }
-      painter->drawRect(option->rect);
-      painter->restore();
+    // Item painting owns the fill; views can invoke both row and item paths.
+    // Painting here too would composite the translucent selection twice.
+    case PE_PanelItemViewRow:
       return;
-    }
 
     case PE_PanelLineEdit: {
       const bool focused = (option->state & State_HasFocus) != 0U;

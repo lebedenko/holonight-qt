@@ -10,6 +10,7 @@
 
 #include <QCoreApplication>
 #include <QIcon>
+#include <QPixmapCache>
 #include <QStandardPaths>
 #include <QVariant>
 #include <qpa/qwindowsysteminterface.h>
@@ -50,6 +51,11 @@ void HoloniightTheme::refreshPalette() {
   font_fixed_ = QFont(appearance.monospace_font, appearance.monospace_font_size);
   font_small_ = QFont(appearance.ui_font, appearance.captionSize());
   font_mini_ = QFont(appearance.ui_font, (std::max)(6, appearance.bodySize() - 2));
+  // Synchronize the engine's separate reader before notifying icon consumers.
+  if (palette != palette_ || icons_changed) {
+    Holonight::HnIconEngine::refreshAppearance();
+    QPixmapCache::clear();
+  }
   config_ = appearance;
   palette_ = palette;
   color_mode_ = appearance.color_mode;

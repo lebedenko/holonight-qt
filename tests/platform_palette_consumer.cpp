@@ -2,7 +2,10 @@
 // SPDX-FileCopyrightText: 2026 Andrii L <lebeden@gmail.com>
 
 #include <QApplication>
+#include <QDir>
 #include <QFile>
+#include <QIcon>
+#include <QPixmapCache>
 #include <QProcess>
 #include <QQmlComponent>
 #include <QQmlEngine>
@@ -67,6 +70,21 @@ int main(int argc, char** argv) {
                               snapshot ? QByteArray(arguments[4]) : "blue"))) {
     return 2;
   }
+  const QString icons = directory.filePath("icons");
+  QDir().mkpath(icons + "/HoloNight/scalable/places");
+  if (!replace(icons + "/HoloNight/index.theme",
+               "[Icon Theme]\nName=HoloNight\nDirectories=scalable/places\n"
+               "[scalable/places]\nSize=32\nType=Scalable\nMinSize=1\nMaxSize=256\nContext=Places\n") ||
+      !replace(
+          icons + "/HoloNight/scalable/places/folder.svg",
+          "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"32\" height=\"32\">"
+          "<style id=\"current-color-scheme\">.ColorScheme-Highlight{color:#ff0000;}"
+          ".ColorScheme-Accent{color:#ff0000;}</style>"
+          "<rect class=\"ColorScheme-Highlight\" fill=\"currentColor\" width=\"16\" height=\"32\"/>"
+          "<rect class=\"ColorScheme-Accent\" fill=\"currentColor\" x=\"16\" width=\"16\" height=\"32\"/></svg>")) {
+    return 14;
+  }
+  QIcon::setThemeSearchPaths({icons});
   qputenv("HOLONIGHT_APPEARANCE_FILE", path.toUtf8());
   qputenv("QT_QPA_PLATFORMTHEME", "holonight");
   qputenv("QT_PLUGIN_PATH", root);
@@ -91,6 +109,17 @@ int main(int argc, char** argv) {
     output.write(colors(QGuiApplication::palette()));
     return 0;
   }
+  const QIcon retained = QIcon::fromTheme("folder");
+  auto iconMatches = [&] {
+    const auto expected = QGuiApplication::palette().color(QPalette::Highlight);
+    const auto accent = QGuiApplication::palette().color(QPalette::Accent);
+    for (const auto& icon : {retained, QIcon::fromTheme("folder")}) {
+      const auto image = icon.pixmap(32).toImage();
+      if (image.pixelColor(8, 16) != expected || image.pixelColor(24, 16) != accent) return false;
+    }
+    return true;
+  };
+  if (!iconMatches()) return 15;
   QQmlEngine engine;
   QQmlComponent component(&engine);
   component.setData(mode == "quick"
@@ -110,18 +139,23 @@ int main(int argc, char** argv) {
   QPalette explicit_palette;
   if (mode == "override") {
     explicit_palette.setColor(QPalette::Active, QPalette::Text, QColor("#123456"));
+    explicit_palette.setColor(QPalette::Active, QPalette::Accent, QColor("#ab34cd"));
     QGuiApplication::setPalette(explicit_palette);
   }
   const auto mask = QGuiApplication::palette().resolveMask();
   QTest::qWait(200);  // Allow the deferred watcher to attach before the first replacement.
   // These accents differ semantically but produce the same effective QPalette.
+  QPixmap sentinel(1, 1);
+  sentinel.fill(Qt::red);
+  QPixmapCache::insert("holonight-noop-probe", sentinel);
   const int unchanged_events = events.changes;
   for (const QByteArray& accent : {QByteArray("default"), QByteArray("blue")}) {
     if (!replace(path, document("holonight-dark", accent))) {
       return 12;
     }
     QTest::qWait(300);
-    if (events.changes != unchanged_events || !schemes.isEmpty()) {
+    if (events.changes != unchanged_events || !schemes.isEmpty() ||
+        !QPixmapCache::find("holonight-noop-probe", &sentinel)) {
       qCritical("Effective palette did not change but the platform notified Qt");
       return 13;
     }
@@ -130,6 +164,9 @@ int main(int argc, char** argv) {
            qMakePair(QByteArray("holonight-light"), QByteArray("blue")),
            qMakePair(QByteArray("holonight-dark"), QByteArray("blue")),
            qMakePair(QByteArray("holonight-mocha"), QByteArray("blue")),
+           qMakePair(QByteArray("holonight-mocha"), QByteArray("cyan")),
+           qMakePair(QByteArray("holonight-mocha"), QByteArray("blue")),
+           qMakePair(QByteArray("holonight-mocha"), QByteArray("cyan")),
            qMakePair(QByteArray("holonight-mocha"), QByteArray("violet")),
        }) {
     QProcess reference;
@@ -149,6 +186,7 @@ int main(int argc, char** argv) {
       lines[2] = "#ff123456";
       expected = lines.join('\n');
     }
+    QPixmapCache::insert("holonight-stale-icon-probe", sentinel);
     const int before = events.changes;
     const auto scheme_signals = schemes.count();
     if (!replace(path, document(selection.first, selection.second)) ||
@@ -157,6 +195,7 @@ int main(int argc, char** argv) {
       return 6;
     }
     QTest::qWait(200);
+    if (!iconMatches() || QPixmapCache::find("holonight-stale-icon-probe", &sentinel)) return 16;
     if (events.changes <= before ||
         schemes.count() - scheme_signals != (selection.first == "holonight-mocha" ? 0 : 1) ||
         object->property(mode == "quick" ? "observed" : "window").value<QColor>() !=

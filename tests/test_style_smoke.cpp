@@ -9,6 +9,7 @@
 #include <QDockWidget>
 #include <QFile>
 #include <QListView>
+#include <QPixmapCache>
 #include <QSplitter>
 #include <QStatusBar>
 #include <QTemporaryDir>
@@ -262,7 +263,18 @@ TEST(StyleSmoke, ReloadPreservesApplicationPaletteRolesAndResolveMask) {
        {QByteArray("holonight-light"), QByteArray("holonight-dark"), QByteArray("holonight-light")}) {
     appearance.theme.scheme = scheme.toStdString();
     ASSERT_TRUE(HoloNight::Config::writeAtomically(appearance, std::filesystem::path(path.toStdString())));
+    QPixmap cached(2, 2);
+    cached.fill(Qt::red);
+    QPixmapCache::insert("style-refresh-probe", cached);
     ASSERT_TRUE(reader->reload());
+    EXPECT_FALSE(QPixmapCache::find("style-refresh-probe", &cached));
+    QPixmapCache::insert("style-refresh-probe", cached);
+    ASSERT_TRUE(reader->reload());
+    EXPECT_TRUE(QPixmapCache::find("style-refresh-probe", &cached));
+    ++appearance.typography.ui_size;
+    ASSERT_TRUE(HoloNight::Config::writeAtomically(appearance, std::filesystem::path(path.toStdString())));
+    ASSERT_TRUE(reader->reload());
+    EXPECT_TRUE(QPixmapCache::find("style-refresh-probe", &cached));
     const auto actual = QApplication::palette();
     EXPECT_EQ(actual.resolveMask(), mask);
     EXPECT_EQ(actual.color(QPalette::Active, QPalette::Base), QColor("#010203"));
