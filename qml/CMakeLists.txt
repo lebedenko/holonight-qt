@@ -128,6 +128,8 @@ target_link_libraries(holonight_core_qml PRIVATE
     Qt6::QuickPrivate
 )
 
+set_source_files_properties(controls/HnFormat.qml PROPERTIES QT_QML_SINGLETON_TYPE TRUE)
+
 set(HOLONIGHT_CONTROLS_PUBLIC_QML_FILES
     controls/HnAvatar.qml
     controls/HnAppTitle.qml
@@ -149,6 +151,8 @@ set(HOLONIGHT_CONTROLS_PUBLIC_QML_FILES
     controls/HnThumbnailDelegate.qml
     controls/HnPreviewFrame.qml
     controls/HnLabeledKeyHint.qml
+    controls/HnFormat.qml
+    controls/HnModeBadge.qml
     controls/HnMetadataList.qml
     controls/HnBreadcrumbBar.qml
     controls/HnKeyHint.qml
