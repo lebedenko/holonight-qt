@@ -161,13 +161,24 @@ Window {
 }
 
 TEST_F(RuntimeComposites, EveryPublicCompositeLoadsAndHonorsDisabledState) {
+  QFile qmldir(qEnvironmentVariable("UQC_IMPORT_PATH", QStringLiteral(HOLONIGHT_QML_IMPORT_PATH)) +
+               "/Holonight/Controls/qmldir");
+  ASSERT_TRUE(qmldir.open(QIODevice::ReadOnly));
+  const auto metadata = '\n' + qmldir.readAll();
   for (const auto& type : QStringLiteral(HOLONIGHT_COMPOSITE_TYPES).split(',')) {
     SCOPED_TRACE(type.toStdString());
+    const bool singleton = metadata.contains("\nsingleton " + type.toUtf8() + ' ');
     const auto* const required = type == "HnAppTitle" ? "applicationName: \"Acceptance\"" : "";
-    auto control = create(QString("import QtQuick\nimport Holonight.Controls\n%1 { %2 }").arg(type, required).toUtf8());
+    auto root = create((singleton ? QString("import QtQuick\nimport Holonight.Controls\n"
+                                            "QtObject { property QtObject instance: %1 }")
+                                        .arg(type)
+                                  : QString("import QtQuick\nimport Holonight.Controls\n%1 { %2 }").arg(type, required))
+                           .toUtf8());
+    ASSERT_NE(root, nullptr);
+    auto* control = singleton ? objectProperty(root.get(), "instance") : root.get();
     ASSERT_NE(control, nullptr);
-    expectOrigin(control.get(), "/Holonight/Controls/" + type + ".qml");
-    if (qobject_cast<QQuickItem*>(control.get()) != nullptr) {
+    expectOrigin(control, "/Holonight/Controls/" + type + ".qml");
+    if (qobject_cast<QQuickItem*>(control) != nullptr) {
       ASSERT_TRUE(control->setProperty("enabled", false));
       EXPECT_FALSE(control->property("enabled").toBool());
       ASSERT_TRUE(control->setProperty("enabled", true));

@@ -402,9 +402,14 @@ import Holonight.Controls
 Item {
 ]=])
 set(lint_index 0)
+file(STRINGS "${qml_root}/Holonight/Controls/qmldir" installed_singletons REGEX "^singleton ")
 foreach(control_type IN ITEMS @HOLONIGHT_CONTROLS_PUBLIC_TYPES@)
-  string(APPEND lint_check
-    "  property Component type${lint_index}: Component { ${control_type} {} }\n")
+  if("${installed_singletons}" MATCHES "(^|;)singleton ${control_type} ")
+    string(APPEND lint_check "  property QtObject type${lint_index}: ${control_type}\n")
+  else()
+    string(APPEND lint_check
+      "  property Component type${lint_index}: Component { ${control_type} {} }\n")
+  endif()
   math(EXPR lint_index "${lint_index} + 1")
 endforeach()
 string(APPEND lint_check "}\n")
